@@ -1,11 +1,12 @@
 import { createBrowserRouter } from 'react-router-dom'
+import { CustomerLayout } from './layouts/CustomerLayout'
 import { RootLayout } from './layouts/RootLayout'
-import { HomePage } from '../pages/home/HomePage'
-import { RoomOnePage } from '../pages/room-one/RoomOnePage'
-import { RoomTwoPage } from '../pages/room-two/RoomTwoPage'
-import { RoomThreePage } from '../pages/room-three/RoomThreePage'
-import { RoomFourPage } from '../pages/room-four/RoomFourPage'
+import { CustomerInsightPage } from '../pages/customer-insight/CustomerInsightPage'
 import { NotFoundPage } from '../pages/not-found/NotFoundPage'
+import { ReportsPage } from '../pages/reports/ReportsPage'
+import { RiskCatalogPage } from '../pages/risk-catalog/RiskCatalogPage'
+import { RiskDashboardPage } from '../pages/risk-dashboard/RiskDashboardPage'
+import { RiskDetailPage } from '../pages/risk-detail/RiskDetailPage'
 
 export const router = createBrowserRouter([
   {
@@ -13,12 +14,19 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     errorElement: <NotFoundPage />,
     children: [
-      { index: true, element: <HomePage /> },
-      { path: 'rooms/one', element: <RoomOnePage /> },
-      { path: 'rooms/two', element: <RoomTwoPage /> },
-      { path: 'rooms/three', element: <RoomThreePage /> },
-      { path: 'rooms/four', element: <RoomFourPage /> },
+      { index: true, element: <RiskDashboardPage /> },
+      { path: 'risks', element: <RiskCatalogPage /> },
+      { path: 'risks/:riskId', element: <RiskDetailPage /> },
+      { path: 'reports', element: <ReportsPage /> },
       { path: '*', element: <NotFoundPage /> },
+    ],
+  },
+  {
+    path: '/customer-insight',
+    element: <CustomerLayout />,
+    errorElement: <NotFoundPage />,
+    children: [
+      { index: true, element: <CustomerInsightPage /> },
     ],
   },
 ])

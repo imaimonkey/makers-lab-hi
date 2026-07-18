@@ -1,28 +1,69 @@
-# Makers Lab · Four Rooms
+# HI Emerging Risk Studio
 
-4명이 한 프로젝트에서 페이지와 기능을 나누어 연습할 수 있는 React 초기 골격입니다.
+산업·기술 변화에서 발생하는 신규 위험을 탐색하고 보험상품화 가능성을 검토하기 위한 현대해상 서비스 콘셉트입니다. 현재 버전은 1~4번 실무자 워크벤치와 5번 개인고객용 상황 탐색 웹을 별도 화면으로 제공하며, 우상단 사용자 전환으로 두 경험을 시연할 수 있습니다.
 
-## 시작하기
+> 이 저장소는 현대해상의 공식 서비스가 아닌 내부 검토용 프런트엔드 프로토타입입니다. 상품 후보는 정보 탐색을 돕기 위한 것이며 가입 가능 여부, 보험료, 보장·면책 범위를 확정하지 않습니다.
+
+## 현재 범위
+
+| 경로 | 역할 | 상태 |
+| --- | --- | --- |
+| `/` | 신규위험 통합 대시보드 프레임 | 샘플 표시 |
+| `/risks` | 위험 후보 목록·선별 프레임 | 샘플 표시 |
+| `/risks/:riskId` | 근거·상품화 평가 워크벤치 | 샘플 표시 |
+| `/reports` | 의사결정 리포트 프레임 | 샘플 표시 |
+| `/customer-insight` | 별도 고객 웹: 상황 분석, 공식 상품 후보 연결, 비식별 신규위험 신호 환류 | 로컬 동작 |
+
+`샘플 표시`는 화면 구조와 데이터 계약을 보여주는 예시이며 현대해상의 실제 내부 데이터나 판단이 아닙니다. `로컬 동작`은 브라우저 안에서 기능 흐름이 동작하지만 운영 API와 연결되지 않았다는 뜻입니다.
+
+## 실행
+
+Node.js 22.12 이상을 권장합니다.
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 담당 분리
+검증은 다음 명령 하나로 실행합니다.
 
-| 담당 | 경로 | 페이지 폴더 | 기능 폴더 | 예시 기능 |
-| --- | --- | --- | --- | --- |
-| 1번 | `/rooms/one` | `src/pages/room-one` | `src/features/room-one` | 카운터 |
-| 2번 | `/rooms/two` | `src/pages/room-two` | `src/features/room-two` | 카드 필터 |
-| 3번 | `/rooms/three` | `src/pages/room-three` | `src/features/room-three` | 체크리스트 |
-| 4번 | `/rooms/four` | `src/pages/room-four` | `src/features/room-four` | 프로필 폼 |
+```bash
+npm run check
+```
 
-공통 레이아웃과 컴포넌트는 `src/shared`, 전체 라우트 설정은 `src/app/router.tsx`에서 관리합니다. 각 담당자는 자신의 `pages/room-*`, `features/room-*` 폴더 위주로 작업하면 됩니다.
+## 구현 구조
 
-## 권장 협업 규칙
+```text
+src/
+  app/                         실무자·고객 분리 레이아웃과 라우팅
+  domain/
+    product/                   확인된 현대해상 상품 메타데이터
+    risk/                      위험·고객 신호 공통 계약과 샘플
+  features/customer-insight/  고객 입력 분석·추천·비식별화
+  pages/                       경로별 조합 계층
+  shared/                      아이콘, 헤더, 내비게이션
+  styles/                      브랜드 토큰과 반응형 UI
+develop-footprint/             구현 현황·팀 인수인계 문서
+```
 
-- 개인 브랜치: `feature/room-one`, `feature/room-two` 형식
-- 공통 컴포넌트 변경은 팀원과 먼저 공유
-- 새 페이지 추가 시 자신의 기능 폴더 안에서 구현하고 `router.tsx`에 경로만 연결
-- 작업 전 `npm run build`와 `npm run lint` 확인
+실무자 화면의 좌측 메뉴에는 고객 앱을 넣지 않습니다. 두 화면의 우상단 `실무자 / 개인고객` 전환으로 발표 흐름을 왕복합니다. 고객 흐름은 `상황 입력 → 관련 공식 상품 후보 → 약관/심사 확인점 → 신규위험 갭 탐지 → 동의 시 비식별 신호 큐` 순서입니다. 지금은 신호를 브라우저 `localStorage`에 보관하고 실무자 대시보드에 표시합니다. 운영 전환 시에는 동의 기록, 서버 측 비식별화, 최소 집계 기준, 담당자 검토, 감사 로그를 갖춘 별도 수집 API로 교체해야 합니다.
+
+## 현대해상 맥락 반영
+
+- 공식 Hi Orange `#ff9e1b`, Hi Navy `#00205b`를 핵심 토큰으로 사용합니다.
+- 공식 전용 서체인 `현대해상 마음체`는 상업·온라인 사용 제한이 있어 번들하지 않았습니다.
+- 실제 로고를 복제하지 않고 제품용 `HI` 워드마크와 `비공식 내부 콘셉트` 표기를 사용합니다.
+- 상품명과 링크는 현대해상 공식 상품 페이지 또는 상품공시 페이지로 연결합니다.
+- 공식 사실과 출처, 파생 UI 색상 범위는 [브랜드 시스템](develop-footprint/platform/brand-system.md)에 기록했습니다.
+
+## 협업 시작점
+
+새 작업자는 먼저 [AGENTS.md](AGENTS.md)와 [개발 문서 인덱스](develop-footprint/README.md)를 읽어야 합니다. 1~4 구현 계약은 [실무자 워크플로](develop-footprint/features/analyst-workflow.md), 데이터·라우트 규칙은 [통합 계약](develop-footprint/platform/integration-contracts.md), 병렬 개발 순서는 [개발 슬라이스](develop-footprint/roadmap/development-slices.md)에 있습니다.
+
+발표 전환 순서와 초기화 방법은 [데모 플레이북](develop-footprint/demo-playbook.md)에 정리했습니다.
+
+핵심 원칙은 세 가지입니다.
+
+1. 기사 수집량과 위험 판단을 혼동하지 않고 근거·불확실성·반증을 함께 남깁니다.
+2. 고객 원문과 개인정보를 실무자 화면으로 직접 전달하지 않습니다.
+3. 기존 상품의 실제 보장 여부를 추정하지 않고 공식 약관·상품설명서·인수 기준 확인 단계로 연결합니다.
