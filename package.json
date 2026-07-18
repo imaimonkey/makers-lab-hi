@@ -1,30 +1,34 @@
 {
-  "name": "makers-lab-hi",
+  "name": "hi-emerging-risk-studio",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check": "npm run lint && npm run build"
   },
   "dependencies": {
-    "react": "latest",
-    "react-dom": "latest",
-    "react-router-dom": "latest"
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-router-dom": "7.18.1"
   },
   "devDependencies": {
-    "@eslint/js": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "@vitejs/plugin-react": "latest",
-    "eslint": "latest",
-    "eslint-plugin-react-hooks": "latest",
-    "eslint-plugin-react-refresh": "latest",
-    "globals": "latest",
-    "typescript": "latest",
-    "typescript-eslint": "latest",
-    "vite": "latest"
+    "@eslint/js": "10.0.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.3",
+    "eslint": "10.0.1",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.3",
+    "globals": "17.7.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.64.0",
+    "vite": "8.1.4"
+  },
+  "engines": {
+    "node": ">=22.12"
   }
 }
