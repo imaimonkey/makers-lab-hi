@@ -22,3 +22,8 @@ Date: 2026-07-21
 - Generate a report, inspect the fallback warning, then use the reviewer draft controls and confirm local storage is used only for the demo.
 - Test keyboard focus for audience/category tabs, candidate selection, report buttons, and the mode dropdown.
 
+## Reference simplicity pass
+
+- Removed the duplicate top stage rail and dashboard work-queue cards.
+- The left navigation is the only work-stage navigation surface; the top bar remains contextual (title, profile, and mode switch).
+- At desktop and mobile widths, verify that the top bar is not interpreted as a second tab bar.

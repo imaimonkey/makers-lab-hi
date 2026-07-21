@@ -1,7 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { ModeSwitch } from '../../shared/components/ModeSwitch'
-import { WorkbenchStageRail } from '../../shared/components/WorkbenchStageRail'
 import { isNavigationItemActive, navigationGroups } from '../../shared/config/navigation'
 
 export function RootLayout() {
@@ -66,16 +65,8 @@ export function RootLayout() {
           <div>
             <p>신규위험 전략 워크벤치</p>
             <strong>{activeItem?.label ?? '업무 화면'}</strong>
-            <WorkbenchStageRail />
           </div>
           <div className="topbar-actions">
-            <div className="analyst-profile">
-              <span aria-hidden="true">현</span>
-              <p>
-                <strong>신규위험 전략팀</strong>
-                <small>Product Analyst</small>
-              </p>
-            </div>
             <ModeSwitch mode="analyst" />
           </div>
         </header>

@@ -23,9 +23,9 @@ The implementation lives in `src/styles/global.css` and `src/report/report.css`.
 
 ## Artifact-informed information architecture
 
-The supplied smart-home dashboard reference also informed the interaction layer:
+The supplied smart-home dashboard reference informs the interaction layer without adding a second navigation surface:
 
-- `WorkbenchStageRail` mirrors the reference's quick icon rail while retaining text labels in the analyst sidebar.
-- `dashboard-command-strip` exposes the four work stages as action cards: radar, candidate catalog, representative assessment, and report.
-- Candidate rows, customer anchors, mode choices, and page headers now use icons that carry the same semantic stage rather than decorative symbols.
-- The secondary rail does not add a second `aria-current`; the primary sidebar remains the single current-page announcement.
+- The analyst and sales layouts keep one left navigation as the source of truth; the active item is a single white/pastel pill with a compact semantic icon.
+- The top bar is reserved for context, profile, and mode switching. It does not duplicate the four work stages as tabs or action cards.
+- Candidate rows, customer anchors, and mode choices use small icons only where they improve scanning; page headers remain text-first and quiet.
+- The primary sidebar remains the single current-page announcement (`aria-current="page"`).

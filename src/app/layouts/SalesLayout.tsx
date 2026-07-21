@@ -49,13 +49,6 @@ export function SalesLayout() {
             <strong>현장 리포트 접수</strong>
           </div>
           <div className="topbar-actions">
-            <div className="analyst-profile">
-              <span aria-hidden="true">영</span>
-              <p>
-                <strong>영업부서 담당</strong>
-                <small>SALES OPERATIONS</small>
-              </p>
-            </div>
             <ModeSwitch mode="sales" />
           </div>
         </header>

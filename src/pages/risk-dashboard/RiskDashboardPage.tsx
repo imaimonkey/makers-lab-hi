@@ -42,38 +42,6 @@ export function RiskDashboardPage() {
 
       <div className="sample-notice"><span>SAMPLE</span>{sampleOnlyNotice}</div>
 
-      <section className="dashboard-command-strip surface-card" aria-label="오늘의 신규위험 업무 바로가기">
-        <div className="dashboard-command-heading">
-          <div>
-            <p className="eyebrow">TODAY'S WORK QUEUE</p>
-            <h2>신호를 다음 판단으로 이어가기</h2>
-          </div>
-          <span className="updated-label">업무 단계별 바로가기</span>
-        </div>
-        <div className="dashboard-command-grid">
-          <Link to="/" className="dashboard-command-card active">
-            <span className="dashboard-command-icon"><AppIcon name="radar" size={18} /></span>
-            <span><strong>신호 레이더</strong><small>새로운 변화와 출처 상태 확인</small></span>
-            <AppIcon name="arrow" size={15} />
-          </Link>
-          <Link to="/risks" className="dashboard-command-card">
-            <span className="dashboard-command-icon"><AppIcon name="list" size={18} /></span>
-            <span><strong>위험 후보 정리</strong><small>{sampleRiskCandidates.length}개 후보의 중복·상태 비교</small></span>
-            <AppIcon name="arrow" size={15} />
-          </Link>
-          <Link to="/risks/ai-liability" className="dashboard-command-card">
-            <span className="dashboard-command-icon"><AppIcon name="scan" size={18} /></span>
-            <span><strong>대표 후보 평가</strong><small>근거·보장 공백·결정 게이트 검토</small></span>
-            <AppIcon name="arrow" size={15} />
-          </Link>
-          <Link to="/reports" className="dashboard-command-card">
-            <span className="dashboard-command-icon"><AppIcon name="report" size={18} /></span>
-            <span><strong>종합 리포트</strong><small>판단 근거와 다음 조사 과제 정리</small></span>
-            <AppIcon name="arrow" size={15} />
-          </Link>
-        </div>
-      </section>
-
       <section className="metric-grid" aria-label="핵심 현황 예시">
         <article className="metric-card">
           <span>감시 채널</span><strong>12<small>개</small></strong><p><i className="positive">+2</i> 이번 달 확장</p>
