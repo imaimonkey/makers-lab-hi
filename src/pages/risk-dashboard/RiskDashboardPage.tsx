@@ -47,10 +47,9 @@ export function RiskDashboardPage() {
           <div className="dashboard-welcome-copy">
             <p className="eyebrow">WORKBENCH OVERVIEW</p>
             <h2>오늘 주목할 위험 신호를 한눈에</h2>
-            <p>변화 신호를 빠르게 훑고, 근거가 쌓인 후보만 다음 검토 단계로 넘겨보세요.</p>
-            <div className="dashboard-welcome-actions">
-              <Link to="/risks" className="primary-small">위험 후보 열기 <AppIcon name="arrow" size={14} /></Link>
-              <Link to="/reports" className="text-button">최근 리포트 <AppIcon name="arrow" size={14} /></Link>
+            <div className="dashboard-welcome-actions" aria-label="주요 화면 바로가기">
+              <Link to="/risks" className="dashboard-icon-action" aria-label="위험 후보 보기" title="위험 후보 보기"><AppIcon name="scan" size={17} /></Link>
+              <Link to="/reports" className="dashboard-icon-action" aria-label="종합 리포트 보기" title="종합 리포트 보기"><AppIcon name="report" size={17} /></Link>
             </div>
           </div>
           <div className="dashboard-welcome-orbit" aria-hidden="true">
@@ -69,7 +68,7 @@ export function RiskDashboardPage() {
           <strong>{focusRisk?.title}</strong>
           <p>근거 {focusRisk?.evidenceCount}건 · 신호 강도 {focusRisk?.signalStrength}/100</p>
           <div className="dashboard-focus-bar"><span style={{ width: `${focusRisk?.signalStrength ?? 0}%` }} /></div>
-          <Link to={`/risks/${focusRisk?.id}`} className="dashboard-focus-link">상세 워크벤치로 이동 <AppIcon name="arrow" size={14} /></Link>
+          <Link to={`/risks/${focusRisk?.id}`} className="dashboard-focus-link" aria-label={`${focusRisk?.title ?? '대표 후보'} 상세 보기`} title="대표 후보 상세 보기"><AppIcon name="arrow" size={14} /></Link>
         </article>
       </section>
 
@@ -94,7 +93,7 @@ export function RiskDashboardPage() {
         <article className="priority-panel surface-card">
           <div className="panel-heading">
             <div><p className="eyebrow">PRIORITY QUEUE</p><h2>우선 검토 후보</h2></div>
-            <Link to="/risks">전체 보기 <AppIcon name="arrow" size={15} /></Link>
+            <Link to="/risks" className="panel-icon-link" aria-label="위험 후보 전체 보기" title="위험 후보 전체 보기"><AppIcon name="arrow" size={15} /></Link>
           </div>
           <div className="priority-list">
             {sampleRiskCandidates.slice(0, 3).map((risk, index) => (
@@ -148,10 +147,10 @@ export function RiskDashboardPage() {
           ) : (
             <div className="voice-empty">
               <span><AppIcon name="spark" size={24} /></span>
-              <div><strong>아직 전달된 고객 신호가 없습니다.</strong><p>우상단에서 개인고객 화면으로 전환해 예시 상황을 분석하고 연구 의견을 보내보세요.</p></div>
+              <div><strong>전달된 고객 신호 없음</strong></div>
             </div>
           )}
-          <p className="aggregation-note"><AppIcon name="lock" size={14} /> 고객 신호는 단건으로 위험 후보가 되지 않으며, 집계 기준과 실무자 검토를 통과해야 합니다.</p>
+          <p className="aggregation-note"><AppIcon name="lock" size={14} /> 집계·검토 전에는 위험 후보로 승격되지 않습니다.</p>
         </article>
       </section>
 

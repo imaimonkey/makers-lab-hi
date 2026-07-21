@@ -20,7 +20,6 @@ export function RiskSignalPipeline() {
         <div>
           <p className="eyebrow">PRODUCT DEVELOPMENT SIGNAL PIPELINE</p>
           <h2>뉴스·현장·법령 신호를 검증 큐로 연결</h2>
-          <p>hyoje 위험 레이더의 채널별 유입, 검증 단계, 상품화 병목을 현재 워크벤치 계약에 맞춘 샘플입니다.</p>
         </div>
         <div className="risk-pipeline-metrics">
           <span><strong>{demoDashboardMetrics.unresolved}</strong>전체 신호</span>
@@ -34,7 +33,7 @@ export function RiskSignalPipeline() {
         <article className="risk-pipeline-issues surface-card">
           <div className="panel-heading">
             <div><p className="eyebrow">ISSUE REGISTER</p><h2>상품개발 이슈 큐</h2></div>
-            <Link to="/risks">위험 후보로 보기 <AppIcon name="arrow" size={15} /></Link>
+            <Link to="/risks" className="panel-icon-link" aria-label="위험 후보 보기" title="위험 후보 보기"><AppIcon name="arrow" size={15} /></Link>
           </div>
           <div className="risk-audience-tabs" aria-label="신호 유입 채널 필터">
             {audiences.map((item) => (

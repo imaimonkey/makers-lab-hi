@@ -1,5 +1,6 @@
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
+import { sampleOnlyNotice } from '../../domain/risk/sampleData'
 import { ReportPage } from '../../report/ReportPage'
 import { getMockReportData } from '../../report/data/mock-data-adapter'
 import type { ReportProxy } from '../../report/api/report-proxy'
@@ -34,7 +35,7 @@ export function ReportsPage() {
         title="종합 리포트"
         description="위험 신호와 상품성 평가를 Advance·Hold·Drop 의사결정과 후속 과제로 압축합니다."
       />
-      <div className="sample-notice"><span>SAMPLE</span>보고서 구조 검증을 위한 예시이며 실제 내부 의사결정이 아닙니다.</div>
+      <div className="sample-notice"><span>SAMPLE</span>{sampleOnlyNotice}</div>
       <section className="report-summary-grid">
         <article><span>검토 중 리포트</span><strong>8</strong><small>이번 분기</small></article>
         <article><span>ADVANCE</span><strong>2</strong><small>상품 콘셉트 단계</small></article>

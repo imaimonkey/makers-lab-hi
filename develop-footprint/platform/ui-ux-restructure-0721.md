@@ -28,10 +28,10 @@ The supplied smart-home reference is useful as an information-architecture refer
 
 The active workbench item is connected to its interface in two ways:
 
-- The active rail item uses a white tab body with a same-height, short right-side bridge that crosses the navy rail boundary into the canvas. Keeping the bridge aligned to the full active item avoids a detached lower-half or speech-bubble shape. On mobile, the bridge is removed because the rail becomes horizontal.
+- The active rail item remains a compact white pill. A thin Hi Orange-to-blue connector line starts at the pill center and ends at the page kicker, making the selected tab-to-interface relationship explicit without a detached white bridge or speech-bubble shape. On mobile, the line is removed because the rail becomes horizontal.
 - The top-bar context repeats the active item's semantic icon and label. This gives the user a second, content-side confirmation without creating another navigation tab.
 
-The bridge is visual only; routing and active-state truth remain owned by `isNavigationItemActive()`.
+The connector is visual only; routing and active-state truth remain owned by `isNavigationItemActive()`.
 
 ## Workflow rule
 

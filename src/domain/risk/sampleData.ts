@@ -203,4 +203,4 @@ export const sampleRiskDetails: Record<string, SampleRiskDetail> = {
   },
 }
 
-export const sampleOnlyNotice = '화면 구조 검증을 위한 예시 데이터이며 실제 현대해상 내부 데이터가 아닙니다.'
+export const sampleOnlyNotice = '예시 데이터 · 실제 내부 운영 데이터 아님'
