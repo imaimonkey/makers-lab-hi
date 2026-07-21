@@ -16,6 +16,8 @@ const channelRows = [
   { name: '통계·공시', role: '노출·정량 검증', count: '56', health: '정상' },
 ]
 
+const focusRisk = sampleRiskCandidates[0]
+
 export function RiskDashboardPage() {
   const [customerSignals, setCustomerSignals] = useState<CustomerSignal[]>([])
 
@@ -41,6 +43,37 @@ export function RiskDashboardPage() {
       />
 
       <div className="sample-notice"><span>SAMPLE</span>{sampleOnlyNotice}</div>
+
+      <section className="dashboard-overview-grid" aria-label="오늘의 위험 탐지 개요">
+        <article className="dashboard-welcome-card surface-card">
+          <div className="dashboard-welcome-copy">
+            <p className="eyebrow">WORKBENCH OVERVIEW</p>
+            <h2>오늘 주목할 위험 신호를 한눈에</h2>
+            <p>변화 신호를 빠르게 훑고, 근거가 쌓인 후보만 다음 검토 단계로 넘겨보세요.</p>
+            <div className="dashboard-welcome-actions">
+              <Link to="/risks" className="primary-small">위험 후보 열기 <AppIcon name="arrow" size={14} /></Link>
+              <Link to="/reports" className="text-button">최근 리포트 <AppIcon name="arrow" size={14} /></Link>
+            </div>
+          </div>
+          <div className="dashboard-welcome-orbit" aria-hidden="true">
+            <span><AppIcon name="radar" size={28} /></span>
+            <i />
+            <b />
+          </div>
+        </article>
+
+        <article className="dashboard-focus-card surface-card">
+          <div className="dashboard-focus-heading">
+            <span className="dashboard-focus-icon"><AppIcon name="scan" size={18} /></span>
+            <div><p className="eyebrow">FOCUS TODAY</p><h2>대표 후보 검토</h2></div>
+            <span className="status-badge ready">SAMPLE</span>
+          </div>
+          <strong>{focusRisk?.title}</strong>
+          <p>근거 {focusRisk?.evidenceCount}건 · 신호 강도 {focusRisk?.signalStrength}/100</p>
+          <div className="dashboard-focus-bar"><span style={{ width: `${focusRisk?.signalStrength ?? 0}%` }} /></div>
+          <Link to={`/risks/${focusRisk?.id}`} className="dashboard-focus-link">상세 워크벤치로 이동 <AppIcon name="arrow" size={14} /></Link>
+        </article>
+      </section>
 
       <section className="metric-grid" aria-label="핵심 현황 예시">
         <article className="metric-card">

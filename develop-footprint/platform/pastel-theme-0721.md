@@ -25,7 +25,8 @@ The implementation lives in `src/styles/global.css` and `src/report/report.css`.
 
 The supplied smart-home dashboard reference informs the interaction layer without adding a second navigation surface:
 
-- The analyst and sales layouts keep one left navigation as the source of truth; the active item is a single white/pastel pill with a compact semantic icon.
-- The top bar is reserved for context, profile, and mode switching. It does not duplicate the four work stages as tabs or action cards.
+- The analyst and sales layouts use a narrow icon-led rail as the source of truth; the active item is a single white/pastel pill and labels remain available through `aria-label`/native hover titles.
+- The top bar follows the reference's search/context/profile rhythm. The search field is explicitly read-only until a real search adapter is connected, so the prototype does not imply a working index.
+- The dashboard opens with a two-card overview (welcome/action + focus candidate), then moves into metrics and evidence panels. This mirrors the reference's hero-plus-side-card composition while retaining the risk workflow.
 - Candidate rows, customer anchors, and mode choices use small icons only where they improve scanning; page headers remain text-first and quiet.
 - The primary sidebar remains the single current-page announcement (`aria-current="page"`).

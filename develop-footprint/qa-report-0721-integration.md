@@ -27,3 +27,5 @@ Date: 2026-07-21
 - Removed the duplicate top stage rail and dashboard work-queue cards.
 - The left navigation is the only work-stage navigation surface; the top bar remains contextual (title, profile, and mode switch).
 - At desktop and mobile widths, verify that the top bar is not interpreted as a second tab bar.
+- The rail now follows the supplied artifact's icon-led pattern; labels are preserved for assistive technology and hover discovery.
+- The radar dashboard now uses a hero/focus two-card opening before the metric and evidence panels.
