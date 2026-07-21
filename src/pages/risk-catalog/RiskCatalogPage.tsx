@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { sampleOnlyNotice, sampleRiskCandidates } from '../../domain/risk/sampleData'
+import { RiskExplorationLens } from '../../features/risk-catalog/RiskExplorationLens'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
@@ -59,6 +60,7 @@ export function RiskCatalogPage() {
         ))}
         {!risks.length && <div className="table-empty">조건에 맞는 위험 후보가 없습니다.</div>}
       </section>
+      <RiskExplorationLens />
       <section className="integration-contract surface-card">
         <span className="contract-label">TEAM 02 INTEGRATION CONTRACT</span>
         <h2>목록은 기사 목록이 아니라 <em>정규화된 위험 후보</em>를 보여줍니다.</h2>

@@ -1,5 +1,23 @@
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
+import { ReportPage } from '../../report/ReportPage'
+import { getMockReportData } from '../../report/data/mock-data-adapter'
+import type { ReportProxy } from '../../report/api/report-proxy'
+import '../../report/report.css'
+
+const { riskData, fallbackReport } = getMockReportData()
+
+const localReportProxy: ReportProxy = {
+  generateReport: async () => {
+    throw new Error('운영 AI 리포트 API가 연결되지 않은 데모 환경입니다.')
+  },
+  generatePolicyDraft: async () => {
+    throw new Error('운영 약관 초안 API가 연결되지 않은 데모 환경입니다.')
+  },
+  askReportQuestion: async () => {
+    throw new Error('운영 리포트 질의 API가 연결되지 않은 데모 환경입니다.')
+  },
+}
 
 const reports = [
   { title: '생성형 AI 업무 오류·배상책임', decision: 'HOLD', tone: 'hold', owner: '미지정', updated: '2026.07.18', evidence: 12 },
@@ -43,6 +61,22 @@ export function ReportsPage() {
           <li><span>03</span><strong>상품 가설</strong><p>가입 대상·보험사고·담보·면책의 초안</p></li>
           <li><span>04</span><strong>다음 검증</strong><p>필요 데이터·담당자·기한·승인 이력</p></li>
         </ol>
+      </section>
+
+      <section className="report-generation-slice surface-card" aria-label="리포트 생성·검토 데모">
+        <div className="report-generation-slice-heading">
+          <div>
+            <p className="eyebrow">REPORT GENERATION / REVIEW</p>
+            <h2>상품화 검토 리포트 생성</h2>
+            <p>jh 브랜치의 생성 상태·검증 경고·검토 체크리스트 기능을 현재 종합 리포트 화면에 연결한 통합 프레임입니다.</p>
+          </div>
+          <span className="status-badge">SAMPLE · LOCAL MOCK</span>
+        </div>
+        <ReportPage
+          riskData={riskData}
+          fallbackReport={fallbackReport}
+          reportProxy={localReportProxy}
+        />
       </section>
     </div>
   )

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { clearCustomerSignals, readCustomerSignals } from '../../domain/risk/customerSignalStorage'
 import type { CustomerSignal } from '../../domain/risk/types'
 import { sampleOnlyNotice, sampleRiskCandidates } from '../../domain/risk/sampleData'
+import { RiskSignalPipeline } from '../../features/risk-dashboard/RiskSignalPipeline'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
@@ -136,6 +137,8 @@ export function RiskDashboardPage() {
           <p className="aggregation-note"><AppIcon name="lock" size={14} /> 고객 신호는 단건으로 위험 후보가 되지 않으며, 집계 기준과 실무자 검토를 통과해야 합니다.</p>
         </article>
       </section>
+
+      <RiskSignalPipeline />
     </div>
   )
 }
