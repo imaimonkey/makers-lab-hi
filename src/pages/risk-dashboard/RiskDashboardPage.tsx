@@ -7,8 +7,6 @@ import { RiskSignalPipeline } from '../../features/risk-dashboard/RiskSignalPipe
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
-const trendBars = [38, 44, 41, 53, 49, 61, 58, 68, 72, 70, 82, 86]
-
 const channelRows = [
   { name: '뉴스·글로벌 미디어', role: '최초 탐지', count: '248', health: '정상' },
   { name: '보험연구·산업자료', role: '상품성 검증', count: '34', health: '정상' },
@@ -90,23 +88,9 @@ export function RiskDashboardPage() {
         </article>
       </section>
 
-      <section className="dashboard-grid">
-        <article className="trend-panel surface-card">
-          <div className="panel-heading">
-            <div><p className="eyebrow">SIGNAL VELOCITY</p><h2>위험 신호 변화</h2></div>
-            <span className="updated-label">최근 12주 · 고정 샘플</span>
-          </div>
-          <div className="chart-legend"><span><i className="navy" /> 전체 신호</span><span><i className="orange" /> 신규 후보</span></div>
-          <div className="bar-chart" aria-label="최근 12주 신호 변화 예시 차트">
-            {trendBars.map((height, index) => (
-              <div className="bar-column" key={`${height}-${index}`}>
-                <span style={{ height: `${height}%` }}><i style={{ height: `${Math.max(16, height - 34)}%` }} /></span>
-                <small>{index % 2 === 0 ? `${index + 1}주` : ''}</small>
-              </div>
-            ))}
-          </div>
-        </article>
+      <RiskSignalPipeline />
 
+      <section className="dashboard-grid">
         <article className="priority-panel surface-card">
           <div className="panel-heading">
             <div><p className="eyebrow">PRIORITY QUEUE</p><h2>우선 검토 후보</h2></div>
@@ -171,7 +155,6 @@ export function RiskDashboardPage() {
         </article>
       </section>
 
-      <RiskSignalPipeline />
     </div>
   )
 }

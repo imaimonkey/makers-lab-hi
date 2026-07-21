@@ -29,3 +29,5 @@ Date: 2026-07-21
 - At desktop and mobile widths, verify that the top bar is not interpreted as a second tab bar.
 - The rail now follows the supplied artifact's icon-led pattern; labels are preserved for assistive technology and hover discovery.
 - The radar dashboard now uses a hero/focus two-card opening before the metric and evidence panels.
+- Workbench v2 check: the radar pipeline is ordered before source/customer support queues, and the legacy duplicate trend card was removed from the dashboard shell.
+- Readability check: workbench v2 raises page, section, table, form, and queue text floors; mobile overrides restore a horizontal icon rail and single-column workflow.

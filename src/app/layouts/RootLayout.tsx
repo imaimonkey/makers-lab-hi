@@ -38,6 +38,7 @@ export function RootLayout() {
                     className={isActive ? 'nav-item active' : 'nav-item'}
                     aria-label={`${item.label} · ${item.caption}`}
                     title={item.label}
+                    data-label={item.label}
                     aria-current={isActive ? 'page' : undefined}
                   >
                     <span className="nav-icon-tile"><AppIcon name={item.icon} size={18} /></span>
@@ -71,7 +72,7 @@ export function RootLayout() {
           <label className="topbar-search">
             <AppIcon name="scan" size={16} />
             <span className="sr-only">통합 검색</span>
-            <input readOnly placeholder="신규 위험·기사·후보 검색" aria-label="통합 검색 (참고용 예정)" />
+            <input readOnly placeholder="검색 연동 예정 · 신규 위험·기사·후보" aria-label="통합 검색 (연동 예정)" />
           </label>
           <div className="topbar-actions">
             <ModeSwitch mode="analyst" />

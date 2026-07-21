@@ -22,7 +22,7 @@ export function SalesLayout() {
         <nav className="side-nav" aria-label="영업부서 업무 메뉴">
           <div className="nav-group">
             <p>영업부서 채널</p>
-            <Link to="/sales-intake" className="nav-item active" aria-label="현장 리포트 접수 · 위험·상품 제안 입력" title="현장 리포트 접수" aria-current="page">
+            <Link to="/sales-intake" className="nav-item active" aria-label="현장 리포트 접수 · 위험·상품 제안 입력" title="현장 리포트 접수" data-label="현장 리포트 접수" aria-current="page">
               <span className="nav-icon-tile"><AppIcon name="inbox" size={18} /></span>
               <span>
                 <strong>현장 리포트 접수</strong>
@@ -51,7 +51,7 @@ export function SalesLayout() {
           <label className="topbar-search">
             <AppIcon name="scan" size={16} />
             <span className="sr-only">통합 검색</span>
-            <input readOnly placeholder="영업 리포트 검색" aria-label="영업 리포트 검색 (참고용 예정)" />
+            <input readOnly placeholder="검색 연동 예정 · 영업 리포트" aria-label="영업 리포트 검색 (연동 예정)" />
           </label>
           <div className="topbar-actions">
             <ModeSwitch mode="sales" />
