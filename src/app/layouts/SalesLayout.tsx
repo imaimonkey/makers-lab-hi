@@ -44,9 +44,12 @@ export function SalesLayout() {
 
       <div className="app-main">
         <header className="topbar">
-          <div>
+          <div className="topbar-context">
+            <span className="topbar-context-icon" aria-hidden="true"><AppIcon name="inbox" size={16} /></span>
+            <div>
             <p>영업부서 입력 채널</p>
             <strong>현장 리포트 접수</strong>
+            </div>
           </div>
           <label className="topbar-search">
             <AppIcon name="scan" size={16} />

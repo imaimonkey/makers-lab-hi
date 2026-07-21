@@ -65,9 +65,12 @@ export function RootLayout() {
 
       <div className="app-main">
         <header className="topbar">
-          <div>
+          <div className="topbar-context">
+            <span className="topbar-context-icon" aria-hidden="true"><AppIcon name={activeItem?.icon ?? 'radar'} size={16} /></span>
+            <div>
             <p>신규위험 전략 워크벤치</p>
             <strong>{activeItem?.label ?? '업무 화면'}</strong>
+            </div>
           </div>
           <label className="topbar-search">
             <AppIcon name="scan" size={16} />
