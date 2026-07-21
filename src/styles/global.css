@@ -1174,12 +1174,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .nav-item.active::before {
   content: '';
   position: absolute;
-  top: 50%;
-  right: -44px;
-  width: 52px;
-  height: 44px;
+  top: 0;
+  right: -36px;
+  width: 44px;
+  height: 100%;
   z-index: 0;
-  border-radius: 0 22px 22px 0;
+  border-radius: 0 20px 20px 0;
   background: #fff;
 }
 .nav-item.active .nav-icon-tile { position: relative; z-index: 1; }
