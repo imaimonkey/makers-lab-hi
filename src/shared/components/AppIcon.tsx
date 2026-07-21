@@ -3,6 +3,7 @@ export type IconName =
   | 'bell'
   | 'check'
   | 'external'
+  | 'inbox'
   | 'list'
   | 'lock'
   | 'radar'
@@ -24,6 +25,7 @@ const paths: Record<IconName, React.ReactNode> = {
   bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></>,
   check: <path d="m5 12 4 4L19 6" />,
   external: <><path d="M14 4h6v6" /><path d="M10 14 20 4" /><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5" /></>,
+  inbox: <><path d="M4 4h16v13a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" /><path d="M4 13h4l1.5 2h5L16 13h4" /></>,
   list: <><path d="M9 6h11" /><path d="M9 12h11" /><path d="M9 18h11" /><path d="M4 6h.01" /><path d="M4 12h.01" /><path d="M4 18h.01" /></>,
   lock: <><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
   radar: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" /><path d="M12 12 18 6" /><path d="M12 2v2M22 12h-2M12 22v-2M2 12h2" /></>,

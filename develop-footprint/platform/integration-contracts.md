@@ -4,6 +4,8 @@
 
 경로 정의는 `src/app/router.tsx`, 메뉴 메타데이터는 `src/shared/config/navigation.ts`가 단일 기준이다. 팀 기능을 합칠 때 기존 경로를 유지하고 페이지 모듈만 교체한다. 위험 상세의 URL 파라미터는 영속 ID이며 화면 제목을 ID로 사용하지 않는다.
 
+`/customer-insight`와 `/sales-intake`는 실무자 좌측 메뉴에 넣지 않는 별도 모드다. 사용자 전환은 `ModeSwitch`가 담당하며, 영업부서 모드는 보험상품개발 실무자와 같은 내부 테마의 리포트 입력·검토 대기 프레임으로 시작한다. 이후 위험 후보와 통합할 때도 접수 ID와 후보 ID를 분리해 연결한다.
+
 활성 메뉴 판정은 `isNavigationItemActive()`만 사용한다. `/risks` 목록은 정확히 일치할 때만 활성화하고 `/risks/:riskId`는 평가 워크벤치를 활성화한다. React Router의 기본 접두어 매칭을 메뉴 클래스에 직접 사용하면 두 탭이 동시에 활성화될 수 있으므로 금지한다.
 
 ## 도메인 계약
@@ -30,6 +32,22 @@ demo reset: clearCustomerSignals()
 ```
 
 페이지가 `localStorage`를 직접 호출하지 않는다. `clearCustomerSignals()`는 발표용 로컬 큐 초기화이며 운영 데이터 삭제 기능을 뜻하지 않는다. 운영 API로 교체할 때 이 어댑터 또는 동일한 기능 계층을 바꾸고 소비자 페이지의 도메인 입력은 유지한다. `aggregationStatus: sample-only`는 운영 집계를 흉내 내지 않는 안전장치다.
+
+## 영업부서 리포트 어댑터
+
+현재 데모 계약:
+
+```text
+route: /sales-intake
+storage key: hi-risk-studio.sales-intake.v1
+read: readSalesSubmissions()
+append: appendSalesSubmission(draft)
+entity: SalesIntakeSubmission
+```
+
+`SalesIntakeSubmission`은 `type`, `channel`, `subject`, `observedRisk`, `proposal`, `followUp`, `id`, `submittedAt`, `status`를 가진다. `observedRisk`와 `proposal`은 영업부서 리포트에서 관찰한 맥락과 상품개발 제안의 요약이며 고객 원문·이름·연락처·계약번호·상세 주소를 저장하지 않는다. 현재 어댑터는 브라우저에 최대 30건을 저장하는 발표용 구현이고, 운영에서는 SSO·RBAC·요청 ID·감사 로그를 제공하는 접수 API로 교체한다.
+
+영업부서 리포트 하나를 신규위험 후보로 자동 승격하지 않는다. 운영 통합 시 최소 집계·중복 확인·사람의 검토를 거쳐 후보 참조 ID를 추가한다.
 
 ## 상품 카탈로그 계약
 
@@ -92,5 +110,6 @@ type ApiEnvelope<T> = {
 | 3 상세 | `src/pages/risk-detail`, 전용 feature | 근거·평가 계약을 도메인에 반영 |
 | 4 리포트 | `src/pages/reports`, 전용 feature | 보고서 스냅샷 계약을 도메인에 반영 |
 | 5 고객 | `src/features/customer-insight` | 상품·고객 신호 계약을 유지 |
+| 영업부서 | `src/features/sales-intake`, `src/domain/sales` | 리포트 접수 API·후보 연결 계약을 먼저 제안 |
 
 `router.tsx`, `global.css`, `src/domain`은 공유 지점이다. 공유 변경은 소비 경로와 문서를 같은 커밋에서 갱신한다.

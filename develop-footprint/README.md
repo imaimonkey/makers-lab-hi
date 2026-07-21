@@ -11,6 +11,7 @@
 - [고객 역할](roles/customer.md): 고객 흐름과 신뢰 원칙
 - [1~4 실무자 워크플로](features/analyst-workflow.md): 팀별 입력·출력·완료 조건
 - [5 고객 인사이트 루프](features/customer-insight-loop.md): 현재 구현과 운영 전환 조건
+- [영업부서 현장 리포트](features/sales-intake.md): 영업부서 입력과 위험 후보 통합 경계
 - [핵심 플랫폼](platform/core-platform.md): 라우팅·상태·구조
 - [통합 계약](platform/integration-contracts.md): 타입·이벤트·폴더·병합 규칙
 - [서비스 경계](platform/service-boundaries.md): 개인정보·추천·인증·AI 경계

@@ -67,7 +67,6 @@ export function RootLayout() {
             <strong>{activeItem?.label ?? '업무 화면'}</strong>
           </div>
           <div className="topbar-actions">
-            <ModeSwitch mode="analyst" />
             <div className="analyst-profile">
               <span aria-hidden="true">현</span>
               <p>
@@ -75,6 +74,7 @@ export function RootLayout() {
                 <small>Product Analyst</small>
               </p>
             </div>
+            <ModeSwitch mode="analyst" />
           </div>
         </header>
 
