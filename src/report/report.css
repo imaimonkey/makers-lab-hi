@@ -1,17 +1,17 @@
 #report-root {
-  --report-deep-navy: #0b2b52;
-  --report-navy: #123f73;
-  --report-orange: #f47a20;
+  --report-deep-navy: #00205b;
+  --report-navy: #0b326f;
+  --report-orange: #ff9e1b;
   --report-orange-ink: #9e450c;
-  --report-orange-soft: #fff3ea;
+  --report-orange-soft: #fff1e3;
   --report-green: #176b4c;
   --report-red: #b42318;
-  --report-ink: #162536;
-  --report-muted: #667085;
-  --report-border: #dce3ea;
-  --report-soft: #f5f7fa;
+  --report-ink: #18324c;
+  --report-muted: #6b8197;
+  --report-border: #e0eaf3;
+  --report-soft: #f7faff;
   --report-card: #ffffff;
-  --report-shadow: 0 2px 8px rgba(11, 43, 82, 0.05);
+  --report-shadow: 0 16px 38px rgba(35, 77, 115, 0.08);
   position: fixed;
   inset: 0;
   overflow: auto;
@@ -212,20 +212,20 @@
 }
 
 .report-page {
-  --report-deep-navy: #0b2b52;
-  --report-navy: #123f73;
-  --report-blue: #f47a20;
+  --report-deep-navy: #00205b;
+  --report-navy: #0b326f;
+  --report-blue: #418fde;
   --report-green: #176b4c;
-  --report-orange: #f47a20;
+  --report-orange: #ff9e1b;
   --report-orange-ink: #9e450c;
-  --report-orange-soft: #fff3ea;
+  --report-orange-soft: #fff1e3;
   --report-red: #b42318;
-  --report-ink: #162536;
-  --report-muted: #667085;
-  --report-border: #dce3ea;
-  --report-soft: #f5f7fa;
+  --report-ink: #18324c;
+  --report-muted: #6b8197;
+  --report-border: #e0eaf3;
+  --report-soft: #f7faff;
   --report-card: #fff;
-  --report-shadow: 0 2px 8px rgba(11, 43, 82, 0.05);
+  --report-shadow: 0 16px 38px rgba(35, 77, 115, 0.08);
   width: 100%;
   min-height: calc(100vh - 70px);
   min-height: calc(100dvh - 70px);
@@ -4029,6 +4029,31 @@
   white-space: pre-wrap;
 }
 
+/* Embedded report follows the same rounded pastel card language as the workbench. */
+.report-page__start,
+.report-page__generated { color: var(--report-ink); }
+.report-page__start-panel,
+.report-page__report-header,
+.report-page__section {
+  border-color: var(--report-border);
+  border-radius: 22px;
+  box-shadow: var(--report-shadow);
+}
+.report-page__start-panel { background: linear-gradient(145deg, #fff, #f5faff); }
+.report-page__report-header { border-top-width: 5px; background: linear-gradient(145deg, #fff, #f8fbff); }
+.report-page__section:nth-child(3n + 1) { background: linear-gradient(145deg, #fff, #f8fbff); }
+.report-page__section:nth-child(3n + 2) { background: linear-gradient(145deg, #fff, #fffaf2); }
+.report-page__section:nth-child(3n) { background: linear-gradient(145deg, #fff, #fbf9ff); }
+.report-page__button { border-radius: 13px; }
+.report-page__button--primary { background: linear-gradient(135deg, var(--report-deep-navy), #174e83); box-shadow: 0 11px 22px rgba(0, 32, 91, .16); }
+.report-page__badge, .report-page__chip-list li { border-radius: 999px; }
+.report-page__meta-grid > div,
+.report-page__summary-card,
+.report-page__evaluation-card,
+.report-page__evidence-card { border-radius: 16px; border-color: #e0eaf3; }
+.report-page__warning-panel,
+.report-page__fallback-banner { border-radius: 16px; background: linear-gradient(135deg, var(--report-orange-soft), #fffaf2); }
+
 @media (max-width: 640px) {
   .report-page__pdf-menu-list {
     right: 0;
@@ -4106,4 +4131,3 @@
     -webkit-print-color-adjust: exact;
   }
 }
-
