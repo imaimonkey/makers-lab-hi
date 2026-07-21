@@ -52,33 +52,36 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
           <p>사용자 모드 전환</p>
           <Link
             to="/"
-            role="menuitem"
+            role="menuitemradio"
             className={mode === 'analyst' ? 'active' : undefined}
-            aria-current={mode === 'analyst' ? 'page' : undefined}
+            aria-checked={mode === 'analyst'}
             onClick={() => setIsOpen(false)}
           >
-            <strong>실무자</strong>
-            <small>위험 탐지·상품개발 워크벤치</small>
+            <span className="mode-menu-item-icon"><AppIcon name="radar" size={15} /></span>
+            <span><strong>실무자</strong>
+            <small>위험 탐지·상품개발 워크벤치</small></span>
           </Link>
           <Link
             to="/sales-intake"
-            role="menuitem"
+            role="menuitemradio"
             className={mode === 'sales' ? 'active' : undefined}
-            aria-current={mode === 'sales' ? 'page' : undefined}
+            aria-checked={mode === 'sales'}
             onClick={() => setIsOpen(false)}
           >
-            <strong>영업부서</strong>
-            <small>현장 리포트·상품개발 입력</small>
+            <span className="mode-menu-item-icon"><AppIcon name="inbox" size={15} /></span>
+            <span><strong>영업부서</strong>
+            <small>현장 리포트·상품개발 입력</small></span>
           </Link>
           <Link
             to="/customer-insight"
-            role="menuitem"
+            role="menuitemradio"
             className={mode === 'customer' ? 'active' : undefined}
-            aria-current={mode === 'customer' ? 'page' : undefined}
+            aria-checked={mode === 'customer'}
             onClick={() => setIsOpen(false)}
           >
-            <strong>개인 고객</strong>
-            <small>내 상황으로 보험 탐색</small>
+            <span className="mode-menu-item-icon"><AppIcon name="user" size={15} /></span>
+            <span><strong>개인 고객</strong>
+            <small>내 상황으로 보험 탐색</small></span>
           </Link>
         </div>
       )}

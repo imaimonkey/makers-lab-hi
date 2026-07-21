@@ -16,9 +16,9 @@ export function CustomerLayout() {
           </Link>
 
           <nav className="customer-site-nav" aria-label="고객 서비스 메뉴">
-            <a href="#situation-search">내 상황 찾기</a>
-            <a href="#service-guide">이용 방법</a>
-            <a href="#official-products">상품 확인</a>
+            <a href="#situation-search"><AppIcon name="scan" size={15} />내 상황 찾기</a>
+            <a href="#service-guide"><AppIcon name="list" size={15} />이용 방법</a>
+            <a href="#official-products"><AppIcon name="shield" size={15} />상품 확인</a>
           </nav>
 
           <div className="customer-header-actions">

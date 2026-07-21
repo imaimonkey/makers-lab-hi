@@ -23,7 +23,7 @@ export function SalesLayout() {
           <div className="nav-group">
             <p>영업부서 채널</p>
             <Link to="/sales-intake" className="nav-item active" aria-current="page">
-              <AppIcon name="inbox" size={19} />
+              <span className="nav-icon-tile"><AppIcon name="inbox" size={18} /></span>
               <span>
                 <strong>현장 리포트 접수</strong>
                 <small>위험·상품 제안 입력</small>

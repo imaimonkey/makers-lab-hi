@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { ModeSwitch } from '../../shared/components/ModeSwitch'
+import { WorkbenchStageRail } from '../../shared/components/WorkbenchStageRail'
 import { isNavigationItemActive, navigationGroups } from '../../shared/config/navigation'
 
 export function RootLayout() {
@@ -38,7 +39,7 @@ export function RootLayout() {
                     className={isActive ? 'nav-item active' : 'nav-item'}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <AppIcon name={item.icon} size={19} />
+                    <span className="nav-icon-tile"><AppIcon name={item.icon} size={18} /></span>
                     <span>
                       <strong>{item.label}</strong>
                       <small>{item.caption}</small>
@@ -65,6 +66,7 @@ export function RootLayout() {
           <div>
             <p>신규위험 전략 워크벤치</p>
             <strong>{activeItem?.label ?? '업무 화면'}</strong>
+            <WorkbenchStageRail />
           </div>
           <div className="topbar-actions">
             <div className="analyst-profile">

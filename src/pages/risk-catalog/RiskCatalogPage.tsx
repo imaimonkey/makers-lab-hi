@@ -49,7 +49,12 @@ export function RiskCatalogPage() {
         </div>
         {risks.map((risk) => (
           <Link to={`/risks/${risk.id}`} className="risk-table-row" key={risk.id}>
-            <span><i className={`theme-dot ${risk.theme}`} /><strong>{risk.title}</strong><small>{risk.themeLabel} · {risk.trend}</small></span>
+            <span>
+              <i className={`theme-dot ${risk.theme}`} />
+              <span className="risk-row-icon"><AppIcon name={risk.theme === 'climate-energy' ? 'trend' : risk.theme === 'smart-living' ? 'spark' : risk.theme === 'platform-work' ? 'inbox' : 'scan'} size={14} /></span>
+              <strong>{risk.title}</strong>
+              <small>{risk.themeLabel} · {risk.trend}</small>
+            </span>
             <span><em data-status={risk.status}>{risk.status}</em></span>
             <span><strong>{risk.signalStrength}</strong><small>/ 100</small></span>
             <span><strong>{risk.productFit ?? '—'}</strong><small>{risk.productFit ? '/ 100' : '미평가'}</small></span>

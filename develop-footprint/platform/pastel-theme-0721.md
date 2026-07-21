@@ -21,3 +21,11 @@ The 0721 UI keeps the approved Hi Navy (`#00205b`) and Hi Orange (`#ff9e1b`) as 
 
 The implementation lives in `src/styles/global.css` and `src/report/report.css`. This is a visual-only layer; routes, storage contracts, and interaction state remain unchanged.
 
+## Artifact-informed information architecture
+
+The supplied smart-home dashboard reference also informed the interaction layer:
+
+- `WorkbenchStageRail` mirrors the reference's quick icon rail while retaining text labels in the analyst sidebar.
+- `dashboard-command-strip` exposes the four work stages as action cards: radar, candidate catalog, representative assessment, and report.
+- Candidate rows, customer anchors, mode choices, and page headers now use icons that carry the same semantic stage rather than decorative symbols.
+- The secondary rail does not add a second `aria-current`; the primary sidebar remains the single current-page announcement.
