@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { AppIcon } from './AppIcon'
 
 type ModeSwitchProps = {
-  mode: 'analyst' | 'customer' | 'sales'
+  mode: 'analyst' | 'customer' | 'sales' | 'developer'
 }
 
 export function ModeSwitch({ mode }: ModeSwitchProps) {
@@ -30,7 +30,13 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
     }
   }, [isOpen])
 
-  const currentLabel = mode === 'analyst' ? '실무자' : mode === 'sales' ? '영업부서' : '개인 고객'
+  const currentLabel = mode === 'analyst'
+    ? '실무자'
+    : mode === 'sales'
+      ? '영업부서'
+      : mode === 'customer'
+        ? '개인 고객'
+        : '개발자'
 
   return (
     <div className="mode-switch mode-menu" ref={menuRef}>
@@ -54,7 +60,7 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
             to="/"
             role="menuitem"
             className={mode === 'analyst' ? 'active' : undefined}
-            aria-current={mode === 'analyst' ? 'page' : undefined}
+            aria-current={mode === 'analyst' ? 'true' : undefined}
             onClick={() => setIsOpen(false)}
           >
             <strong>실무자</strong>
@@ -64,7 +70,7 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
             to="/sales-intake"
             role="menuitem"
             className={mode === 'sales' ? 'active' : undefined}
-            aria-current={mode === 'sales' ? 'page' : undefined}
+            aria-current={mode === 'sales' ? 'true' : undefined}
             onClick={() => setIsOpen(false)}
           >
             <strong>영업부서</strong>
@@ -74,11 +80,21 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
             to="/customer-insight"
             role="menuitem"
             className={mode === 'customer' ? 'active' : undefined}
-            aria-current={mode === 'customer' ? 'page' : undefined}
+            aria-current={mode === 'customer' ? 'true' : undefined}
             onClick={() => setIsOpen(false)}
           >
             <strong>개인 고객</strong>
             <small>내 상황으로 보험 탐색</small>
+          </Link>
+          <Link
+            to="/developer-test"
+            role="menuitem"
+            className={mode === 'developer' ? 'active developer-mode-menu-item' : 'developer-mode-menu-item'}
+            aria-current={mode === 'developer' ? 'true' : undefined}
+            onClick={() => setIsOpen(false)}
+          >
+            <strong>개발자 (AI 테스트 모드)</strong>
+            <small>LLM 기능·프롬프트·응답 테스트</small>
           </Link>
         </div>
       )}

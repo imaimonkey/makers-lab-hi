@@ -5,12 +5,13 @@ import { isNavigationItemActive, navigationGroups } from '../../shared/config/na
 
 export function RootLayout() {
   const location = useLocation()
+  const isDeveloperMode = location.pathname === '/developer-test'
   const activeItem = navigationGroups
     .flatMap((group) => group.items)
     .find((item) => isNavigationItemActive(item, location.pathname))
 
   return (
-    <div className="app-shell">
+    <div className={isDeveloperMode ? 'app-shell developer-mode-shell' : 'app-shell'}>
       <aside className="sidebar">
         <Link to="/" className="app-brand" aria-label="HI Risk Studio 홈">
           <span className="app-brand-mark" aria-hidden="true">HI</span>
@@ -64,7 +65,7 @@ export function RootLayout() {
         <header className="topbar">
           <div>
             <p>신규위험 전략 워크벤치</p>
-            <strong>{activeItem?.label ?? '업무 화면'}</strong>
+            <strong>{isDeveloperMode ? '개발자 테스트' : activeItem?.label ?? '업무 화면'}</strong>
           </div>
           <div className="topbar-actions">
             <div className="analyst-profile">
@@ -74,7 +75,7 @@ export function RootLayout() {
                 <small>Product Analyst</small>
               </p>
             </div>
-            <ModeSwitch mode="analyst" />
+            <ModeSwitch mode={isDeveloperMode ? 'developer' : 'analyst'} />
           </div>
         </header>
 
