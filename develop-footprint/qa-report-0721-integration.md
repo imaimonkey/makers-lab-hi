@@ -31,4 +31,5 @@ Date: 2026-07-21
 - The radar dashboard now uses a hero/focus two-card opening before the metric and evidence panels.
 - Workbench v2 check: the radar pipeline is ordered before source/customer support queues, and the legacy duplicate trend card was removed from the dashboard shell.
 - Readability check: workbench v2 raises page, section, table, form, and queue text floors; mobile overrides restore a horizontal icon rail and single-column workflow.
-- Selected-tab connection check: the active rail stays a compact pill and a thin colored connector reaches the page kicker; no detached bridge fragment is rendered. The matching top-bar context icon is a visual affordance only; route truth remains a single `aria-current="page"`.
+- Selected-tab context check: no cross-canvas connector is rendered; the active rail pill and matching top-bar context icon are the only visual location cues. Route truth remains a single `aria-current="page"`.
+- Navigation scroll check: new route transitions reset the document to the top; browser back/forward (`POP`) keeps native history scroll behavior.

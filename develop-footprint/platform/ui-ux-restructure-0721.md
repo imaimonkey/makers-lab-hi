@@ -24,14 +24,14 @@ The supplied smart-home reference is useful as an information-architecture refer
 | Large central control | The integrated signal pipeline is placed before operational support cards. It carries issue register, process gates, trend, and law/regulation evidence in the order a product analyst needs to review them. |
 | Members/consumption support | Source health, customer voice intake, and priority candidates are grouped below the pipeline as support queues. |
 
-## Selected-tab connection
+## Selected-tab context
 
-The active workbench item is connected to its interface in two ways:
+The active workbench item is intentionally kept self-contained rather than visually stretched into the canvas:
 
-- The active rail item remains a compact white pill. A thin Hi Orange-to-blue connector line starts at the pill center and ends at the page kicker, making the selected tab-to-interface relationship explicit without a detached white bridge or speech-bubble shape. On mobile, the line is removed because the rail becomes horizontal.
+- The active rail item remains a compact white pill with its semantic icon. No cross-canvas connector line or bridge is rendered; this prevents a detached shape from competing with the work area.
 - The top-bar context repeats the active item's semantic icon and label. This gives the user a second, content-side confirmation without creating another navigation tab.
 
-The connector is visual only; routing and active-state truth remain owned by `isNavigationItemActive()`.
+Routing and active-state truth remain owned by `isNavigationItemActive()`.
 
 ## Workflow rule
 

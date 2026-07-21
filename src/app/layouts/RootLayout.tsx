@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { ModeSwitch } from '../../shared/components/ModeSwitch'
+import { RouteScrollManager } from '../../shared/components/RouteScrollManager'
 import { isNavigationItemActive, navigationGroups } from '../../shared/config/navigation'
 
 export function RootLayout() {
@@ -11,6 +12,7 @@ export function RootLayout() {
 
   return (
     <div className="app-shell">
+      <RouteScrollManager />
       <aside className="sidebar">
         <Link to="/" className="app-brand" aria-label="HI Risk Studio 홈">
           <span className="app-brand-mark" aria-hidden="true">HI</span>

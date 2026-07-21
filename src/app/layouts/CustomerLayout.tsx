@@ -1,10 +1,12 @@
 import { Link, Outlet } from 'react-router-dom'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { ModeSwitch } from '../../shared/components/ModeSwitch'
+import { RouteScrollManager } from '../../shared/components/RouteScrollManager'
 
 export function CustomerLayout() {
   return (
     <div className="customer-site-shell">
+      <RouteScrollManager />
       <header className="customer-site-header">
         <div className="customer-header-inner">
           <Link to="/customer-insight" className="customer-brand" aria-label="현대해상 생활안심 찾기 홈">

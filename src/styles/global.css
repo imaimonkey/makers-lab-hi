@@ -1184,18 +1184,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .nav-item:hover::after,
 .nav-item:focus-visible::after { opacity: 1; transform: translate(0, -50%); }
 .nav-item.active { border-radius: 20px; box-shadow: 0 12px 24px rgba(0, 20, 60, .16); }
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: calc(-20px - 3.3vw);
-  width: calc(20px + 3.3vw);
-  height: 2px;
-  z-index: 0;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--hi-orange) 0 18px, #b8cfe3 18px 100%);
-  box-shadow: 0 0 0 3px rgba(255, 158, 27, .08);
-}
 .nav-item.active .nav-icon-tile { position: relative; z-index: 1; }
 .nav-icon-tile { width: 42px; height: 42px; border-radius: 15px; }
 .sidebar-foot { padding-top: 20px; }
@@ -1394,12 +1382,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   :root { --sidebar-width: 92px; }
   .sidebar { padding: 23px 12px 20px; }
   .nav-item { width: 62px; }
-  .nav-item.active::before { right: -47px; width: 47px; }
   .topbar-search { width: min(380px, 36vw); }
   .dashboard-grid { grid-template-areas: 'priority channel' 'voice voice'; grid-template-columns: minmax(0, 1fr) minmax(300px, .9fr); }
 }
 @media (min-width: 1600px) {
-  .nav-item.active::before { right: -72px; width: 72px; }
 }
 @media (max-width: 720px) {
   :root { --sidebar-width: 0px; }
@@ -1407,7 +1393,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .side-nav { width: auto; margin-top: 0; gap: 3px; }
   .nav-group { width: auto; }
   .nav-item { width: 42px; min-height: 42px; height: 42px; margin: 0; border-radius: 14px; }
-  .nav-item.active::before { display: none; }
   .nav-item::after { display: none; }
   .topbar { height: 64px; padding: 0 18px; }
   .page { padding: 28px 16px 50px; }

@@ -1,10 +1,12 @@
 import { Link, Outlet } from 'react-router-dom'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { ModeSwitch } from '../../shared/components/ModeSwitch'
+import { RouteScrollManager } from '../../shared/components/RouteScrollManager'
 
 export function SalesLayout() {
   return (
     <div className="app-shell sales-workspace-shell">
+      <RouteScrollManager />
       <aside className="sidebar sales-workspace-sidebar">
         <Link to="/sales-intake" className="app-brand" aria-label="HI Emerging Risk Studio 영업부서 채널 홈">
           <span className="app-brand-mark" aria-hidden="true">HI</span>
