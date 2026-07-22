@@ -1,6 +1,7 @@
 import type {
   AiRiskInput,
   PolicyDraftRequest,
+  ReportContentSaveRequest,
   ReportQuestionRequest,
 } from "../types";
 
@@ -21,6 +22,11 @@ export interface ReportProxy {
     request: ReportQuestionRequest,
     options?: ReportProxyRequestOptions,
   ): Promise<unknown>;
+  getReportContent?(reportId: string): Promise<unknown>;
+  saveReportContent?(
+    request: ReportContentSaveRequest,
+    options?: ReportProxyRequestOptions,
+  ): Promise<unknown>;
 }
 
 export class ReportProxyError extends Error {
@@ -32,4 +38,3 @@ export class ReportProxyError extends Error {
     this.code = code;
   }
 }
-

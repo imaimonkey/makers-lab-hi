@@ -10,6 +10,13 @@ const categoryFilters: Array<{ key: 'all' | ExplorationCategory; label: string }
   { key: 'customer', label: '고객 신호' },
 ]
 
+const comparisonSignals = [
+  { type: '법령·규제', title: '전기차 화재 예방·피해보상 기준 변화', source: '공식 출처 확인 대기 샘플', date: '최근 1일', categories: ['corporate', 'individual', 'legal'] as ExplorationCategory[] },
+  { type: '가이드라인', title: '생성형 AI 저작권·출처 표기 지침', source: '정책 원문 연결 대기 샘플', date: '최근 12시간', categories: ['corporate', 'legal', 'department'] as ExplorationCategory[] },
+  { type: '판례·사고', title: '자율주행 제어권 이양 책임 분쟁', source: '판례 원문 연결 대기 샘플', date: '최근 2일', categories: ['individual', 'corporate', 'legal'] as ExplorationCategory[] },
+  { type: '현장 신호', title: '소상공인 대상 딥페이크 피싱 피해 문의', source: '비식별 집계 샘플', date: '최근 3일', categories: ['individual', 'customer'] as ExplorationCategory[] },
+]
+
 export function RiskExplorationLens() {
   const [category, setCategory] = useState<'all' | ExplorationCategory>('all')
   const [query, setQuery] = useState('')
@@ -67,6 +74,7 @@ export function RiskExplorationLens() {
               <th scope="col">우연성·누적</th>
               <th scope="col">측정 가능성</th>
               <th scope="col">데이터·법적</th>
+              <th scope="col">역선택·도덕적 해이</th>
               <th scope="col">AI 보조 점수</th>
             </tr>
           </thead>
@@ -84,6 +92,7 @@ export function RiskExplorationLens() {
                 <td><span>{record.fortuity}</span><small>누적 {record.accumulation}</small></td>
                 <td>{record.measurability}</td>
                 <td><span>{record.dataConfidence}</span><small>법적 {record.legalExposure}</small></td>
+                <td><span>{record.adverseSelection}</span><small>도덕적 해이 {record.moralHazard}</small></td>
                 <td><strong className="risk-exploration-score">{record.score.toFixed(2)}</strong><small>/ 5.00</small></td>
               </tr>
             ))}
@@ -99,15 +108,24 @@ export function RiskExplorationLens() {
             <h3>{selected.title}</h3>
             <p>{selected.nextAction}</p>
           </div>
-          <dl>
-            <div><dt>역선택 통제</dt><dd>{selected.adverseSelection}</dd></div>
-            <div><dt>도덕적 해이</dt><dd>{selected.moralHazard}</dd></div>
-            <div><dt>보장 공백</dt><dd>{selected.gap}</dd></div>
-          </dl>
-          <p className="risk-exploration-disclaimer">샘플 점수는 우선순위 논의를 돕는 보조 지표이며, 보험료·보장·가입 가능 여부를 의미하지 않습니다. 공식 통계와 약관 검토가 필요합니다.</p>
-        </aside>
-      )}
+           <dl>
+             <div><dt>시장 수요</dt><dd>{selected.demand}</dd></div>
+             <div><dt>측정 가능성</dt><dd>{selected.measurability}</dd></div>
+             <div><dt>역선택 통제</dt><dd>{selected.adverseSelection}</dd></div>
+             <div><dt>도덕적 해이</dt><dd>{selected.moralHazard}</dd></div>
+             <div><dt>데이터·법적</dt><dd>{selected.dataConfidence} · {selected.legalExposure}</dd></div>
+             <div><dt>보장 공백</dt><dd>{selected.gap}</dd></div>
+           </dl>
+           <p className="risk-exploration-disclaimer">샘플 점수는 우선순위 논의를 돕는 보조 지표이며, 보험료·보장·가입 가능 여부를 의미하지 않습니다. 공식 통계와 약관 검토가 필요합니다.</p>
+         </aside>
+       )}
+
+      <div className="risk-exploration-source-grid" aria-label="위험 탐색 참고 신호">
+        <div className="risk-exploration-source-heading"><div><p className="eyebrow">SOURCE REGISTER · SAMPLE</p><h3>비교 판단에 연결할 참고 신호</h3></div><span>원문·최신성 확인 필요</span></div>
+        <div className="risk-exploration-source-list">
+          {comparisonSignals.filter((signal) => category === 'all' || signal.categories.includes(category)).map((signal) => <article key={signal.title}><span>{signal.type}</span><strong>{signal.title}</strong><small>{signal.source} · {signal.date}</small></article>)}
+        </div>
+      </div>
     </section>
   )
 }
-

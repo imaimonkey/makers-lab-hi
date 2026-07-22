@@ -45,4 +45,3 @@ export const getMockReportData = (): {
   riskData: getMockRiskData(),
   fallbackReport: getMockReportResult(),
 });
-

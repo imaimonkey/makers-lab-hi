@@ -92,4 +92,3 @@ export const normalizePotensResponse = (rawResponse: unknown): JsonObject =>
   normalizeValue(rawResponse, 0, false, true);
 
 export const normalizeReportResponse = normalizePotensResponse;
-

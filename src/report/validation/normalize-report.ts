@@ -26,15 +26,28 @@ const SUMMARY_CARDS: Array<[string, string]> = [
 ];
 
 const FEASIBILITY_ITEMS: Array<[string, string]> = [
-  ["marketability", "시장성"],
+  ["actual_market_demand", "실제 시장 수요"],
+  ["risk_pooling", "위험 집단화"],
   ["fortuity", "우연성"],
-  ["measurability", "손해 측정 가능성"],
-  ["responsibility", "책임주체 명확성"],
-  ["moralHazard", "도덕적 해이 통제"],
-  ["dataAvailability", "데이터 확보 가능성"],
-  ["differentiation", "기존 보험과의 차별성"],
-  ["regulation", "법령·규제 영향"],
+  ["insurable_interest", "보험이익"],
+  ["moral_hazard_control", "도덕적 해이 통제"],
+  ["gambling_like_structure", "도박적 구조 여부"],
+  ["loss_verifiability", "손해의 객관적 확인"],
+  ["pml_accumulation", "최대예상손해·누적"],
+  ["liability_clarity", "책임 구조 명확성"],
+  ["wording_clarity", "약관 표현 명확성"],
+  ["pricing_data_readiness", "요율·손해 데이터 준비"],
+  ["coverage_gap", "기존 보험의 보장 공백"],
 ];
+
+const LEGACY_FEASIBILITY_ID_MAP: Record<string, string> = {
+  marketability: "actual_market_demand",
+  measurability: "loss_verifiability",
+  responsibility: "liability_clarity",
+  moralHazard: "moral_hazard_control",
+  dataAvailability: "pricing_data_readiness",
+  differentiation: "coverage_gap",
+};
 
 const TARGET_OPTIONS: Array<[string, string]> = [
   ["corporate", "기업보험"],
@@ -76,9 +89,17 @@ const toKoreanStatus = (value: unknown, fallback: string): string => {
   const raw = typeof value === "string" ? value.trim() : "";
   const key = raw.toLowerCase();
   const statusMap: Record<string, string> = {
+    pass: "통과",
     positive: "긍정",
     conditional: "조건부 검토",
+    "needs_review": "보완 필요",
     "needs-data": "보완 필요",
+    critical: "중대 위험",
+    unknown: "미평가",
+    reviewable: "검토 가능",
+    needs_more_data: "추가 자료 필요",
+    redesign: "상품 구조 재검토",
+    not_viable: "현재 상품화 곤란",
     pending: "검토 대기",
     review: "검토 필요",
     draft: "검토 초안",
@@ -226,7 +247,11 @@ const normalizeTargets = (value: unknown): TargetSuitability => {
 const normalizeFeasibility = (value: unknown): ProductFeasibility => {
   const source = recordAt(value);
   const sourceItems = asObjectArray(source.items);
-  const byId = new Map(sourceItems.map((item) => [item.id, item]));
+  const byId = new Map(sourceItems.flatMap((item) => {
+    const id = typeof item.id === "string" ? item.id : "";
+    const mappedId = LEGACY_FEASIBILITY_ID_MAP[id] ?? id;
+    return [[id, item], [mappedId, item]] as Array<[string, JsonObject]>;
+  }));
   const items: FeasibilityItem[] = FEASIBILITY_ITEMS.map(([id, criterion]) => {
     const item = recordAt(byId.get(id));
     return {
@@ -246,6 +271,7 @@ const normalizeFeasibility = (value: unknown): ProductFeasibility => {
   const improvements = asStringArray(assessment.improvements);
   const entryConditions = asStringArray(assessment.entryConditions);
 
+  const regulation = sourceItems.find((item) => item.id === "regulation");
   return {
     ...source,
     overallStatus: toKoreanStatus(source.overallStatus, "판단 보류"),
@@ -271,6 +297,16 @@ const normalizeFeasibility = (value: unknown): ProductFeasibility => {
     },
     items,
     interpretation: asString(source.interpretation),
+    discoveryContext: regulation
+      ? {
+          discoveryType: "regulation",
+          sourceName: "기존 상품화 평가의 법령·규제 영향",
+          sourceSummary: asString(regulation.judgment),
+          marketImpactSummary: asString(regulation.judgment),
+        }
+      : isRecord(source.discoveryContext)
+        ? source.discoveryContext as ProductFeasibility["discoveryContext"]
+        : undefined,
   };
 };
 
@@ -279,7 +315,6 @@ const fallbackResponsibleTeams = (id: string): string[] => {
     responsibility: ["약관·법무", "손해사정"],
     dataAvailability: ["계리", "재보험"],
     differentiation: ["상품개발", "보상"],
-    regulation: ["준법", "약관·법무"],
   };
   return byCriterion[id] ?? ["상품개발"];
 };
@@ -545,4 +580,3 @@ export const normalizeReport = (
 
   return { report: normalized, warnings };
 };
-

@@ -5,10 +5,10 @@
 | 영역 | UI | 로컬 동작 | 운영 연동 | 주요 코드 |
 | --- | --- | --- | --- | --- |
 | 실무자·고객·영업 분리 셸과 사용자 전환 | 구현 | 동작 | 인증 미연동 | `src/app/layouts/RootLayout.tsx`, `src/app/layouts/CustomerLayout.tsx`, `src/app/layouts/SalesLayout.tsx`, `src/shared/components/ModeSwitch.tsx` |
-| 1. 신규위험 대시보드 | 구현 | 샘플 표시 | 데이터 소스 미연동 | `src/pages/risk-dashboard/RiskDashboardPage.tsx` |
-| 2. 위험 후보 목록 | 구현 | 검색·필터 샘플 | 후보 API 미연동 | `src/pages/risk-catalog/RiskCatalogPage.tsx` |
-| 3. 위험 상세·상품화 평가 | 구현 | 샘플 표시·역할별 검토 | 근거·의견·승인 API 미연동 | `src/pages/risk-detail/RiskDetailPage.tsx`, `src/features/risk-detail/RiskDecisionWorkspace.tsx` |
-| 4. 종합 리포트 | 구현 | 샘플 표시 | 생성·결재·내보내기 미연동 | `src/pages/reports/ReportsPage.tsx` |
+| 1. 신규위험 대시보드 | 구현 | 샘플·작업 큐·현장 신호 입력 | 데이터 소스·액션 API 미연동 | `src/pages/risk-dashboard/RiskDashboardPage.tsx`, `src/features/risk-dashboard/RiskRadarOperationsPanel.tsx` |
+| 2. 위험 후보 목록 | 구현 | 비교표·검색·필터·참고 신호 샘플 | 후보 API·공식 피드 미연동 | `src/pages/risk-catalog/RiskCatalogPage.tsx`, `src/features/risk-catalog/RiskExplorationLens.tsx` |
+| 3. 위험 상세·상품화 평가 | 구현 | 샘플 표시·역할별 검토·메모 | 근거·의견·승인 API 미연동 | `src/pages/risk-detail/RiskDetailPage.tsx`, `src/features/risk-detail/RiskDecisionWorkspace.tsx` |
+| 4. 종합 리포트 | 구현 | 생성 목록·편집·검토 샘플 | AI/GAS·저장·결재·내보내기 미연동 | `src/pages/reports/ReportsPage.tsx`, `src/report/**` |
 | 5. 고객 상황 입력 | 구현 | 동작 | 고객 인증·채널 미연동 | `src/features/customer-insight/CustomerInsightStudio.tsx` |
 | 영업부서 현장 리포트 모드 | 구현 | 동작·`localStorage` 데모 | 접수 API·SSO·검토 큐 미연동 | `src/app/layouts/SalesLayout.tsx`, `src/pages/sales-intake/SalesIntakePage.tsx`, `src/features/sales-intake/SalesIntakeStudio.tsx` |
 | 상품 후보 산출 | 구현 | 규칙 기반 동작 | 상품 마스터·약관 검색 미연동 | `src/features/customer-insight/recommendationEngine.ts` |

@@ -33,4 +33,3 @@ export const createMockPolicyDraft = (report: ReportResult): PolicyDraftResult =
     ],
   }
 }
-

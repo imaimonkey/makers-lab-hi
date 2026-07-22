@@ -1,4 +1,5 @@
 import type { JsonObject, JsonValue, ReportResult, RiskSourceData } from '../types'
+import { ensureCommercializationAssessment } from './commercialization-assessment'
 
 export const REPORT_AI_CONTEXT_SCHEMA = 'riskon.report-ai-context/v1'
 
@@ -33,6 +34,8 @@ export const buildReportAiContext = (
   riskData: RiskSourceData,
   reportResult: ReportResult,
 ): JsonObject => {
+  const normalizedReport = ensureCommercializationAssessment(reportResult)
+  const feasibilityAssessment = normalizedReport.productFeasibility.assessment
   const gapSummary = isRecord(reportResult.riskGapSummary) ? reportResult.riskGapSummary : {}
   const existingCoverageMap = Array.isArray(gapSummary.existingCoverageMap)
     ? gapSummary.existingCoverageMap.filter(isRecord).map((item) => ({
@@ -77,14 +80,27 @@ export const buildReportAiContext = (
     },
     overallOpinion: reportResult.aiSummary.overallOpinion,
     feasibility: {
-      overallStatus: reportResult.productFeasibility.overallStatus,
-      overallAssessment: reportResult.productFeasibility.overallAssessment,
-      items: reportResult.productFeasibility.items.map((item) => ({
-        criterion: item.criterion,
+      overallStatus: feasibilityAssessment?.overallStatus,
+      overallSummary: feasibilityAssessment?.overallSummary,
+      overallReason: feasibilityAssessment?.overallReason,
+      topStrengths: feasibilityAssessment?.topStrengths ?? [],
+      topRisks: feasibilityAssessment?.topRisks ?? [],
+      priorityActions: feasibilityAssessment?.priorityActions ?? [],
+      criteria: (feasibilityAssessment?.criteria ?? []).map((item) => ({
+        id: item.id,
+        category: item.category,
+        title: item.title,
+        question: item.question,
         status: item.status,
-        judgment: item.judgment,
-        evidenceIds: item.evidenceIds,
+        summary: item.summary,
+        rationale: item.rationale,
+        evidence: item.evidence.map((evidence) => ({ id: evidence.id, title: evidence.title, summary: evidence.excerpt ?? '' })),
+        missingInformation: item.missingInformation,
+        nextActions: item.nextActions.map((action) => ({ text: action.text, owner: action.owner, priority: action.priority, completed: action.completed })),
+        isBlocking: item.isBlocking,
       })),
+      discoveryContext: feasibilityAssessment?.discoveryContext,
+      externalConstraints: feasibilityAssessment?.externalConstraints,
     },
     coverageGap: {
       summary: text(gapSummary.summary ?? gapSummary.overallSummary),
@@ -121,4 +137,3 @@ export const isReportAiContext = (value: unknown): value is JsonObject =>
       && typeof context.risk.name === 'string'
       && Array.isArray(context.evidence)
   })()
-

@@ -1,6 +1,7 @@
 import type {
   AiRiskInput,
   PolicyDraftRequest,
+  ReportContentSaveRequest,
   ReportQuestionRequest,
 } from "../types";
 import type { ReportProxy, ReportProxyRequestOptions } from "./report-proxy";
@@ -147,10 +148,27 @@ export class GasReportProxy implements ReportProxy {
       options,
     );
   }
+
+  getReportContent(reportId: string): Promise<unknown> {
+    return this.request({ action: "getReportContent", reportId });
+  }
+
+  saveReportContent(
+    request: ReportContentSaveRequest,
+    options: ReportProxyRequestOptions = {},
+  ): Promise<unknown> {
+    return this.request(
+      {
+        action: "saveReportContent",
+        reportId: request.reportId,
+        content: request.content,
+      },
+      options,
+    );
+  }
 }
 
 export const createGasReportProxy = (
   endpoint: string,
   fetchImpl?: typeof fetch,
 ): ReportProxy => new GasReportProxy({ endpoint, fetchImpl });
-

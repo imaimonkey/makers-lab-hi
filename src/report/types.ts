@@ -170,6 +170,85 @@ export interface FeasibilityItem extends JsonObject {
   additionalChecks: string[];
 }
 
+export type CommercializationCriterionStatus = "pass" | "conditional" | "needs_review" | "critical" | "unknown";
+export type CommercializationCriterionCategory = "market" | "insurability" | "loss" | "product";
+export type CommercializationConfidence = "high" | "medium" | "low" | "unknown";
+export type CommercializationActionPriority = "high" | "medium" | "low";
+export type CommercializationOverallStatus = "reviewable" | "conditional" | "needs_more_data" | "redesign" | "not_viable";
+
+export interface CommercializationEvidence extends JsonObject {
+  id: string;
+  title: string;
+  sourceType: string;
+  sourceName: string;
+  publishedAt?: string | null;
+  collectedAt?: string | null;
+  url?: string;
+  excerpt?: string;
+}
+
+export interface CommercializationNextAction extends JsonObject {
+  id: string;
+  text: string;
+  owner: string;
+  dueDate?: string;
+  priority: CommercializationActionPriority;
+  completed: boolean;
+}
+
+export interface CommercializationCriterion extends JsonObject {
+  id: string;
+  category: CommercializationCriterionCategory;
+  order: number;
+  title: string;
+  question: string;
+  description: string;
+  status: CommercializationCriterionStatus;
+  summary: string;
+  rationale: string;
+  confirmedFacts?: string;
+  evidence: CommercializationEvidence[];
+  confidence: CommercializationConfidence;
+  missingInformation: string[];
+  nextActions: CommercializationNextAction[];
+  isBlocking: boolean;
+  reviewerMemo?: string;
+  updatedAt?: string | null;
+}
+
+export interface CommercializationDiscoveryContext extends JsonObject {
+  sourceRiskId?: string;
+  discoveryType: "news" | "customer_request" | "sales_request" | "regulation" | "industry" | "reinsurance" | "research" | "other";
+  sourceName: string;
+  sourceSummary: string;
+  marketImpactSummary?: string;
+  detailUrl?: string;
+}
+
+export interface CommercializationExternalConstraint extends JsonObject {
+  id: string;
+  title: string;
+  summary: string;
+  severity: "info" | "warning" | "blocking";
+  confirmed: boolean;
+  requiresLegalReview: boolean;
+  nextAction: string;
+}
+
+export interface CommercializationAssessment extends JsonObject {
+  overallStatus: CommercializationOverallStatus;
+  overallSummary: string;
+  overallReason: string;
+  topStrengths: string[];
+  topRisks: string[];
+  priorityActions: string[];
+  criteria: CommercializationCriterion[];
+  discoveryContext?: CommercializationDiscoveryContext;
+  externalConstraints?: CommercializationExternalConstraint[];
+  reviewedAt?: string | null;
+  reviewerMemo?: string;
+}
+
 export interface ProductFeasibility extends JsonObject {
   overallStatus: string;
   overallAssessment: {
@@ -180,6 +259,10 @@ export interface ProductFeasibility extends JsonObject {
   };
   items: FeasibilityItem[];
   interpretation: string;
+  assessment?: CommercializationAssessment;
+  discoveryContext?: CommercializationDiscoveryContext;
+  externalConstraints?: CommercializationExternalConstraint[];
+  commercializationAssessmentVersion?: number;
 }
 
 export interface ProductProposal extends JsonObject {
@@ -331,3 +414,7 @@ export interface ReportQuestionRequest {
   recentConversation: JsonObject[];
 }
 
+export interface ReportContentSaveRequest {
+  reportId: string;
+  content: ReportResult;
+}

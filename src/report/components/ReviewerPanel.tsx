@@ -17,6 +17,8 @@ type ReviewerPanelProps = {
   aiRecommendations: AiReviewRecommendation[]
   onAskQuestion: () => void
   memoAppend?: { id: number; text: string } | null
+  title?: string
+  description?: string
 }
 
 function createInitialReviewer(
@@ -59,6 +61,8 @@ export function ReviewerPanel({
   aiRecommendations,
   onAskQuestion,
   memoAppend,
+  title = '실무자 검토',
+  description,
 }: ReviewerPanelProps) {
   const initial = createInitialReviewer(reviewer, reportId)
   const [draft, setDraft] = useState<ReviewerState>(() => {
@@ -68,8 +72,7 @@ export function ReviewerPanel({
 
   useEffect(() => {
     if (!memoAppend?.text) return
-    // This effect consumes a newly generated assistant answer and intentionally
-    // appends it to the human-review draft state.
+    // This effect intentionally merges an external AI answer into the editable memo draft.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft((current) => ({
       ...current,
@@ -97,12 +100,14 @@ export function ReviewerPanel({
         <div>
           <p className="report-page__section-number">09</p>
           <p className="report-page__eyebrow">HUMAN REVIEW</p>
-          <h2 id="report-reviewer-title">실무자 검토</h2>
+          <h2 id="report-reviewer-title">{title}</h2>
         </div>
         <span className="report-page__badge report-page__badge--neutral">
           AI 결과와 별도 저장
         </span>
       </div>
+
+      {description ? <p className="report-page__section-intro">{description}</p> : null}
 
       <div className="report-page__reviewer-grid">
         <div className="report-page__reviewer-status">

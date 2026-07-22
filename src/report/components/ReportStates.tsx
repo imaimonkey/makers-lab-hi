@@ -85,6 +85,9 @@ export function ReportIdleState({
           AI 생성 결과는 검토용 초안이며 실제 보험료·요율이나 최종 약관을
           확정하지 않습니다.
         </p>
+        <p className="report-page__helper report-page__editor-start-hint">
+          리포트 생성이 완료되면 상단의 <strong>편집</strong> 버튼을 눌러 바로 내용을 수정할 수 있습니다.
+        </p>
       </div>
     </section>
   )
@@ -148,4 +151,3 @@ export function ReportLoadingState({
     </section>
   )
 }
-

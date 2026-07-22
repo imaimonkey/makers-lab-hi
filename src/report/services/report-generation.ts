@@ -278,4 +278,3 @@ export const generateReport = async ({
   await minimumDelay;
   return outcome;
 };
-

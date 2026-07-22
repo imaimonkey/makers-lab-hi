@@ -28,4 +28,3 @@ createRoot(rootElement).render(
     </StandaloneReportLayout>
   </StrictMode>,
 )
-

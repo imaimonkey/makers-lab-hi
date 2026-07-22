@@ -46,6 +46,9 @@ export function RiskDecisionWorkspace({
   const [activeEvidence, setActiveEvidence] = useState('전체')
   const [memo, setMemo] = useState('')
   const [checkedItems, setCheckedItems] = useState<string[]>([])
+  const [reviewStatus, setReviewStatus] = useState<'검토 전' | '검토 완료'>('검토 전')
+  const [saved, setSaved] = useState(false)
+  const [shared, setShared] = useState(false)
   const evidenceTypes = useMemo(
     () => ['전체', ...new Set(detail.evidence.map((item) => item.type))],
     [detail.evidence],
@@ -64,6 +67,15 @@ export function RiskDecisionWorkspace({
     setCheckedItems((current) => current.includes(item)
       ? current.filter((value) => value !== item)
       : [...current, item])
+  }
+
+  async function shareReview() {
+    try {
+      await navigator.clipboard?.writeText(window.location.href)
+    } catch {
+      // 클립보드 권한이 없는 환경에서도 공유 상태 자체는 확인할 수 있습니다.
+    }
+    setShared(true)
   }
 
   return (
@@ -87,6 +99,12 @@ export function RiskDecisionWorkspace({
           </div>
         </div>
         <p aria-live="polite">{personaGuidance[persona]}</p>
+        <div className="detail-workspace-actions" aria-label="상세 검토 액션">
+          <button type="button" onClick={() => setReviewStatus((current) => current === '검토 완료' ? '검토 전' : '검토 완료')}>{reviewStatus === '검토 완료' ? '검토 완료 취소' : '검토 완료 처리'}</button>
+          <button type="button" onClick={() => window.print()}>PDF 출력</button>
+          <button type="button" onClick={() => setSaved((current) => !current)}>{saved ? '✓ 저장됨' : '리포트 저장'}</button>
+          <button type="button" className="primary" onClick={() => void shareReview()}>{shared ? '✓ 링크 복사됨' : '링크 공유'}</button>
+        </div>
       </div>
 
       <div className="detail-decision-strip" aria-label="검토 실행 요약">
@@ -103,7 +121,7 @@ export function RiskDecisionWorkspace({
         <article>
           <span>REVIEW STATUS</span>
           <strong>{detail.decisionStatus}</strong>
-          <p>업데이트 {risk.updatedAt} · 최신 시각 확인 필요</p>
+          <p>{reviewStatus} · 업데이트 {risk.updatedAt} · 최신 시각 확인 필요</p>
         </article>
       </div>
 

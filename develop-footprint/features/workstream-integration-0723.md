@@ -6,14 +6,14 @@
 
 ## 통합 원칙
 
-`0721-backup`에는 hyoje·seoyeon·jh의 1차 기능이 이미 현재 애플리케이션 구조로 포팅되어 있다. 각 원격 브랜치의 오래된 `room-*` 셸과 전역 스타일을 그대로 병합하면 안정 경로, `RootLayout`, 공통 도메인 계약을 덮어쓸 수 있으므로 현재 경로에 연결된 포팅본을 유지하고, 아직 반영되지 않은 sh 기능만 같은 경계에 추가했다.
+`0721-backup`은 공통 레이아웃·라우팅·도메인 데이터 계약을 제공하고, `0723-backup`은 네 기능 브랜치의 고유 상호작용과 업무 화면을 현재 경로에 포팅한다. 원격 브랜치의 오래된 `room-*` 셸과 전역 스타일은 복사하지 않고, 그 안의 기능을 현재 조합 계층·feature 계층·공식 디자인 토큰으로 재구성했다.
 
 | 원격 기능 브랜치 | 현재 통합 경로 | 반영 상태 | 운영 전환 의존성 |
 | --- | --- | --- | --- |
-| `origin/hyoje` | `src/domain/risk/riskRadarDemo.ts`, `src/features/risk-dashboard/RiskSignalPipeline.tsx` | 상품개발 신호 파이프라인·채널 필터·추이·법령 보류 상태 유지 | 뉴스·법령·상품 API, 실패 재시도, 후보 승격 API |
-| `origin/seoyeon` | `src/domain/risk/riskExplorationDemo.ts`, `src/features/risk-catalog/RiskExplorationLens.tsx` | 후보 분류 필터·비교 지표·선택 후보 상세 유지 | 공식 통계·법령 피드, 요율화 모델, 비교 상태 저장 |
-| `origin/jh` | `src/report/**`, `src/pages/reports/ReportsPage.tsx` | 생성 fallback·검증 경고·근거 연결·담당자 검토 흐름 유지 | AI/GAS 프록시, SSO/RBAC, 리포트 저장·감사 로그 |
-| `origin/sh` | `src/features/risk-detail/RiskDecisionWorkspace.tsx`, `src/pages/risk-detail/RiskDetailPage.tsx` | 역할별 검토, 다음 액션, 샘플 추이, 근거 필터, 판단 메모·체크리스트 추가 | 실제 근거 ID 원장, 반증 기록, 권한별 저장 API |
+| `origin/hyoje` | `src/features/risk-dashboard/RiskRadarOperationsPanel.tsx`, `src/features/risk-dashboard/riskRadarApi.ts`, 기존 `RiskSignalPipeline` | 이슈 큐 검색·채널 필터, 상품화 준비도·경로 믹스, 수집/본문/분석 액션, 현장 신호 입력, 법령 큐 반영 | 뉴스·법령·상품 API, 실패 재시도, 후보 승격 API |
+| `origin/seoyeon` | `src/domain/risk/riskExplorationDemo.ts`, `src/features/risk-catalog/RiskExplorationLens.tsx` | 후보 분류·검색, 시장/우연성/측정/데이터/법적/역선택/도덕적 해이 비교표, 선택 후보 상세, 참고 신호 레지스터 | 공식 통계·법령 피드, 요율화 모델, 비교 상태 저장 |
+| `origin/jh` | `src/report/**`, `src/pages/reports/ReportsPage.tsx` | 생성 리포트 목록, 리포트 상세 진입, 섹션별 편집기, 12개 상품화 평가 기준, 내용 업데이트, 생성 fallback·검증 경고·담당자 검토 | AI/GAS 프록시, SSO/RBAC, 리포트 저장·감사 로그 |
+| `origin/sh` | `src/features/risk-detail/RiskDecisionWorkspace.tsx`, `src/pages/risk-detail/RiskDetailPage.tsx` | 역할별 검토, 검토 완료/저장/PDF/공유 액션, 다음 액션, 샘플 추이, 근거 필터, 판단 메모·체크리스트 | 실제 근거 ID 원장, 반증 기록, 권한별 저장 API |
 
 ## 안정 경로·테마 확인
 

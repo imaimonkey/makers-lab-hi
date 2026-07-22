@@ -46,14 +46,18 @@ const SUMMARY_CARD_ORDER = [
 ];
 
 const FEASIBILITY_ITEM_ORDER = [
-  "marketability",
+  "actual_market_demand",
+  "risk_pooling",
   "fortuity",
-  "measurability",
-  "responsibility",
-  "moralHazard",
-  "dataAvailability",
-  "differentiation",
-  "regulation",
+  "insurable_interest",
+  "moral_hazard_control",
+  "gambling_like_structure",
+  "loss_verifiability",
+  "pml_accumulation",
+  "liability_clarity",
+  "wording_clarity",
+  "pricing_data_readiness",
+  "coverage_gap",
 ];
 
 const TARGET_OPTION_ORDER = ["corporate", "individual", "hybrid"];
@@ -299,17 +303,20 @@ export const validateReport = (
   }
 
   const overallAssessment = valueAt(report.productFeasibility, "overallAssessment");
-  if (!isRecord(overallAssessment)) {
+  const commercializationAssessment = valueAt(report.productFeasibility, "assessment");
+  if (!isRecord(overallAssessment) && !isRecord(commercializationAssessment)) {
     warnings.push(
       warning(
         "OVERALL_ASSESSMENT_NORMALIZED",
         "productFeasibility.overallAssessment",
-        "상품화 가능성 AI 종합평가를 기존 평가항목으로 보완했습니다.",
+        "상품화 가능성 종합평가를 기존 평가항목으로 보완했습니다.",
       ),
     );
   }
 
-  const feasibilityItems = valueAt(report.productFeasibility, "items");
+  const feasibilityItems = isRecord(commercializationAssessment) && Array.isArray(commercializationAssessment.criteria)
+    ? commercializationAssessment.criteria
+    : valueAt(report.productFeasibility, "items");
   const feasibilityIds = idsFromArray(feasibilityItems);
   if (!isSameOrder(feasibilityIds, FEASIBILITY_ITEM_ORDER)) {
     warnings.push(
@@ -363,4 +370,3 @@ export const validateReport = (
 
   return { warnings };
 };
-

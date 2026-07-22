@@ -155,4 +155,3 @@ export const askReportQuestion = async ({
     return { mode: 'error', source: 'api', errorMessage: message }
   }
 }
-

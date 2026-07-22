@@ -5,4 +5,3 @@ interface Window {
 
 declare module "*mock-risk-data.js";
 declare module "*mock-report-result.js";
-

@@ -1,21 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type {
-  ReportGenerationState,
-  ReportResult,
-  ReportValidationWarning,
-  RiskSourceData,
-} from './types'
+import { useEffect, useMemo, useState } from 'react'
+import type { ReportResult, RiskSourceData } from './types'
 import type { ReportProxy } from './api/report-proxy'
-import {
-  generateMockReport,
-  getLoadingSteps,
-} from './services/report-generation'
-import {
-  browserReviewerStorage,
-  type ReviewerStorage,
-} from './services/reviewer-storage'
-import { ReportIdleState, ReportLoadingState } from './components/ReportStates'
+import { browserReviewerStorage, type ReviewerStorage } from './services/reviewer-storage'
+import { GeneratedReportList } from './components/GeneratedReportList'
 import { ReportSections } from './components/ReportSections'
+import { createGeneratedReportList, type GeneratedReportListItem } from './services/report-list'
 import './report.css'
 
 export type ReportPageProps = {
@@ -28,6 +17,19 @@ export type ReportPageProps = {
 
 const systemNow = () => new Date()
 
+const getRequestedReportId = (): string | null => {
+  if (typeof window === 'undefined') return null
+  return new URLSearchParams(window.location.search).get('reportId')
+}
+
+const getReportId = (report: ReportResult): string =>
+  report.meta.reportId || report.meta.sourceRiskId
+
+const hasDetailQuery = (report: ReportResult): boolean => {
+  const requestedId = getRequestedReportId()
+  return requestedId === getReportId(report) || requestedId === report.meta.sourceRiskId
+}
+
 function ReportPageSession({
   riskData,
   fallbackReport,
@@ -35,117 +37,53 @@ function ReportPageSession({
   reviewerStorage = browserReviewerStorage,
   now = systemNow,
 }: ReportPageProps) {
-  const [state, setState] = useState<ReportGenerationState>('idle')
-  const [report, setReport] = useState<ReportResult | null>(null)
-  const [warnings, setWarnings] = useState<ReportValidationWarning[]>([])
-  const [errorMessage, setErrorMessage] = useState('')
-  const [activeStep, setActiveStep] = useState(0)
-  const requestController = useRef<AbortController | null>(null)
-  const loadingSteps = useMemo(() => getLoadingSteps(riskData), [riskData])
+  const [showDetail, setShowDetail] = useState(() => hasDetailQuery(fallbackReport))
+  const reports = useMemo(
+    () => createGeneratedReportList(riskData, fallbackReport),
+    [fallbackReport, riskData],
+  )
 
   useEffect(() => {
-    return () => requestController.current?.abort()
-  }, [])
+    const syncView = () => setShowDetail(hasDetailQuery(fallbackReport))
+    window.addEventListener('popstate', syncView)
+    return () => window.removeEventListener('popstate', syncView)
+  }, [fallbackReport])
 
-  const handleGenerate = useCallback(async () => {
-    requestController.current?.abort()
-    const controller = new AbortController()
-    requestController.current = controller
+  const openReport = (selectedReport: GeneratedReportListItem) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('reportId', selectedReport.reportId)
+    window.history.pushState({ reportId: selectedReport.reportId }, '', url)
+    setShowDetail(true)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
 
-    setState('loading')
-    setActiveStep(0)
-    setWarnings([])
-    setErrorMessage('')
-
-    const stepTimer = window.setInterval(() => {
-      setActiveStep((current) =>
-        Math.min(current + 1, Math.max(loadingSteps.length - 1, 0)),
-      )
-    }, 550)
-
-    try {
-      // The main report remains a local mock result even when assist features use API mode.
-      const outcome = await generateMockReport({
-        riskData,
-        fallbackReport,
-        now,
-      })
-
-      if (controller.signal.aborted) return
-      setReport(outcome.report)
-      setWarnings(outcome.warnings)
-      setErrorMessage(outcome.error?.message ?? '')
-      setState(outcome.mode)
-    } catch {
-      if (controller.signal.aborted) return
-      setReport(fallbackReport)
-      setWarnings([])
-      setErrorMessage('AI 리포트 생성 요청을 처리하지 못했습니다.')
-      setState('fallback')
-    } finally {
-      window.clearInterval(stepTimer)
-      if (requestController.current === controller) {
-        requestController.current = null
-      }
-    }
-  }, [fallbackReport, loadingSteps, now, riskData])
+  const closeReport = () => {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('reportId')
+    window.history.pushState({}, '', url)
+    setShowDetail(false)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
 
   return (
     <div className="report-page">
-      {state === 'idle' ? (
-        <ReportIdleState riskData={riskData} onGenerate={handleGenerate} />
-      ) : null}
-
-      {state === 'loading' ? (
-        <ReportLoadingState steps={loadingSteps} activeStep={activeStep} />
-      ) : null}
-
-      {(state === 'success' || state === 'fallback') && report ? (
+      {!showDetail ? <GeneratedReportList reports={reports} onOpenReport={openReport} /> : (
         <div className="report-page__generated">
-          {state === 'fallback' ? (
-            <div className="report-page__fallback-banner" role="status">
-              <div>
-                <span className="report-page__badge report-page__badge--warning">
-                  시연용 fallback 데이터
-                </span>
-                <strong>
-                  AI 연결이 원활하지 않아 시연용 분석 결과를 표시합니다.
-                </strong>
-                {errorMessage ? <p>{errorMessage}</p> : null}
-              </div>
-              <button
-                className="report-page__button report-page__no-print"
-                type="button"
-                onClick={handleGenerate}
-              >
-                다시 시도
-              </button>
-            </div>
-          ) : null}
-
-          {warnings.length ? (
-            <details className="report-page__warning-panel">
-              <summary>AI 응답 형식을 {warnings.length}건 정규화했습니다.</summary>
-              <ul>
-                {warnings.map((warning, index) => (
-                  <li key={`${warning.code}-${warning.path}-${index}`}>
-                    {warning.message}
-                  </li>
-                ))}
-              </ul>
-            </details>
-          ) : null}
-
+          <div className="report-page__detail-toolbar report-page__no-print">
+            <button className="report-page__button" type="button" onClick={closeReport}>
+              ← 생성된 리포트 목록
+            </button>
+          </div>
           <ReportSections
-            key={`${report.meta.sourceRiskId}:${report.meta.generatedAt ?? ''}:${state}`}
-            report={report}
+            key={`${fallbackReport.meta.sourceRiskId}:${fallbackReport.meta.generatedAt ?? ''}`}
+            report={fallbackReport}
             reviewerStorage={reviewerStorage}
             now={now}
             riskData={riskData}
             reportProxy={reportProxy}
           />
         </div>
-      ) : null}
+      )}
     </div>
   )
 }
@@ -158,4 +96,3 @@ export function ReportPage(props: ReportPageProps) {
     />
   )
 }
-

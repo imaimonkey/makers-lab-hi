@@ -1,5 +1,10 @@
 export { ReportPage } from './ReportPage'
 export type { ReportPageProps } from './ReportPage'
+export { GeneratedReportList } from './components/GeneratedReportList'
+export {
+  createGeneratedReportList,
+} from './services/report-list'
+export type { GeneratedReportListItem } from './services/report-list'
 
 export type {
   EvidenceItem,
@@ -27,4 +32,3 @@ export {
   createReviewerStorage,
 } from './services/reviewer-storage'
 export type { ReviewerStorage } from './services/reviewer-storage'
-
