@@ -20,7 +20,7 @@ export function RootLayout() {
           : ''
 
   return (
-    <div className={`app-shell ${workspaceTheme}`.trim()}>
+    <div className="app-shell">
       <RouteScrollManager />
       <aside className="sidebar">
         <Link to="/" className="app-brand" aria-label="HI Risk Studio 홈">
@@ -74,7 +74,7 @@ export function RootLayout() {
         </div>
       </aside>
 
-      <div className="app-main">
+      <div className={`app-main ${workspaceTheme}`.trim()}>
         <header className="topbar">
           <div className="topbar-context">
             <span className="topbar-context-icon" aria-hidden="true"><AppIcon name={activeItem?.icon ?? 'radar'} size={16} /></span>

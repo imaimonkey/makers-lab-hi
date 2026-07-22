@@ -6,8 +6,9 @@
  * The feature branches were independent portals, so their visual systems
  * cannot be represented by one global card theme. RootLayout adds one of
  * these workspace classes from the active stable route and this file keeps
- * each branch's shell, palette, density, controls, and state treatment
- * scoped to that route.
+ * each branch's content shell, palette, density, controls, and state
+ * treatment scoped to that route. The shared sidebar intentionally remains
+ * outside the workspace class so the left navigation does not change tabs.
  */
 
 /* hyoje: risk radar portal — cool gray canvas, white cards, operational blue. */
