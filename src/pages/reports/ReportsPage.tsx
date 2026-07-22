@@ -20,7 +20,7 @@ export function ReportsPage() {
   const openIntegratedReport = () => document.getElementById('report-generation-slice')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   return (
-    <div className="page reports-page">
+    <div className="page reports-page jh-visual">
       <PageHeader
         step="04"
         eyebrow="DECISION REPORTS"

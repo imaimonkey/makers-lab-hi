@@ -33,7 +33,7 @@ export function RiskDashboardPage() {
   }, [])
 
   return (
-    <div className="page dashboard-page">
+    <div className="page dashboard-page hyoje-visual">
       <PageHeader
         step="01"
         eyebrow="EMERGING RISK RADAR"

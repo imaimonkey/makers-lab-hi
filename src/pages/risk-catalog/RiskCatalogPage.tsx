@@ -16,7 +16,7 @@ export function RiskCatalogPage() {
   )), [filter, query])
 
   return (
-    <div className="page catalog-page">
+    <div className="page catalog-page seoyeon-visual">
       <PageHeader
         step="02"
         eyebrow="RISK CANDIDATE CATALOG"

@@ -12,7 +12,7 @@ export function RiskDetailPage() {
 
   if (!risk) {
     return (
-      <div className="page detail-page">
+      <div className="page detail-page sh-visual">
         <PageHeader
           step="03"
           eyebrow="EVIDENCE & PRODUCT FIT"
@@ -31,7 +31,7 @@ export function RiskDetailPage() {
   const detail = sampleRiskDetails[risk.id]
 
   return (
-    <div className="page detail-page">
+    <div className="page detail-page sh-visual">
       <PageHeader
         step="03"
         eyebrow="EVIDENCE & PRODUCT FIT"
