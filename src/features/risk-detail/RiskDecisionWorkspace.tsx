@@ -25,6 +25,7 @@ function getOwner(themeLabel: string) {
 
 function getTrend(signalStrength: number) {
   return [
+    Math.max(20, signalStrength - 31),
     Math.max(20, signalStrength - 26),
     Math.max(20, signalStrength - 20),
     Math.max(20, signalStrength - 23),
@@ -34,6 +35,8 @@ function getTrend(signalStrength: number) {
     signalStrength,
   ]
 }
+
+const trendMonths = ['11월', '12월', '1월', '2월', '3월', '4월', '5월', '6월']
 
 export function RiskDecisionWorkspace({
   risk,
@@ -49,6 +52,7 @@ export function RiskDecisionWorkspace({
   const [reviewStatus, setReviewStatus] = useState<'검토 전' | '검토 완료'>('검토 전')
   const [saved, setSaved] = useState(false)
   const [shared, setShared] = useState(false)
+  const [showTable, setShowTable] = useState(false)
   const evidenceTypes = useMemo(
     () => ['전체', ...new Set(detail.evidence.map((item) => item.type))],
     [detail.evidence],
@@ -58,6 +62,13 @@ export function RiskDecisionWorkspace({
   )
   const trend = getTrend(risk.signalStrength)
   const maxTrend = Math.max(...trend, 1)
+  const minTrend = Math.min(...trend)
+  const trendRise = Math.round(((risk.signalStrength - minTrend) / Math.max(minTrend, 1)) * 100)
+  const driverScores = [
+    { label: '발생 가능성', score: detail.assessments[0]?.score ?? risk.signalStrength, reason: detail.assessments[0]?.note ?? '추가 확인 필요' },
+    { label: '예상 영향도', score: Math.min(96, Math.round((risk.signalStrength + (detail.assessments[2]?.score ?? 50)) / 2)), reason: detail.primaryLoss },
+    { label: '통제 공백', score: Math.max(20, 100 - (detail.assessments[4]?.score ?? 50)), reason: detail.assessments[4]?.note ?? '통제 수준 확인 필요' },
+  ]
   const reviewItems = [
     ...detail.decisionChecks.slice(0, 3),
     personaActions[persona],
@@ -125,20 +136,35 @@ export function RiskDecisionWorkspace({
         </article>
       </div>
 
+      <div className="detail-core-stats" aria-label="위험 핵심 통계 SAMPLE">
+        <article><span>사각지대 가능성</span><strong>{Math.max(18, 100 - (risk.productFit ?? 42))}<em>%</em></strong><small>상품 적합성 역산 예시</small></article>
+        <article><span>관련 사고 신호</span><strong>+{Math.max(9, risk.evidenceCount * 3)}<em>%</em></strong><small>최근 관측 대비 SAMPLE</small></article>
+        <article><span>영향 범위 추정</span><strong>{(risk.evidenceCount * .15).toFixed(1)}<em>K</em></strong><small>실제 계약 건수 아님</small></article>
+        <article><span>평균 탐지 지연</span><strong>{Math.max(7, 35 - Math.round(risk.signalStrength / 5))}<em>일</em></strong><small>검증용 가정값</small></article>
+      </div>
+
+      <article className="detail-driver-panel surface-card">
+        <div><p className="eyebrow">RISK DRIVER MATRIX · SH</p><h2>위험 판단 근거</h2><p>발생 가능성, 예상 영향도, 통제 공백을 분리해 현재 신호 점수에 영향을 주는 이유를 확인합니다.</p>{driverScores.map((driver) => <div className="detail-driver-row" key={driver.label}><span>{driver.label}</span><div><i style={{ width: `${driver.score}%` }} /></div><strong>{(driver.score / 20).toFixed(1)}/5</strong><small>{driver.reason}</small></div>)}</div>
+        <aside><strong>{risk.signalStrength}</strong><span>{risk.signalStrength >= 80 ? 'CRITICAL PRIORITY' : risk.signalStrength >= 65 ? 'HIGH PRIORITY' : 'REVIEW PRIORITY'}</span><p>사고 발생 전 인수 조건과 예방 조치를 함께 검토하는 탐색 단계입니다.</p></aside>
+      </article>
+
       <div className="detail-workspace-grid">
         <article className="detail-trend-panel surface-card">
           <div className="panel-heading">
             <div><p className="eyebrow">SIGNAL TREND · SAMPLE</p><h2>위험 신호 추이</h2></div>
-            <span className="updated-label">최근 7개 관측</span>
+            <span className="updated-label">최근 8개월</span>
           </div>
-          <p className="detail-panel-description">절대 손실액이나 보험료가 아닌 탐색용 신호 강도입니다.</p>
-          <div className="detail-trend-chart" role="img" aria-label={`${risk.title} 최근 7개 관측 신호 추이`}>
-            {trend.map((value, index) => (
-              <div className="detail-trend-column" key={`${value}-${index}`}>
-                <span style={{ height: `${(value / maxTrend) * 100}%` }} />
-                <small>{index === trend.length - 1 ? '현재' : `${trend.length - index}회 전`}</small>
+          <p className="detail-panel-description">절대 손실액이나 보험료가 아닌 공개 데이터와 내부 탐색 신호의 정규화된 SAMPLE 지수입니다.</p>
+          <div className="detail-sparkline-layout">
+            <div>
+              <div className="detail-sparkline" role="img" aria-label={`${risk.title} 최근 8개월 신호 추이`}>
+                <svg viewBox="0 0 302 118" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id={`risk-area-${risk.id}`} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="var(--orange)" stopOpacity=".24" /><stop offset="100%" stopColor="var(--orange)" stopOpacity="0" /></linearGradient></defs>{[20, 56, 92].map((y) => <line key={y} x1="0" x2="302" y1={y} y2={y} />)}<polygon points={`4,118 ${trend.map((value, index) => `${index * 42 + 4},${108 - ((value - minTrend) / Math.max(maxTrend - minTrend, 1)) * 82}`).join(' ')} 298,118`} fill={`url(#risk-area-${risk.id})`} /><polyline points={trend.map((value, index) => `${index * 42 + 4},${108 - ((value - minTrend) / Math.max(maxTrend - minTrend, 1)) * 82}`).join(' ')} />{trend.map((value, index) => <circle key={`${value}-${index}`} cx={index * 42 + 4} cy={108 - ((value - minTrend) / Math.max(maxTrend - minTrend, 1)) * 82} r="3.5" />)}</svg>
+                <div>{trendMonths.map((month) => <span key={month}>{month}</span>)}</div>
               </div>
-            ))}
+              <button type="button" className={showTable ? 'detail-chart-toggle active' : 'detail-chart-toggle'} aria-expanded={showTable} onClick={() => setShowTable((current) => !current)}>{showTable ? '차트만 보기' : '표로 보기'}</button>
+              {showTable ? <div className="detail-chart-table-wrap"><table><caption className="sr-only">최근 8개월 위험 탐지 지수 표</caption><thead><tr>{trendMonths.map((month) => <th scope="col" key={month}>{month}</th>)}</tr></thead><tbody><tr>{trend.map((value, index) => <td key={trendMonths[index]}>{value}</td>)}</tr></tbody></table></div> : null}
+            </div>
+            <aside><strong>+{trendRise}%</strong><span>8개월 누적 상승</span><dl><div><dt>최고 관측</dt><dd>{risk.signalStrength}</dd></div><div><dt>관측 범위</dt><dd>국내·글로벌</dd></div><div><dt>근거 유형</dt><dd>{evidenceTypes.length - 1}개</dd></div></dl></aside>
           </div>
         </article>
 
@@ -166,6 +192,12 @@ export function RiskDecisionWorkspace({
           </div>
           <p className="detail-evidence-rule"><AppIcon name="shield" size={14} /> 평가 문장과 근거 ID의 연결은 운영 검토 단계에서 확인합니다.</p>
         </article>
+      </div>
+
+      <div className="detail-priority-response" aria-label="보험 관점 우선 대응">
+        <article><span>01</span><strong>질문서 업데이트</strong><p>{risk.title}의 노출 여부와 통제 수준을 사전 질문 항목에 추가합니다.</p></article>
+        <article><span>02</span><strong>보장 범위 분리</strong><p>{detail.primaryLoss}의 직접·간접 손해와 면책 경계를 구분해 검토합니다.</p></article>
+        <article><span>03</span><strong>모니터링 연계</strong><p>근거 ID와 외부 변화 신호를 다음 재검토 주기의 조기 경보로 연결합니다.</p></article>
       </div>
 
       <article className="detail-judgment-card">

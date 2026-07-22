@@ -5,6 +5,7 @@ import type { CustomerSignal } from '../../domain/risk/types'
 import { sampleOnlyNotice, sampleRiskCandidates } from '../../domain/risk/sampleData'
 import { RiskSignalPipeline } from '../../features/risk-dashboard/RiskSignalPipeline'
 import { RiskRadarOperationsPanel } from '../../features/risk-dashboard/RiskRadarOperationsPanel'
+import { RiskProductDevelopmentBoard } from '../../features/risk-dashboard/RiskProductDevelopmentBoard'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
@@ -90,6 +91,7 @@ export function RiskDashboardPage() {
 
       <RiskSignalPipeline />
       <RiskRadarOperationsPanel />
+      <RiskProductDevelopmentBoard />
 
       <section className="dashboard-grid">
         <article className="priority-panel surface-card">

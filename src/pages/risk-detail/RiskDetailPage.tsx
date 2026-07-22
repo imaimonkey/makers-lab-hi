@@ -1,6 +1,8 @@
 import { Link, useParams } from 'react-router-dom'
 import { sampleOnlyNotice, sampleRiskCandidates, sampleRiskDetails } from '../../domain/risk/sampleData'
 import { RiskDecisionWorkspace } from '../../features/risk-detail/RiskDecisionWorkspace'
+import { EvidenceVerificationWorkspace } from '../../features/risk-detail/EvidenceVerificationWorkspace'
+import { ProductizationEvaluationPanel } from '../../features/risk-detail/ProductizationEvaluationPanel'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
@@ -83,6 +85,8 @@ export function RiskDetailPage() {
       </section>
 
       <RiskDecisionWorkspace risk={risk} detail={detail} />
+      <EvidenceVerificationWorkspace risk={risk} detail={detail} />
+      <ProductizationEvaluationPanel risk={risk} detail={detail} />
     </div>
   )
 }
