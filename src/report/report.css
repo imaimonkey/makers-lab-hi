@@ -1,17 +1,17 @@
 #report-root {
-  --report-deep-navy: #00173f;
-  --report-navy: #00205b;
-  --report-orange: #ff9e1b;
+  --report-deep-navy: #0b2b52;
+  --report-navy: #123f73;
+  --report-orange: #f47a20;
   --report-orange-ink: #9e450c;
-  --report-orange-soft: #fff1e3;
+  --report-orange-soft: #fff3ea;
   --report-green: #176b4c;
   --report-red: #b42318;
-  --report-ink: #18324c;
-  --report-muted: #6b8197;
-  --report-border: #e0eaf3;
-  --report-soft: #f7faff;
+  --report-ink: #162536;
+  --report-muted: #667085;
+  --report-border: #dce3ea;
+  --report-soft: #f5f7fa;
   --report-card: #ffffff;
-  --report-shadow: 0 16px 38px rgba(35, 77, 115, 0.08);
+  --report-shadow: 0 2px 8px rgba(11, 43, 82, 0.05);
   position: fixed;
   inset: 0;
   overflow: auto;
@@ -212,20 +212,20 @@
 }
 
 .report-page {
-  --report-deep-navy: #00173f;
-  --report-navy: #00205b;
-  --report-blue: #418fde;
+  --report-deep-navy: #0b2b52;
+  --report-navy: #123f73;
+  --report-blue: #f47a20;
   --report-green: #176b4c;
-  --report-orange: #ff9e1b;
+  --report-orange: #f47a20;
   --report-orange-ink: #9e450c;
-  --report-orange-soft: #fff1e3;
+  --report-orange-soft: #fff3ea;
   --report-red: #b42318;
-  --report-ink: #18324c;
-  --report-muted: #6b8197;
-  --report-border: #e0eaf3;
-  --report-soft: #f7faff;
+  --report-ink: #162536;
+  --report-muted: #667085;
+  --report-border: #dce3ea;
+  --report-soft: #f5f7fa;
   --report-card: #fff;
-  --report-shadow: 0 16px 38px rgba(35, 77, 115, 0.08);
+  --report-shadow: 0 2px 8px rgba(11, 43, 82, 0.05);
   width: 100%;
   min-height: calc(100vh - 70px);
   min-height: calc(100dvh - 70px);
@@ -5354,7 +5354,7 @@
   .report-page__evaluation-card-heading .report-page__evaluation-index,
   .report-page__evaluation-card-heading strong {
     display: inline;
-    color: #00205b;
+    color: #0b2b52;
     font-size: 11pt;
   }
 
@@ -5368,7 +5368,7 @@
     display: block;
     margin-top: 2mm;
     overflow: visible;
-    color: #18324c;
+    color: #162536;
     font-size: 10pt;
     white-space: normal;
   }
@@ -5376,7 +5376,7 @@
   .report-page__evaluation-card-footer {
     display: block;
     margin-top: 1mm;
-    color: #6b8197;
+    color: #667085;
     font-size: 9pt;
   }
 
@@ -5410,7 +5410,7 @@
 
   .report-page__evaluation-detail h4 {
     margin: 2mm 0 1mm;
-    color: #00205b;
+    color: #123f73;
     font-size: 9pt;
     break-after: avoid;
     page-break-after: avoid;

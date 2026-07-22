@@ -9,9 +9,18 @@ export function RootLayout() {
   const activeItem = navigationGroups
     .flatMap((group) => group.items)
     .find((item) => isNavigationItemActive(item, location.pathname))
+  const workspaceTheme = location.pathname === '/'
+    ? 'workspace-hyoje'
+    : location.pathname === '/risks'
+      ? 'workspace-seoyeon'
+      : location.pathname.startsWith('/risks/')
+        ? 'workspace-sh'
+        : location.pathname.startsWith('/reports')
+          ? 'workspace-jh'
+          : ''
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${workspaceTheme}`.trim()}>
       <RouteScrollManager />
       <aside className="sidebar">
         <Link to="/" className="app-brand" aria-label="HI Risk Studio 홈">

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { sampleOnlyNotice, sampleRiskCandidates, sampleRiskDetails } from '../../domain/risk/sampleData'
 import { RiskDecisionWorkspace } from '../../features/risk-detail/RiskDecisionWorkspace'
@@ -9,6 +10,8 @@ import { PageHeader } from '../../shared/components/PageHeader'
 export function RiskDetailPage() {
   const { riskId } = useParams()
   const risk = sampleRiskCandidates.find((item) => item.id === riskId)
+  const [reviewStatus, setReviewStatus] = useState<'검토 전' | '검토 완료'>('검토 전')
+  const [shared, setShared] = useState(false)
 
   if (!risk) {
     return (
@@ -39,6 +42,25 @@ export function RiskDetailPage() {
         description="위험 정의, 직접 근거, 기존 보장과의 차이, 상품화 제약을 같은 화면에서 검토합니다."
       />
       <div className="sample-notice"><span>SAMPLE</span>{sampleOnlyNotice}</div>
+      <div className="sh-command-bar" aria-label="위험 상세 명령 모음">
+        <div className="sh-command-context">
+          <Link to="/risks">← 위험 목록</Link>
+          <span>·</span>
+          <i className={reviewStatus === '검토 완료' ? 'complete' : ''} />
+          <span>검토 상태 · {reviewStatus}</span>
+          <span>·</span>
+          <span>{risk.themeLabel} / 상품화 검토</span>
+        </div>
+        <div className="sh-command-actions">
+          <button type="button" onClick={() => setReviewStatus((current) => current === '검토 완료' ? '검토 전' : '검토 완료')}>
+            {reviewStatus === '검토 완료' ? '검토 완료 취소' : '검토 완료 처리'}
+          </button>
+          <button type="button" onClick={() => window.print()}>PDF 출력</button>
+          <button type="button" className="primary" onClick={() => { void navigator.clipboard?.writeText(window.location.href); setShared(true) }}>
+            {shared ? '✓ 링크 복사됨' : '링크 공유'}
+          </button>
+        </div>
+      </div>
 
       <section className="risk-hero surface-card">
         <div className="risk-hero-main">
