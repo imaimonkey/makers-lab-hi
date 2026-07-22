@@ -9,7 +9,7 @@ const isMockMode = import.meta.env.VITE_LLM_USE_MOCK !== 'false'
 
 export function DeveloperTestPage() {
   const [selectedUtilityId, setSelectedUtilityId] = useState<LlmUtilityId>(defaultUtilityId)
-  const [prompt, setPrompt] = useState(llmUtilityDefinitions[0].starterPrompt)
+  const [prompt, setPrompt] = useState('')
   const [result, setResult] = useState<LlmRunResult | null>(null)
   const [error, setError] = useState('')
   const [isRunning, setIsRunning] = useState(false)
@@ -22,7 +22,7 @@ export function DeveloperTestPage() {
     if (!utility) return
 
     setSelectedUtilityId(utilityId)
-    setPrompt(utility.starterPrompt)
+    setPrompt('')
     setResult(null)
     setError('')
   }

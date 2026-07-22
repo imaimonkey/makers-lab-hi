@@ -7,7 +7,6 @@ export type LlmUtilityDefinition = {
   label: string
   caption: string
   description: string
-  starterPrompt: string
   icon: IconName
 }
 

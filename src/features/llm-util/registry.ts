@@ -6,7 +6,6 @@ export const llmUtilityDefinitions: readonly LlmUtilityDefinition[] = [
     label: '-',
     caption: '-',
     description: '-',
-    starterPrompt: '-',
     icon: 'report',
   },
   {
@@ -14,7 +13,6 @@ export const llmUtilityDefinitions: readonly LlmUtilityDefinition[] = [
     label: '-',
     caption: '-',
     description: '-',
-    starterPrompt: '-',
     icon: 'list',
   },
   {
@@ -22,7 +20,6 @@ export const llmUtilityDefinitions: readonly LlmUtilityDefinition[] = [
     label: '-',
     caption: '-',
     description: '-',
-    starterPrompt: '-',
     icon: 'spark',
   },
   {
@@ -30,7 +27,6 @@ export const llmUtilityDefinitions: readonly LlmUtilityDefinition[] = [
     label: '-',
     caption: '-',
     description: '-',
-    starterPrompt: '-',
     icon: 'radar',
   },
 ]
