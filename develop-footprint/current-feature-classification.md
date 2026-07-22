@@ -7,7 +7,7 @@
 | 실무자·고객·영업 분리 셸과 사용자 전환 | 구현 | 동작 | 인증 미연동 | `src/app/layouts/RootLayout.tsx`, `src/app/layouts/CustomerLayout.tsx`, `src/app/layouts/SalesLayout.tsx`, `src/shared/components/ModeSwitch.tsx` |
 | 1. 신규위험 대시보드 | 구현 | 샘플 표시 | 데이터 소스 미연동 | `src/pages/risk-dashboard/RiskDashboardPage.tsx` |
 | 2. 위험 후보 목록 | 구현 | 검색·필터 샘플 | 후보 API 미연동 | `src/pages/risk-catalog/RiskCatalogPage.tsx` |
-| 3. 위험 상세·상품화 평가 | 구현 | 샘플 표시 | 근거·의견·승인 API 미연동 | `src/pages/risk-detail/RiskDetailPage.tsx` |
+| 3. 위험 상세·상품화 평가 | 구현 | 샘플 표시·역할별 검토 | 근거·의견·승인 API 미연동 | `src/pages/risk-detail/RiskDetailPage.tsx`, `src/features/risk-detail/RiskDecisionWorkspace.tsx` |
 | 4. 종합 리포트 | 구현 | 샘플 표시 | 생성·결재·내보내기 미연동 | `src/pages/reports/ReportsPage.tsx` |
 | 5. 고객 상황 입력 | 구현 | 동작 | 고객 인증·채널 미연동 | `src/features/customer-insight/CustomerInsightStudio.tsx` |
 | 영업부서 현장 리포트 모드 | 구현 | 동작·`localStorage` 데모 | 접수 API·SSO·검토 큐 미연동 | `src/app/layouts/SalesLayout.tsx`, `src/pages/sales-intake/SalesIntakePage.tsx`, `src/features/sales-intake/SalesIntakeStudio.tsx` |

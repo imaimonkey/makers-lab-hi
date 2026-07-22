@@ -18,6 +18,7 @@
 - [서비스 경계](platform/service-boundaries.md): 개인정보·추천·인증·AI 경계
 - [브랜드 시스템](platform/brand-system.md): 공식 근거와 디자인 토큰
 - [개발 슬라이스](roadmap/development-slices.md): 의존성과 권장 병합 순서
+- [0723 통합 작업 기록](features/workstream-integration-0723.md): 네 기능 브랜치의 현재 통합 경계와 검증 결과
 
 ## 상태 용어
 

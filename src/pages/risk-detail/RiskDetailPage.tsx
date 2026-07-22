@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { sampleOnlyNotice, sampleRiskCandidates, sampleRiskDetails } from '../../domain/risk/sampleData'
+import { RiskDecisionWorkspace } from '../../features/risk-detail/RiskDecisionWorkspace'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
@@ -81,20 +82,7 @@ export function RiskDetailPage() {
         </aside>
       </section>
 
-      <section className="evidence-panel surface-card">
-        <div className="panel-heading"><div><p className="eyebrow">EVIDENCE LEDGER</p><h2>판단 근거</h2></div><button type="button" className="text-button" disabled title="운영 근거 API 연동 후 사용할 수 있습니다.">+ 근거 추가 · 미연동</button></div>
-        <div className="evidence-grid">
-          {detail.evidence.map((evidence) => (
-            <article key={evidence.title}>
-              <span>{evidence.type}</span>
-              <h3>{evidence.title}</h3>
-              <p>{evidence.source} · {evidence.date}</p>
-              <small>근거 신뢰도 {evidence.confidence}</small>
-            </article>
-          ))}
-        </div>
-        <p className="evidence-rule"><AppIcon name="shield" size={16} /> 모든 평가 문장은 최소 한 개의 evidenceId와 연결되어야 합니다.</p>
-      </section>
+      <RiskDecisionWorkspace risk={risk} detail={detail} />
     </div>
   )
 }
