@@ -9,6 +9,7 @@ export type IconName =
   | 'radar'
   | 'report'
   | 'scan'
+  | 'search'
   | 'shield'
   | 'spark'
   | 'trend'
@@ -31,6 +32,7 @@ const paths: Record<IconName, React.ReactNode> = {
   radar: <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" /><path d="M12 12 18 6" /><path d="M12 2v2M22 12h-2M12 22v-2M2 12h2" /></>,
   report: <><path d="M6 2h9l4 4v16H6z" /><path d="M14 2v5h5" /><path d="M9 13h6M9 17h6" /></>,
   scan: <><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" /><circle cx="12" cy="12" r="3" /></>,
+  search: <><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></>,
   shield: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-5" /></>,
   spark: <><path d="m12 3-1.4 4.1a5 5 0 0 1-3.2 3.2L3 12l4.4 1.7a5 5 0 0 1 3.2 3.2L12 21l1.4-4.1a5 5 0 0 1 3.2-3.2L21 12l-4.4-1.7a5 5 0 0 1-3.2-3.2z" /></>,
   trend: <><path d="m3 17 6-6 4 4 8-8" /><path d="M15 7h6v6" /></>,

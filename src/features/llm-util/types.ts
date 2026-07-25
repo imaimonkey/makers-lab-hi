@@ -8,10 +8,12 @@ export type LlmUtilityDefinition = {
   caption: string
   description: string
   icon: IconName
+  defaultSystemPrompt: string
 }
 
 export type LlmRunRequest = {
   utilityId: LlmUtilityId
+  systemPrompt?: string
   prompt: string
 }
 

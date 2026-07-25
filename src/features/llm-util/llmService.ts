@@ -1,4 +1,5 @@
 import { llmUtilityDefinitions } from './registry'
+import { readSharedSystemPrompt } from './sharedSystemPromptRepository'
 import type { LlmRunRequest, LlmRunResult } from './types'
 
 type LlmApiResponse = {
@@ -15,31 +16,49 @@ const apiBaseUrl = import.meta.env.VITE_LLM_API_BASE_URL || '/api/llm'
 function assertSupportedUtility(utilityId: LlmRunRequest['utilityId']) {
   const definition = llmUtilityDefinitions.find((utility) => utility.id === utilityId)
   if (!definition) throw new Error(`지원하지 않는 LLM 유틸리티입니다: ${utilityId}`)
+  return definition
 }
 
-function createMockResult(prompt: string): LlmRunResult {
+function createMockResult(systemPrompt: string, prompt: string): LlmRunResult {
   return {
     mode: 'mock',
     generatedAt: new Date().toISOString(),
     text: [
       '[MOCK RESPONSE]',
-      '입력 확인:',
+      '[SYSTEM PROMPT APPLIED]',
+      systemPrompt,
+      '',
+      '[TEST INPUT]',
       prompt,
     ].join('\n'),
   }
 }
 
-export async function runLlmUtility({ utilityId, prompt }: LlmRunRequest): Promise<LlmRunResult> {
+export async function runLlmUtility({ utilityId, systemPrompt, prompt }: LlmRunRequest): Promise<LlmRunResult> {
   const normalizedPrompt = prompt.trim()
-  if (!normalizedPrompt) throw new Error('프롬프트를 입력해 주세요.')
+  if (!normalizedPrompt) throw new Error('테스트 입력을 입력해 주세요.')
 
-  assertSupportedUtility(utilityId)
-  if (useMock) return createMockResult(normalizedPrompt)
+  const definition = assertSupportedUtility(utilityId)
+  let normalizedSystemPrompt = systemPrompt?.trim()
+  if (!normalizedSystemPrompt) {
+    try {
+      normalizedSystemPrompt = (await readSharedSystemPrompt(utilityId)).text.trim()
+    } catch {
+      normalizedSystemPrompt = definition.defaultSystemPrompt.trim()
+    }
+  }
+  if (!normalizedSystemPrompt) throw new Error('시스템 프롬프트를 입력해 주세요.')
+
+  if (useMock) return createMockResult(normalizedSystemPrompt, normalizedPrompt)
 
   const response = await fetch(`${apiBaseUrl}/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ utilityId, prompt: normalizedPrompt }),
+    body: JSON.stringify({
+      utilityId,
+      systemPrompt: normalizedSystemPrompt,
+      prompt: normalizedPrompt,
+    }),
   })
   const payload = await response.json() as LlmApiResponse
 

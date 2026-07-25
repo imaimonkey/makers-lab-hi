@@ -16,8 +16,22 @@
 - `RiskEvidenceContract`: 원문 URL, 시점, 주장, 신뢰도를 갖는 근거
 - `RiskCandidateContract`: 손실사건·노출집단·원인·손실 유형을 갖는 후보
 - `CustomerSignal`: 고객 원문 대신 비식별 요약만 갖는 환류 신호
+- `NewsSourceRecord`, `NewsRiskGroup`, `NewsClassificationRun`: 원문 기사, AI가 동적으로 만든 위험 묶음, 분류 실행 이력을 분리한 뉴스 신호 계약
 
 1~4 구현 중 필드가 늘어나면 화면 내부 타입을 만들지 말고 이 계약을 버전 가능한 API 스키마로 확장한다. 날짜는 ISO 8601 UTC 문자열, ID는 표시명과 분리된 불변 문자열을 사용한다. 상태 코드와 사용자 표시 문구도 분리한다.
+
+### AI 뉴스 분류·저장
+
+뉴스는 미리 정의한 위험 카테고리에 넣지 않는다. 1번 AI가 기사에서 위험 조각을 추출한 뒤 `group_key`를 생성하고, `변화 원인 → 노출 대상 → 손실 사건`이 같은 조각을 동적 위험 묶음으로 모은다. 기존 묶음 요약은 다음 실행의 입력으로 제공하며, 같은 위험이면 기존 키를 재사용하고 판단이 어려우면 `uncertain`으로 보류한다.
+
+```text
+storage: data/news-classifications.json (개발용)
+read: GET /api/news/classifications
+append/merge: POST /api/news/classifications
+entities: NewsSourceRecord → NewsClassificationRun → NewsRiskGroupRecord
+```
+
+저장소는 원문 기사, 매번의 AI 원본 응답·입력 ID, 누적 위험 묶음·병합 이력을 모두 보존한다. `articleCount`는 동일 URL을 중복 계산하지 않은 기사 수이며, `sourceCount`는 연결된 출처 호스트 수다. AI 묶음은 자동으로 `RiskCandidateContract`로 승격하지 않는다.
 
 ## 고객 신호 어댑터
 

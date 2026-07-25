@@ -1,10 +1,11 @@
 # 현재 기능 분류
 
-기준일: 2026-07-20
+기준일: 2026-07-25
 
 | 영역 | UI | 로컬 동작 | 운영 연동 | 주요 코드 |
 | --- | --- | --- | --- | --- |
 | 실무자·고객·영업 분리 셸과 사용자 전환 | 구현 | 동작 | 인증 미연동 | `src/app/layouts/RootLayout.tsx`, `src/app/layouts/CustomerLayout.tsx`, `src/app/layouts/SalesLayout.tsx`, `src/shared/components/ModeSwitch.tsx` |
+| 개발자 모드 AI별 시스템 프롬프트 실험 | 구현 | util별 시스템 프롬프트·공통 테스트 입력·util-1 네이버 뉴스 검색어 관리·검색·정보 수집·동적 위험 묶음 분류·개발용 JSON 저장 | Gemini 개발 프록시·개발 서버 저장 API, 운영 인증·DB·원문 사용권·후보 API 미연동 | `src/pages/developer-test/DeveloperTestPage.tsx`, `src/features/llm-util`, `src/features/news-intake`, `src/domain/risk/newsSignal.ts`, `vite.config.ts`, `data/llm-system-prompts.json` |
 | 1. 신규위험 대시보드 | 구현 | 샘플 표시 | 데이터 소스 미연동 | `src/pages/risk-dashboard/RiskDashboardPage.tsx` |
 | 2. 위험 후보 목록 | 구현 | 검색·필터 샘플 | 후보 API 미연동 | `src/pages/risk-catalog/RiskCatalogPage.tsx` |
 | 3. 위험 상세·상품화 평가 | 구현 | 샘플 표시 | 근거·의견·승인 API 미연동 | `src/pages/risk-detail/RiskDetailPage.tsx` |

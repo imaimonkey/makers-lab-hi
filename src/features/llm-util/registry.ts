@@ -1,32 +1,12 @@
 import type { LlmUtilityDefinition } from './types'
+import { llmUtilityDefinition as util1Definition } from './util-1'
+import { llmUtilityDefinition as util2Definition } from './util-2'
+import { llmUtilityDefinition as util3Definition } from './util-3'
+import { llmUtilityDefinition as util4Definition } from './util-4'
 
 export const llmUtilityDefinitions: readonly LlmUtilityDefinition[] = [
-  {
-    id: 'util-1',
-    label: '-',
-    caption: '-',
-    description: '-',
-    icon: 'report',
-  },
-  {
-    id: 'util-2',
-    label: '-',
-    caption: '-',
-    description: '-',
-    icon: 'list',
-  },
-  {
-    id: 'util-3',
-    label: '-',
-    caption: '-',
-    description: '-',
-    icon: 'spark',
-  },
-  {
-    id: 'util-4',
-    label: '-',
-    caption: '-',
-    description: '-',
-    icon: 'radar',
-  },
+  util1Definition,
+  util2Definition,
+  util3Definition,
+  util4Definition,
 ]
