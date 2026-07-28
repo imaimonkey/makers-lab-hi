@@ -1,8 +1,10 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { demoDashboardMetrics, demoIssues, demoLaws, demoRisks, type IssueAudience } from '../../domain/risk/riskRadarDemo'
+import { getWorkbenchRiskId } from '../../domain/risk/riskRadarMappings'
 import { riskRadarApi } from './riskRadarApi'
 import { AppIcon } from '../../shared/components/AppIcon'
+import type { RiskRadarRefreshResult, RiskRadarSnapshotState } from './useRiskRadarSnapshot'
 
 const audiences: Array<'전체' | IssueAudience> = ['전체', '개인 니즈', '기업 니즈', '영업·현장', '뉴스·산업', '법령·규제']
 
@@ -18,7 +20,13 @@ function relatedRiskFor(issueId: string) {
   return demoRisks.find((risk) => risk.articleId === `demo-news-${issueId.replace('issue-', '')}`)
 }
 
-export function RiskRadarOperationsPanel() {
+export function RiskRadarOperationsPanel({
+  radarSnapshot,
+  onRefresh,
+}: {
+  radarSnapshot: RiskRadarSnapshotState
+  onRefresh: () => Promise<RiskRadarRefreshResult>
+}) {
   const [audience, setAudience] = useState<'전체' | IssueAudience>('전체')
   const [query, setQuery] = useState('')
   const [notice, setNotice] = useState('')
@@ -45,7 +53,10 @@ export function RiskRadarOperationsPanel() {
     setBusy(action)
     try {
       await operation()
-      setNotice(`${action} 작업이 완료되었습니다. 대시보드 데이터는 새로고침 후 확인합니다.`)
+      const refreshResult = await onRefresh()
+      setNotice(refreshResult.failedSources.length
+        ? `${action} 작업은 완료됐지만 ${refreshResult.failedSources.join(', ')} 재조회가 실패했습니다. 실패 소스는 SAMPLE 또는 마지막 정상 데이터를 유지합니다.`
+        : `${action} 작업이 완료되어 대시보드·뉴스·위험 후보를 다시 조회했습니다.`)
     } catch {
       setNotice(`${action} API가 연결되지 않았습니다. 운영 데이터는 변경하지 않고 샘플 상태를 유지합니다.`)
     } finally {
@@ -68,7 +79,7 @@ export function RiskRadarOperationsPanel() {
         <div>
           <p className="eyebrow">PRODUCT DEVELOPMENT WORK QUEUE · HYOJE</p>
           <h2>신호를 상품화 검토 단계로 연결</h2>
-          <p>수집·본문 확보·분석·검증은 독립 단계로 남기고, 담당자 확인 전에는 위험 후보를 확정하지 않습니다.</p>
+          <p>수집·본문 확보·분석·검증은 독립 단계로 남기고, 담당자 확인 전에는 위험 후보를 확정하지 않습니다. 현재 대시보드 소스는 {radarSnapshot.sourceStatus.dashboard === 'live' ? 'LIVE API' : 'SAMPLE/마지막 정상 데이터'}입니다.</p>
         </div>
         <div className="radar-operation-actions" aria-label="레이더 작업 액션">
           <button type="button" disabled={Boolean(busy)} onClick={() => void runAction('자료 수집', riskRadarApi.collect)}><AppIcon name="trend" size={14} /> {busy === '자료 수집' ? '수집 중…' : '자료 수집'}</button>
@@ -101,7 +112,7 @@ export function RiskRadarOperationsPanel() {
                 <div className="radar-issue-facts"><span><small>위험 사건</small><strong>{issue.riskEvent}</strong></span><span><small>예상 손실</small><strong>{issue.expectedLoss}</strong></span><span><small>상품화 경로</small><strong>{issue.productRoute}</strong></span><span><small>다음 행동</small><strong>{issue.next}</strong></span></div>
                 <div className="radar-issue-progress"><span><i style={{ width: `${issue.progress}%` }} /></span><small>{issue.progress}% · 근거 {issue.sourceCount}건</small></div>
                 <div className="radar-issue-actions" aria-label={`${issue.title} 다음 작업`}>
-                  {relatedRisk ? <Link to={`/risks/${relatedRisk.id}`}>후보 상세</Link> : null}
+                  {relatedRisk ? <Link to={`/risks/${getWorkbenchRiskId(relatedRisk)}`}>후보 상세</Link> : null}
                   <button type="button" disabled={Boolean(busy)} onClick={() => void runAction('AI 분석', () => riskRadarApi.analyze(articleId))}>AI 분석</button>
                   <button type="button" disabled={Boolean(busy)} onClick={() => void runAction('교차검증', () => riskRadarApi.verify(articleId))}>교차검증</button>
                 </div>

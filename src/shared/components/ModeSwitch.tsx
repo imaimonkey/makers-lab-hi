@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { AppIcon } from './AppIcon'
 
 type ModeSwitchProps = {
-  mode: 'analyst' | 'customer' | 'sales'
+  mode: 'analyst' | 'customer' | 'sales' | 'developer'
 }
 
 export function ModeSwitch({ mode }: ModeSwitchProps) {
@@ -30,7 +30,13 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
     }
   }, [isOpen])
 
-  const currentLabel = mode === 'analyst' ? '실무자' : mode === 'sales' ? '영업부서' : '개인 고객'
+  const currentLabel = mode === 'analyst'
+    ? '실무자'
+    : mode === 'sales'
+      ? '영업부서'
+      : mode === 'customer'
+        ? '개인 고객'
+        : '개발자'
 
   return (
     <div className="mode-switch mode-menu" ref={menuRef}>
@@ -60,6 +66,19 @@ export function ModeSwitch({ mode }: ModeSwitchProps) {
             <span className="mode-menu-item-icon"><AppIcon name="radar" size={15} /></span>
             <span><strong>실무자</strong>
             <small>위험 탐지·상품개발 워크벤치</small></span>
+          </Link>
+          <Link
+            to="/developer-test"
+            role="menuitem"
+            className={mode === 'developer' ? 'active developer-mode-menu-item' : 'developer-mode-menu-item'}
+            aria-current={mode === 'developer' ? 'true' : undefined}
+            onClick={() => setIsOpen(false)}
+          >
+            <span className="mode-menu-item-icon"><AppIcon name="spark" size={15} /></span>
+            <span className="mode-menu-item-copy">
+              <strong>개발자 (AI 테스트 모드)</strong>
+              <small>LLM 기능·프롬프트·응답 테스트</small>
+            </span>
           </Link>
           <Link
             to="/sales-intake"

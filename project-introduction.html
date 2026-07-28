@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#00205b" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta
+      name="description"
+      content="HI Emerging Risk Studio 소개 — 신규 위험 상시 탐지와 보험 사각지대 발굴, 상품개발 실무자 워크플로"
+    />
+    <title>HI Emerging Risk Studio · 프로젝트 소개</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
+
+      :root {
+        --hi-navy: #00205b;
+        --hi-navy-deep: #00173f;
+        --hi-orange: #ff9e1b;
+        --hi-blue: #418fde;
+        --ink: #18324c;
+        --muted: #6b8197;
+        --line: #e3ebf4;
+        --line-strong: #cbdbea;
+        --surface: #fff;
+        --canvas: #eef3fa;
+        --pastel-blue: #eaf4ff;
+        --pastel-mint: #e8f8f2;
+        --pastel-peach: #fff1e3;
+        --shadow: 0 18px 48px rgba(33, 73, 111, .1);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: 'Noto Sans KR', system-ui, sans-serif;
+        line-height: 1.6;
+        background: var(--canvas);
+        overflow: hidden;
+      }
+
+      /* ── Deck: horizontal slider ─────────────────────── */
+      .stage { height: 100vh; display: flex; flex-direction: column; }
+      .viewport { flex: 1; overflow: hidden; position: relative; }
+      .track {
+        height: 100%;
+        display: flex;
+        transition: transform .45s cubic-bezier(.4, 0, .2, 1);
+      }
+      .slide-wrap {
+        flex: 0 0 100%;
+        height: 100%;
+        padding: 26px clamp(16px, 4vw, 56px) 12px;
+        display: flex; justify-content: center;
+      }
+      .slide {
+        width: 100%; max-width: 1120px; height: 100%;
+        display: flex; flex-direction: column;
+        padding: 40px 52px 20px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        overflow-y: auto;
+      }
+
+      .slide-head {
+        display: flex; align-items: baseline; gap: 16px;
+        padding-bottom: 14px; margin-bottom: 24px;
+        border-bottom: 3px solid var(--hi-navy);
+        flex: 0 0 auto;
+      }
+      .slide-no { flex: 0 0 auto; font: 700 13px/1 'DM Sans', sans-serif; letter-spacing: .08em; color: var(--hi-orange); }
+      .slide-head h2 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -.03em; color: var(--hi-navy); }
+      .slide-head .sub { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 500; }
+      .slide-body { display: flex; flex-direction: column; gap: 18px; }
+
+      /* ── Navigation bar ─────────────────────────────── */
+      .navbar {
+        flex: 0 0 auto;
+        display: flex; align-items: center; justify-content: center; gap: 18px;
+        padding: 12px 20px 18px;
+      }
+      .nav-btn {
+        width: 44px; height: 44px; border: 1px solid var(--line-strong); border-radius: 50%;
+        display: grid; place-items: center; cursor: pointer;
+        color: var(--hi-navy); background: var(--surface);
+        font: 700 17px/1 'DM Sans', sans-serif;
+        transition: background .15s, color .15s, opacity .15s;
+      }
+      .nav-btn:hover:not(:disabled) { background: var(--hi-navy); color: #fff; }
+      .nav-btn:disabled { opacity: .3; cursor: default; }
+      .nav-counter {
+        min-width: 76px; text-align: center;
+        font: 700 13px/1 'DM Sans', sans-serif; letter-spacing: .1em; color: var(--hi-navy);
+      }
+      .nav-dots { display: flex; gap: 7px; margin-left: 8px; }
+      .nav-dot {
+        width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%;
+        background: var(--line-strong); cursor: pointer; transition: background .15s, transform .15s;
+      }
+      .nav-dot.active { background: var(--hi-orange); transform: scale(1.25); }
+      .nav-hint { position: absolute; right: 24px; bottom: 22px; color: var(--muted); font-size: 11px; }
+      @media (max-width: 720px) { .nav-hint, .nav-dots { display: none; } }
+
+      /* ── Common blocks ──────────────────────────────── */
+      .lead { margin: 0; font-size: 15.5px; font-weight: 600; }
+      .lead .accent { color: var(--hi-orange); }
+      ul.plain { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+      ul.plain li { position: relative; padding-left: 18px; font-size: 14px; }
+      ul.plain li::before {
+        content: ''; position: absolute; left: 2px; top: .58em;
+        width: 7px; height: 7px; border-radius: 2px; background: var(--hi-orange);
+      }
+      ul.plain li b { color: var(--hi-navy); }
+      .muted { color: var(--muted); }
+
+      .cols { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+      .box { padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px; background: #fbfdff; }
+      .box h3 {
+        margin: 0 0 9px; font-size: 13px; font-weight: 700; letter-spacing: .02em; color: var(--hi-navy);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .box h3::before { content: ''; width: 4px; height: 14px; border-radius: 2px; background: var(--hi-orange); flex: 0 0 auto; }
+      .box ul { margin: 0; padding-left: 16px; display: grid; gap: 5px; font-size: 13px; }
+      .box li { padding-left: 2px; }
+
+      .purpose {
+        padding: 14px 20px; border-left: 4px solid var(--hi-orange); border-radius: 0 10px 10px 0;
+        background: var(--pastel-peach); font-size: 14.5px; font-weight: 700; color: var(--hi-navy);
+      }
+      .purpose small { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+
+      .feature-tag {
+        display: inline-flex; font: 700 12px/1 'DM Sans', Consolas, monospace;
+        color: var(--hi-navy); background: var(--pastel-blue); padding: 6px 12px; border-radius: 7px;
+      }
+
+      /* Cover */
+      .cover { justify-content: center; background: linear-gradient(140deg, var(--hi-navy) 0%, var(--hi-navy-deep) 75%); border: 0; color: #fff; }
+      .cover-mark {
+        width: 52px; height: 52px; display: grid; place-items: center; border-radius: 13px;
+        color: var(--hi-navy); background: var(--hi-orange);
+        font: 800 17px/1 'DM Sans', sans-serif; margin-bottom: 28px;
+      }
+      .cover h1 { margin: 0 0 16px; font-size: clamp(28px, 4.2vw, 42px); font-weight: 800; letter-spacing: -.035em; line-height: 1.3; }
+      .cover h1 small { display: block; margin-bottom: 12px; font: 700 13px/1 'DM Sans', sans-serif; letter-spacing: .14em; color: var(--hi-orange); text-transform: uppercase; }
+      .cover .desc { margin: 0; max-width: 44em; color: rgba(255,255,255,.8); font-size: 15px; }
+      .cover-meta { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 8px; }
+      .cover-meta span {
+        padding: 7px 14px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px;
+        color: rgba(255,255,255,.8); font-size: 12px; font-weight: 600;
+      }
+
+      /* Rows */
+      .rows { display: grid; gap: 10px; }
+      .row {
+        display: grid; grid-template-columns: 36px 235px 1fr; gap: 14px; align-items: center;
+        padding: 13px 18px; border: 1px solid var(--line); border-radius: 10px; background: #fbfdff;
+      }
+      .row-no {
+        width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px;
+        background: var(--pastel-peach); color: var(--hi-navy); font: 700 13px/1 'DM Sans', sans-serif;
+      }
+      .row b { font-size: 14px; color: var(--hi-navy); letter-spacing: -.01em; }
+      .row p { margin: 0; color: var(--muted); font-size: 13px; }
+      @media (max-width: 760px) { .row { grid-template-columns: 36px 1fr; } .row p { grid-column: 2; } }
+
+      /* Pipeline */
+      .pipeline { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+      .pipe-step {
+        flex: 1 1 165px; min-width: 165px; padding: 14px 16px;
+        border: 1px solid var(--line-strong); border-radius: 10px; background: var(--pastel-blue);
+      }
+      .pipe-step.final { background: var(--hi-navy); border-color: var(--hi-navy); color: #fff; }
+      .pipe-step .step-no { display: block; margin-bottom: 5px; font: 700 11px/1 'DM Sans', sans-serif; letter-spacing: .1em; color: var(--hi-orange); }
+      .pipe-step b { display: block; font-size: 13.5px; letter-spacing: -.01em; }
+      .pipe-step small { display: block; margin-top: 4px; font-size: 11.5px; line-height: 1.5; color: var(--muted); }
+      .pipe-step.final small { color: rgba(255,255,255,.72); }
+      .pipe-arrow { align-self: center; color: var(--hi-blue); font: 700 15px/1 'DM Sans', sans-serif; }
+      @media (max-width: 760px) { .pipe-arrow { display: none; } }
+
+      /* Tables */
+      .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+      table { width: 100%; min-width: 540px; border-collapse: collapse; font-size: 13px; }
+      thead th {
+        padding: 10px 15px; text-align: left; background: var(--hi-navy); color: #fff;
+        font-size: 12px; font-weight: 700; white-space: nowrap;
+      }
+      tbody td { padding: 10px 15px; border-top: 1px solid var(--line); vertical-align: top; }
+      tbody tr:first-child td { border-top: 0; }
+      tbody td:first-child { font-weight: 700; color: var(--hi-navy); white-space: nowrap; }
+
+      .chip {
+        display: inline-block; padding: 2px 10px; border-radius: 999px;
+        font-size: 11.5px; font-weight: 700; white-space: nowrap;
+      }
+      .chip-navy { color: var(--hi-navy); background: var(--pastel-blue); }
+      .chip-mint { color: #0a8f68; background: var(--pastel-mint); }
+      .chip-peach { color: #c96b12; background: var(--pastel-peach); }
+
+      @media (max-width: 640px) {
+        .slide { padding: 26px 22px 16px; }
+        .slide-head { flex-wrap: wrap; }
+        .slide-head .sub { margin-left: 0; width: 100%; }
+      }
+      @media print {
+        body { overflow: visible; }
+        .stage { height: auto; }
+        .viewport { overflow: visible; }
+        .track { display: block; transform: none !important; }
+        .slide-wrap { height: auto; padding: 0; }
+        .slide { height: auto; overflow: visible; border: 0; border-radius: 0; box-shadow: none; page-break-after: always; }
+        .navbar, .nav-hint { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="viewport">
+        <div class="track" id="track">
+
+          <!-- 00. 표지 -->
+          <div class="slide-wrap">
+            <section class="slide cover">
+              <div class="cover-mark">HI</div>
+              <h1>
+                <small>Unofficial Internal Concept</small>
+                HI Emerging Risk Studio
+              </h1>
+              <p class="desc">
+                기술 발전 · 산업구조 변화 · 기후변화 · 법령 개정으로 등장하는 신규 위험을
+                외부 정보 채널 상시 스크리닝으로 조기에 발견하고, 보험 사각지대를 찾아
+                상품개발 실무자에게 근거와 함께 제안하는 신위험 인텔리전스 워크벤치
+              </p>
+              <div class="cover-meta">
+                <span>일반보험 상품개발 실무 지원</span>
+                <span>기업성 보험 우선 · 가계성 보조 모니터링</span>
+                <span>대시보드 → 위험 탐색 → 위험 상세 → 리포트</span>
+              </div>
+            </section>
+          </div>
+
+          <!-- 01. 실무자의 환경 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">01</span>
+                <h2>실무자의 환경</h2>
+                <span class="sub">일반보험 상품개발 직무</span>
+              </div>
+              <div class="slide-body">
+                <p class="lead">
+                  대상 사용자 — <span class="accent">일반보험 상품개발 부서 실무자</span> :
+                  기업과 개인의 새로운 리스크에 맞춰 신규 상품을 개발하고 기존 상품을 개정·관리
+                </p>
+                <div class="cols">
+                  <div class="box">
+                    <h3>주요 업무</h3>
+                    <ul>
+                      <li>신규 보험상품 개발 · 기존 상품 개정 및 관리</li>
+                      <li>보험요율 · 위험률 산출</li>
+                      <li>보험약관 · 기초서류 작성</li>
+                      <li>금융감독원 신고 및 협의, 영업부서 협업</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>담당 고객과 상품 범위</h3>
+                    <ul>
+                      <li><b>기업 고객</b> — 화재 · 해상 · 기술 · 책임 · 특종 등 기업의 재산 · 배상책임 · 사업 운영 위험을 보장하는 기업성 보험</li>
+                      <li><b>가계(개인) 고객</b> — 일상 위험을 보장하는 가계성 상품, 상대적으로 규제 · 절차 엄격</li>
+                      <li class="muted">기업성 보험은 설계 · 요율 적용이 유연해 신위험 대응 속도가 빠르고 건당 규모가 큼 → 시스템의 우선 탐색 대상</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="box">
+                  <h3>업무 환경의 특성</h3>
+                  <ul>
+                    <li>기술 발전 · 산업환경 · 법령 및 규제 변화를 지속적으로 따라가며 상품화 기회를 판단해야 함</li>
+                    <li>위험률 · 보험료 산출은 금전적 책임과 직결되는 정밀 영역 — 아이디어 발굴과 확정 판단의 성격이 다름</li>
+                    <li>신규 위험 탐색에 쓸 수 있는 정보가 제한적이고, 수집 · 분석이 개인의 경험과 인적 네트워크에 의존</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 02. 문제 정의 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">02</span>
+                <h2>문제 정의 — AS-IS</h2>
+                <span class="sub">현행 신규 위험 발견 방식의 한계</span>
+              </div>
+              <div class="slide-body">
+                <p class="lead">
+                  신규 위험 유입의 <span class="accent">약 80~90%가 영업부서 · 계약자 요청 이후</span> 검토 —
+                  담당자의 자발적 탐색은 10~20% 수준
+                </p>
+                <div class="rows">
+                  <div class="row">
+                    <span class="row-no">1</span>
+                    <b>탐색 과정이 체계적이지 않음</b>
+                    <p>신규 위험을 상시 감지하는 시스템이 없어 뉴스 · 영업 의견 · 업계 동향을 사람이 직접 확인</p>
+                  </div>
+                  <div class="row">
+                    <span class="row-no">2</span>
+                    <b>위험 현실화 이후의 후행적 인지</b>
+                    <p>요청과 뉴스에 의존하므로 사고가 이미 발생한 뒤에야 위험을 알게 되는 경우가 다수</p>
+                  </div>
+                  <div class="row">
+                    <span class="row-no">3</span>
+                    <b>정보 수집 자체의 제약</b>
+                    <p>재보험사 발간물 · 입법예고 · 연구자료 등 유효 채널이 통합 수집되지 않고 개별 담당자에 분산</p>
+                  </div>
+                  <div class="row">
+                    <span class="row-no">4</span>
+                    <b>법령 · 규제 변화 탐지 공백</b>
+                    <p>의무보험 신설 등 상품 기회와 직결되는 법령 개정도 외부 기관 전달에 의존해 뒤늦게 착수</p>
+                  </div>
+                  <div class="row">
+                    <span class="row-no">5</span>
+                    <b>검토 이력의 휘발</b>
+                    <p>전화 · 이메일 · 메신저로 오가는 요청과 폐기 사유가 기록으로 축적되지 않아 조직 지식화 불가</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 03. 접근 방향 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">03</span>
+                <h2>접근 방향 — TO-BE</h2>
+                <span class="sub">상시 스크리닝 → 1차 분석 → 실무자 제안</span>
+              </div>
+              <div class="slide-body">
+                <p class="lead">
+                  요청을 기다리는 방식에서, 외부 정보를 <span class="accent">상시 스크리닝해 먼저 제안</span>하는 방식으로 전환
+                </p>
+                <div class="pipeline">
+                  <div class="pipe-step">
+                    <span class="step-no">STEP 1</span>
+                    <b>채널 상시 스크리닝</b>
+                    <small>뉴스 · 재보험 · 입법예고 · 연구기관 · 투자 동향 수집</small>
+                  </div>
+                  <span class="pipe-arrow">→</span>
+                  <div class="pipe-step">
+                    <span class="step-no">STEP 2</span>
+                    <b>신위험 후보 발굴</b>
+                    <small>위험 카드 정리 · 기업성/가계성 분류 · 사각지대 식별</small>
+                  </div>
+                  <span class="pipe-arrow">→</span>
+                  <div class="pipe-step">
+                    <span class="step-no">STEP 3</span>
+                    <b>상품화 1차 평가</b>
+                    <small>시장성 · 보험성 · PML · 약관 가능성 체크</small>
+                  </div>
+                  <span class="pipe-arrow">→</span>
+                  <div class="pipe-step final">
+                    <span class="step-no">STEP 4</span>
+                    <b>근거와 함께 제안</b>
+                    <small>회의용 리포트 · 검토 질문 · 이력 축적</small>
+                  </div>
+                </div>
+                <div class="cols">
+                  <div class="box">
+                    <h3>시스템(AI)이 맡는 일</h3>
+                    <ul>
+                      <li>공개 정보 상시 수집 · 신위험 후보 발굴</li>
+                      <li>유사 사고 · 유사 상품 · 해외 사례 검색</li>
+                      <li>법령 · 규제 변화 탐지</li>
+                      <li>심사 기준 1차 체크리스트와 회의자료 생성</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>실무자가 맡는 일 (시스템이 확정하지 않는 일)</h3>
+                    <ul>
+                      <li>최종 보험료 · 위험률 산출</li>
+                      <li>법률 · 준법 최종 판단, 약관 확정</li>
+                      <li>인수 여부 · 보장한도 결정</li>
+                      <li class="muted">모든 시스템 결과에 출처 · 분석 시점 · 불확실성 표시 — 최종 판단은 항상 실무자</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 04. 정보 채널 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">04</span>
+                <h2>스크리닝 대상 정보 채널</h2>
+                <span class="sub">신규 위험 · 의무보험 기회를 먼저 발견하는 재료</span>
+              </div>
+              <div class="slide-body">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr><th>채널</th><th>대상</th><th>탐지 목적</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>뉴스 · VOC</td>
+                        <td>사고 · 피해 보도, &ldquo;보장받기 어렵다 · 사각지대&rdquo; 류 표현</td>
+                        <td>보험이라는 단어가 없는 잠재 보장 수요까지 탐지</td>
+                      </tr>
+                      <tr>
+                        <td>해외 재보험 · 브로커</td>
+                        <td>Swiss Re · Munich Re · Lloyd&rsquo;s 등 발간물</td>
+                        <td>국내보다 앞선 기업성 위험 · 인수 조건 · 글로벌 트렌드</td>
+                      </tr>
+                      <tr>
+                        <td>정부 · 규제기관</td>
+                        <td>입법예고, 법령 개정안, 금융위 · 금감원 보도자료</td>
+                        <td>신규 의무보험 · 규제로 형성되는 보험시장 조기 탐지</td>
+                      </tr>
+                      <tr>
+                        <td>업계 · 연구기관</td>
+                        <td>보험연구원 · 보험개발원 · 손보협회 배타적 사용권 자료</td>
+                        <td>보장 공백 분석 · 국내 신상품과 차별화 담보 탐색</td>
+                      </tr>
+                      <tr>
+                        <td>기술 · 투자 데이터</td>
+                        <td>특허 출원 · VC 투자 · 신산업 육성 정책 · 거시경제 분석</td>
+                        <td>새 설비 · 사업모델의 재물 · 책임 · 사업중단 위험 예측</td>
+                      </tr>
+                      <tr>
+                        <td>사내 영업 채널</td>
+                        <td>영업부서 요청 · 고객 미팅 기록 (현행 유입의 최대 비중)</td>
+                        <td>실제 계약 수요를 표준 양식으로 구조화해 축적</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <ul class="plain">
+                  <li><b>키워드 스크리닝 예시</b> — 의무보험 · 보험 가입 의무 · 배상책임 · 사각지대 / 신산업 · 상용화 · 특허 급증 / 랜섬웨어 · 공급망 중단 · 배터리 화재 · 로봇 · 드론 · AI 책임 · 기후재난</li>
+                  <li class="muted">수집량이 곧 위험 크기가 되지 않도록 채널별 출처 · 수집 주기 · 중복 제거 기준을 함께 관리</li>
+                </ul>
+              </div>
+            </section>
+          </div>
+
+          <!-- 05. 기능 1 대시보드 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">05</span>
+                <h2>기능 ① 신규위험 대시보드</h2>
+                <span class="sub"><span class="feature-tag">/</span></span>
+              </div>
+              <div class="slide-body">
+                <div class="purpose">
+                  채널별 수집 현황과 새로운 위험의 변화를 한눈에 파악하는 관측 시작점
+                  <small>목적 — 어제와 달라진 것, 오늘 검토가 필요한 것, 데이터가 끊긴 것을 첫 화면에서 구분</small>
+                </div>
+                <div class="cols">
+                  <div class="box">
+                    <h3>답하는 질문</h3>
+                    <ul>
+                      <li>최근 관측에서 무엇이 유의미하게 변했는가</li>
+                      <li>어떤 후보가 오늘 검토 또는 재검토가 필요한가</li>
+                      <li>어떤 수집 채널이 오래됐거나 실패했는가</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>주요 기능</h3>
+                    <ul>
+                      <li>5채널 신호 파이프라인 · 소스 상태 표시</li>
+                      <li>이슈 매트릭스 · 우선 검토 알림</li>
+                      <li>산업 · 시장 추이, 법령 동향 보드</li>
+                      <li>상품 설계 보드 · 후보 상세 진입</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>설계 기준</h3>
+                    <ul>
+                      <li>기업성 후보 우선 노출, 가계성은 보조 분류</li>
+                      <li>데이터 최신 시각 · 실패 채널 · 샘플 여부 표시</li>
+                      <li>같은 사건의 재게시를 독립 근거로 중복 계산하지 않음</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 06. 기능 2 위험 탐색 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">06</span>
+                <h2>기능 ② 위험 탐색</h2>
+                <span class="sub"><span class="feature-tag">/risks</span></span>
+              </div>
+              <div class="slide-body">
+                <div class="purpose">
+                  발굴된 후보를 위험 카드 단위로 정리하고, 지금 상세 평가할 대상을 선별
+                  <small>목적 — 흩어진 수집 신호를 검토 가능한 후보로 정규화하는 선별 게이트</small>
+                </div>
+                <div class="cols">
+                  <div class="box">
+                    <h3>위험 카드가 담는 정보</h3>
+                    <ul>
+                      <li>위험 개요 · 관련 산업 · 사고 사례</li>
+                      <li>잠재 고객과 시장 · 규제 동향 · 해외 사례</li>
+                      <li>출처 · 검토 상태 · 담당 · 다음 검토일</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>주요 기능</h3>
+                    <ul>
+                      <li>수집 단계 · 기사 큐 · 후보 등록 요청</li>
+                      <li>TOP-5 후보 12열 비교 매트릭스</li>
+                      <li>지표별 근거 팝오버</li>
+                      <li>법률 · 판례 확인 패널</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>설계 기준</h3>
+                    <ul>
+                      <li>기사 제목만 나열하는 목록 금지</li>
+                      <li>근거 없는 자동 우선순위 확정 금지</li>
+                      <li>중복 후보 정리 · 상태 변경 이력 보존</li>
+                      <li class="muted">후보 생성은 확정이 아닌 초안 상태로 요청</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 07. 기능 3 위험 상세 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">07</span>
+                <h2>기능 ③ 위험 상세 · 상품화 평가</h2>
+                <span class="sub"><span class="feature-tag">/risks/:riskId</span></span>
+              </div>
+              <div class="slide-body">
+                <div class="purpose">
+                  후보 하나를 상품화 심사 기준으로 1차 평가 — 이 위험이 보험으로 성립하는가
+                  <small>목적 — 통과 · 주의 · 추가 확인을 근거 출처와 함께 제시하고, 진행 / 보류 / 폐기 결정을 도출</small>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr><th>심사 항목</th><th>핵심 질문</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>시장성 · 실제 계약자</td><td>잠재 고객 수와 보험료 규모가 충분하고, 구체적 가입 의향이 존재하는가</td></tr>
+                      <tr><td>우연성</td><td>계약자가 임의로 발생시킬 수 없고 발생 여부 · 시점 · 규모가 불확실한가</td></tr>
+                      <tr><td>피보험이익</td><td>보험금 수령자가 사고로 실제 경제적 손해를 입는 관계인가</td></tr>
+                      <tr><td>최대 가능 손해(PML)</td><td>한 사고 · 누적 사고의 최대 손해를 감당하거나 재보험으로 이전할 수 있는가</td></tr>
+                      <tr><td>도덕적 해이 · 사행성 배제</td><td>고의 · 조작 · 보험사기를 통제할 수 있고, 확정 수익 약속 구조가 아닌가</td></tr>
+                      <tr><td>약관 · 손해 산정 가능성</td><td>보장 사고 · 면책 · 지급 조건과 손해액 산정 방식을 명확히 정의할 수 있는가</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="cols">
+                  <div class="box">
+                    <h3>주요 기능</h3>
+                    <ul>
+                      <li>신호 추세 · 통계 · 손실 드라이버</li>
+                      <li>근거 원장 — 원문 · 수집 시각 · 발췌 · 교차검증 게이트</li>
+                      <li>기존 상품 · 특약 비교, 9항목 종합평가</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>결정 출력</h3>
+                    <ul>
+                      <li>진행 / 보류 / 폐기 결정과 이유 · 근거 ID</li>
+                      <li>보장 구조 가설 초안 — 대상 · 보험사고 · 보장 · 면책 후보</li>
+                      <li>폐기 시 사유를 이력으로 축적 (예 — 우연성 부족 · 피보험이익 부재 · 사행성)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 08. 기능 4 리포트 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">08</span>
+                <h2>기능 ④ 종합 리포트</h2>
+                <span class="sub"><span class="feature-tag">/reports</span></span>
+              </div>
+              <div class="slide-body">
+                <div class="purpose">
+                  상품개발 · 영업 미팅에 바로 활용하는 회의용 검토 자료
+                  <small>목적 — 관리자 · 상품 · 계리 · 보상 · 법무가 같은 근거를 보고 다음 투자 여부를 결정</small>
+                </div>
+                <div class="cols">
+                  <div class="box">
+                    <h3>리포트 구성</h3>
+                    <ul>
+                      <li>회의용 요약과 요청 결정</li>
+                      <li>위험 정의 · 시장 · 손실 시나리오</li>
+                      <li>보장 구조 초안과 기존 상품 비교 · 공백 가설</li>
+                      <li>실무 확인 질문 · 데이터 출처 · 리스크와 한계</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>주요 기능</h3>
+                    <ul>
+                      <li>리포트 생성 · 섹션 편집 · 저장</li>
+                      <li>약관 초안 생성</li>
+                      <li>리포트 기반 Q&amp;A</li>
+                      <li>PDF 출력</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>완료 기준</h3>
+                    <ul>
+                      <li>수치와 문장이 근거 ID로 역추적 가능</li>
+                      <li>진행 / 보류 / 폐기가 분명하고, 미결 질문은 담당자 · 기한과 연결</li>
+                      <li>생성 시점 스냅샷과 이후 변경 이력 구분</li>
+                    </ul>
+                  </div>
+                </div>
+                <ul class="plain">
+                  <li><b>미팅에서 확인할 질문 예시</b> — 어떤 사고와 손해를 보장하는가 · 사고와 손해를 객관적으로 확인할 수 있는가 · 실제 계약자가 존재하는가 · 동시다발 사고 위험을 추정할 수 있는가</li>
+                </ul>
+              </div>
+            </section>
+          </div>
+
+          <!-- 09. 기대 효과 -->
+          <div class="slide-wrap">
+            <section class="slide">
+              <div class="slide-head">
+                <span class="slide-no">09</span>
+                <h2>기대 효과와 현재 상태</h2>
+                <span class="sub">성공 기준 · 구현 범위</span>
+              </div>
+              <div class="slide-body">
+                <p class="lead">
+                  성공 기준은 상품화 여부를 단정하는 정확도가 아니라,
+                  <span class="accent">더 이른 발견 · 더 빠른 근거 제공 · 검토 이력의 축적</span>
+                </p>
+                <div class="cols">
+                  <div class="box">
+                    <h3>기대 효과</h3>
+                    <ul>
+                      <li>요청 후 검토(80~90% 후행)에서 상시 탐지 · 선제 제안으로 전환</li>
+                      <li>기존보다 이른 시점에 유의미한 기업성 신위험 발견</li>
+                      <li>실무자가 검토할 근거와 질문을 회의 전에 확보</li>
+                      <li>검토 · 폐기 이력이 조직 지식으로 축적</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>현재 구현 범위</h3>
+                    <ul>
+                      <li>4개 화면의 구조 · 상호작용 · 데이터 계약 구현 <span class="chip chip-peach">샘플 표시</span></li>
+                      <li>리포트 생성 · 편집 · PDF는 프록시 경계까지 구현 <span class="chip chip-mint">로컬 동작</span></li>
+                      <li>후보 · 점수 · 근거 수치는 구조 검토용 샘플 데이터</li>
+                    </ul>
+                  </div>
+                  <div class="box">
+                    <h3>운영 전환 조건</h3>
+                    <ul>
+                      <li>인증 · 권한과 수집 · 평가 저장 서버 API 연동</li>
+                      <li>채널별 수집 주기 · 중복 제거 · 감사 로그 체계</li>
+                      <li>모니터링 기관 목록 · 심사 데이터 항목의 현업 확정</li>
+                    </ul>
+                  </div>
+                </div>
+                <ul class="plain">
+                  <li class="muted">본 저장소는 현대해상의 공식 서비스가 아닌 내부 검토용 프런트엔드 프로토타입이며, 화면의 수치와 후보는 실제 데이터나 판단이 아님</li>
+                </ul>
+              </div>
+            </section>
+          </div>
+
+        </div>
+        <span class="nav-hint">← → 방향키로도 이동</span>
+      </div>
+
+      <nav class="navbar" aria-label="슬라이드 이동">
+        <button type="button" class="nav-btn" id="prevBtn" aria-label="이전 장">←</button>
+        <span class="nav-counter" id="counter">01 / 10</span>
+        <button type="button" class="nav-btn" id="nextBtn" aria-label="다음 장">→</button>
+        <div class="nav-dots" id="dots"></div>
+      </nav>
+    </div>
+
+    <script>
+      (function () {
+        var track = document.getElementById('track')
+        var prevBtn = document.getElementById('prevBtn')
+        var nextBtn = document.getElementById('nextBtn')
+        var counter = document.getElementById('counter')
+        var dotsBox = document.getElementById('dots')
+        var total = track.children.length
+        var index = 0
+
+        for (var i = 0; i < total; i += 1) {
+          var dot = document.createElement('button')
+          dot.type = 'button'
+          dot.className = 'nav-dot'
+          dot.setAttribute('aria-label', (i + 1) + '번 장으로 이동')
+          dot.dataset.index = String(i)
+          dotsBox.appendChild(dot)
+        }
+
+        function pad(n) { return n < 10 ? '0' + n : String(n) }
+
+        function render() {
+          track.style.transform = 'translateX(-' + index * 100 + '%)'
+          counter.textContent = pad(index + 1) + ' / ' + pad(total)
+          prevBtn.disabled = index === 0
+          nextBtn.disabled = index === total - 1
+          var dots = dotsBox.children
+          for (var i = 0; i < dots.length; i += 1) {
+            dots[i].classList.toggle('active', i === index)
+          }
+          var slide = track.children[index].querySelector('.slide')
+          if (slide) slide.scrollTop = 0
+        }
+
+        function go(next) {
+          index = Math.max(0, Math.min(total - 1, next))
+          render()
+        }
+
+        prevBtn.addEventListener('click', function () { go(index - 1) })
+        nextBtn.addEventListener('click', function () { go(index + 1) })
+        dotsBox.addEventListener('click', function (event) {
+          var target = event.target.closest('.nav-dot')
+          if (target) go(Number(target.dataset.index))
+        })
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowLeft') go(index - 1)
+          if (event.key === 'ArrowRight') go(index + 1)
+        })
+
+        render()
+      })()
+    </script>
+  </body>
+</html>

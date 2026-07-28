@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
-import type { CommercializationConfidence, CommercializationCriterionStatus, CommercializationEvidence, CommercializationNextAction, ReportResult } from '../types'
+import type { BriefingContent, BriefingCountItem, BriefingCoreCard, BriefingReviewStatus, BriefingRiskItem, CommercializationConfidence, CommercializationCriterionStatus, CommercializationEvidence, CommercializationEvidenceStatus, CommercializationNextAction, ReportResult } from '../types'
 import { updateReportContent, type EditorPath } from '../services/report-content'
 import { COMMERCIALIZATION_CRITERION_DEFINITIONS } from '../services/commercialization-assessment'
+import { createBriefingContent } from '../services/briefing-content'
 
 export type ReportEditorTabId =
   | 'ai-judgment'
@@ -11,7 +12,6 @@ export type ReportEditorTabId =
   | 'wording'
   | 'evidence'
   | 'briefing'
-  | 'reviewer'
 
 type EditorProps = {
   report: ReportResult
@@ -29,19 +29,21 @@ function Field({
   value,
   onChange,
   multiline = false,
+  placeholder,
 }: {
   label: string
   value: string
   onChange: (value: string) => void
   multiline?: boolean
+  placeholder?: string
 }) {
   return (
     <label className="report-page__editor-field">
       <span>{label}</span>
       {multiline ? (
-        <textarea value={value} rows={3} onChange={(event) => onChange(event.target.value)} />
+        <textarea value={value} rows={3} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
       ) : (
-        <input value={value} onChange={(event) => onChange(event.target.value)} />
+        <input value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
       )}
     </label>
   )
@@ -81,10 +83,68 @@ function Grid({ children }: { children: ReactNode }) {
   return <div className="report-page__editor-grid">{children}</div>
 }
 
+function EditableStringList({
+  label,
+  values,
+  onChange,
+  multiline = false,
+}: {
+  label: string
+  values: string[]
+  onChange: (values: string[]) => void
+  multiline?: boolean
+}) {
+  const updateAt = (index: number, value: string) => onChange(values.map((item, currentIndex) => currentIndex === index ? value : item))
+  const removeAt = (index: number) => onChange(values.filter((_, currentIndex) => currentIndex !== index))
+  const move = (index: number, direction: -1 | 1) => {
+    const target = index + direction
+    if (target < 0 || target >= values.length) return
+    const next = [...values]
+    const [item] = next.splice(index, 1)
+    next.splice(target, 0, item)
+    onChange(next)
+  }
+  return (
+    <div className="report-page__editor-list">
+      <div className="report-page__editor-list-heading"><strong>{label}</strong><button type="button" onClick={() => onChange([...values, ''])}>항목 추가</button></div>
+      {values.map((value, index) => (
+        <div className="report-page__editor-item report-page__editor-item--list" key={`${label}-${index}`}>
+          <Field label={`${label} ${index + 1}`} value={value} onChange={(next) => updateAt(index, next)} multiline={multiline} />
+          <div className="report-page__editor-order-actions">
+            <button type="button" disabled={index === 0} aria-label={`${label} ${index + 1} 위로 이동`} onClick={() => move(index, -1)}>위로</button>
+            <button type="button" disabled={index === values.length - 1} aria-label={`${label} ${index + 1} 아래로 이동`} onClick={() => move(index, 1)}>아래로</button>
+            <button type="button" className="report-page__editor-remove" onClick={() => removeAt(index)}>삭제</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ArrayItemActions({
+  label,
+  index,
+  length,
+  onMove,
+  onRemove,
+}: {
+  label: string
+  index: number
+  length: number
+  onMove: (direction: -1 | 1) => void
+  onRemove: () => void
+}) {
+  return (
+    <div className="report-page__editor-order-actions">
+      <button type="button" disabled={index === 0} aria-label={`${label} ${index + 1} 위로 이동`} onClick={() => onMove(-1)}>위로</button>
+      <button type="button" disabled={index === length - 1} aria-label={`${label} ${index + 1} 아래로 이동`} onClick={() => onMove(1)}>아래로</button>
+      <button type="button" className="report-page__editor-remove" onClick={onRemove}>삭제</button>
+    </div>
+  )
+}
+
 export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId, onOpenCriterion }: EditorProps & { activeTab: ReportEditorTabId; openCriterionId?: string | null; onOpenCriterion?: (id: string | null) => void }) {
   const update = (path: EditorPath, value: unknown) => onChange(updateReportContent(report, path, value))
-  const labels = (report.ui?.labels ?? {}) as Record<string, unknown>
-
   const commonEditor = (
     <Group title="현재 보고서 헤더 정보">
       <Grid>
@@ -100,11 +160,11 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
   )
 
   const aiEditor = (
-    <Group title="AI 판단">
+    <Group title="상품화 검토 요약">
       <Grid>
         <Field label="판단 상태" value={report.aiSummary.decisionLabel} onChange={(value) => update(['aiSummary', 'decisionLabel'], value)} />
         <Field label="핵심 판단 근거" value={report.aiSummary.primaryConclusionReason} onChange={(value) => update(['aiSummary', 'primaryConclusionReason'], value)} multiline />
-        <Field label="AI 종합 의견" value={report.aiSummary.overallOpinion} onChange={(value) => update(['aiSummary', 'overallOpinion'], value)} multiline />
+        <Field label="핵심 검토 의견" value={report.aiSummary.overallOpinion} onChange={(value) => update(['aiSummary', 'overallOpinion'], value)} multiline />
       </Grid>
       <div className="report-page__editor-list">
         {(report.aiSummary.cards ?? []).map((card, index) => (
@@ -140,7 +200,13 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
 
   const feasibility = report.productFeasibility.assessment
   const feasibilityStatusOptions: Array<[CommercializationCriterionStatus, string]> = [
-    ['pass', '통과'], ['conditional', '조건부'], ['needs_review', '보완 필요'], ['critical', '중대 위험'], ['unknown', '미평가'],
+    ['pass', '충족'], ['needs_review', '보완 필요'], ['additional_check', '추가 확인'], ['critical', '불충족'],
+  ]
+  const evidenceStatusOptions: Array<[CommercializationEvidenceStatus, string]> = [
+    ['sufficient', '근거 충분'],
+    ['external_data_required', '외부 자료 보완 필요'],
+    ['internal_data_required', '내부 자료 필요'],
+    ['reviewer_confirmation_required', '자료 확인 필요'],
   ]
   const confidenceOptions: Array<[CommercializationConfidence, string]> = [
     ['high', '충분'], ['medium', '일부 확보'], ['low', '부족'], ['unknown', '미입력'],
@@ -151,11 +217,11 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
   const emptyEvidence: CommercializationEvidence = { id: 'new-evidence', title: '', sourceType: 'other', sourceName: '', publishedAt: null, collectedAt: null, url: '', excerpt: '' }
   const emptyAction: CommercializationNextAction = { id: 'new-action', text: '', owner: '', dueDate: '', priority: 'medium', completed: false }
   const feasibilityEditor = (
-    <Group title="상품화 가능성 평가 · 12개 고정 기준">
+    <Group title="상품화 종합평가 · 12개 고정 기준">
       {feasibility ? <>
         <Grid>
           <Field label="상품화 종합평가" value={feasibility.overallSummary} onChange={(value) => update(['productFeasibility', 'assessment', 'overallSummary'], value)} multiline />
-          <Field label="게이트 판단 근거" value={feasibility.overallReason} onChange={(value) => update(['productFeasibility', 'assessment', 'overallReason'], value)} multiline />
+          <Field label="기준 판단 근거" value={feasibility.overallReason} onChange={(value) => update(['productFeasibility', 'assessment', 'overallReason'], value)} multiline />
           <ListField label="강점" value={feasibility.topStrengths} onChange={(value) => update(['productFeasibility', 'assessment', 'topStrengths'], value)} />
           <ListField label="주요 리스크" value={feasibility.topRisks} onChange={(value) => update(['productFeasibility', 'assessment', 'topRisks'], value)} />
           <ListField label="우선 조치" value={feasibility.priorityActions} onChange={(value) => update(['productFeasibility', 'assessment', 'priorityActions'], value)} />
@@ -172,9 +238,13 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
                 <summary><strong>{String(criterion.order).padStart(2, '0')} · {criterion.title}</strong><span>{criterion.question}</span></summary>
                 <div className="report-page__editor-group-body">
                   <Grid>
+
                     <SelectField label="상태" value={criterion.status} options={feasibilityStatusOptions} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'status'], value)} />
+                    <SelectField label="근거 상태" value={criterion.evidenceStatus} options={evidenceStatusOptions} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'evidenceStatus'], value)} />
                     <SelectField label="근거 충분도" value={criterion.confidence} options={confidenceOptions} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'confidence'], value)} />
                     <label className="report-page__editor-field report-page__editor-checkbox"><span>차단 항목</span><input type="checkbox" checked={criterion.isBlocking} onChange={(event) => update(['productFeasibility', 'assessment', 'criteria', index, 'isBlocking'], event.target.checked)} /></label>
+                    <label className="report-page__editor-field report-page__editor-checkbox"><span>실무 검토 필요</span><input type="checkbox" checked={criterion.requiresReviewerInput} onChange={(event) => update(['productFeasibility', 'assessment', 'criteria', index, 'requiresReviewerInput'], event.target.checked)} /></label>
+                    <ListField label="연동 출처" value={criterion.sourceSections} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'sourceSections'], value)} />
                     <Field label="판단 요약" value={criterion.summary} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'summary'], value)} multiline />
                     <Field label="판단 근거" value={criterion.rationale} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'rationale'], value)} multiline />
                     <Field label="확인된 사실" value={criterion.confirmedFacts ?? ''} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'confirmedFacts'], value)} multiline />
@@ -215,7 +285,7 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
             )
           })}
         </div>
-      </> : <p className="report-page__muted">상품화 가능성 평가 데이터가 준비되지 않았습니다.</p>}
+      </> : <p className="report-page__muted">상품화 종합평가 데이터가 준비되지 않았습니다.</p>}
     </Group>
   )
 
@@ -277,34 +347,156 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
   )
 
   const briefingEditor = (
+    (() => {
+      const briefing: BriefingContent = createBriefingContent(report)
+      const updateBriefing = (path: EditorPath, value: unknown) => update(['ui', 'briefing', ...path], value)
+      const reviewStatusOptions: Array<[BriefingReviewStatus, string]> = [
+        ['미검토', '미검토'],
+        ['검토 중', '검토 중'],
+        ['검토 완료', '검토 완료'],
+      ]
+      return (
     <Group title="종합 브리핑">
       <Grid>
-        <Field label="브리핑 제목" value={String(labels.briefingTitle ?? '종합 브리핑')} onChange={(value) => update(['ui', 'labels', 'briefingTitle'], value)} />
-        <Field label="브리핑 설명" value={String(labels.briefingDescription ?? '')} onChange={(value) => update(['ui', 'labels', 'briefingDescription'], value)} multiline />
+        <Field label="브리핑 탭 제목" value={String((report.ui?.labels as Record<string, unknown> | undefined)?.briefingTitle ?? '종합 브리핑')} onChange={(value) => update(['ui', 'labels', 'briefingTitle'], value)} />
+        <Field label="브리핑 영문 라벨" value={briefing.eyebrow} onChange={(value) => updateBriefing(['eyebrow'], value)} />
+        <Field label="메인 상태" value={briefing.conclusion} onChange={(value) => updateBriefing(['conclusion'], value)} />
+        <Field label="보조 상태" value={briefing.decisionStatus} onChange={(value) => updateBriefing(['decisionStatus'], value)} />
       </Grid>
-      <p className="report-page__editor-note">핵심 결론과 리스크는 리포트 전체 평가값에서 자동으로 구성됩니다. 이 탭에서는 브리핑의 제목과 설명만 수정합니다.</p>
-    </Group>
-  )
-
-  const reviewerEditor = (
-    <Group title="실무자 검토">
-      {report.reviewer ? (
-        <>
-          <Grid>
-            <Field label="실무자 검토 상태" value={report.reviewer.status} onChange={(value) => update(['reviewer', 'status'], value)} />
-            <Field label="실무자 메모" value={report.reviewer.memo} onChange={(value) => update(['reviewer', 'memo'], value)} multiline />
-          </Grid>
-          <div className="report-page__editor-checklist">
-            {(report.reviewer.checklist ?? []).map((item, index) => (
-              <label key={item.id}>
-                <input type="checkbox" checked={item.checked} onChange={(event) => update(['reviewer', 'checklist', index, 'checked'], event.target.checked)} />
-                <input value={item.label} onChange={(event) => update(['reviewer', 'checklist', index, 'label'], event.target.value)} />
-              </label>
-            ))}
+      <Grid>
+        {briefing.sectionTitles ? Object.entries(briefing.sectionTitles).map(([key, value]) => (
+          <Field key={key} label={`영역 제목 · ${key}`} value={String(value)} onChange={(next) => updateBriefing(['sectionTitles', key], next)} />
+        )) : null}
+        {Object.entries(briefing.sectionBadges).map(([key, value]) => (
+          <Field key={key} label={`상태 배지 · ${key}`} value={String(value)} onChange={(next) => updateBriefing(['sectionBadges', key], next)} />
+        ))}
+      </Grid>
+      <EditableStringList label="종합 검토 체크 문장" values={briefing.checks} onChange={(value) => updateBriefing(['checks'], value)} multiline />
+      <div className="report-page__editor-list">
+        <div className="report-page__editor-list-heading"><strong>상태 요약 수치</strong></div>
+        <div className="report-page__editor-list-heading">
+          <button type="button" onClick={() => updateBriefing(['counts'], [...briefing.counts, { label: '', value: '' } as BriefingCountItem])}>항목 추가</button>
+        </div>
+        {briefing.counts.map((item, index) => (
+          <div className="report-page__editor-item" key={`count-${index}`}>
+            <Grid>
+              <Field label="수치 항목명" value={item.label} onChange={(value) => updateBriefing(['counts', index, 'label'], value)} />
+              <Field label="수치 값" value={item.value} onChange={(value) => updateBriefing(['counts', index, 'value'], value)} />
+            </Grid>
+            <ArrayItemActions
+              label="평가 상태 요약"
+              index={index}
+              length={briefing.counts.length}
+              onMove={(direction) => {
+                const next = [...briefing.counts]
+                const [moved] = next.splice(index, 1)
+                next.splice(index + direction, 0, moved)
+                updateBriefing(['counts'], next)
+              }}
+              onRemove={() => updateBriefing(['counts'], briefing.counts.filter((_, currentIndex) => currentIndex !== index))}
+            />
           </div>
-        </>
-      ) : <p className="report-page__muted">실무자 검토 데이터가 없습니다.</p>}
+        ))}
+      </div>
+      <div className="report-page__editor-list">
+        <div className="report-page__editor-list-heading"><strong>핵심 검토 결과 카드</strong></div>
+        <div className="report-page__editor-list-heading">
+          <button type="button" onClick={() => updateBriefing(['coreCards'], [...briefing.coreCards, { id: `core-${Date.now()}`, title: '', status: '', lines: [] } as BriefingCoreCard])}>카드 추가</button>
+        </div>
+        {briefing.coreCards.map((card, index) => (
+          <div className="report-page__editor-item" key={card.id}>
+            <ArrayItemActions
+              label="핵심 검토 결과 카드"
+              index={index}
+              length={briefing.coreCards.length}
+              onMove={(direction) => {
+                const next = [...briefing.coreCards]
+                const [moved] = next.splice(index, 1)
+                next.splice(index + direction, 0, moved)
+                updateBriefing(['coreCards'], next)
+              }}
+              onRemove={() => updateBriefing(['coreCards'], briefing.coreCards.filter((_, currentIndex) => currentIndex !== index))}
+            />
+            <Grid>
+              <Field label="카드 제목" value={card.title} onChange={(value) => updateBriefing(['coreCards', index, 'title'], value)} />
+              <Field label="상태 배지" value={card.status} onChange={(value) => updateBriefing(['coreCards', index, 'status'], value)} />
+            </Grid>
+            <EditableStringList label="카드 핵심 문장" values={card.lines} onChange={(value) => updateBriefing(['coreCards', index, 'lines'], value)} multiline />
+          </div>
+        ))}
+      </div>
+      <EditableStringList label="추천 상품 구조 항목" values={briefing.proposalChecks} onChange={(value) => updateBriefing(['proposalChecks'], value)} multiline />
+      <Grid>
+        <Field label="예상 보장 문구" value={briefing.coverageDraft} onChange={(value) => updateBriefing(['coverageDraft'], value)} multiline />
+        <Field label="보장 문구 안내" value={briefing.proposalDisclaimer} onChange={(value) => updateBriefing(['proposalDisclaimer'], value)} multiline />
+      </Grid>
+      <EditableStringList label="회의 논의 필요사항" values={briefing.discussionItems} onChange={(value) => updateBriefing(['discussionItems'], value)} multiline />
+      <div className="report-page__editor-list">
+        <div className="report-page__editor-list-heading"><strong>주요 리스크 및 추가 확인사항</strong></div>
+        <div className="report-page__editor-list-heading">
+          <button type="button" onClick={() => updateBriefing(['risks'], [...briefing.risks, { title: '', risk: '', check: '', badge: '' } as BriefingRiskItem])}>항목 추가</button>
+        </div>
+        {briefing.risks.map((item, index) => (
+          <div className="report-page__editor-item" key={`risk-${index}`}>
+            <ArrayItemActions
+              label="주요 리스크 및 추가 확인사항"
+              index={index}
+              length={briefing.risks.length}
+              onMove={(direction) => {
+                const next = [...briefing.risks]
+                const [moved] = next.splice(index, 1)
+                next.splice(index + direction, 0, moved)
+                updateBriefing(['risks'], next)
+              }}
+              onRemove={() => updateBriefing(['risks'], briefing.risks.filter((_, currentIndex) => currentIndex !== index))}
+            />
+            <Grid>
+              <Field label="리스크 제목" value={item.title} onChange={(value) => updateBriefing(['risks', index, 'title'], value)} />
+              <Field label="현재 리스크" value={item.risk} onChange={(value) => updateBriefing(['risks', index, 'risk'], value)} multiline />
+              <Field label="필요한 확인" value={item.check} onChange={(value) => updateBriefing(['risks', index, 'check'], value)} multiline />
+              <Field label="보조 상태값" value={item.badge ?? ''} onChange={(value) => updateBriefing(['risks', index, 'badge'], value)} />
+            </Grid>
+          </div>
+        ))}
+      </div>
+      <EditableStringList label="후속 검토 과제" values={briefing.followUpTasks} onChange={(value) => updateBriefing(['followUpTasks'], value)} multiline />
+      <div className="report-page__editor-list">
+        <div className="report-page__editor-list-heading"><strong>근거자료 및 분석 한계</strong></div>
+        <div className="report-page__editor-list-heading">
+          <button type="button" onClick={() => updateBriefing(['evidenceMeta'], [...briefing.evidenceMeta, { label: '', value: '' } as BriefingCountItem])}>항목 추가</button>
+        </div>
+        {briefing.evidenceMeta.map((item, index) => (
+          <div className="report-page__editor-item" key={`evidence-meta-${index}`}>
+            <ArrayItemActions
+              label="근거자료 및 분석 한계"
+              index={index}
+              length={briefing.evidenceMeta.length}
+              onMove={(direction) => {
+                const next = [...briefing.evidenceMeta]
+                const [moved] = next.splice(index, 1)
+                next.splice(index + direction, 0, moved)
+                updateBriefing(['evidenceMeta'], next)
+              }}
+              onRemove={() => updateBriefing(['evidenceMeta'], briefing.evidenceMeta.filter((_, currentIndex) => currentIndex !== index))}
+            />
+
+            <Grid>
+              <Field label="메타 항목명" value={item.label} onChange={(value) => updateBriefing(['evidenceMeta', index, 'label'], value)} />
+              <Field label="메타 값" value={item.value} onChange={(value) => updateBriefing(['evidenceMeta', index, 'value'], value)} multiline />
+            </Grid>
+          </div>
+        ))}
+      </div>
+      <Group title="실무자 검토">
+        <Grid>
+          <SelectField label="검토 상태" value={briefing.reviewerStatus} options={reviewStatusOptions} onChange={(value) => updateBriefing(['reviewerStatus'], value)} />
+          <Field label="실무자 검토 메모" value={briefing.reviewerOpinion} placeholder="AI 분석 결과에 대한 실무 검토 의견을 작성해 주세요." onChange={(value) => updateBriefing(['reviewerOpinion'], value)} multiline />
+        </Grid>
+      </Group>
+      <Field label="최하단 안내 문구" value={briefing.disclaimer} onChange={(value) => updateBriefing(['disclaimer'], value)} multiline />
     </Group>
+      )
+    })()
   )
 
   const content = {
@@ -315,7 +507,6 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
     wording: wordingEditor,
     evidence: evidenceEditor,
     briefing: briefingEditor,
-    reviewer: reviewerEditor,
   }[activeTab]
 
   return (

@@ -6,6 +6,8 @@ import { sampleOnlyNotice, sampleRiskCandidates } from '../../domain/risk/sample
 import { RiskSignalPipeline } from '../../features/risk-dashboard/RiskSignalPipeline'
 import { RiskRadarOperationsPanel } from '../../features/risk-dashboard/RiskRadarOperationsPanel'
 import { RiskProductDevelopmentBoard } from '../../features/risk-dashboard/RiskProductDevelopmentBoard'
+import { RiskRadarLiveSnapshotPanel } from '../../features/risk-dashboard/RiskRadarSnapshot'
+import { useRiskRadarSnapshot } from '../../features/risk-dashboard/useRiskRadarSnapshot'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
@@ -20,6 +22,7 @@ const focusRisk = sampleRiskCandidates[0]
 
 export function RiskDashboardPage() {
   const [customerSignals, setCustomerSignals] = useState<CustomerSignal[]>([])
+  const { snapshot: radarSnapshot, refresh: refreshRadarSnapshot } = useRiskRadarSnapshot()
 
   useEffect(() => {
     const refresh = () => setCustomerSignals(readCustomerSignals())
@@ -43,6 +46,8 @@ export function RiskDashboardPage() {
       />
 
       <div className="sample-notice"><span>SAMPLE</span>{sampleOnlyNotice}</div>
+
+      <RiskRadarLiveSnapshotPanel state={radarSnapshot} onRefresh={refreshRadarSnapshot} />
 
       <section className="dashboard-overview-grid" aria-label="오늘의 위험 탐지 개요">
         <article className="dashboard-welcome-card surface-card">
@@ -89,9 +94,9 @@ export function RiskDashboardPage() {
         </article>
       </section>
 
-      <RiskSignalPipeline />
-      <RiskRadarOperationsPanel />
-      <RiskProductDevelopmentBoard />
+      <RiskSignalPipeline radarSnapshot={radarSnapshot} />
+      <RiskRadarOperationsPanel radarSnapshot={radarSnapshot} onRefresh={refreshRadarSnapshot} />
+      <RiskProductDevelopmentBoard radarSnapshot={radarSnapshot} />
 
       <section className="dashboard-grid">
         <article className="priority-panel surface-card">

@@ -1,14 +1,14 @@
 # 현재 기능 분류
 
-기준일: 2026-07-23
+기준일: 2026-07-28
 
 | 영역 | UI | 로컬 동작 | 운영 연동 | 주요 코드 |
 | --- | --- | --- | --- | --- |
 | 실무자·고객·영업 분리 셸과 사용자 전환 | 구현 | 동작 | 인증 미연동 | `src/app/layouts/RootLayout.tsx`, `src/app/layouts/CustomerLayout.tsx`, `src/app/layouts/SalesLayout.tsx`, `src/shared/components/ModeSwitch.tsx` |
-| 1. 신규위험 대시보드 | 구현 | 5채널 신호·이슈 매트릭스·준비도·시장 추이·법령·상품 설계 보드 | API 어댑터 구현, 서버/키/실데이터 미연결 시 SAMPLE 유지 | `src/features/risk-dashboard/RiskSignalPipeline.tsx`, `RiskRadarOperationsPanel.tsx`, `RiskProductDevelopmentBoard.tsx` |
-| 2. 위험 후보 목록 | 구현 | 수집 단계·기사 큐·후보 등록 요청·TOP-5 12열 비교·지표별 근거 팝오버·법률/판례 패널 | API 어댑터 구현, 후보·법령·통계 서버 미연결 | `src/features/risk-catalog/RiskExplorationOperations.tsx`, `RiskExplorationLens.tsx` |
-| 3. 위험 상세·상품화 평가 | 구현 | 역할별 검토·통계·드라이버·8개월 추세·원문/근거/교차검증 게이트·9항목 종합평가 | API 어댑터 구현, 근거·법령·평가 저장 서버 미연결 | `src/features/risk-detail/RiskDecisionWorkspace.tsx`, `EvidenceVerificationWorkspace.tsx`, `ProductizationEvaluationPanel.tsx` |
-| 4. 종합 리포트 | 구현 | 목록·신규 생성·로딩·fallback·섹션 편집·저장·약관 초안·Q&A·PDF | same-origin 프록시 구현, `VITE_POTENS_PROXY_URL` 및 운영 인증/저장소 필요 | `src/pages/reports/ReportsPage.tsx`, `src/report/**`, `vite.config.ts` |
+| 1. 신규위험 대시보드 | 구현 | 5채널 신호·이슈 매트릭스·준비도·시장 추이·법령·상품 설계 보드, 대시보드·뉴스·후보 병렬 조회, 부분 실패·마지막 정상 데이터·SAMPLE fallback | API 어댑터 구현, 서버/키/실데이터 미연결 시 소스별 SAMPLE 유지 | `src/features/risk-dashboard/RiskRadarSnapshot.tsx`, `RiskSignalPipeline.tsx`, `RiskRadarOperationsPanel.tsx`, `RiskProductDevelopmentBoard.tsx` |
+| 2. 위험 후보 목록 | 구현 | 수집 단계·기사 큐·후보 등록 요청·TOP-10 12열 비교·8개 지표 동적 점수·80개 셀 근거·분류별 판단 문맥·URL 검색/분류/정렬 | API 어댑터 구현, 후보·법령·통계 서버 미연결 | `src/domain/risk/riskExplorationDemo.ts`, `riskScreeningInsights.ts`, `src/features/risk-catalog/RiskExplorationLens.tsx` |
+| 3. 위험 상세·상품화 평가 | 구현 | TOP-10 상세 ID, 역할별 검토·통계·드라이버·8개월 추세·원문/근거/교차검증 게이트·9항목 종합평가·검토 상태/메모/체크리스트 | 근거·법령·평가 API 경계 구현, 브라우저 SAMPLE 저장을 운영 권한 저장소로 교체 필요 | `src/domain/risk/sampleData.ts`, `src/features/risk-detail/RiskDecisionWorkspace.tsx`, `EvidenceVerificationWorkspace.tsx`, `ProductizationEvaluationPanel.tsx` |
+| 4. 종합 리포트 | 구현 | 목록 검색·필터·정렬·보기 전환, 신규 생성·로딩·fallback, 12개 상품화 기준별 AI/실무자 판단, 구조화 브리핑·섹션 편집·저장·약관 초안·Q&A·PDF | same-origin·로컬 fallback 프록시 구현, `VITE_POTENS_PROXY_URL` 및 운영 인증/저장소 필요 | `src/pages/reports/ReportsPage.tsx`, `src/report/**`, `vite.config.ts` |
 | 5. 고객 상황 입력 | 구현 | 동작 | 고객 인증·채널 미연동 | `src/features/customer-insight/CustomerInsightStudio.tsx` |
 | 영업부서 현장 리포트 모드 | 구현 | 동작·`localStorage` 데모 | 접수 API·SSO·검토 큐 미연동 | `src/app/layouts/SalesLayout.tsx`, `src/pages/sales-intake/SalesIntakePage.tsx`, `src/features/sales-intake/SalesIntakeStudio.tsx` |
 | 상품 후보 산출 | 구현 | 규칙 기반 동작 | 상품 마스터·약관 검색 미연동 | `src/features/customer-insight/recommendationEngine.ts` |
@@ -26,3 +26,5 @@
 - 실제 상품 약관 본문, 판매 상태, 개정 이력은 앱 데이터에 동기화되지 않는다.
 - hyoje API 액션과 jh 리포트 프록시는 프런트 경계까지 구현되어 있으나, `.env`의 서버 URL과 운영 백엔드가 없으면 실패 상태를 표시하고 SAMPLE 데이터를 유지한다.
 - seoyeon의 셀별 출처·판단과 sh의 통계·추세 값은 브랜치 기능을 검증하기 위한 샘플이며 공식 데이터나 실제 인수 판단이 아니다.
+- 위험 상세와 리포트의 브라우저 저장은 발표용 로컬 SAMPLE 상태다. 실제 사용자 간 공유, 권한, 버전 충돌, 감사 이력은 운영 저장소 연결 전까지 지원하지 않는다.
+- 2026-07-28 재통합 범위와 브랜치별 비교 기준은 `features/workstream-integration-0728.md`에서 관리한다.

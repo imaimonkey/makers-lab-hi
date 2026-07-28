@@ -6,6 +6,7 @@ import { isNavigationItemActive, navigationGroups } from '../../shared/config/na
 
 export function RootLayout() {
   const location = useLocation()
+  const isDeveloperMode = location.pathname === '/developer-test'
   const activeItem = navigationGroups
     .flatMap((group) => group.items)
     .find((item) => isNavigationItemActive(item, location.pathname))
@@ -20,7 +21,7 @@ export function RootLayout() {
           : ''
 
   return (
-    <div className="app-shell">
+    <div className={isDeveloperMode ? 'app-shell developer-mode-shell' : 'app-shell'}>
       <RouteScrollManager />
       <aside className="sidebar">
         <Link to="/" className="app-brand" aria-label="HI Risk Studio 홈">
@@ -80,7 +81,7 @@ export function RootLayout() {
             <span className="topbar-context-icon" aria-hidden="true"><AppIcon name={activeItem?.icon ?? 'radar'} size={16} /></span>
             <div>
             <p>신규위험 전략 워크벤치</p>
-            <strong>{activeItem?.label ?? '업무 화면'}</strong>
+            <strong>{isDeveloperMode ? '개발자 테스트' : activeItem?.label ?? '업무 화면'}</strong>
             </div>
           </div>
           <label className="topbar-search">
@@ -89,7 +90,7 @@ export function RootLayout() {
             <input readOnly placeholder="검색 연동 예정 · 신규 위험·기사·후보" aria-label="통합 검색 (연동 예정)" />
           </label>
           <div className="topbar-actions">
-            <ModeSwitch mode="analyst" />
+            <ModeSwitch mode={isDeveloperMode ? 'developer' : 'analyst'} />
           </div>
         </header>
 

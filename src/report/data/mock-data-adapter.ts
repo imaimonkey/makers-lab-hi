@@ -32,11 +32,20 @@ const assertReportResult = (value: ReportResult | undefined): ReportResult => {
   return value;
 };
 
+// The legacy mock still contains the removed standalone reviewer payload so
+// older reference files remain readable. It is intentionally not part of the
+// report view model consumed by the current page.
+const removeLegacyReviewer = (report: ReportResult): ReportResult => {
+  const withoutReviewer = { ...report } as ReportResult & { reviewer?: unknown };
+  delete withoutReviewer.reviewer;
+  return withoutReviewer;
+};
+
 export const getMockRiskData = (): RiskSourceData =>
   clone(assertRiskData(getBrowserWindow().mockRiskData));
 
 export const getMockReportResult = (): ReportResult =>
-  clone(assertReportResult(getBrowserWindow().mockReportResult));
+  removeLegacyReviewer(clone(assertReportResult(getBrowserWindow().mockReportResult)));
 
 export const getMockReportData = (): {
   riskData: RiskSourceData;

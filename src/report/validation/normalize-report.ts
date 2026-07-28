@@ -80,7 +80,7 @@ const toKoreanSummaryStatus = (value: unknown): SummaryCard["status"] => {
   const status = typeof value === "string" ? value.trim().toLowerCase() : "";
   if (status === "positive" || status === "긍정" || status === "양호") return "긍정";
   if (status === "conditional" || status === "조건부" || status === "조건부 검토") {
-    return "조건부 검토";
+    return "보완 필요";
   }
   return "보완 필요";
 };
@@ -89,13 +89,13 @@ const toKoreanStatus = (value: unknown, fallback: string): string => {
   const raw = typeof value === "string" ? value.trim() : "";
   const key = raw.toLowerCase();
   const statusMap: Record<string, string> = {
-    pass: "통과",
+    pass: "충족",
     positive: "긍정",
-    conditional: "조건부 검토",
+    conditional: "추가 확인 필요",
     "needs_review": "보완 필요",
     "needs-data": "보완 필요",
-    critical: "중대 위험",
-    unknown: "미평가",
+    critical: "불충족",
+    unknown: "보완 필요",
     reviewable: "검토 가능",
     needs_more_data: "추가 자료 필요",
     redesign: "상품 구조 재검토",
@@ -190,7 +190,7 @@ const normalizeSummary = (value: unknown): AiSummary => {
   const fallbackAction: AiNextAction = {
     id: "NEXT-01",
     action: asString(source.recommendedNextAction, "기존 보험 보상 관계와 사고 자료를 우선 확인합니다."),
-    reason: "조건부 상품화 판단을 실제 검토 단계로 연결하기 위해 필요합니다.",
+    reason: "추가 확인이 필요한 상품화 판단을 실제 검토 단계로 연결하기 위해 필요합니다.",
     evaluationIds: ["responsibility", "dataAvailability", "differentiation"],
     evidenceIds: asStringArray(legacyPriority.evidenceIds),
     responsibleTeams: ["상품개발", "약관·법무", "계리"],
@@ -298,6 +298,7 @@ const normalizeFeasibility = (value: unknown): ProductFeasibility => {
     items,
     interpretation: asString(source.interpretation),
     discoveryContext: regulation
+
       ? {
           discoveryType: "regulation",
           sourceName: "기존 상품화 평가의 법령·규제 영향",

@@ -115,22 +115,36 @@ const completeReportForUi = (
   report: ReportResult,
   fallbackReport: ReportResult,
   generatedAt: string,
-): ReportResult => ({
-  ...report,
-  meta: {
-    ...report.meta,
-    generatedAt,
-  },
-  validationComparison: fallbackReport.validationComparison
-    ? clone(fallbackReport.validationComparison)
-    : undefined,
-  wordingFeasibility: {
-    ...report.wordingFeasibility,
-    referenceDocuments: mergePostValidationDocuments(report, fallbackReport),
-  },
-  reviewer: resetReviewer(report, fallbackReport),
-  ui: fallbackReport.ui ? clone(fallbackReport.ui) : undefined,
-});
+): ReportResult => {
+  const fallbackUi = fallbackReport.ui ? clone(fallbackReport.ui) : undefined;
+  const reportUi = report.ui ? clone(report.ui) : undefined;
+  return {
+    ...report,
+    meta: {
+      ...report.meta,
+      generatedAt,
+    },
+    validationComparison: fallbackReport.validationComparison
+      ? clone(fallbackReport.validationComparison)
+      : undefined,
+    wordingFeasibility: {
+      ...report.wordingFeasibility,
+      referenceDocuments: mergePostValidationDocuments(report, fallbackReport),
+    },
+    reviewer: resetReviewer(report, fallbackReport),
+    ui: fallbackUi || reportUi
+      ? {
+        ...fallbackUi,
+        ...reportUi,
+        labels: {
+          ...(fallbackUi?.labels ?? {}),
+          ...(reportUi?.labels ?? {}),
+        },
+        briefing: reportUi?.briefing ?? fallbackUi?.briefing,
+      }
+      : undefined,
+  };
+};
 
 const createFallbackReport = (
   fallbackReport: ReportResult,

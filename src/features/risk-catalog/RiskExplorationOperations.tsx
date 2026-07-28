@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { demoLaws, demoRisks, type ProductRisk } from '../../domain/risk/riskRadarDemo'
+import type { RadarRiskCandidate } from '../../domain/risk/riskRadarTypes'
 import { getWorkbenchRiskId } from '../../domain/risk/riskRadarMappings'
 import { riskRadarApi } from '../risk-dashboard/riskRadarApi'
+import { useRiskRadarCatalogSnapshot } from '../risk-dashboard/useRiskRadarSnapshot'
 
 type Audience = '전체' | '개인' | '기업'
 type SortMode = 'score' | 'market' | 'severity'
@@ -21,7 +23,26 @@ function marketValue(value: ProductRisk['market']) {
   return value === '높음' ? 3 : value === '중간' ? 2 : 1
 }
 
+function sourceStatusLabel(status: string) {
+  if (status === 'live') return 'LIVE API'
+  if (status === 'loading') return 'LOADING'
+  if (status === 'stale') return 'STALE · 이전 응답 유지'
+  return 'SAMPLE fallback'
+}
+
+function RiskDetailLink({ risk, label }: { risk: ProductRisk; label: string }) {
+  const workbenchRiskId = getWorkbenchRiskId(risk)
+  return workbenchRiskId ? <Link to={`/risks/${workbenchRiskId}`}>{label}</Link> : <span className="table-empty">{label} · SAMPLE / 상세 대기</span>
+}
+
+function liveCandidateTarget(candidate: RadarRiskCandidate) {
+  const sampleRisk = demoRisks.find((risk) => risk.id === candidate.id || risk.articleId === candidate.articleId)
+  return sampleRisk ? getWorkbenchRiskId(sampleRisk) : undefined
+}
+
 export function RiskExplorationOperations() {
+  const navigate = useNavigate()
+  const { snapshot: catalogSnapshot, refresh: refreshCatalog } = useRiskRadarCatalogSnapshot()
   const [query, setQuery] = useState('')
   const [audience, setAudience] = useState<Audience>('전체')
   const [sort, setSort] = useState<SortMode>('score')
@@ -45,12 +66,17 @@ export function RiskExplorationOperations() {
     })
   }, [audience, query, sort])
 
-  async function runAction(key: string, action: () => Promise<unknown>, success: string) {
+  async function runAction<T>(key: string, action: () => Promise<T>, success: string, afterSuccess?: (result: T) => void) {
     setBusy(key)
     setNotice('')
     try {
-      await action()
-      setNotice(success)
+      const result = await action()
+      const refreshResult = await refreshCatalog()
+      const refreshNotice = refreshResult.failedSources.length
+        ? ` 일부 재조회 실패(${refreshResult.failedSources.join(', ')}), 기존 SAMPLE/이전 응답을 유지합니다.`
+        : ' news·risks·issues를 다시 조회했습니다.'
+      setNotice(`${success}${refreshNotice}`)
+      afterSuccess?.(result)
     } catch {
       setNotice('운영 API가 연결되지 않아 샘플 데이터는 변경하지 않았습니다. 작업 경계와 실패 상태만 확인할 수 있습니다.')
     } finally {
@@ -65,6 +91,15 @@ export function RiskExplorationOperations() {
         <div><button type="button" disabled={Boolean(busy)} onClick={() => void runAction('enrich', () => riskRadarApi.enrich(), '본문 확보 작업을 요청했습니다.')}>{busy === 'enrich' ? '확보 중…' : '본문 일괄 확보'}</button><button type="button" disabled={Boolean(busy)} onClick={() => void runAction('pending', () => riskRadarApi.analyzePending(), '분석 대기 큐를 실행했습니다.')}>{busy === 'pending' ? '분석 중…' : '대기 큐 분석'}</button></div>
       </div>
       {notice ? <p className="risk-operations-notice" role="status">{notice}</p> : null}
+      <div className="risk-operations-summary" aria-label="뉴스 위험 이슈 API 상태">
+        {(['news', 'risks', 'issues'] as const).map((source) => {
+          const count = source === 'news' ? catalogSnapshot.news.length : source === 'risks' ? catalogSnapshot.risks.length : catalogSnapshot.issues.length
+          return <article key={source}><span>{source.toUpperCase()}</span><strong>{count}</strong><small>{sourceStatusLabel(catalogSnapshot.sourceStatus[source])}</small></article>
+        })}
+        <article><span>LAST RESPONSE</span><strong>{catalogSnapshot.lastSuccessfulAt ? 'OK' : '—'}</strong><small>{catalogSnapshot.refreshing ? '재조회 중' : 'API 미확인 시 SAMPLE'}</small></article>
+      </div>
+      {catalogSnapshot.initialLoading ? <p className="risk-operations-notice" role="status">뉴스·위험 후보·이슈를 불러오는 중입니다. 기존 SAMPLE 목록을 유지합니다.</p> : null}
+      {Object.keys(catalogSnapshot.errors).length ? <p className="risk-operations-notice" role="status">일부 API 응답이 없어 실패한 원천은 SAMPLE 또는 이전 응답으로 유지됩니다.</p> : null}
 
       <div className="risk-operations-filters">
         <label className="wide"><span>위험 검색</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="위험 키워드·기술·대상·보장 공백" /></label>
@@ -83,19 +118,28 @@ export function RiskExplorationOperations() {
         <article><div className="risk-operations-section-heading"><div><p className="eyebrow">LAW & REGULATION</p><h3>법령·규제 검토 큐</h3></div><span>원문 확인 필요</span></div><div className="risk-operations-law-list">{demoLaws.slice(0, 4).map((law) => <div key={law.title}><span>{law.institution}</span><strong>{law.title}</strong><small>{law.risk} · {law.impact} · {law.when}</small></div>)}</div></article>
       </div>
 
+      <article className="risk-operations-trend-card surface-card">
+        <div className="risk-operations-section-heading"><div><p className="eyebrow">SIGNAL TREND / HYOJE</p><h3>주요 위험 신호의 최근 상승 흐름</h3></div><span>SAMPLE · 7개 관측점</span></div>
+        <div className="risk-operations-trend-plot" role="img" aria-label="주요 위험 후보 3개의 최근 7개 관측점 추세">
+          {demoRisks.slice(0, 3).map((risk) => <div className="risk-operations-trend-series" key={risk.id}><strong>{risk.keyword}</strong><div>{risk.trend.map((value, index) => <span key={`${risk.id}-${index}`} style={{ height: `${Math.max(12, value)}%` }} title={`${risk.keyword} ${value} SAMPLE`} />)}</div></div>)}
+        </div>
+        <small className="risk-operations-trend-note">신호 강도는 후보 비교용 SAMPLE 값이며 실제 손해율·보험료·가입 가능 여부를 의미하지 않습니다.</small>
+      </article>
+
       <div className="risk-operations-table-wrap">
         <table className="risk-operations-table">
           <caption className="sr-only">hyoje 브랜치 신규 위험 상품개발 비교표</caption>
           <thead><tr><th>위험·대상</th><th>손해·보장 공백</th><th>시장성</th><th>위험</th><th>데이터</th><th>법률</th><th>기존 상품</th><th>특약</th><th>신규 주계약</th><th>AI 보조점수</th><th>작업</th></tr></thead>
-          <tbody>{risks.map((risk, index) => <tr key={risk.id}><td><span>0{index + 1}</span><strong>{risk.keyword}</strong><small>{risk.audience} · {risk.target}</small></td><td><strong>{risk.loss}</strong><small>{risk.coverageGap}</small></td><td>{risk.market}</td><td>{risk.severity}</td><td>{risk.data}</td><td>{risk.law}</td><td>{risk.existing}</td><td>{risk.rider}</td><td>{risk.mainCoverage}</td><td><strong>{risk.score.toFixed(2)}</strong></td><td><Link to={`/risks/${getWorkbenchRiskId(risk)}`}>상세</Link></td></tr>)}</tbody>
+          <tbody>{risks.map((risk, index) => <tr key={risk.id}><td><span>0{index + 1}</span><strong>{risk.keyword}</strong><small>{risk.audience} · {risk.target}</small></td><td><strong>{risk.loss}</strong><small>{risk.coverageGap}</small></td><td>{risk.market}</td><td>{risk.severity}</td><td>{risk.data}</td><td>{risk.law}</td><td>{risk.existing}</td><td>{risk.rider}</td><td>{risk.mainCoverage}</td><td><strong>{risk.score.toFixed(2)}</strong></td><td><RiskDetailLink risk={risk} label="상세" /></td></tr>)}</tbody>
         </table>
         {!risks.length ? <div className="table-empty">조건에 맞는 위험 후보가 없습니다.</div> : null}
       </div>
 
       <div className="risk-operations-queue-grid">
-        <article><div className="risk-operations-section-heading"><div><p className="eyebrow">ARTICLE QUEUE</p><h3>뉴스 본문 분석 큐</h3></div><span>API 경계 포함</span></div>{risks.map((risk, index) => <div className="risk-article-queue-row" key={risk.id}><span>0{index + 1}</span><div><strong>{risk.keyword} 관련 기사 묶음</strong><small>{risk.sourceCount}개 출처 · {risk.mentions}회 언급</small></div><em>{index < 3 ? '본문 확보' : '본문 필요'}</em><div><Link to={`/risks/${getWorkbenchRiskId(risk)}`}>상세</Link><button type="button" disabled={Boolean(busy)} onClick={() => void runAction(`analyze:${risk.id}`, () => riskRadarApi.analyze(risk.articleId), `${risk.keyword} 분석을 요청했습니다.`)}>{busy === `analyze:${risk.id}` ? '분석 중' : 'AI 분석'}</button><button type="button" disabled={Boolean(busy)} onClick={() => void runAction(`verify:${risk.id}`, () => riskRadarApi.verify(risk.articleId), `${risk.keyword} 교차검증을 요청했습니다.`)}>검증</button></div></div>)}</article>
-        <article><div className="risk-operations-section-heading"><div><p className="eyebrow">CANDIDATE REVIEW</p><h3>상품개발 후보 카드</h3></div><span>담당자 확인 전</span></div>{risks.slice(0, 3).map((risk) => <div className="risk-candidate-review-card" key={risk.id}><div><span>{risk.audience}</span><em>점수 {risk.score.toFixed(2)}</em></div><strong>{risk.keyword}</strong><p>{risk.impact}</p><small>다음 행동 · {risk.next}</small><div><Link to={`/risks/${getWorkbenchRiskId(risk)}`}>위험 상세</Link><button type="button" disabled={Boolean(busy)} onClick={() => void runAction(`candidate:${risk.id}`, () => riskRadarApi.createRisk(risk.articleId), `${risk.keyword} 후보 등록을 요청했습니다.`)}>후보 등록 요청</button></div></div>)}</article>
+        <article><div className="risk-operations-section-heading"><div><p className="eyebrow">ARTICLE QUEUE</p><h3>뉴스 본문 분석 큐</h3></div><span>API 경계 포함</span></div>{risks.map((risk, index) => <div className="risk-article-queue-row" key={risk.id}><span>0{index + 1}</span><div><strong>{risk.keyword} 관련 기사 묶음</strong><small>{risk.sourceCount}개 출처 · {risk.mentions}회 언급</small></div><em>{index < 3 ? '본문 확보' : '본문 필요'}</em><div><RiskDetailLink risk={risk} label="상세" /><button type="button" disabled={Boolean(busy)} onClick={() => void runAction(`analyze:${risk.id}`, () => riskRadarApi.analyze(risk.articleId), `${risk.keyword} 분석을 요청했습니다.`)}>{busy === `analyze:${risk.id}` ? '분석 중' : 'AI 분석'}</button><button type="button" disabled={Boolean(busy)} onClick={() => void runAction(`verify:${risk.id}`, () => riskRadarApi.verify(risk.articleId), `${risk.keyword} 교차검증을 요청했습니다.`)}>검증</button></div></div>)}</article>
+        <article><div className="risk-operations-section-heading"><div><p className="eyebrow">CANDIDATE REVIEW</p><h3>상품개발 후보 카드</h3></div><span>담당자 확인 전</span></div>{risks.slice(0, 3).map((risk) => <div className="risk-candidate-review-card" key={risk.id}><div><span>{risk.audience}</span><em>점수 {risk.score.toFixed(2)}</em></div><strong>{risk.keyword}</strong><p>{risk.impact}</p><small>다음 행동 · {risk.next}</small><div><RiskDetailLink risk={risk} label="위험 상세" /><button type="button" disabled={Boolean(busy)} onClick={() => void runAction(`candidate:${risk.id}`, () => riskRadarApi.createRisk(risk.articleId), `${risk.keyword} 후보 등록을 요청했습니다.`, () => { const workbenchRiskId = getWorkbenchRiskId(risk); if (workbenchRiskId) navigate(`/risks/${workbenchRiskId}`); else setNotice(`${risk.keyword} 후보 등록은 완료됐지만 canonical 상세 매핑이 없어 SAMPLE / 상세 대기 상태로 남겼습니다.`) })}>후보 등록 요청</button></div></div>)}</article>
       </div>
+      {catalogSnapshot.sourceStatus.risks === 'live' ? <div className="risk-operations-queue-grid"><article><div className="risk-operations-section-heading"><div><p className="eyebrow">LIVE API CANDIDATES</p><h3>재조회된 위험 후보</h3></div><span>LIVE API</span></div>{catalogSnapshot.risks.length ? catalogSnapshot.risks.slice(0, 5).map((candidate) => { const workbenchRiskId = liveCandidateTarget(candidate); return <div className="risk-article-queue-row" key={candidate.id}><span>•</span><div><strong>{candidate.name}</strong><small>{candidate.status} · {candidate.source ?? 'API source unavailable'}</small></div><em>{candidate.eligibleForProductReview ? '검토 가능' : '게이트 대기'}</em><div>{workbenchRiskId ? <Link to={`/risks/${workbenchRiskId}`}>canonical 상세</Link> : <span className="table-empty">SAMPLE / 상세 대기</span>}</div></div> }) : <div className="table-empty">API가 반환한 후보가 없습니다.</div>}</article><article><div className="risk-operations-section-heading"><div><p className="eyebrow">LIVE API ISSUES</p><h3>재조회된 이슈 클러스터</h3></div><span>LIVE API</span></div>{catalogSnapshot.issues.length ? catalogSnapshot.issues.slice(0, 5).map((issue) => <div className="risk-article-queue-row" key={issue.id}><span>•</span><div><strong>{issue.title}</strong><small>{issue.evidenceStatus} · {issue.sourceCount} sources</small></div><em>{issue.nextAction}</em><div><span>{issue.latestAt ? new Date(issue.latestAt).toLocaleDateString('ko-KR') : '날짜 없음'}</span></div></div>) : <div className="table-empty">API가 반환한 이슈가 없습니다.</div>}</article></div> : null}
       <p className="risk-operations-disclaimer">SAMPLE · AI 점수와 후보 등록 요청은 실무자 검토를 대체하지 않으며, 단일 신호를 자동 승격하지 않습니다.</p>
     </section>
   )

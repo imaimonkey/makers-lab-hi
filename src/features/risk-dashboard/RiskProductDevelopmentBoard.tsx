@@ -10,6 +10,7 @@ import {
   type ProductRisk,
 } from '../../domain/risk/riskRadarDemo'
 import { getWorkbenchRiskId } from '../../domain/risk/riskRadarMappings'
+import type { RiskRadarSnapshotState } from './useRiskRadarSnapshot'
 
 const audiences: IssueAudience[] = ['전체', '개인 니즈', '기업 니즈', '영업·현장', '뉴스·산업', '법령·규제']
 
@@ -79,7 +80,7 @@ function ProductBlueprint({ issue }: { issue: ProductIssue }) {
   )
 }
 
-export function RiskProductDevelopmentBoard() {
+export function RiskProductDevelopmentBoard({ radarSnapshot }: { radarSnapshot: RiskRadarSnapshotState }) {
   const [audience, setAudience] = useState<IssueAudience>('전체')
   const [query, setQuery] = useState('')
   const [selectedIssueId, setSelectedIssueId] = useState(demoIssues[0]?.id ?? '')
@@ -100,7 +101,7 @@ export function RiskProductDevelopmentBoard() {
   return (
     <section className="product-development-board" aria-label="hyoje 상품개발 통합 현황판">
       <div className="product-board-intro surface-card">
-        <div><p className="eyebrow">ISSUE DASHBOARD / PRODUCT DECISION · HYOJE</p><h2>수요에서 상품화 경로까지 한 화면에서 판단</h2><p>수요 → 위험 사건 → 예상 손해 → 보장 공백 → 상품화 경로를 동일 이슈 ID로 연결합니다.</p></div>
+        <div><p className="eyebrow">ISSUE DASHBOARD / PRODUCT DECISION · HYOJE</p><h2>수요에서 상품화 경로까지 한 화면에서 판단</h2><p>수요 → 위험 사건 → 예상 손해 → 보장 공백 → 상품화 경로를 동일 이슈 ID로 연결합니다. API 위험 후보 {radarSnapshot.risks.length}건 · {radarSnapshot.sourceStatus.risks === 'live' ? 'LIVE' : 'SAMPLE/마지막 정상 데이터'}.</p></div>
         <Link to="/risks">신규 위험 탐색 →</Link>
       </div>
 

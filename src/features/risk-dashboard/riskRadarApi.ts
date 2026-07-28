@@ -1,6 +1,7 @@
 import type {
   RadarDashboardData,
   RadarEvaluation,
+  RadarIssueRecord,
   RadarNewsAnalysis,
   RadarNewsArticle,
   RadarNewsDetail,
@@ -50,7 +51,7 @@ export const riskRadarApi = {
   risks: () => request<{ risks: RadarRiskCandidate[] }>('/api/risks'),
   lawSearch: (query: string) => request<{ laws: RadarRelatedLaw[]; mode: string }>(`/api/law-search?q=${encodeURIComponent(query)}`),
   createRisk: (articleId: string) => request<{ risk: RadarRiskCandidate; existing?: boolean }>('/api/risks/from-news', { method: 'POST', body: JSON.stringify({ articleId }) }),
-  issues: () => request<{ issues: unknown[]; total: number }>('/api/issues'),
+  issues: () => request<{ issues: RadarIssueRecord[]; total: number }>('/api/issues'),
   productSearch: (analysis: RadarNewsAnalysis | string) => {
     const params = typeof analysis === 'string'
       ? { q: analysis, riskEnvironment: analysis, target: '' }

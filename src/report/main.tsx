@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ReportPage } from './ReportPage'
-import { createGasReportProxy } from './api/gas-report-proxy'
+import { createResilientReportProxy } from './api/resilient-report-proxy'
 import type { ReportProxy } from './api/report-proxy'
 import { getMockReportData } from './data/mock-data-adapter'
 import { StandaloneReportLayout } from './layout/StandaloneReportLayout'
@@ -10,7 +10,7 @@ import { standaloneReportNav } from './layout/standalone-nav'
 const { riskData, fallbackReport } = getMockReportData()
 
 // The browser calls only the same-origin Vite/serverless route, never GAS directly.
-const reportProxy: ReportProxy = createGasReportProxy('/api/report-assistant')
+const reportProxy: ReportProxy = createResilientReportProxy('/api/report-assistant')
 
 const rootElement = document.getElementById('report-root')
 if (!rootElement) {

@@ -42,7 +42,7 @@ export const navigationGroups: NavigationGroup[] = [
         step: '03',
         label: '평가 워크벤치',
         caption: '상세 근거·상품성 평가',
-        path: '/risks/ai-liability',
+        path: '/risks/generative-ai-copyright',
         icon: 'scan',
         activeMatch: 'risk-detail',
       },

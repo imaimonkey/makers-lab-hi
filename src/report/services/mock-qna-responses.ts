@@ -8,7 +8,7 @@ export const createMockReportQuestionAnswer = (
   const normalized = ensureCommercializationAssessment(report)
   const assessment = normalized.productFeasibility.assessment
   const evidenceIds = (assessment?.criteria ?? [])
-    .filter((item) => item.status === 'conditional' || item.status === 'needs_review' || item.status === 'critical')
+    .filter((item) => item.status === 'needs_review' || item.status === 'critical')
     .flatMap((item) => item.evidence.map((evidence) => evidence.id))
     .filter((id, index, values) => values.indexOf(id) === index)
     .slice(0, 4)
