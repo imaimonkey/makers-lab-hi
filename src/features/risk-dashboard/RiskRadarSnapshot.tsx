@@ -22,6 +22,7 @@ const sourceLabels: Record<RadarSnapshotSource, string> = {
 const statusLabels: Record<RadarSnapshotSourceStatus, string> = {
   loading: '로딩',
   live: 'LIVE',
+  local: 'LOCAL ARTICLE',
   stale: '마지막 정상 데이터',
   sample: 'SAMPLE fallback',
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { clearCustomerSignals, readCustomerSignals } from '../../domain/risk/customerSignalStorage'
 import type { CustomerSignal } from '../../domain/risk/types'
-import { sampleOnlyNotice, sampleRiskCandidates } from '../../domain/risk/sampleData'
+import { sampleOnlyNotice } from '../../domain/risk/sampleData'
 import { RiskSignalPipeline } from '../../features/risk-dashboard/RiskSignalPipeline'
 import { RiskRadarOperationsPanel } from '../../features/risk-dashboard/RiskRadarOperationsPanel'
 import { RiskProductDevelopmentBoard } from '../../features/risk-dashboard/RiskProductDevelopmentBoard'
@@ -18,11 +18,22 @@ const channelRows = [
   { name: '통계·공시', role: '노출·정량 검증', count: '56', health: '정상' },
 ]
 
-const focusRisk = sampleRiskCandidates[0]
-
 export function RiskDashboardPage() {
   const [customerSignals, setCustomerSignals] = useState<CustomerSignal[]>([])
   const { snapshot: radarSnapshot, refresh: refreshRadarSnapshot } = useRiskRadarSnapshot()
+  const displayRisks = radarSnapshot.risks.map((risk) => ({
+    id: risk.id,
+    title: risk.name,
+    themeLabel: risk.source ?? 'src/article',
+    evidenceCount: radarSnapshot.news.find((article) => article.id === risk.articleId)?.contentQuality?.chars ?? 0,
+    signalStrength: risk.confidence?.level === '높음' ? 70 : 40,
+  }))
+  const focusRisk = {
+    id: radarSnapshot.risks[0]?.id,
+    title: radarSnapshot.risks[0]?.name ?? '원문 기반 후보 없음',
+    evidenceCount: radarSnapshot.news[0]?.contentQuality?.chars ?? 0,
+    signalStrength: radarSnapshot.risks[0] ? 40 : 0,
+  }
 
   useEffect(() => {
     const refresh = () => setCustomerSignals(readCustomerSignals())
@@ -72,9 +83,9 @@ export function RiskDashboardPage() {
             <div><p className="eyebrow">FOCUS TODAY</p><h2>대표 후보 검토</h2></div>
             <span className="status-badge ready">SAMPLE</span>
           </div>
-          <strong>{focusRisk?.title}</strong>
+          <strong>{radarSnapshot.risks[0]?.name ?? '원문 기반 후보 없음'}</strong>
           <p>근거 {focusRisk?.evidenceCount}건 · 신호 강도 {focusRisk?.signalStrength}/100</p>
-          <div className="dashboard-focus-bar"><span style={{ width: `${focusRisk?.signalStrength ?? 0}%` }} /></div>
+          <div className="dashboard-focus-bar"><span style={{ width: `${radarSnapshot.risks[0] ? 40 : 0}%` }} /></div>
           <Link to={`/risks/${focusRisk?.id}`} className="dashboard-focus-link" aria-label={`${focusRisk?.title ?? '대표 후보'} 상세 보기`} title="대표 후보 상세 보기"><AppIcon name="arrow" size={14} /></Link>
         </article>
       </section>
@@ -105,7 +116,7 @@ export function RiskDashboardPage() {
             <Link to="/risks" className="panel-icon-link" aria-label="위험 후보 전체 보기" title="위험 후보 전체 보기"><AppIcon name="arrow" size={15} /></Link>
           </div>
           <div className="priority-list">
-            {sampleRiskCandidates.slice(0, 3).map((risk, index) => (
+            {displayRisks.slice(0, 3).map((risk, index) => (
               <Link to={`/risks/${risk.id}`} className="priority-row" key={risk.id}>
                 <span className="rank">0{index + 1}</span>
                 <div><strong>{risk.title}</strong><small>{risk.themeLabel} · 근거 {risk.evidenceCount}건</small></div>

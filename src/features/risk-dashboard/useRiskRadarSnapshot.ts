@@ -11,9 +11,10 @@ import type {
   RadarRiskCandidate,
 } from '../../domain/risk/riskRadarTypes'
 import { riskRadarApi } from './riskRadarApi'
+import { deriveArticleDashboard, loadArticleSourceRecords } from './articleSourceData'
 
 export type RadarSnapshotSource = 'dashboard' | 'news' | 'risks'
-export type RadarSnapshotSourceStatus = 'loading' | 'live' | 'stale' | 'sample'
+export type RadarSnapshotSourceStatus = 'loading' | 'live' | 'local' | 'stale' | 'sample'
 
 export type RiskRadarSnapshotState = {
   dashboard: RadarDashboardData
@@ -140,7 +141,7 @@ function errorMessage(reason: unknown) {
 }
 
 function fallbackStatus(previous: RadarSnapshotSourceStatus): RadarSnapshotSourceStatus {
-  return previous === 'live' || previous === 'stale' ? 'stale' : 'sample'
+  return previous === 'live' || previous === 'local' || previous === 'stale' ? 'stale' : 'sample'
 }
 
 export function useRiskRadarSnapshot() {
@@ -180,6 +181,29 @@ export function useRiskRadarSnapshot() {
     const liveSources = (Object.entries(results) as Array<[RadarSnapshotSource, PromiseSettledResult<unknown>]>)
       .filter(([, result]) => result.status === 'fulfilled')
       .map(([source]) => source)
+
+    if (requestId === requestSequence.current && liveSources.length === 0) {
+      try {
+        const localArticles = await loadArticleSourceRecords()
+        const localSnapshot = deriveArticleDashboard(localArticles)
+        setSnapshot((current) => ({
+          ...current,
+          dashboard: localSnapshot.dashboard,
+          news: localSnapshot.news,
+          risks: localSnapshot.risks,
+          sourceStatus: { dashboard: 'local', news: 'local', risks: 'local' },
+          errors: Object.fromEntries(failedSources.map((source) => [source, '운영 API 미연결 · 로컬 원문으로 대체'])) as RiskRadarSnapshotState['errors'],
+          initialLoading: false,
+          refreshing: false,
+          lastAttemptAt: completedAt,
+          lastSuccessfulAt: completedAt,
+        }))
+        return { failedSources: [], liveSources: ['dashboard', 'news', 'risks'], completedAt }
+      } catch (error) {
+        failedSources.push('dashboard', 'news', 'risks')
+        console.error('Local article source fallback failed.', error)
+      }
+    }
 
     if (requestId === requestSequence.current) {
       setSnapshot((current) => {
