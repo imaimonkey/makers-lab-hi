@@ -23,6 +23,10 @@ export type SampleRiskAssessment = {
   score: number
   confidence: '높음' | '보통' | '낮음'
   note: string
+  formula?: string
+  inputs?: string
+  calculation?: string
+  interpretation?: string
 }
 
 export type SampleRiskEvidence = RiskEvidenceContract & {
@@ -286,36 +290,71 @@ function buildEvidence(record: RiskExplorationRecord): SampleRiskEvidence[] {
 
 function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[] {
   const confidence = getConfidence(record)
+  const novelty = (record.metricScores.demand + record.metricScores.moralHazard) / 2
+  const severity = (record.metricScores.fortuity + record.metricScores.accumulation) / 2
+  const spread = (record.metricScores.accumulation + record.metricScores.moralHazard) / 2
+  const blindSpot = (record.metricScores.adverseSelection + record.metricScores.legalExposure) / 2
+  const scoreDetails = (rawScore: number) => `${rawScore.toFixed(1)} × 20 = ${toPercent(rawScore)}점`
   return [
     {
-      label: '시장 수요 신호',
+      label: '신규성',
+      score: toPercent(novelty),
+      confidence,
+      note: '기존 위험과 다른 원인·노출 형태가 등장했는지 확인하는 SAMPLE 대리 지수입니다.',
+      formula: `신규성 = (수요 신호 ${record.metricScores.demand.toFixed(1)} + 행태 변화 ${record.metricScores.moralHazard.toFixed(1)}) ÷ 2`,
+      inputs: `수요 신호 ${record.metricScores.demand.toFixed(1)}, 행태 변화 ${record.metricScores.moralHazard.toFixed(1)}`,
+      calculation: `${novelty.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(novelty)}`,
+      interpretation: '기존 위험과 다른 원인·노출 형태가 얼마나 뚜렷한지 보는 출발점입니다.',
+    },
+    {
+      label: '증가성',
       score: toPercent(record.metricScores.demand),
       confidence,
       note: `${record.demand} · TOP-10 비교용 SAMPLE이며 실제 가입 수요가 아닙니다.`,
+      formula: `증가성 = 수요 신호 ${record.metricScores.demand.toFixed(1)} (원자료 ${record.demand})`,
+      inputs: `수요 신호 ${record.metricScores.demand.toFixed(1)} (원자료 ${record.demand})`,
+      calculation: `${record.metricScores.demand.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(record.metricScores.demand)}`,
+      interpretation: '비교 레코드에서 신호가 얼마나 커졌는지 보여주는 값이며 실제 가입 수요는 아닙니다.',
     },
     {
-      label: '사고 우연성',
-      score: toPercent(record.metricScores.fortuity),
+      label: '피해 심각성',
+      score: toPercent(severity),
       confidence,
-      note: `${record.fortuity} · 공식 사고 정의와 약관 기준 확인이 필요합니다.`,
+      note: `${record.fortuity} · 사고가 발생했을 때 손해 규모와 누적 영향을 함께 봅니다.`,
+      formula: `피해 심각성 = (사고 우연성 ${record.metricScores.fortuity.toFixed(1)} + 누적 영향 ${record.metricScores.accumulation.toFixed(1)}) ÷ 2`,
+      inputs: `사고 우연성 ${record.metricScores.fortuity.toFixed(1)}, 누적 영향 ${record.metricScores.accumulation.toFixed(1)}`,
+      calculation: `${severity.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(severity)}`,
+      interpretation: '사고가 발생했을 때 손해의 크기와 여러 대상에 동시에 생길 가능성을 함께 봅니다.',
     },
     {
-      label: '측정 가능성',
-      score: toPercent(record.metricScores.measurability),
+      label: '확산 가능성',
+      score: toPercent(spread),
       confidence,
-      note: `${record.measurability} · ${record.gap}`,
+      note: `${record.accumulation} · 특정 개인을 넘어 조직·지역·산업으로 번질 가능성을 봅니다.`,
+      formula: `확산 가능성 = (누적 영향 ${record.metricScores.accumulation.toFixed(1)} + 행태 변화 ${record.metricScores.moralHazard.toFixed(1)}) ÷ 2`,
+      inputs: `누적 영향 ${record.metricScores.accumulation.toFixed(1)}, 행태 변화 ${record.metricScores.moralHazard.toFixed(1)}`,
+      calculation: `${spread.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(spread)}`,
+      interpretation: '한 건의 사고를 넘어 조직·지역·산업 단위로 번질 가능성을 확인합니다.',
     },
     {
-      label: '데이터 신뢰도',
+      label: '보험 사각지대 가능성',
+      score: toPercent(blindSpot),
+      confidence,
+      note: `${record.gap} · 기존 상품·약관으로 충분히 보장되지 않는 공백을 확인합니다.`,
+      formula: `보험 사각지대 = (역선택 ${record.metricScores.adverseSelection.toFixed(1)} + 법적 노출 ${record.metricScores.legalExposure.toFixed(1)}) ÷ 2`,
+      inputs: `역선택 ${record.metricScores.adverseSelection.toFixed(1)}, 법적 노출 ${record.metricScores.legalExposure.toFixed(1)}`,
+      calculation: `${blindSpot.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(blindSpot)}`,
+      interpretation: '기존 상품·약관·책임 주체만으로는 충분히 설명하거나 보장하기 어려운 정도입니다.',
+    },
+    {
+      label: '근거 신뢰도',
       score: toPercent(record.metricScores.dataConfidence),
       confidence,
       note: `${record.dataConfidence} · 원문·표본·최신 시각 확인 전 SAMPLE입니다.`,
-    },
-    {
-      label: '법적 검토 준비도',
-      score: toPercent(6 - record.metricScores.legalExposure),
-      confidence,
-      note: `법적 위험 ${record.legalExposure} · 책임 주체와 공식 규정 확인이 필요합니다.`,
+      formula: `근거 신뢰도 = 데이터 신뢰도 ${record.metricScores.dataConfidence.toFixed(1)} (원자료 ${record.dataConfidence})`,
+      inputs: `데이터 신뢰도 ${record.metricScores.dataConfidence.toFixed(1)} (원자료 ${record.dataConfidence})`,
+      calculation: `${record.metricScores.dataConfidence.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(record.metricScores.dataConfidence)}`,
+      interpretation: '공식 원문·독립 출처·표본·최신 시각이 얼마나 갖춰졌는지를 보여줍니다.',
     },
   ]
 }
