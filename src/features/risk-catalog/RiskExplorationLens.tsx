@@ -88,7 +88,7 @@ type ScreeningSort = 'score' | 'title'
 type SearchParamKey = 'q' | 'category' | 'sort'
 
 const isScreeningCategory = (value: string | null): value is ScreeningCategory => (
-  categoryFilters.some((filter) => filter.key === value)
+  value !== 'legal' && categoryFilters.some((filter) => filter.key === value)
 )
 
 function MetricTooltip({ id, insight }: { id: string; insight: ContextualScreeningInsight }) {
@@ -323,7 +323,7 @@ export function RiskExplorationLens() {
         </table>
       </div>
 
-      {selected ? (
+      {false && selected ? (
         <aside className="risk-exploration-detail" aria-live="polite">
           <div>
             <p className="eyebrow">SELECTED CANDIDATE</p>

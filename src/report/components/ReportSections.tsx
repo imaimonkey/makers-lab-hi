@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type {
   CommercializationCriterion,
   CommercializationCriterionCategory,
@@ -21,6 +21,7 @@ import { ReportModal } from './ReportModal'
 import { PolicyDraftModal } from './ReportAssistPanels'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { createBriefingContent } from '../services/briefing-content'
+import { pushPreservingHistoryState, type ReportNavigation } from '../services/browser-history'
 
 type SummaryCard = {
   id: string
@@ -1609,14 +1610,16 @@ function FeasibilitySection({ report, openCriterionId: controlledOpenCriterionId
     setCategoryFilter('all')
     scrollToEvaluationList()
   }
-  const handleInputDirtyChange = (criterionId: string, dirty: boolean) => {
+  const handleInputDirtyChange = useCallback((criterionId: string, dirty: boolean) => {
     setDirtyInputIds((current) => {
+      const isAlreadyDirty = current.has(criterionId)
+      if (isAlreadyDirty === dirty) return current
       const next = new Set(current)
       if (dirty) next.add(criterionId)
       else next.delete(criterionId)
       return next
     })
-  }
+  }, [])
   const focusCriterion = (criterionId: string) => {
     setStatusFilter('all')
     setEvidenceFilter('all')
@@ -3270,10 +3273,12 @@ export function ReportSections({
   report: sourceReport,
   riskData,
   reportProxy,
+  navigation,
 }: {
   report: ReportResult
   riskData: RiskSourceData
   reportProxy: ReportProxy
+  navigation?: ReportNavigation
 }) {
   const normalizedSourceReport = useMemo(() => ensureCommercializationAssessment(sourceReport), [sourceReport])
   const [savedReport, setSavedReport] = useState<ReportResult>(() => cloneReport(normalizedSourceReport))
@@ -3417,7 +3422,11 @@ export function ReportSections({
     setActiveTab(id)
     const nextHash = `#report-tab=${id}`
     if (window.location.hash !== nextHash) {
-      window.history.pushState({ reportTab: id }, '', nextHash)
+      if (navigation) {
+        navigation(`${window.location.pathname}${window.location.search}${nextHash}`)
+      } else {
+        pushPreservingHistoryState(nextHash, { reportTab: id })
+      }
     }
     window.requestAnimationFrame(() => {
       const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'

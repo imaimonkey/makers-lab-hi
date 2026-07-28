@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { sampleOnlyNotice } from '../../domain/risk/sampleData'
 import { ReportPage } from '../../report/ReportPage'
@@ -10,6 +11,8 @@ const { riskData, fallbackReport } = getMockReportData()
 const reportProxy = createResilientReportProxy('/api/report-assistant')
 
 export function ReportsPage() {
+  const navigate = useNavigate()
+
   return (
     <div className="page reports-page jh-visual">
       <PageHeader
@@ -24,6 +27,7 @@ export function ReportsPage() {
           riskData={riskData}
           fallbackReport={fallbackReport}
           reportProxy={reportProxy}
+          navigation={navigate}
           listIntro={<>
             <div className="sample-notice"><span>SAMPLE</span>{sampleOnlyNotice}</div>
             <div className="report-generation-slice-heading">
