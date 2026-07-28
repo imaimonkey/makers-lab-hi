@@ -40,8 +40,8 @@ export const navigationGroups: NavigationGroup[] = [
       {
         id: 'detail',
         step: '03',
-        label: '평가 워크벤치',
-        caption: '상세 근거·상품성 평가',
+        label: '위험상세',
+        caption: '위험 후보 상세 평가',
         path: '/risks/generative-ai-copyright',
         icon: 'scan',
         activeMatch: 'risk-detail',

@@ -492,3 +492,87 @@
   .workspace-sh .sh-command-actions { width: 100%; }
   .workspace-sh .sh-command-actions button { flex: 1; }
 }
+
+/* Risk detail uses the same cool, quiet canvas as the candidate catalog. */
+.workspace-sh {
+  --workspace-paper: #f8fafc;
+  --workspace-card: #fff;
+  --workspace-ink: #0f172a;
+  --workspace-navy: #0b2b52;
+  --workspace-blue: #2563eb;
+  --workspace-orange: #ff6b35;
+  --workspace-line: #dce3ea;
+  --workspace-violet: #2563eb;
+  color: #0f172a;
+  background: #f8fafc;
+}
+.workspace-sh .app-main,
+.workspace-sh .app-content,
+.workspace-sh .sh-visual { background: #f8fafc; }
+.workspace-sh .topbar,
+.workspace-sh .sh-command-bar { border-color: #dce3ea; background: rgba(255,255,255,.94); }
+.workspace-sh .page-header { border-bottom-color: #dce3ea; }
+.workspace-sh .page-header h1,
+.workspace-sh .panel-heading h2,
+.workspace-sh .detail-driver-panel h2 { color: #0f172a; }
+.workspace-sh .page-header > div:first-child > p:last-child { color: #64748b; }
+.workspace-sh .surface-card,
+.workspace-sh .risk-hero,
+.workspace-sh .detail-trend-panel,
+.workspace-sh .detail-evidence-panel { border-color: #dce3ea; background: #fff; }
+.workspace-sh .sample-notice { border-color: #dce3ea; color: #64748b; background: #eff6ff; }
+.workspace-sh .sample-notice span { background: #2563eb; }
+.workspace-sh .risk-score-card { background: #0b2b52; }
+.workspace-sh .detail-decision-strip,
+.workspace-sh .detail-core-stats { border-color: #dce3ea; background: #dce3ea; }
+.workspace-sh .detail-decision-strip article,
+.workspace-sh .detail-core-stats article { background: #fff; }
+.workspace-sh .detail-decision-strip article.recommended { background: #2563eb; }
+.workspace-sh .detail-driver-panel > aside { border-color: #dce3ea; }
+.workspace-sh .detail-driver-row > div { background: #e8eef5; }
+.workspace-sh .detail-driver-row > div i { background: #ff6b35; }
+.workspace-sh .detail-sparkline svg line { stroke: #dce3ea; }
+.workspace-sh .detail-sparkline svg polyline { stroke: #ff6b35; }
+.workspace-sh .detail-sparkline svg circle { fill: #fff; stroke: #ff6b35; }
+.workspace-sh .detail-evidence-tabs button { border-color: #dce3ea; color: #64748b; background: #fff; }
+.workspace-sh .detail-evidence-tabs button.active { border-color: #2563eb; background: #2563eb; }
+.workspace-sh .detail-evidence-source-action a { border-color: #2563eb; color: #2563eb; background: #fff; }
+.workspace-sh .detail-evidence-source-action span { border-color: #dce3ea; background: #f8fafc; }
+.workspace-sh .score-logic-disclosure summary { color: #0f172a; }
+.workspace-sh .score-logic-disclosure > div { border-left-color: #ff6b35; background: #f8fafc; }
+.workspace-sh .score-logic-disclosure p { color: #64748b !important; }
+.workspace-sh .score-logic-disclosure b { color: #0f172a; }
+.workspace-sh .assessment-logic-grid > div { border-color: #dce3ea; background: #f8fafc; }
+.workspace-sh .assessment-logic-grid dt { color: #64748b; }
+.workspace-sh .assessment-logic-grid dd { color: #334155; }
+.workspace-sh .logic-step-list > p { color: #64748b !important; }
+.workspace-sh .logic-step-list code { color: #0f172a; }
+.workspace-sh .logic-step-list .logic-step-note { border-color: #dce3ea; }
+.workspace-sh .hero-score-logic { margin-top: 18px; border-top: 1px solid rgba(255,255,255,.2); padding-top: 12px; }
+.workspace-sh .hero-score-logic summary { color: #fff; cursor: pointer; font-size: 10px; font-weight: 800; list-style: none; }
+.workspace-sh .hero-score-logic summary::-webkit-details-marker { display: none; }
+.workspace-sh .hero-score-logic summary::before { content: '+'; display: inline-grid; width: 17px; height: 17px; margin-right: 6px; place-items: center; border: 1px solid rgba(255,255,255,.36); border-radius: 50%; color: #ff6b35; }
+.workspace-sh .hero-score-logic[open] summary::before { content: '−'; }
+.workspace-sh .hero-score-logic > div { margin-top: 10px; padding: 8px 10px; border-left: 2px solid #ff6b35; background: rgba(255,255,255,.08); }
+.workspace-sh .hero-score-logic .logic-step-list > p { color: rgba(255,255,255,.65) !important; }
+.workspace-sh .hero-score-logic .logic-step-list > p > span { color: rgba(255,255,255,.68); }
+.workspace-sh .hero-score-logic .logic-step-list code { color: #fff; font-size: 9px; }
+.workspace-sh .hero-score-logic .logic-step-list .logic-step-note { border-color: rgba(255,255,255,.2); color: rgba(255,255,255,.64) !important; }
+.workspace-sh .detail-next-checks { margin-top: 18px; border-color: #dce3ea; background: #fff; padding: 26px; }
+.workspace-sh .detail-next-checks-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.workspace-sh .detail-next-checks-heading h2 { margin: 5px 0 7px; font-size: 20px; }
+.workspace-sh .detail-next-checks-heading p:last-child { margin: 0; color: #64748b; font-size: 10px; line-height: 1.6; }
+.workspace-sh .detail-next-checks-heading > strong { color: #2563eb; font: 800 30px/1 'DM Sans', sans-serif; white-space: nowrap; }
+.workspace-sh .detail-next-checks-heading > strong small { margin-left: 3px; color: #94a3b8; font-size: 11px; }
+.workspace-sh .detail-next-check-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.workspace-sh .detail-next-check-list label { min-height: 76px; display: flex; align-items: flex-start; gap: 10px; padding: 14px; border: 1px solid #dce3ea; border-radius: 9px; background: #f8fafc; cursor: pointer; }
+.workspace-sh .detail-next-check-list label:hover { border-color: #93b4ec; background: #eff6ff; }
+.workspace-sh .detail-next-check-list label.is-checked { border-color: #93b4ec; background: #eff6ff; }
+.workspace-sh .detail-next-check-list input { width: 16px; height: 16px; margin-top: 2px; accent-color: #2563eb; }
+.workspace-sh .detail-next-check-list span { display: grid; gap: 6px; }
+.workspace-sh .detail-next-check-list small { color: #64748b; font-size: 9px; font-weight: 800; }
+.workspace-sh .detail-next-check-list strong { color: #0f172a; font-size: 11px; line-height: 1.45; }
+@media (max-width: 800px) {
+  .workspace-sh .detail-next-checks-heading { flex-direction: column; }
+  .workspace-sh .detail-next-check-list { grid-template-columns: 1fr; }
+}
