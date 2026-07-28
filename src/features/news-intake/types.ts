@@ -38,3 +38,25 @@ export type NaverNewsCollectionResponse = {
   items: NaverNewsItem[]
   failures: Array<{ query: string; message: string }>
 }
+
+export type NewsManualTestResult = {
+  text: string
+  mode: 'mock' | 'gemini'
+  generatedAt: string
+  model?: string
+}
+
+export type NewsManualTestRun = {
+  id: string
+  utilityId: 'util-1'
+  systemPrompt: string
+  prompt: string
+  result: NewsManualTestResult
+  savedAt: string
+}
+
+export type NewsManualTestStore = {
+  version: 1
+  updatedAt: string | null
+  runs: NewsManualTestRun[]
+}

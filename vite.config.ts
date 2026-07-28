@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { resolve } from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import * as XLSX from 'xlsx'
 import type {
   NewsClassificationRun,
   NewsClassificationStore,
@@ -11,6 +12,7 @@ import type {
   NewsRiskGroupRevision,
   NewsSourceRecord,
 } from './src/domain/risk/newsSignal'
+import type { NewsManualTestRun, NewsManualTestStore } from './src/features/news-intake/types'
 
 type LlmApiOptions = {
   apiKey: string
@@ -29,6 +31,7 @@ type GeminiResponse = {
 }
 
 const systemPromptFiles = {
+  'util-0': resolve(process.cwd(), 'src/features/llm-util/util-0/system-prompt.md'),
   'util-1': resolve(process.cwd(), 'src/features/llm-util/util-1/system-prompt.md'),
   'util-2': resolve(process.cwd(), 'src/features/llm-util/util-2/system-prompt.md'),
   'util-3': resolve(process.cwd(), 'src/features/llm-util/util-3/system-prompt.md'),
@@ -68,6 +71,53 @@ let newsSearchConfigWriteQueue = Promise.resolve()
 
 const newsClassificationDataFile = resolve(process.cwd(), 'data/news-classifications.json')
 let newsClassificationWriteQueue = Promise.resolve()
+const newsManualTestRunDataFile = resolve(process.cwd(), 'data/news-manual-test-runs.json')
+let newsManualTestRunWriteQueue = Promise.resolve()
+const util0WorkbookDataFile = resolve(process.cwd(), 'data/util-0-risk-discovery.xlsx')
+let util0WorkbookWriteQueue = Promise.resolve()
+
+async function saveUtil0RiskDiscovery(body: unknown) {
+  if (!isRecord(body) || !isRecord(body.result)) throw new Error('util-0 결과가 없습니다.')
+  const existing = await readUtil0Workbook()
+  const merged: Record<string, unknown[]> = {}
+  for (const [key, value] of Object.entries(body.result)) {
+    const incoming = Array.isArray(value) ? value : [{ value }]
+    const previous = existing[key] ?? []
+    const identityField = ['source_documents', 'risk_types', 'entities', 'evidence', 'dashboard_fields', 'exploration_filters', 'detail_fields', 'report_sections', 'quality_checks'].includes(key)
+      ? ({ source_documents: 'document_id', risk_types: 'risk_type_id', entities: 'entity_id', evidence: 'evidence_id', dashboard_fields: 'field', exploration_filters: 'field', detail_fields: 'field', report_sections: 'section_id', quality_checks: 'check' } as Record<string, string>)[key]
+      : undefined
+    const byIdentity = new Map<string, unknown>()
+    for (const item of previous) byIdentity.set(identityField && isRecord(item) && item[identityField] ? String(item[identityField]) : JSON.stringify(item), item)
+    for (const item of incoming) {
+      const identity = identityField && isRecord(item) && item[identityField] ? String(item[identityField]) : JSON.stringify(item)
+      const old = byIdentity.get(identity)
+      byIdentity.set(identity, isRecord(old) && isRecord(item) ? { ...old, ...item } : item)
+    }
+    merged[key] = [...byIdentity.values()]
+  }
+  for (const [key, rows] of Object.entries(existing)) if (!merged[key]) merged[key] = rows
+  const workbook = XLSX.utils.book_new()
+  for (const [key, rows] of Object.entries(merged)) {
+    const normalizedRows = rows.map((item) => isRecord(item) ? Object.fromEntries(Object.entries(item).map(([field, entry]) => [field, Array.isArray(entry) || isRecord(entry) ? JSON.stringify(entry) : entry])) : { value: item })
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(normalizedRows), key.slice(0, 31) || 'data')
+  }
+  const operation = util0WorkbookWriteQueue.then(async () => {
+    await mkdir(resolve(process.cwd(), 'data'), { recursive: true })
+    await writeFile(util0WorkbookDataFile, XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }))
+    return { file: 'data/util-0-risk-discovery.xlsx', savedAt: new Date().toISOString(), sheets: workbook.SheetNames }
+  })
+  util0WorkbookWriteQueue = operation.then(() => undefined, () => undefined)
+  return operation
+}
+
+async function readUtil0Workbook(): Promise<Record<string, unknown[]>> {
+  try {
+    const workbook = XLSX.read(await readFile(util0WorkbookDataFile), { type: 'buffer' })
+    return Object.fromEntries(workbook.SheetNames.map((name) => [name, XLSX.utils.sheet_to_json(workbook.Sheets[name]) as unknown[]]))
+  } catch {
+    return {}
+  }
+}
 
 async function readSharedPromptStore(): Promise<SharedPromptStore> {
   try {
@@ -111,6 +161,7 @@ async function saveSharedPrompt(utilityId: SystemPromptUtilityId, text: string) 
   sharedPromptWriteQueue = operation.then(() => undefined, () => undefined)
   return operation
 }
+
 
 async function readNewsSearchConfigStore(): Promise<NewsSearchConfigStore> {
   try {
@@ -178,6 +229,80 @@ async function readNewsClassificationStore(): Promise<NewsClassificationStore> {
   return { version: 1, updatedAt: null, runs: [], groups: [] }
 }
 
+async function readNewsManualTestStore(): Promise<NewsManualTestStore> {
+  try {
+    const raw = await readFile(newsManualTestRunDataFile, 'utf8')
+    const parsed = JSON.parse(raw) as Partial<NewsManualTestStore>
+    if (parsed.version === 1 && Array.isArray(parsed.runs)) {
+      return {
+        version: 1,
+        updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null,
+        runs: parsed.runs as NewsManualTestRun[],
+      }
+    }
+  } catch {
+    // The first read starts with an empty development store.
+  }
+
+  return { version: 1, updatedAt: null, runs: [] }
+}
+
+function normalizeNewsManualTestResult(value: unknown) {
+  if (!isRecord(value)) return null
+  const text = readStringField(value, 'text')
+  const mode = readStringField(value, 'mode')
+  const generatedAt = readStringField(value, 'generatedAt')
+  if (!text || !generatedAt || (mode !== 'mock' && mode !== 'gemini')) return null
+
+  const model = readStringField(value, 'model')
+  return {
+    text,
+    mode,
+    generatedAt,
+    ...(model ? { model } : {}),
+  } as NewsManualTestRun['result']
+}
+
+async function saveNewsManualTestRun(body: unknown) {
+  if (!isRecord(body)) throw new Error('저장할 기능 1번 수동 입력이 없습니다.')
+
+  const utilityId = readStringField(body, 'utilityId')
+  const systemPrompt = readStringField(body, 'systemPrompt')
+  const prompt = readStringField(body, 'prompt')
+  const result = normalizeNewsManualTestResult(body.result)
+
+  if (utilityId !== 'util-1') throw new Error('기능 1번 수동 입력만 저장할 수 있습니다.')
+  if (!systemPrompt || !prompt || !result) {
+    throw new Error('시스템 프롬프트, 입력, AI 응답이 모두 필요합니다.')
+  }
+  if (systemPrompt.length > 100_000 || prompt.length > 100_000 || result.text.length > 200_000) {
+    throw new Error('저장할 수동 입력 데이터가 너무 깁니다.')
+  }
+
+  const operation = newsManualTestRunWriteQueue.then(async () => {
+    const store = await readNewsManualTestStore()
+    const savedAt = new Date().toISOString()
+    const run: NewsManualTestRun = {
+      id: `news-manual-run-${Date.now().toString(36)}`,
+      utilityId: 'util-1',
+      systemPrompt,
+      prompt,
+      result,
+      savedAt,
+    }
+    const nextStore: NewsManualTestStore = {
+      version: 1,
+      updatedAt: savedAt,
+      runs: [run, ...store.runs].slice(0, 200),
+    }
+    await mkdir(resolve(process.cwd(), 'data'), { recursive: true })
+    await writeFile(newsManualTestRunDataFile, `${JSON.stringify(nextStore, null, 2)}\n`, 'utf8')
+    return { store: nextStore, run }
+  })
+  newsManualTestRunWriteQueue = operation.then(() => undefined, () => undefined)
+  return operation
+}
+
 function normalizeNewsSourceItems(value: unknown): NewsSourceRecord[] {
   if (!Array.isArray(value)) return []
   return value.flatMap((item) => {
@@ -235,6 +360,9 @@ async function saveNewsClassification(body: unknown) {
   const groups = normalizeNewsGroups(isRecord(body) ? body.groups : null, sourceItems)
   const rawOutput = isRecord(body) ? readStringField(body, 'rawOutput') : ''
   if (!sourceItems.length || !groups.length || !rawOutput) throw new Error('저장할 뉴스 원문과 AI 위험 묶음이 필요합니다.')
+  if (groups.some((group) => !group.sourceIds.length)) {
+    throw new Error('모든 AI 위험 묶음은 구조화된 뉴스 source_id를 하나 이상 참조해야 합니다.')
+  }
 
   const now = new Date().toISOString()
   const generatedAt = isRecord(body) && readStringField(body, 'generatedAt')
@@ -403,6 +531,31 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               writeJson(response, 200, saved)
             } catch (error) {
               const message = error instanceof Error ? error.message : 'AI 뉴스 분류 결과 저장에 실패했습니다.'
+              writeJson(response, 400, { error: message })
+            }
+            return
+          }
+
+          writeJson(response, 405, { error: 'Only GET and POST are supported.' })
+          return
+        }
+
+        if (pathname === '/api/news/manual-test-runs') {
+          if (request.method === 'GET') {
+            try {
+              writeJson(response, 200, { store: await readNewsManualTestStore() })
+            } catch (error) {
+              console.error('News manual test store read failed.', error)
+              writeJson(response, 500, { error: '기능 1번 수동 입력 저장소를 불러오지 못했습니다.' })
+            }
+            return
+          }
+
+          if (request.method === 'POST') {
+            try {
+              writeJson(response, 200, await saveNewsManualTestRun(await readJsonBody(request)))
+            } catch (error) {
+              const message = error instanceof Error ? error.message : '기능 1번 수동 입력 저장에 실패했습니다.'
               writeJson(response, 400, { error: message })
             }
             return
@@ -650,6 +803,19 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
           }
 
           writeJson(response, 405, { error: 'Only GET and PUT are supported.' })
+          return
+        }
+
+        if (pathname === '/api/llm/util-0/risk-discovery') {
+          if (request.method !== 'POST') {
+            writeJson(response, 405, { error: 'Only POST is supported.' })
+            return
+          }
+          try {
+            writeJson(response, 200, await saveUtil0RiskDiscovery(await readJsonBody(request)))
+          } catch (error) {
+            writeJson(response, 400, { error: error instanceof Error ? error.message : 'util-0 엑셀 저장에 실패했습니다.' })
+          }
           return
         }
 

@@ -4,10 +4,14 @@ import {
   readSharedSystemPrompts,
   runLlmUtility,
   saveSharedSystemPrompt,
+  buildFilePromptContext,
+  parsePromptFile,
+  saveUtil0RiskDiscovery,
 } from '../../features/llm-util'
-import type { LlmRunResult, LlmUtilityId, SharedSystemPromptMap } from '../../features/llm-util'
+import type { LlmRunResult, LlmUtilityId, SharedSystemPromptMap, UploadedPromptFile } from '../../features/llm-util'
 import {
   buildNewsClassificationPrompt,
+  bindNewsGroupsToSourceItems,
   collectNaverNews,
   createMockNewsClassification,
   createNewsSourceRecords,
@@ -18,14 +22,16 @@ import {
   searchNaverNews,
   saveNewsClassification,
   saveNaverNewsSearchConfig,
+  saveUtil1ManualTestRun,
 } from '../../features/news-intake'
-import type { NewsRiskGroupRecord } from '../../domain/risk/newsSignal'
+import type { NewsClassificationStore, NewsRiskGroupRecord } from '../../domain/risk/newsSignal'
 import type { NaverNewsItem, NaverNewsSearchConfig } from '../../features/news-intake'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
-const defaultUtilityId: LlmUtilityId = 'util-1'
+const defaultUtilityId: LlmUtilityId = 'util-0'
 const isMockMode = import.meta.env.VITE_LLM_USE_MOCK !== 'false'
+const showDeveloperNewsPanel = import.meta.env.VITE_SHOW_DEVELOPER_NEWS_PANEL === 'true'
 
 type RunPromptSource = 'markdown' | 'shared' | 'browser'
 
@@ -71,11 +77,22 @@ function createNewsTestInput(item: NaverNewsItem) {
   ].join('\n')
 }
 
+function parseRiskDiscoveryJson(text: string) {
+  const normalized = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
+  const parsed: unknown = JSON.parse(normalized)
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('util-0 결과가 객체 JSON 형식이 아닙니다.')
+  return parsed as Record<string, unknown>
+}
+
+
 export function DeveloperTestPage() {
   const [selectedUtilityId, setSelectedUtilityId] = useState<LlmUtilityId>(defaultUtilityId)
   const [sharedPrompts, setSharedPrompts] = useState<SharedSystemPromptMap>(createInitialSharedPromptMap)
   const [systemPromptDrafts, setSystemPromptDrafts] = useState(createInitialSystemPromptDrafts)
   const [testInput, setTestInput] = useState('')
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedPromptFile[]>([])
+  const [fileUploadError, setFileUploadError] = useState('')
+  const [isParsingFiles, setIsParsingFiles] = useState(false)
   const [result, setResult] = useState<LlmRunResult | null>(null)
   const [lastRunSystemPrompt, setLastRunSystemPrompt] = useState<{ text: string; source: RunPromptSource } | null>(null)
   const [lastRunTestInput, setLastRunTestInput] = useState('')
@@ -107,6 +124,14 @@ export function DeveloperTestPage() {
   const [isNewsCollecting, setIsNewsCollecting] = useState(false)
   const [isNewsClassifying, setIsNewsClassifying] = useState(false)
   const [storedNewsGroups, setStoredNewsGroups] = useState<NewsRiskGroupRecord[]>([])
+  const [newsStoreSnapshot, setNewsStoreSnapshot] = useState<NewsClassificationStore | null>(null)
+  const [isNewsStoreViewerOpen, setIsNewsStoreViewerOpen] = useState(false)
+  const [isNewsStoreLoading, setIsNewsStoreLoading] = useState(false)
+  const [newsStoreViewerError, setNewsStoreViewerError] = useState('')
+  const [isUtil1ManualTestSaving, setIsUtil1ManualTestSaving] = useState(false)
+  const [util1ManualTestSaveMessage, setUtil1ManualTestSaveMessage] = useState('')
+  const [util1ManualTestSaveError, setUtil1ManualTestSaveError] = useState('')
+  const [util0ExportMessage, setUtil0ExportMessage] = useState('')
 
   const selectedUtility = llmUtilityDefinitions.find((utility) => utility.id === selectedUtilityId)
     ?? llmUtilityDefinitions[0]
@@ -118,6 +143,27 @@ export function DeveloperTestPage() {
     : sharedPrompt.source === 'shared' ? 'shared' : 'markdown'
   const markdownPath = `src/features/llm-util/${selectedUtility.id}/system-prompt.md`
   const isNewsSearchConfigDirty = JSON.stringify(newsKeywordDrafts) !== JSON.stringify(newsSearchConfig.keywords)
+  const fileContext = buildFilePromptContext(uploadedFiles)
+  const composedSystemPrompt = [systemPrompt.trim(), fileContext].filter(Boolean).join('\n\n')
+  const composedTestInput = testInput.trim() || (uploadedFiles.length > 0 ? '업로드된 파일의 내용을 분석하고 핵심 내용을 정리해 주세요.' : '')
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    if (!files.length) return
+    setIsParsingFiles(true)
+    setFileUploadError('')
+    try {
+      const parsed = await Promise.all(files.map(parsePromptFile))
+      setUploadedFiles((current) => [...current, ...parsed.filter((file) => !current.some((item) => item.id === file.id))])
+    } catch (caught) {
+      setFileUploadError(caught instanceof Error ? caught.message : '파일을 읽지 못했습니다.')
+    } finally {
+      setIsParsingFiles(false)
+    }
+  }
+
+  const handleRemoveFile = (id: string) => setUploadedFiles((current) => current.filter((file) => file.id !== id))
 
   useEffect(() => {
     let isActive = true
@@ -151,7 +197,10 @@ export function DeveloperTestPage() {
 
     readNewsClassificationStore()
       .then((store) => {
-        if (isActive) setStoredNewsGroups(store.groups)
+        if (isActive) {
+          setStoredNewsGroups(store.groups)
+          setNewsStoreSnapshot(store)
+        }
       })
       .catch(() => {
         // The development store is optional until the first classification is saved.
@@ -376,7 +425,7 @@ export function DeveloperTestPage() {
     const sourceItems = createNewsSourceRecords(newsResults.slice(0, 30))
     const prompt = buildNewsClassificationPrompt(sourceItems, storedNewsGroups)
     setIsNewsClassifying(true)
-    setLastRunSystemPrompt({ text: systemPrompt.trim(), source: currentPromptSource })
+    setLastRunSystemPrompt({ text: composedSystemPrompt, source: currentPromptSource })
     setLastRunTestInput(prompt)
     setResult(null)
 
@@ -393,20 +442,75 @@ export function DeveloperTestPage() {
       setResult(displayResponse)
 
       const parsed = parseNewsClassificationOutput(classificationText)
+      const groups = bindNewsGroupsToSourceItems(parsed.groups, sourceItems)
       const saved = await saveNewsClassification({
         sourceItems,
-        groups: parsed.groups,
+        groups,
         rawOutput: classificationText,
         generatedAt: response.generatedAt,
         mode: response.mode,
         model: response.model,
       })
       setStoredNewsGroups(saved.store.groups)
+      setNewsStoreSnapshot(saved.store)
       setNewsConfigMessage(`${response.mode === 'mock' ? 'SAMPLE · ' : ''}${sourceItems.length}건을 ${parsed.groups.length}개 동적 위험 묶음으로 분류하고 저장했습니다.`)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : '뉴스 분류·저장에 실패했습니다.')
     } finally {
       setIsNewsClassifying(false)
+    }
+  }
+
+  const handleOpenNewsStoreViewer = async () => {
+    setIsNewsStoreViewerOpen(true)
+    setIsNewsStoreLoading(true)
+    setNewsStoreViewerError('')
+
+    try {
+      const store = await readNewsClassificationStore(true)
+      setNewsStoreSnapshot(store)
+      setStoredNewsGroups(store.groups)
+    } catch (caught) {
+      setNewsStoreViewerError(caught instanceof Error ? caught.message : '저장된 뉴스 분류 데이터를 불러오지 못했습니다.')
+    } finally {
+      setIsNewsStoreLoading(false)
+    }
+  }
+
+  const handleSaveUtil1ManualTest = async () => {
+    setUtil1ManualTestSaveMessage('')
+    setUtil1ManualTestSaveError('')
+
+    if (!result || !lastRunSystemPrompt || !lastRunTestInput) {
+      setUtil1ManualTestSaveError('먼저 기능 1번 테스트 입력을 실행해 주세요.')
+      return
+    }
+
+    setIsUtil1ManualTestSaving(true)
+
+    try {
+      await saveUtil1ManualTestRun({
+        systemPrompt: lastRunSystemPrompt.text,
+        prompt: lastRunTestInput,
+        result,
+      })
+      setUtil1ManualTestSaveMessage('기능 1번 수동 입력과 AI 응답을 저장했습니다. 위험 묶음으로 자동 승격하지 않습니다.')
+    } catch (caught) {
+      setUtil1ManualTestSaveError(caught instanceof Error ? caught.message : '기능 1번 수동 입력 저장에 실패했습니다.')
+    } finally {
+      setIsUtil1ManualTestSaving(false)
+    }
+  }
+
+  const handleExportUtil0Result = async () => {
+    setUtil0ExportMessage('')
+    if (!result) return
+    try {
+      const data = parseRiskDiscoveryJson(result.text)
+      const saved = await saveUtil0RiskDiscovery(data, result.generatedAt, result.mode)
+      setUtil0ExportMessage(`서버 엑셀 저장 완료 · ${saved.file ?? 'util-0-risk-discovery.xlsx'}`)
+    } catch (caught) {
+      setUtil0ExportMessage(caught instanceof Error ? `엑셀 저장 실패: ${caught.message}` : '엑셀 저장에 실패했습니다.')
     }
   }
 
@@ -427,6 +531,9 @@ export function DeveloperTestPage() {
     setLastRunTestInput('')
     setError('')
     setSaveMessage('')
+    setIsNewsStoreViewerOpen(false)
+    setUtil1ManualTestSaveMessage('')
+    setUtil1ManualTestSaveError('')
   }
 
   const handleSystemPromptChange = (value: string) => {
@@ -454,6 +561,8 @@ export function DeveloperTestPage() {
   const handleRun = async () => {
     setError('')
     setResult(null)
+    setUtil1ManualTestSaveMessage('')
+    setUtil1ManualTestSaveError('')
 
     if (isSharedPromptLoading) {
       setError('공유 시스템 프롬프트를 불러오는 중입니다.')
@@ -465,22 +574,30 @@ export function DeveloperTestPage() {
       return
     }
 
-    if (!testInput.trim()) {
+    if (!composedTestInput) {
       setError('사용자 테스트 입력을 입력해 주세요.')
       return
     }
 
     setIsRunning(true)
-    setLastRunSystemPrompt({ text: systemPrompt.trim(), source: currentPromptSource })
-    setLastRunTestInput(testInput.trim())
+    setLastRunSystemPrompt({ text: composedSystemPrompt, source: currentPromptSource })
+    setLastRunTestInput(composedTestInput)
 
     try {
       const response = await runLlmUtility({
         utilityId: selectedUtility.id,
-        systemPrompt,
-        prompt: testInput,
+        systemPrompt: composedSystemPrompt,
+        prompt: composedTestInput,
       })
       setResult(response)
+      if (selectedUtility.id === 'util-0') {
+        try {
+          const saved = await saveUtil0RiskDiscovery(parseRiskDiscoveryJson(response.text), response.generatedAt, response.mode)
+          setUtil0ExportMessage(`서버 엑셀 자동 저장 완료 · ${saved.file ?? 'data/util-0-risk-discovery.xlsx'}`)
+        } catch (caught) {
+          setUtil0ExportMessage(caught instanceof Error ? `서버 엑셀 저장 실패: ${caught.message}` : '서버 엑셀 저장에 실패했습니다.')
+        }
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : '알 수 없는 오류가 발생했습니다.')
     } finally {
@@ -543,7 +660,7 @@ export function DeveloperTestPage() {
         </p>
       </section>
 
-      {selectedUtility.id === 'util-1' && (
+      {showDeveloperNewsPanel && selectedUtility.id === 'util-1' && (
         <section className="developer-news-config surface-card" aria-labelledby="developer-util-1-news-config-title">
           <div className="developer-card-heading">
             <div>
@@ -632,7 +749,7 @@ export function DeveloperTestPage() {
                       onClick={() => void handleClassifyNews()}
                       disabled={isNewsClassifying || isNewsSearching || isNewsCollecting}
                     >
-                      {isNewsClassifying ? '분류·저장 중...' : 'AI 분류·묶음 저장'}
+                       {isNewsClassifying ? '자동 분류·저장 중...' : '자동 AI 분류·묶음 저장'}
                     </button>
                   </div>
                 </div>
@@ -726,21 +843,68 @@ export function DeveloperTestPage() {
           </div>
         </div>
 
-        <div className="developer-system-prompt-footer developer-news-config-footer">
+          <div className="developer-system-prompt-footer developer-news-config-footer">
           <span>
             {isNewsSearchConfigLoading
               ? '공유 검색어 불러오는 중...'
               : `${newsKeywordDrafts.length}개 · ${isNewsSearchConfigDirty ? '저장 필요' : newsSearchConfig.source === 'shared' ? '공유 서버 저장본' : '기본 검색어'}`}
           </span>
-          <div>
-            <button type="button" className="text-button" onClick={handleRestoreDefaultNewsKeywords} disabled={isNewsSearchConfigLoading || isNewsSearchConfigSaving}>기본값 복원</button>
-            <button type="button" className="secondary-action developer-save-button" onClick={() => void persistNewsSearchConfig()} disabled={isNewsSearchConfigLoading || isNewsSearchConfigSaving || !isNewsSearchConfigDirty}>
-              {isNewsSearchConfigSaving ? '저장 중...' : '검색어 저장'}
-            </button>
+            <div>
+              <button type="button" className="text-button" onClick={handleRestoreDefaultNewsKeywords} disabled={isNewsSearchConfigLoading || isNewsSearchConfigSaving}>기본값 복원</button>
+              <button type="button" className="secondary-action developer-save-button" onClick={() => void handleOpenNewsStoreViewer()} disabled={isNewsStoreLoading}>
+                {isNewsStoreLoading ? '불러오는 중...' : '저장 데이터 확인'}
+              </button>
+              <button type="button" className="secondary-action developer-save-button" onClick={() => void persistNewsSearchConfig()} disabled={isNewsSearchConfigLoading || isNewsSearchConfigSaving || !isNewsSearchConfigDirty}>
+                {isNewsSearchConfigSaving ? '저장 중...' : '검색어 저장'}
+              </button>
+            </div>
           </div>
-        </div>
-        {newsConfigMessage && <p className="developer-save-message" role="status">{newsConfigMessage}</p>}
-        {newsConfigError && <p className="developer-inline-error" role="alert">{newsConfigError}</p>}
+          {newsConfigMessage && <p className="developer-save-message" role="status">{newsConfigMessage}</p>}
+          {newsConfigError && <p className="developer-inline-error" role="alert">{newsConfigError}</p>}
+
+          {isNewsStoreViewerOpen && (
+            <section className="developer-news-store-viewer" aria-labelledby="developer-news-store-viewer-title">
+              <div className="developer-news-store-viewer-heading">
+                <div>
+                  <p className="eyebrow">STORED NEWS DATA</p>
+                  <h3 id="developer-news-store-viewer-title">저장된 뉴스 분류 데이터</h3>
+                </div>
+                <button type="button" className="text-button" onClick={() => setIsNewsStoreViewerOpen(false)}>닫기</button>
+              </div>
+
+              {newsStoreViewerError && <p className="developer-inline-error" role="alert">{newsStoreViewerError}</p>}
+              {isNewsStoreLoading && <p className="developer-store-empty">저장 데이터를 불러오는 중입니다...</p>}
+              {!isNewsStoreLoading && !newsStoreViewerError && newsStoreSnapshot && (
+                <>
+                  <div className="developer-news-store-stats">
+                    <span>분류 실행 <strong>{newsStoreSnapshot.runs.length}건</strong></span>
+                    <span>위험 묶음 <strong>{newsStoreSnapshot.groups.length}개</strong></span>
+                    <span>최근 원문 <strong>{newsStoreSnapshot.runs[0]?.sourceItemCount ?? 0}건</strong></span>
+                    <span>갱신 시각 <strong>{newsStoreSnapshot.updatedAt ? new Date(newsStoreSnapshot.updatedAt).toLocaleString('ko-KR') : '저장 없음'}</strong></span>
+                  </div>
+
+                  {newsStoreSnapshot.runs[0] ? (
+                    <details className="developer-news-store-details">
+                      <summary>최근 실행의 구조화 뉴스 보기</summary>
+                      <pre>{JSON.stringify(newsStoreSnapshot.runs[0].sourceItems, null, 2)}</pre>
+                    </details>
+                  ) : (
+                    <p className="developer-store-empty">아직 저장된 뉴스 분류 실행이 없습니다.</p>
+                  )}
+
+                  <details className="developer-news-store-details">
+                    <summary>누적 위험 묶음 보기</summary>
+                    <pre>{JSON.stringify(newsStoreSnapshot.groups, null, 2)}</pre>
+                  </details>
+
+                  <details className="developer-news-store-details">
+                    <summary>전체 저장 JSON 보기</summary>
+                    <pre>{JSON.stringify(newsStoreSnapshot, null, 2)}</pre>
+                  </details>
+                </>
+              )}
+            </section>
+          )}
         </section>
       )}
 
@@ -802,13 +966,39 @@ export function DeveloperTestPage() {
               placeholder="시스템 프롬프트가 처리할 테스트 자료나 질문을 입력하세요."
               rows={8}
             />
-            <div className="developer-prompt-footer developer-run-footer">
-              <span>{testInput.length.toLocaleString('ko-KR')}자 · {promptSourceLabel(currentPromptSource)}</span>
-              <button type="button" className="primary-action developer-run-button" onClick={handleRun} disabled={isRunning || isSharedPromptLoading}>
-                <AppIcon name="spark" size={16} />
-                {isRunning ? '실행 중...' : '실행'}
-              </button>
+            <div className="developer-file-upload">
+              <div className="developer-file-upload-heading">
+                <label className="developer-prompt-label" htmlFor="developer-reference-files">참고 파일 업로드
+                  <small>PDF, Word, PowerPoint, Excel, 텍스트, 이미지(OCR) 등 여러 파일을 선택하면 파싱해 프롬프트 앞에 포함합니다. 파일은 브라우저에서만 처리합니다.</small>
+                </label>
+                <label className="secondary-action developer-upload-button" htmlFor="developer-reference-files">
+                  {isParsingFiles ? '파싱 중...' : '파일 선택'}
+                  <input id="developer-reference-files" type="file" multiple accept=".txt,.md,.markdown,.json,.csv,.tsv,.pdf,.docx,.pptx,.xlsx,.xls,.png,.jpg,.jpeg,.webp,.bmp" onChange={(event) => void handleFileUpload(event)} disabled={isParsingFiles} />
+                </label>
+              </div>
+              {uploadedFiles.length > 0 && <ul className="developer-file-list">{uploadedFiles.map((file) => <li key={file.id}><span>{file.name} · {(file.size / 1024).toFixed(1)} KB</span><button type="button" className="text-button" onClick={() => handleRemoveFile(file.id)}>제거</button></li>)}</ul>}
+              {fileUploadError && <p className="developer-inline-error" role="alert">{fileUploadError}</p>}
+              {uploadedFiles.length > 0 && <p className="developer-file-context-note">실행 시 포함될 파일 컨텍스트 {fileContext.length.toLocaleString('ko-KR')}자</p>}
             </div>
+            <div className="developer-prompt-footer developer-run-footer">
+              <span>{composedTestInput.length.toLocaleString('ko-KR')}자 · 파일 {uploadedFiles.length}개 · 시스템 프롬프트에 포함</span>
+              <div className="developer-run-actions">
+                <button type="button" className="primary-action developer-run-button" onClick={handleRun} disabled={isRunning || isSharedPromptLoading}>
+                  <AppIcon name="spark" size={16} />
+                  {isRunning ? '실행 중...' : '실행'}
+                </button>
+                {selectedUtility.id === 'util-1' && (
+                  <button type="button" className="secondary-action developer-run-button" onClick={() => void handleSaveUtil1ManualTest()} disabled={isRunning || isUtil1ManualTestSaving || !result}>
+                    {isUtil1ManualTestSaving ? '수동 저장 중...' : '수동 입력 결과 저장'}
+                  </button>
+                )}
+              </div>
+            </div>
+            {selectedUtility.id === 'util-1' && (
+              <p className="developer-manual-save-note">수동 저장은 입력·프롬프트·AI 응답만 보관하며 위험 묶음으로 분류하지 않습니다. 뉴스 전체를 자동 분류하려면 위의 자동 AI 분류·묶음 저장을 사용하세요.</p>
+            )}
+            {util1ManualTestSaveMessage && <p className="developer-save-message" role="status">{util1ManualTestSaveMessage}</p>}
+            {util1ManualTestSaveError && <p className="developer-inline-error" role="alert">{util1ManualTestSaveError}</p>}
           </section>
 
           <section className="developer-result-card surface-card" aria-live="polite">
@@ -817,12 +1007,16 @@ export function DeveloperTestPage() {
                 <p className="eyebrow">RESULT BOX</p>
                 <h2>AI 응답 결과</h2>
               </div>
+              {selectedUtility.id === 'util-0' && result && (
+                <button type="button" className="secondary-action developer-save-button" onClick={() => void handleExportUtil0Result()}>서버에 엑셀 저장</button>
+              )}
               {result && (
                 <span className={`developer-mode-chip ${result.mode}`}>
                   {result.mode === 'gemini' ? 'GEMINI API' : 'MOCK'}
                 </span>
               )}
             </div>
+            {util0ExportMessage && <p className="developer-save-message" role="status">{util0ExportMessage}</p>}
 
             <div className={error ? 'developer-result-box has-error' : 'developer-result-box'}>
               {isRunning && <p className="developer-result-placeholder">응답을 생성하고 있습니다...</p>}

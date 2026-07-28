@@ -18,7 +18,7 @@ let pendingRead: Promise<SharedSystemPromptMap> | null = null
 
 function normalizePromptMap(payload: SharedPromptApiResponse): SharedSystemPromptMap {
   const prompts = payload.prompts ?? {}
-  const utilityIds: LlmUtilityId[] = ['util-1', 'util-2', 'util-3', 'util-4']
+  const utilityIds: LlmUtilityId[] = ['util-0', 'util-1', 'util-2', 'util-3', 'util-4']
 
   return Object.fromEntries(
     utilityIds.map((utilityId) => {

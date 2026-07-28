@@ -1,6 +1,6 @@
 import type { IconName } from '../../shared/components/AppIcon'
 
-export type LlmUtilityId = 'util-1' | 'util-2' | 'util-3' | 'util-4'
+export type LlmUtilityId = 'util-0' | 'util-1' | 'util-2' | 'util-3' | 'util-4'
 
 export type LlmUtilityDefinition = {
   id: LlmUtilityId

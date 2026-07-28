@@ -60,6 +60,8 @@ export function buildNewsClassificationPrompt(
     '',
     '[기존 위험 묶음. 같은 위험이면 group_key를 재사용하고, 다르면 새로 만드세요.]',
     JSON.stringify(groupContext, null, 2),
+    '',
+    '[저장 기준] source_items는 위 입력 뉴스의 구조화 데이터를 그대로 사용합니다. risk_groups의 source_ids에는 위 입력에 존재하는 source_id만 넣으세요.',
   ].join('\n')
 }
 
@@ -129,6 +131,23 @@ export function parseNewsClassificationOutput(text: string): {
     groups,
     storageHint: typeof parsed.storage_hint === 'string' ? parsed.storage_hint : '',
   }
+}
+
+export function bindNewsGroupsToSourceItems(
+  groups: NewsRiskGroup[],
+  sourceItems: NewsSourceRecord[],
+) {
+  const sourceIds = new Set(sourceItems.map((item) => item.id))
+  const unboundGroup = groups.find((group) => !group.sourceIds.some((sourceId) => sourceIds.has(sourceId)))
+
+  if (unboundGroup) {
+    throw new Error(`AI 위험 묶음 "${unboundGroup.title}"이 구조화된 뉴스 source_id를 참조하지 않아 저장할 수 없습니다.`)
+  }
+
+  return groups.map((group) => ({
+    ...group,
+    sourceIds: [...new Set(group.sourceIds.filter((sourceId) => sourceIds.has(sourceId)))],
+  }))
 }
 
 export async function readNewsClassificationStore(force = false): Promise<NewsClassificationStore> {
