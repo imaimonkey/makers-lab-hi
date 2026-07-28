@@ -765,28 +765,29 @@ function getCoverageDamageLabel(
 type CoverageGapBullet = {
   prefix: string
   emphasis?: string
+  suffix?: string
 }
 
 const COVERAGE_GAP_BULLETS: Record<string, readonly CoverageGapBullet[]> = {
   'COV-01': [
-    { prefix: '법률상 배상책임이 인정되지 않으면 ', emphasis: '보상 어려움' },
-    { prefix: '대물배상 한도 초과 손해 ', emphasis: '미보장' },
+    { prefix: '', emphasis: '법률상 배상책임', suffix: '이 인정되지 않으면 보상 어려움' },
+    { prefix: '', emphasis: '대물배상 한도 초과', suffix: ' 손해 미보장' },
   ],
   'COV-02': [
-    { prefix: '자차 미가입 차량의 손해 ', emphasis: '미보장' },
-    { prefix: '자기부담금·면책조건에 따른 ', emphasis: '차량 소유자 부담 발생' },
+    { prefix: '', emphasis: '자차 미가입', suffix: ' 차량의 손해 미보장' },
+    { prefix: '', emphasis: '자기부담금·면책조건', suffix: '에 따른 차량 소유자 부담 발생' },
   ],
   'COV-03': [
-    { prefix: '보험 목적에 포함되지 않은 충전설비 ', emphasis: '미보장' },
-    { prefix: '보험가입금액·보상한도 ', emphasis: '초과 손해 미보장' },
+    { prefix: '', emphasis: '보험 목적에 포함되지 않은', suffix: ' 충전설비 미보장' },
+    { prefix: '', emphasis: '보험가입금액·보상한도 초과', suffix: ' 손해 미보장' },
   ],
   'COV-04': [
-    { prefix: '배터리 결함과 제조사 책임 확정 전 ', emphasis: '보상 지연' },
-    { prefix: '제조사 책임이 인정되지 않으면 ', emphasis: '보험 적용 어려움' },
+    { prefix: '배터리 결함과 ', emphasis: '제조사 책임 확정 전', suffix: ' 보상 지연' },
+    { prefix: '', emphasis: '제조사 책임', suffix: '이 인정되지 않으면 보험 적용 어려움' },
   ],
   'COV-05': [
-    { prefix: '관리상 과실이 인정되지 않으면 ', emphasis: '배상책임보험 적용 어려움' },
-    { prefix: '화재 확산과 관리 과실의 인과관계가 입증되지 않으면 ', emphasis: '보상 어려움' },
+    { prefix: '', emphasis: '관리상 과실', suffix: '이 인정되지 않으면 배상책임보험 적용 어려움' },
+    { prefix: '화재 확산과 관리 과실의 ', emphasis: '인과관계', suffix: '가 입증되지 않으면 보상 어려움' },
   ],
 }
 
@@ -853,7 +854,7 @@ function RiskGapSection({ report }: { report: ReportView }) {
                   <ul className="report-page__gap-bullets">
                     {getCoverageGapBullets(item).map((bullet) => (
                       <li key={`${bullet.prefix}-${bullet.emphasis ?? ''}`}>
-                        {bullet.prefix}{bullet.emphasis ? <strong>{bullet.emphasis}</strong> : null}
+                        {bullet.prefix}{bullet.emphasis ? <strong>{bullet.emphasis}</strong> : null}{bullet.suffix ?? ''}
                       </li>
                     ))}
                   </ul>
@@ -3346,7 +3347,7 @@ export function ReportSections({
     const syncTabFromHash = () => {
       const nextTab = getTabFromHash()
       if (nextTab !== activeTab && (editorMode || editorPreview || reviewInputDirty)) {
-        if ((editorDirty || reviewInputDirty) && !window.confirm('저장하지 않은 변경사항이 있습니다. 저장하지 않고 탭을 이동할까요?')) {
+        if ((editorDirty || (reviewInputDirty && activeTab !== 'feasibility')) && !window.confirm('저장하지 않은 변경사항이 있습니다. 저장하지 않고 탭을 이동할까요?')) {
           return
         }
         if (reviewInputDirty) {
@@ -3406,7 +3407,7 @@ export function ReportSections({
 
   const handleTabChange = (id: ReportTabId) => {
     if (id !== activeTab && (editorMode || editorPreview || reviewInputDirty)) {
-      if ((editorDirty || reviewInputDirty) && !window.confirm('저장하지 않은 변경사항이 있습니다. 저장하지 않고 탭을 이동할까요?')) {
+      if ((editorDirty || (reviewInputDirty && activeTab !== 'feasibility')) && !window.confirm('저장하지 않은 변경사항이 있습니다. 저장하지 않고 탭을 이동할까요?')) {
         return
       }
       if (reviewInputDirty) {
