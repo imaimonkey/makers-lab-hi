@@ -3347,9 +3347,6 @@ export function ReportSections({
     const syncTabFromHash = () => {
       const nextTab = getTabFromHash()
       if (nextTab !== activeTab && (editorMode || editorPreview || reviewInputDirty)) {
-        if ((editorDirty || (reviewInputDirty && activeTab !== 'feasibility')) && !window.confirm('저장하지 않은 변경사항이 있습니다. 저장하지 않고 탭을 이동할까요?')) {
-          return
-        }
         if (reviewInputDirty) {
           setReviewDiscardRevision((value) => value + 1)
           setReviewInputDirty(false)
@@ -3407,9 +3404,6 @@ export function ReportSections({
 
   const handleTabChange = (id: ReportTabId) => {
     if (id !== activeTab && (editorMode || editorPreview || reviewInputDirty)) {
-      if ((editorDirty || (reviewInputDirty && activeTab !== 'feasibility')) && !window.confirm('저장하지 않은 변경사항이 있습니다. 저장하지 않고 탭을 이동할까요?')) {
-        return
-      }
       if (reviewInputDirty) {
         setReviewDiscardRevision((value) => value + 1)
         setReviewInputDirty(false)
