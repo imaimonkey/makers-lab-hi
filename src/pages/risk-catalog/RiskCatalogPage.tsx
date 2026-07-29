@@ -56,7 +56,7 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
         description="새로운 위험 신호를 카테고리와 근거 중심으로 탐색하고 상품화 가능성을 비교합니다."
       />
       <div className="sample-notice"><span>{mode === 'developer' ? 'DEVELOPER' : 'SAMPLE'}</span>{mode === 'developer' ? <><span>Step 2 Gemini/Excel 결과를 이 실무자 UI 형식으로 표시하는 개발자 화면입니다.</span><button type="button" onClick={() => void runDeveloperStep2()} disabled={developerRunning}>{developerRunning ? '분석 중...' : 'Step 2 전체 실행 · Excel 저장'}</button>{developerMessage ? <small role="status">{developerMessage}</small> : null}</> : sampleOnlyNotice}</div>
-      <RiskExplorationLens developerMode={mode === 'developer'} sourceRecords={mode === 'developer' && developerRecords.length ? developerRecords : undefined} />
+      <RiskExplorationLens developerMode={mode === 'developer'} developerLaws={mode === 'developer' ? developerViewData?.laws : undefined} sourceRecords={mode === 'developer' && developerRecords.length ? developerRecords : undefined} />
       <RiskExplorationOperations developerMode={mode === 'developer'} sourceRisks={mode === 'developer' ? developerViewData?.risks : undefined} developerData={mode === 'developer' ? developerViewData : undefined} onRunDeveloperStep2={mode === 'developer' ? runDeveloperStep2 : undefined} />
       <section className="integration-contract surface-card">
         <span className="contract-label">TEAM 02 INTEGRATION CONTRACT</span>

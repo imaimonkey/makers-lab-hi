@@ -6,6 +6,7 @@ import {
   type LawTrackingRiskLevel,
   type RiskLawTrackingItem,
 } from '../../domain/risk/riskLawTracking'
+import type { DeveloperLawQueueItem } from './developerStep2Adapter'
 
 type LawTrackingFilter = 'all' | 'assembly' | 'administrative'
 
@@ -75,17 +76,45 @@ function RelatedCases({ item }: { item: RiskLawTrackingItem }) {
   )
 }
 
-export function RiskLawTrackingPanel({ category }: { category: ScreeningCategory }) {
+function buildDeveloperTrackingItems(laws: DeveloperLawQueueItem[]): RiskLawTrackingItem[] {
+  return laws.map((law) => ({
+    id: law.id,
+    sourceType: 'administrative',
+    typeLabel: law.institution,
+    institution: law.institution,
+    title: law.title,
+    summary: law.description,
+    status: law.verificationStatus,
+    expectedEffectiveDate: law.date,
+    lastUpdated: law.date,
+    riskLevel: 'low',
+    categories: ['legal'],
+    relatedCaseCount: 0,
+    relatedLossCount: 0,
+    timeline: [{ label: '원문 확인', stage: 'current', date: law.date }],
+    beforeChanges: [{ label: '출처', value: law.sourceName }],
+    afterChanges: [{ label: '검토 내용', value: law.description, emphasis: 'blue' }],
+    changeBadge: law.verificationStatus,
+    relatedCases: [],
+    relatedLossCases: [],
+    checklist: ['근거 ID: ' + law.id, '법령 원문과 최신 개정 여부 확인 필요'],
+    evidenceIds: [law.id],
+  }))
+}
+
+export function RiskLawTrackingPanel({ category, developerLaws }: { category: ScreeningCategory; developerLaws?: DeveloperLawQueueItem[] }) {
+  const developerMode = developerLaws !== undefined
+  const sourceItems = useMemo(() => developerMode ? buildDeveloperTrackingItems(developerLaws) : riskLawTrackingItems, [developerLaws, developerMode])
   const [query, setQuery] = useState('')
   const [sourceFilter, setSourceFilter] = useState<LawTrackingFilter>('all')
   const [institution, setInstitution] = useState('all')
   const [riskLevel, setRiskLevel] = useState<LawTrackingRiskLevel | 'all'>('all')
-  const [selectedId, setSelectedId] = useState(riskLawTrackingItems[0]?.id ?? '')
+  const [selectedId, setSelectedId] = useState(sourceItems[0]?.id ?? '')
 
-  const institutions = useMemo(() => Array.from(new Set(riskLawTrackingItems.map((item) => item.institution))), [])
+  const institutions = useMemo(() => Array.from(new Set(sourceItems.map((item) => item.institution))), [sourceItems])
   const items = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
-    return riskLawTrackingItems.filter((item) => {
+    return sourceItems.filter((item) => {
       const categoryMatch = category === 'all' || item.categories.includes(category)
       const sourceMatch = sourceFilter === 'all' || item.sourceType === sourceFilter
       const institutionMatch = institution === 'all' || item.institution === institution
@@ -93,7 +122,7 @@ export function RiskLawTrackingPanel({ category }: { category: ScreeningCategory
       const searchMatch = !normalizedQuery || `${item.title} ${item.institution} ${item.summary}`.toLocaleLowerCase('ko-KR').includes(normalizedQuery)
       return categoryMatch && sourceMatch && institutionMatch && riskMatch && searchMatch
     })
-  }, [category, institution, query, riskLevel, sourceFilter])
+  }, [category, institution, query, riskLevel, sourceFilter, sourceItems])
   const selected = items.find((item) => item.id === selectedId) ?? items[0]
 
   return (
@@ -114,7 +143,7 @@ export function RiskLawTrackingPanel({ category }: { category: ScreeningCategory
         <div className="risk-law-list" aria-label="법령·규제 목록">
           {items.length ? items.map((item) => (
             <button type="button" className={`risk-law-list-item ${selected?.id === item.id ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}>
-              <span className="risk-law-list-meta"><b>{item.typeLabel}</b><em className={riskClassNames[item.riskLevel]}>{riskLabels[item.riskLevel]}</em></span>
+              <span className="risk-law-list-meta"><b>{item.typeLabel}</b><em className={riskClassNames[item.riskLevel]}>{developerMode ? '확인 필요' : riskLabels[item.riskLevel]}</em></span>
               <strong>{item.title}</strong>
               <small>{item.summary}</small>
               <span className="risk-law-list-counts"><i>⚖️ 연관 판례 {item.relatedCaseCount}건</i><i>💥 사고 사례 {item.relatedLossCount}건</i></span>
@@ -125,12 +154,12 @@ export function RiskLawTrackingPanel({ category }: { category: ScreeningCategory
       <div className="risk-law-detail" aria-live="polite">
         {selected ? <>
           <div className="risk-law-detail-heading"><div><h3 id="risk-law-tracking-title">{selected.title}</h3><p>소관: {selected.institution} | 상태: {selected.status} | 예상 시행일: {selected.expectedEffectiveDate}</p></div>{selected.sourceUrl ? <a href={selected.sourceUrl} target="_blank" rel="noreferrer">원문 확인하기 ↗</a> : <span className="risk-law-source-pending">원문 확인 필요</span>}</div>
-          <div className="risk-law-update-label">SAMPLE · 최종 업데이트 {selected.lastUpdated}</div>
+          <div className="risk-law-update-label">{developerMode ? 'ACTUAL ARTICLE · STEP 2' : 'SAMPLE · 최신 업데이트'} {selected.lastUpdated}</div>
           <section className="risk-law-timeline-card"><div className="risk-law-card-heading"><h4>📍 입법·개정 진행 단계</h4><span>최근 상태 변경: <strong>{selected.lastUpdated}</strong></span></div><TrackingTimeline item={selected} /></section>
           <section className="risk-law-changes"><div className="risk-law-change-grid"><ChangeCard title="기존 기준" changes={selected.beforeChanges} variant="before" /><ChangeCard title="개정안·현재 기준" changes={selected.afterChanges} variant="after" /></div><span className="risk-law-change-badge">{selected.changeBadge}</span></section>
           <RelatedCases item={selected} />
           <section className="risk-law-checklist"><h4>☑️ 판례 및 법안 반영 대응 체크리스트</h4><ul>{selected.checklist.map((item) => <li key={item}>{item}</li>)}</ul></section>
-          <p className="risk-law-disclaimer">SAMPLE · 법률·규제 정보와 사례는 공식 원문·최신성 확인 전 판단 근거로 사용할 수 없습니다. 보험 보장·면책·보험료·가입 가능 여부를 의미하지 않습니다.</p>
+          <p className="risk-law-disclaimer">{developerMode ? 'ACTUAL ARTICLE · Step 2 law 결과입니다. 원문에 없는 판례·손해 사례는 추가하지 않고 확인 필요로 표시합니다.' : 'SAMPLE · 법률·규제 정보와 사례는 공식 원문·최신성 확인 전 판단 근거로 사용할 수 없습니다. 보험 보장·면책·보험료·가입 가능 여부를 의미하지 않습니다.'}</p>
         </> : <p className="risk-law-empty">선택할 법령·규제가 없습니다.</p>}
       </div>
     </section>

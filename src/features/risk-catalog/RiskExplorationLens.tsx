@@ -15,6 +15,7 @@ import {
   type ScreeningMetricKey,
 } from '../../domain/risk/riskScreeningInsights'
 import { RiskLawTrackingPanel } from './RiskLawTrackingPanel'
+import type { DeveloperLawQueueItem } from './developerStep2Adapter'
 
 const categoryFilters: Array<{ key: ScreeningCategory; label: string; icon: string }> = [
   { key: 'all', label: '전체', icon: '◈' },
@@ -112,7 +113,7 @@ function MetricTooltip({ id, insight }: { id: string; insight: ContextualScreeni
   )
 }
 
-export function RiskExplorationLens({ sourceRecords, developerMode = false }: { sourceRecords?: RiskExplorationRecord[]; developerMode?: boolean } = {}) {
+export function RiskExplorationLens({ sourceRecords, developerMode = false, developerLaws }: { sourceRecords?: RiskExplorationRecord[]; developerMode?: boolean; developerLaws?: DeveloperLawQueueItem[] } = {}) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedId, setSelectedId] = useState(sourceRecords?.[0]?.id ?? riskExplorationRecords[0]?.id ?? '')
 
@@ -213,7 +214,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false }: { 
         </div>
       </div>
 
-      <RiskLawTrackingPanel category={category} />
+      <RiskLawTrackingPanel category={category} developerLaws={developerMode ? (developerLaws ?? []) : undefined} />
 
       <div className="screening-table-heading">
         <div><p className="eyebrow">AI-ASSISTED SCREENING</p><h3>동일 기준 비교표</h3></div>
