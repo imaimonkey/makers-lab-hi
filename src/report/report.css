@@ -16831,3 +16831,600 @@
     box-shadow: none;
   }
 }
+
+/* AI proposal cards: section-scoped visual hierarchy and blue document surface. */
+.report-page__wording-section .report-page__wording-proposal-heading,
+.report-page__wording-section .report-page__wording-proposal-grid {
+  margin-inline: 30px;
+}
+
+.report-page__wording-section .report-page__wording-proposal-heading {
+  margin-top: 28px;
+  padding-top: 23px;
+}
+
+.report-page__wording-section .report-page__wording-proposal-heading > div {
+  max-width: 820px;
+}
+
+.report-page__wording-section .report-page__wording-proposal-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.report-page__wording-section .report-page__wording-proposal-card {
+  display: flex;
+  min-height: 260px;
+  height: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 24px 26px;
+  border: 1px solid #d5e2ed;
+  border-top: 3px solid transparent;
+  border-radius: 12px;
+  color: var(--wording-flow-ink, #263b4b);
+  background: linear-gradient(180deg, #f3f8ff 0%, #ffffff 94%);
+  box-shadow: 0 2px 8px rgba(23, 50, 77, .045);
+  text-align: left;
+}
+
+.report-page__wording-section .report-page__wording-proposal-card:hover,
+.report-page__wording-section .report-page__wording-proposal-card:focus-visible {
+  border-color: #a7bbce;
+  border-top-color: #9aaebe;
+  box-shadow: 0 6px 16px rgba(23, 50, 77, .09);
+  outline: none;
+}
+
+.report-page__wording-section .report-page__wording-proposal-card.is-selected {
+  border: 2px solid var(--wording-flow-navy, #17324d);
+  border-top-width: 4px;
+  background: linear-gradient(180deg, #eaf4ff 0%, #ffffff 94%);
+  box-shadow: 0 5px 16px rgba(23, 50, 77, .09);
+}
+
+.report-page__wording-section .report-page__wording-proposal-number {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  margin: 0 0 14px;
+  border: 1px solid #d8e5ef;
+  border-radius: 50%;
+  color: #667986;
+  background: rgba(255, 255, 255, .78);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.report-page__wording-section .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-number {
+  border-color: var(--wording-flow-navy, #17324d);
+  color: #ffffff;
+  background: var(--wording-flow-navy, #17324d);
+}
+
+.report-page__wording-section .report-page__wording-proposal-card-title {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.report-page__wording-section .report-page__wording-proposal-card-title strong {
+  position: relative;
+  display: block;
+  min-width: 0;
+  padding-left: 11px;
+  color: var(--wording-flow-navy, #17324d);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.report-page__wording-section .report-page__wording-proposal-card-title strong::before {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: rgba(158, 69, 12, .48);
+  content: '';
+}
+
+.report-page__wording-section .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-title strong::before {
+  background: #9e450c;
+}
+
+.report-page__wording-section .report-page__wording-proposal-card-title em {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--wording-flow-muted, #6d7e8b);
+  background: rgba(255, 255, 255, .58);
+}
+
+.report-page__wording-section .report-page__wording-proposal-card > small {
+  display: block;
+  margin-top: 13px;
+  color: #526472;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.report-page__wording-section .report-page__wording-proposal-reason {
+  display: block;
+  margin-top: auto;
+  padding: 14px 12px 0;
+  border-top: 1px solid #dce7f0;
+  border-radius: 8px;
+  color: #687985;
+  background: rgba(255, 255, 255, .5);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.report-page__wording-section .report-page__wording-proposal-reason b {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--wording-flow-navy, #17324d);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+@media screen and (max-width: 1020px) {
+  .report-page__wording-section .report-page__wording-proposal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .report-page__wording-section .report-page__wording-proposal-heading,
+  .report-page__wording-section .report-page__wording-proposal-grid {
+    margin-inline: 20px;
+  }
+
+  .report-page__wording-section .report-page__wording-proposal-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .report-page__wording-section .report-page__wording-proposal-card {
+    min-height: 0;
+    padding: 24px;
+  }
+}
+
+@media print {
+  .report-page__wording-section .report-page__wording-proposal-heading,
+  .report-page__wording-section .report-page__wording-proposal-grid {
+    margin-inline: 5mm;
+  }
+
+  .report-page__wording-section .report-page__wording-proposal-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4mm;
+    margin-top: 5mm;
+  }
+
+  .report-page__wording-section .report-page__wording-proposal-card,
+  .report-page__wording-section .report-page__wording-proposal-card.is-selected {
+    min-height: 62mm;
+    padding: 5mm;
+    border-radius: 2mm;
+    background: linear-gradient(180deg, #f3f8ff 0%, #ffffff 94%) !important;
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__wording-section .report-page__wording-proposal-card.is-selected {
+    border-color: var(--wording-flow-navy, #17324d);
+    border-top-width: 4px;
+    background: linear-gradient(180deg, #eaf4ff 0%, #ffffff 94%) !important;
+  }
+
+  .report-page__wording-section .report-page__wording-proposal-card-title strong {
+    font-size: 12pt;
+  }
+
+  .report-page__wording-section .report-page__wording-proposal-card > small {
+    font-size: 9.5pt;
+  }
+
+  .report-page__wording-section .report-page__wording-proposal-reason {
+    font-size: 8.5pt;
+  }
+}
+
+/* Productization decision hero: calm blue treatment, scoped to the top card only. */
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero {
+  --product-decision-navy: #0b2f5b;
+  --product-decision-deep-blue: #0a3768;
+  --product-decision-body: #334155;
+  --product-decision-muted: #64748b;
+  --product-decision-line: #d8e2ec;
+  --product-decision-meta-line: #e2e8f0;
+  --product-decision-pass: #0f8a83;
+  --product-decision-follow-up: #d99a1b;
+  --product-decision-additional: #7c5ce5;
+  border: 1px solid var(--product-decision-line);
+  border-left: 4px solid #245c9a;
+  border-top: 1px solid var(--product-decision-line);
+  background: linear-gradient(110deg, #f4f8fc 0%, #f8fafc 55%, #fffdfc 100%);
+  color: var(--product-decision-body);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-copy h2 {
+  color: var(--product-decision-navy);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-title {
+  color: var(--product-decision-deep-blue);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-bullets li > span:last-child {
+  color: var(--product-decision-body);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-bullets li.is-satisfied > span:first-child {
+  color: var(--product-decision-pass);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-bullets li.is-follow-up > span:first-child {
+  color: var(--product-decision-follow-up);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-bullets li.is-additional-check > span:first-child {
+  color: var(--product-decision-additional);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-note {
+  color: var(--product-decision-muted);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span {
+  border: 1px solid var(--product-decision-line);
+  background: rgba(255, 255, 255, .85);
+  box-shadow: none;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span strong,
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-pass strong,
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-follow-up strong,
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-info strong {
+  color: var(--product-decision-navy);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span small {
+  color: var(--product-decision-muted);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-meta {
+  border-top-color: var(--product-decision-meta-line);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-meta > span {
+  color: var(--product-decision-body);
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-meta > span em {
+  color: var(--product-decision-muted);
+  font-style: normal;
+}
+
+@media print {
+  .report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero {
+    background: linear-gradient(110deg, #f4f8fc 0%, #f8fafc 55%, #fffdfc 100%) !important;
+    border-color: var(--product-decision-line);
+    border-left-color: #245c9a;
+  }
+
+  .report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span {
+    background: rgba(255, 255, 255, .85) !important;
+    border-color: var(--product-decision-line);
+    box-shadow: none;
+  }
+}
+
+/* Final hierarchy pass for the decision hero; no layout or content changes. */
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-title {
+  color: #0f8a83;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span {
+  background: rgba(255, 255, 255, .85);
+  border: 1px solid #d8e2ec;
+  border-top-width: 3px;
+  box-shadow: none;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-pass {
+  border-top-color: #0f8a83;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-neutral {
+  border-top-color: #1e3a5f;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-follow-up {
+  border-top-color: #d99a1b;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-info {
+  border-top-color: #7c5ce5;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-pass > strong {
+  color: #0f8a83;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-neutral > strong {
+  color: #1e3a5f;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-follow-up > strong {
+  color: #d99a1b;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span.is-info > strong {
+  color: #7c5ce5;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > span > small {
+  color: #64748b;
+}
+
+/* Top-card summary facts: prioritize insurability, marketability, TAM and PML. */
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-title {
+  color: #0a3768;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-follow-up {
+  display: block;
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-note {
+  display: grid;
+  gap: 2px;
+  color: #64748b;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-note > span {
+  display: block;
+  color: #64748b;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > .report-page__product-decision-fact-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 12px 11px;
+  border: 1px solid #d8e2ec;
+  border-top: 1px solid #d8e2ec;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .86);
+  box-shadow: none;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-label {
+  display: block;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-card > strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-card > small {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-card > em {
+  display: block;
+  margin-top: auto;
+  padding-top: 8px;
+  color: #64748b;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1.4;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-card.is-pass > strong {
+  color: #0f8a83;
+}
+
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-card.is-market > strong,
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-card.is-tam > strong,
+.report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-card.is-pml > strong {
+  color: #0f8a83;
+}
+
+@media print {
+  .report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-facts-grid > .report-page__product-decision-fact-card {
+    background: rgba(255, 255, 255, .86) !important;
+    border: 1px solid #d8e2ec;
+    box-shadow: none;
+  }
+
+  .report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-label {
+    font-size: 7.5pt;
+  }
+
+  .report-page__feasibility-redesign > .report-page__feasibility-redesign-content > .report-page__product-decision-hero .report-page__product-decision-fact-card > strong {
+    font-size: 13pt;
+  }
+}
+
+/* Wording page top risk summary: one compact, page-scoped risk card. */
+.report-page__wording-section .report-page__wording-main-flow {
+  margin-top: 24px;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary {
+  min-width: 0;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary-card {
+  min-width: 0;
+  padding: 28px 30px 30px;
+  border: 1px solid #d8e2ec;
+  border-left: 4px solid #d96b2b;
+  border-radius: 10px;
+  background: linear-gradient(110deg, #f2f7ff 0%, #ffffff 94%);
+  box-shadow: 0 2px 8px rgba(23, 50, 77, .045);
+  break-inside: avoid;
+  page-break-inside: avoid;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary-label {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary-card h3 {
+  margin: 8px 0 0;
+  color: #17324d;
+  font-size: clamp(22px, 2.3vw, 26px);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary-description {
+  max-width: 100ch;
+  margin: 11px 0 0;
+  color: #3f4f5c;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px 22px;
+  margin: 24px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid #dbe5ed;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary-meta > div {
+  min-width: 0;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary-meta dt {
+  margin: 0 0 5px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.report-page__wording-section .report-page__wording-risk-summary-meta dd {
+  min-width: 0;
+  margin: 0;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.report-page__wording-section .report-page__wording-zone-a .report-page__wording-proposal-heading {
+  margin-top: 0;
+}
+
+@media screen and (max-width: 900px) {
+  .report-page__wording-section .report-page__wording-risk-summary-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .report-page__wording-section .report-page__wording-risk-summary-card {
+    padding: 26px 22px 28px;
+  }
+
+  .report-page__wording-section .report-page__wording-risk-summary-card h3 {
+    font-size: 22px;
+  }
+
+  .report-page__wording-section .report-page__wording-risk-summary-description {
+    font-size: 14px;
+  }
+
+  .report-page__wording-section .report-page__wording-risk-summary-meta {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+}
+
+@media print {
+  .report-page__wording-section .report-page__wording-risk-summary-card {
+    padding: 6mm;
+    border-color: #c9d8e5;
+    border-left-color: #d96b2b;
+    border-radius: 2mm;
+    background: linear-gradient(110deg, #f2f7ff 0%, #ffffff 94%) !important;
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__wording-section .report-page__wording-risk-summary-card h3 {
+    font-size: 15pt;
+  }
+
+  .report-page__wording-section .report-page__wording-risk-summary-description {
+    font-size: 9pt;
+    line-height: 1.55;
+  }
+
+  .report-page__wording-section .report-page__wording-risk-summary-meta {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3mm;
+    margin-top: 5mm;
+    padding-top: 4mm;
+  }
+
+  .report-page__wording-section .report-page__wording-risk-summary-meta dt {
+    font-size: 7pt;
+  }
+
+  .report-page__wording-section .report-page__wording-risk-summary-meta dd {
+    font-size: 8pt;
+  }
+}

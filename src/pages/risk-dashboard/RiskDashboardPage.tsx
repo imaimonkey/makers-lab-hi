@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { clearCustomerSignals, readCustomerSignals } from '../../domain/risk/customerSignalStorage'
 import type { CustomerSignal } from '../../domain/risk/types'
 import { sampleOnlyNotice } from '../../domain/risk/sampleData'
+import { candidateListViewModels } from '../../domain/risk/candidateViewModel'
 import { RiskSignalPipeline } from '../../features/risk-dashboard/RiskSignalPipeline'
 import { RiskRadarOperationsPanel } from '../../features/risk-dashboard/RiskRadarOperationsPanel'
 import { RiskProductDevelopmentBoard } from '../../features/risk-dashboard/RiskProductDevelopmentBoard'
@@ -32,11 +33,28 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
   }))
   const focusRisk = {
     id: risks[0]?.id,
-    title: risks[0]?.name ?? '원문 기반 후보 없음',
-    evidenceCount: news[0]?.contentQuality?.chars ?? 0,
+    title: risks[0]?.name ?? candidateListViewModels[0]?.title ?? '원문 기반 후보 없음',
+    evidenceCount: news[0]?.contentQuality?.chars ?? candidateListViewModels[0]?.evidence.count ?? 0,
     signalStrength: risks[0] ? 40 : 0,
   }
   const developerPath = (path: string) => mode === 'developer' ? `/developer-test${path}` : path
+  const priorityRows = mode === 'developer'
+    ? displayRisks.slice(0, 3).map((risk) => ({
+      id: risk.id,
+      title: risk.title,
+      detailPath: developerPath(`/risks/${risk.id}`),
+      meta: `${risk.themeLabel} · 근거 ${risk.evidenceCount}건`,
+      score: `${risk.signalStrength}`,
+      scoreLabel: '신호',
+    }))
+    : candidateListViewModels.slice(0, 3).map((candidate) => ({
+      id: candidate.id,
+      title: candidate.title,
+      detailPath: candidate.detailRiskId ? `/risks/${candidate.detailRiskId}?from=%2Frisks` : '/risks',
+      meta: `${candidate.pipelineStatus} · ${candidate.candidateStatus} · 근거 ${candidate.evidence.count}건`,
+      score: candidate.screeningScore.value?.toFixed(2) ?? '—',
+      scoreLabel: '후보 점수',
+    }))
 
   useEffect(() => {
     const refresh = () => setCustomerSignals(readCustomerSignals())
@@ -86,10 +104,10 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
             <div><p className="eyebrow">FOCUS TODAY</p><h2>대표 후보 검토</h2></div>
             <span className="status-badge ready">SAMPLE</span>
           </div>
-          <strong>{risks[0]?.name ?? '원문 기반 후보 없음'}</strong>
-          <p>근거 {focusRisk?.evidenceCount}건 · 신호 강도 {focusRisk?.signalStrength}/100</p>
-          <div className="dashboard-focus-bar"><span style={{ width: `${risks[0] ? 40 : 0}%` }} /></div>
-          <Link to={developerPath(`/risks/${focusRisk?.id}`)} className="dashboard-focus-link" aria-label={`${focusRisk?.title ?? '대표 후보'} 상세 보기`} title="대표 후보 상세 보기"><AppIcon name="arrow" size={14} /></Link>
+          <strong>{focusRisk.title}</strong>
+          <p>근거 {focusRisk.evidenceCount}건 · 후보 선별 {candidateListViewModels[0]?.screeningScore.value?.toFixed(2) ?? '—'}/5</p>
+          <div className="dashboard-focus-bar" aria-label="후보 선별점수 0에서 5"><span style={{ width: `${candidateListViewModels[0] ? ((candidateListViewModels[0].screeningScore.value ?? 0) / 5) * 100 : focusRisk.signalStrength}%` }} /></div>
+          <Link to={developerPath(`/risks/${focusRisk.id ?? ''}`)} className="dashboard-focus-link" aria-label={`${focusRisk.title} 상세 보기`} title="대표 후보 상세 보기"><AppIcon name="arrow" size={14} /></Link>
         </article>
       </section>
 
@@ -108,6 +126,23 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
         </article>
       </section>
 
+      <section className="dashboard-workflow surface-card" aria-labelledby="dashboard-workflow-title">
+        <div className="panel-heading">
+          <div><p className="eyebrow">ONE WORKFLOW / TAB 1→4</p><h2 id="dashboard-workflow-title">신호를 판단 가능한 리포트로 연결</h2></div>
+          <span className="updated-label">SAMPLE · 기준일 2026.07.23</span>
+        </div>
+        <div className="dashboard-workflow-steps">
+          <Link to="/" className="is-current"><span>01</span><strong>신호 관제</strong><small>변화·최신성·소스 상태 확인</small></Link>
+          <i aria-hidden="true">→</i>
+          <Link to="/risks"><span>02</span><strong>후보 비교</strong><small>8개 지표로 상세 검증 선택</small></Link>
+          <i aria-hidden="true">→</i>
+          <Link to={focusRisk.id ? developerPath(`/risks/${focusRisk.id}?from=%2Frisks`) : developerPath('/risks')}><span>03</span><strong>근거 검증</strong><small>평가·추세·Evidence Ledger</small></Link>
+          <i aria-hidden="true">→</i>
+          <Link to="/reports"><span>04</span><strong>리포트 스냅샷</strong><small>검토 결과·다음 게이트 기록</small></Link>
+        </div>
+        <p className="dashboard-workflow-note"><AppIcon name="shield" size={14} /> 각 단계는 원본 데이터를 자동 확정하지 않습니다. 샘플 수치와 고객 신호는 사람의 검토·최소 집계 후 다음 단계로 이동합니다.</p>
+      </section>
+
       <RiskSignalPipeline radarSnapshot={radarSnapshot} />
       <RiskRadarOperationsPanel radarSnapshot={radarSnapshot} onRefresh={refreshRadarSnapshot} />
       <RiskProductDevelopmentBoard radarSnapshot={radarSnapshot} />
@@ -119,11 +154,11 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
             <Link to={developerPath('/risks')} className="panel-icon-link" aria-label="위험 후보 전체 보기" title="위험 후보 전체 보기"><AppIcon name="arrow" size={15} /></Link>
           </div>
           <div className="priority-list">
-            {displayRisks.slice(0, 3).map((risk, index) => (
-              <Link to={developerPath(`/risks/${risk.id}`)} className="priority-row" key={risk.id}>
+            {priorityRows.map((candidate, index) => (
+              <Link to={candidate.detailPath} className="priority-row" key={candidate.id}>
                 <span className="rank">0{index + 1}</span>
-                <div><strong>{risk.title}</strong><small>{risk.themeLabel} · 근거 {risk.evidenceCount}건</small></div>
-                <span className="score">{risk.signalStrength}<small>신호</small></span>
+                <div><strong>{candidate.title}</strong><small>{candidate.meta}</small></div>
+                <span className="score">{candidate.score}<small>{candidate.scoreLabel}</small></span>
                 <AppIcon name="arrow" size={17} />
               </Link>
             ))}

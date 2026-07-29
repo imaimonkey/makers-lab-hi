@@ -604,6 +604,36 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 1100px) { .risk-operations-filters { grid-template-columns: 1.5fr repeat(2, 1fr); }.risk-operations-summary { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 720px) { .risk-exploration-operations { padding: 18px; }.risk-operations-heading { display: grid; }.risk-operations-heading > div:last-child { justify-content: flex-start; }.risk-operations-filters, .risk-operations-summary, .risk-operations-context-grid, .risk-operations-queue-grid { grid-template-columns: 1fr; } }
 
+/* Integrated workflow refinements: pipeline stages and candidate states are separate contracts. */
+.risk-operations-workflow { display: grid; gap: 9px; align-items: stretch; }
+.risk-operations-workflow-row { display: flex; align-items: center; gap: 6px; min-width: max-content; }
+.risk-operations-workflow-row > strong { min-width: 106px; color: var(--navy); font-size: 9px; letter-spacing: .02em; }
+.risk-operations-workflow-row span { font-size: 9px; }
+.risk-operations-workflow-row span b { color: inherit; font-size: 10px; }
+.candidate-status-row { padding-top: 8px; border-top: 1px dashed var(--line); }
+.candidate-status-row > strong { color: var(--orange-dark); }
+.screening-score em { display: block; margin-top: 5px; color: var(--orange-dark); font-size: 8px; font-style: normal; font-weight: 700; }
+.screening-tooltip-evidence { display: block; margin-top: 9px; color: #d8e2ee; font-size: 8px; line-height: 1.5; }
+
+/* Tab 1 is the cross-tab operating entry point. */
+.dashboard-workflow { margin: 18px 0; padding: 22px 24px; border-top: 3px solid var(--hi-orange); }
+.dashboard-workflow-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; gap: 8px; margin-top: 18px; }
+.dashboard-workflow-steps a { min-height: 94px; padding: 15px; display: grid; align-content: start; gap: 6px; border: 1px solid var(--line); border-radius: 12px; color: inherit; background: var(--canvas); text-decoration: none; transition: border-color .18s ease, transform .18s ease, background .18s ease; }
+.dashboard-workflow-steps a:hover, .dashboard-workflow-steps a:focus-visible { border-color: var(--hi-orange); background: #fff; transform: translateY(-2px); outline: none; }
+.dashboard-workflow-steps a.is-current { border-color: var(--hi-navy); background: #f1f6fb; }
+.dashboard-workflow-steps a span { color: var(--hi-orange); font: 800 10px/1 'DM Sans', sans-serif; }
+.dashboard-workflow-steps a strong { color: var(--hi-navy); font-size: 12px; }
+.dashboard-workflow-steps a small { color: var(--muted); font-size: 9px; line-height: 1.45; }
+.dashboard-workflow-steps > i { color: var(--muted); font-style: normal; text-align: center; }
+.dashboard-workflow-note { margin: 15px 0 0; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.dashboard-focus-link.is-disabled { width: auto; padding: 0 9px; color: var(--muted); font-size: 8px; }
+@media (max-width: 800px) {
+  .dashboard-workflow-steps { grid-template-columns: 1fr; }
+  .dashboard-workflow-steps > i { transform: rotate(90deg); }
+  .dashboard-workflow { padding: 18px; }
+  .risk-operations-workflow { overflow-x: auto; }
+}
+
 /* Seoyeon branch parity: TOP-5 screening, source panels, and deep metric tooltips */
 .screening-lens { overflow: visible; }
 .screening-control-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
@@ -2274,6 +2304,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .detail-assessment-grid .assessment-bar span { height: 8px; background: #e8eef5; }
 .detail-assessment-grid .assessment-bar span i { background: #3b82f6; }
 .detail-assessment-grid .assessment-bar strong { color: #0b2b52; font-size: 18px; }
+.detail-assessment-grid .assessment-bar strong small { margin-left: 2px; color: #64748b; font-size: 9px; font-weight: 700; }
+.detail-assessment-grid .assessment-bar strong em { display: block; margin-top: 4px; color: #64748b; font-size: 8px; font-style: normal; font-weight: 600; white-space: nowrap; }
 .detail-assessment-grid .assessment-row > p { color: #64748b; font-size: 10px; line-height: 1.65; }
 .assessment-logic { grid-column: 1 / -1; align-self: start; margin-top: 2px; border-top: 1px dashed #dce3ea; padding-top: 8px; }
 .assessment-logic summary { width: max-content; color: #2563eb; cursor: pointer; font-size: 10px; font-weight: 800; list-style: none; }

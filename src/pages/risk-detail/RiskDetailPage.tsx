@@ -8,6 +8,7 @@ import {
 } from '../../domain/risk/sampleData'
 import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
 import { RiskDecisionWorkspace } from '../../features/risk-detail/RiskDecisionWorkspace'
+import { EvidenceVerificationWorkspace } from '../../features/risk-detail/EvidenceVerificationWorkspace'
 import { buildAiQualitativeSummary, buildAssessmentAiSummary, getAssessmentEvidence } from '../../features/risk-detail/qualitativeAssessment'
 import type { RadarNewsDetail } from '../../domain/risk/riskRadarTypes'
 import { getRadarArticleId } from '../../domain/risk/riskRadarMappings'
@@ -24,11 +25,14 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
   const [liveDetail, setLiveDetail] = useState<RadarNewsDetail | null>(null)
   const [liveLoading, setLiveLoading] = useState(false)
   const [liveError, setLiveError] = useState('')
+  const [liveStale, setLiveStale] = useState(false)
+  const [lastLiveAt, setLastLiveAt] = useState<string | null>(null)
 
   const refreshLiveDetail = useCallback(async () => {
     if (!articleId || developerMode) {
       setLiveDetail(null)
       setLiveError('')
+      setLiveStale(false)
       return null
     }
     setLiveLoading(true)
@@ -36,10 +40,12 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
       const next = await riskRadarApi.detail(articleId)
       setLiveDetail(next)
       setLiveError('')
+      setLiveStale(false)
+      setLastLiveAt(new Date().toISOString())
       return next
     } catch (error) {
-      setLiveDetail(null)
       setLiveError(error instanceof Error ? error.message : 'detail API unavailable')
+      setLiveStale(true)
       return null
     } finally {
       setLiveLoading(false)
@@ -56,7 +62,19 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
   const liveArticle = liveDetail?.article
   const liveAnalysis = liveDetail?.analysis
   const displayTitle = liveArticle?.title ?? risk?.title
-  const detailSourceLabel = developerMode ? 'ACTUAL ARTICLE' : liveDetail ? 'LIVE API' : liveLoading ? 'LOADING' : liveError ? 'SAMPLE fallback' : articleId ? 'SAMPLE · detail pending' : 'SAMPLE · mapping pending'
+  const detailSourceLabel = developerMode
+    ? 'ACTUAL ARTICLE'
+    : liveLoading
+      ? 'LOADING'
+      : liveDetail && liveStale
+        ? 'STALE · 마지막 응답 유지'
+        : liveDetail
+          ? 'LIVE API'
+          : liveError
+            ? 'SAMPLE fallback'
+            : articleId
+              ? 'SAMPLE · detail pending'
+              : 'MAPPING PENDING'
   const catalogPath = developerMode ? '/developer-test/risks' : '/risks'
 
   const printRiskDetail = useCallback(() => {
@@ -110,8 +128,8 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
           <button type="button" onClick={printRiskDetail}>PDF 출력</button>
         </div>
       </nav>
-      <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? 'src/article PDF와 Step 2 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? ' API detail 응답을 사용합니다.' : `${sampleOnlyNotice}${liveError ? ` API detail 실패: ${liveError}` : ''}`}</div>
-      {liveDetail ? <div className="detail-live-strip" role="status"><strong>LIVE API</strong><span>본문 {liveArticle?.contentStatus ?? '상태 미제공'}</span><span>분석 {liveArticle?.analysisStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>검증 {liveArticle?.verificationStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>최종 응답 {liveArticle?.collectedAt ?? liveArticle?.publishedAt ?? '시각 미제공'}</span></div> : null}
+      <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? 'src/article PDF와 Step 2 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? `${liveStale ? ' 마지막 정상 상세 응답을 유지합니다.' : ' API detail 응답을 사용합니다.'}${lastLiveAt ? ` 응답 시각 ${new Date(lastLiveAt).toLocaleString('ko-KR')}` : ''}` : `${sampleOnlyNotice}${liveError ? ` API detail 실패: ${liveError}` : ''}`}</div>
+      {liveDetail ? <div className="detail-live-strip" role="status"><strong>{detailSourceLabel}</strong><span>본문 {liveArticle?.contentStatus ?? '상태 미제공'}</span><span>분석 {liveArticle?.analysisStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>검증 {liveArticle?.verificationStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>기준 시각 {liveArticle?.collectedAt ?? liveArticle?.publishedAt ?? '시각 미제공'}</span></div> : null}
 
       <section className="risk-hero surface-card">
         <div className="risk-hero-main">
@@ -126,14 +144,14 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
           </div>
         </div>
         <div className="risk-score-card">
-           <span>검토 우선순위</span>
+           <span>현재 우선순위 · priorityIndex</span>
           <strong>{risk.signalStrength}</strong>
           <div><i style={{ width: `${risk.signalStrength}%` }} /></div>
           <div className="sh-score-meta">
             <span>점수 범위</span><strong>0–100</strong>
             <span>신뢰도</span><strong>{detailSourceLabel === 'LIVE API' ? 'API 응답' : '확인 대기'}</strong>
           </div>
-           <p>비교용 SAMPLE · 사고확률·손해액 아님</p>
+           <p>0–100 · signalStrength 기반 우선순위 SAMPLE · 사고확률·손해액 아님</p>
           <details className="hero-score-logic">
             <summary>산출 근거</summary>
             <div className="logic-step-list">
@@ -152,14 +170,14 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
 
       <section className="detail-grid detail-assessment-grid" id="assessment-criteria">
         <article className="assessment-panel surface-card">
-           <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY</p><h2>평가 요약</h2><p className="panel-heading-description">6개 평가 항목을 비교용 0–100 점수로 표시합니다. 점수는 판단 보조이며 확정 결론이 아닙니다.</p></div><span className="updated-label">SAMPLE · 담당자 검토 필요</span></div>
+           <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY · AUTHORITY</p><h2>평가 요약</h2><p className="panel-heading-description">6개 평가 항목의 원점수 1–5와 표시용 0–100을 함께 보여줍니다. priorityIndex와 다른 의미의 평가 근거입니다.</p></div><span className="updated-label">{detailSourceLabel} · 담당자 검토 필요</span></div>
           <div className="assessment-list">
             {detail.assessments.map((item) => {
               const assessmentEvidence = getAssessmentEvidence(item.label, risk.id, detail.evidence)
               return (
               <div className="assessment-row" key={item.label}>
                 <div><strong>{item.label}</strong><small>{assessmentEvidence.length}건 연결 근거 · 신뢰도 {item.confidence}</small></div>
-                <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}</strong></div>
+                <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}<small>/100</small><em>원점수 {item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)}/5</em></strong></div>
                 <p>{item.note}</p>
                 <details className="assessment-logic">
                    <summary>계산·자료 보기</summary>
@@ -188,6 +206,13 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
       </section>
 
       <RiskDecisionWorkspace key={`review-${risk.id}`} risk={risk} detail={detail} />
+      <EvidenceVerificationWorkspace
+        key={`verification-${risk.id}`}
+        risk={risk}
+        detail={detail}
+        liveDetail={liveDetail}
+        onDetailRefresh={refreshLiveDetail}
+      />
     </div>
   )
 }

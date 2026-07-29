@@ -497,6 +497,11 @@ const normalizeMeta = (value: unknown, riskInput: AiRiskInput): ReportMeta => {
     ...source,
     reportId: typeof source.reportId === "string" ? source.reportId : undefined,
     sourceRiskId: riskInput.meta.riskId,
+    sourceAsOf: typeof source.sourceAsOf === "string" ? source.sourceAsOf : riskInput.meta.analysisBaseDate,
+    sourceAssessmentVersion: typeof source.sourceAssessmentVersion === "string" ? source.sourceAssessmentVersion : null,
+    evidenceSnapshotVersion: typeof source.evidenceSnapshotVersion === "string" ? source.evidenceSnapshotVersion : null,
+    revision: typeof source.revision === "number" && Number.isFinite(source.revision) ? source.revision : 1,
+    updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : null,
     title: asString(source.title, `${riskInput.risk.shortTitle} 상품화 검토 리포트`),
     riskTitle: asString(source.riskTitle, riskInput.risk.title),
     riskCategories: asStringArray(source.riskCategories).length

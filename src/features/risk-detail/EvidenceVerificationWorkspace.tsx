@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { toLiveEvidenceLedger } from '../../domain/risk/evidenceLedger'
 import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
 import { demoLaws, demoRisks } from '../../domain/risk/riskRadarDemo'
 import type { RadarNewsDetail } from '../../domain/risk/riskRadarTypes'
@@ -6,6 +7,7 @@ import { getRadarArticleId, getWorkbenchRiskId } from '../../domain/risk/riskRad
 import { riskRadarApi } from '../risk-dashboard/riskRadarApi'
 
 type ActionKey = 'body' | 'analysis' | 'verification' | 'candidate'
+type CandidateRequestState = 'idle' | 'loading' | 'succeeded' | 'failed' | 'pending-mapping'
 
 type EvidenceWorkspaceProps = {
   risk: SampleRiskCandidate
@@ -26,11 +28,16 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
   const articleId = productRisk ? getRadarArticleId(risk.id) : undefined
   const liveArticle = liveDetail?.article
   const liveAnalysis = liveDetail?.analysis
+  const liveEvidenceLedger = useMemo(
+    () => liveArticle ? toLiveEvidenceLedger(liveArticle, liveAnalysis ?? null) : [],
+    [liveAnalysis, liveArticle],
+  )
   const bodyDone = completedStatus(liveArticle?.contentStatus)
   const analysisDone = completedStatus(liveArticle?.analysisStatus) || Boolean(liveAnalysis)
   const verificationDone = completedStatus(liveArticle?.verificationStatus) || completedStatus(liveAnalysis?.verificationStatus)
   const [completed, setCompleted] = useState<ActionKey[]>(articleId ? ['body', 'analysis'] : [])
   const [busy, setBusy] = useState<ActionKey | ''>('')
+  const [candidateRequestState, setCandidateRequestState] = useState<CandidateRequestState>('idle')
   const [notice, setNotice] = useState(
     articleId ? '' : '연결 기사 없음 · SAMPLE/원문 확인 대기. 다른 위험의 기사나 수치를 대신 사용하지 않습니다.',
   )
@@ -54,10 +61,16 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
 
   async function runAction(key: ActionKey) {
     if (!articleId) {
+      if (key === 'candidate') setCandidateRequestState('pending-mapping')
       setNotice('연결 기사 없음 · SAMPLE/원문 확인 대기. API 요청을 보내지 않았습니다.')
       return
     }
+    if (key === 'candidate' && completed.includes('candidate')) {
+      setNotice('이미 후보 등록 요청을 완료했습니다. 중복 요청은 전송하지 않았습니다.')
+      return
+    }
     setBusy(key)
+    if (key === 'candidate') setCandidateRequestState('loading')
     setNotice('')
     try {
       if (key === 'body') await riskRadarApi.enrichArticle(articleId)
@@ -67,8 +80,14 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
       await onDetailRefresh?.()
       // API가 성공한 경우에만 완료 상태를 기록합니다.
       setCompleted((current) => current.includes(key) ? current : [...current, key])
-      setNotice(`${key === 'body' ? '본문 확보' : key === 'analysis' ? 'AI 분석' : key === 'verification' ? '교차검증' : '후보 등록'} 요청을 처리했습니다.`)
+      if (key === 'candidate') {
+        setCandidateRequestState('succeeded')
+        setNotice('후보 등록 요청 완료 · 다음 검토 큐로 전달했으며 상품화 승인이나 보장 확정이 아닙니다.')
+      } else {
+        setNotice(`${key === 'body' ? '본문 확보' : key === 'analysis' ? 'AI 분석' : '교차검증'} 요청을 처리했습니다.`)
+      }
     } catch {
+      if (key === 'candidate') setCandidateRequestState('failed')
       setNotice('운영 API가 연결되지 않아 화면의 SAMPLE 근거는 유지했습니다. 실패한 단계는 완료 처리하지 않았습니다.')
     } finally {
       setBusy('')
@@ -138,7 +157,14 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
 
       <article className="surface-card verification-ledger">
         <div className="verification-panel-heading"><div><p className="eyebrow">EVIDENCE LEDGER / STEP 3</p><h3>핵심 근거 문장</h3></div><span>{articleId ? completed.includes('verification') ? '근거 일치 2/2' : '검증 대기' : '기사 근거 없음'}</span></div>
-        {productRisk && articleId ? (
+        {liveEvidenceLedger.length ? (
+          <div className="verification-evidence-grid">
+            {liveEvidenceLedger.slice(0, 2).map((item) => (
+              <blockquote key={item.id}><span>{item.id} · {item.verificationStatus}</span><q>{item.excerpt ?? item.title}</q><small>{item.sourceName} · {item.dataStatus}</small></blockquote>
+            ))}
+          </div>
+        ) : null}
+        {productRisk && articleId && !liveEvidenceLedger.length ? (
           <div className="verification-evidence-grid"><blockquote><span>근거 01 · 문장 1</span><q>{productRisk.target}에서 {productRisk.keyword} 관련 손해 가능성이 관찰되고 있습니다.</q><small>위험 대상과 사건을 직접 확인하는 SAMPLE 문장</small></blockquote><blockquote><span>근거 02 · 문장 2</span><q>주요 예상 손해는 {productRisk.loss}이며, 보장 공백은 {productRisk.coverageGap}입니다.</q><small>상품개발 판단에 필요한 손해·공백 SAMPLE 문장</small></blockquote></div>
         ) : (
           <div className="verification-evidence-grid">
@@ -158,7 +184,7 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
       <article className="surface-card verification-gate-board">
         <div className="verification-panel-heading"><div><p className="eyebrow">GATE STATUS / STEP 4</p><h3>상품화 검토 잠금 상태</h3></div><span>{articleId && gates.every(([, done]) => done) ? '다음 단계 진행 가능' : '검증 항목 보강 필요'}</span></div>
         <div className="verification-gates">{gates.map(([label, done, description]) => <div className={done ? 'done' : ''} key={label}><i>{done ? '✓' : '!'}</i><span><strong>{label}</strong><small>{description}</small></span></div>)}</div>
-        <div className="verification-next-action"><div><span>다음 작업</span><strong>{!articleId ? 'canonical 기사 연결 및 원문 확인' : !completed.includes('verification') ? '독립 교차검증 실행' : !lawReady ? '공식 법령 검토' : '담당자 종합 평가'}</strong><small>단일 신호는 자동으로 신규 위험 후보로 승격하지 않습니다.</small></div><button type="button" disabled={!articleId || Boolean(busy) || !gates.every(([, done]) => done)} onClick={() => void runAction('candidate')}>위험 후보 등록 요청</button></div>
+        <div className="verification-next-action"><div><span>다음 작업</span><strong>{!articleId ? 'canonical 기사 연결 및 원문 확인' : !completed.includes('verification') ? '독립 교차검증 실행' : !lawReady ? '공식 법령 검토' : '담당자 종합 평가'}</strong><small>단일 신호는 자동으로 신규 위험 후보로 승격하지 않습니다.</small><em>요청 상태 · {candidateRequestState === 'succeeded' ? '후보 등록 요청 완료' : candidateRequestState === 'loading' ? '전송 중' : candidateRequestState === 'failed' ? '실패 · 재시도 필요' : candidateRequestState === 'pending-mapping' ? 'canonical mapping 대기' : '대기'}</em></div><button type="button" disabled={!articleId || Boolean(busy) || completed.includes('candidate') || !gates.every(([, done]) => done)} onClick={() => void runAction('candidate')}>{!articleId ? '상세 매핑 대기' : completed.includes('candidate') ? '요청 완료' : candidateRequestState === 'loading' ? '전송 중…' : '후보 등록 요청'}</button></div>
       </article>
     </section>
   )

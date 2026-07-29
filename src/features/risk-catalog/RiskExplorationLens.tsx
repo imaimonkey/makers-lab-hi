@@ -1,11 +1,11 @@
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
-  calculateRiskExplorationScore,
   riskExplorationRecords,
   type ExplorationCategory,
   type RiskExplorationRecord,
 } from '../../domain/risk/riskExplorationDemo'
+import { getCandidateViewModelById } from '../../domain/risk/candidateViewModel'
 import {
   getContextualScreeningInsight,
   screeningInsights,
@@ -87,28 +87,21 @@ type ScreeningSort = 'score' | 'title'
 type SearchParamKey = 'q' | 'category' | 'sort'
 
 const isScreeningCategory = (value: string | null): value is ScreeningCategory => (
-  value !== 'legal' && categoryFilters.some((filter) => filter.key === value)
+  categoryFilters.some((filter) => filter.key === value)
 )
 
-function MetricTooltip({ id, insight }: { id: string; insight: ContextualScreeningInsight }) {
+function MetricTooltip({ id, insight, evidenceCount }: { id: string; insight: ContextualScreeningInsight; evidenceCount: number }) {
   const tooltipStyle = { '--screening-tooltip-tone': insight.color } as CSSProperties
 
   return (
     <span id={id} className="screening-tooltip" data-tone={insight.tone} style={tooltipStyle} role="tooltip">
       <strong>{insight.title}</strong>
       <span className="screening-tooltip-section">
-        <b>AI 분석 근거</b>
-        {insight.reasons.map((reason) => <small key={reason}>• {reason}</small>)}
+        <b>대표 사유</b>
+        {insight.reasons.slice(0, 2).map((reason) => <small key={reason}>• {reason}</small>)}
       </span>
-      <span className="screening-tooltip-section source">
-        <b>데이터 출처</b>
-        {insight.sources.map((source) => <small key={source}>• {source}</small>)}
-      </span>
-      <span className="screening-tooltip-section judgment">
-        <b>최종 판단</b>
-        <em>{insight.judgment}</em>
-      </span>
-      <i>모든 값과 출처는 SAMPLE이며 원문 검증이 필요합니다.</i>
+      <small className="screening-tooltip-evidence">연결 근거 {evidenceCount}건 · 전체 판단 자료는 위험 상세에서 확인</small>
+      <i>SAMPLE · 원문과 최신성 확인 필요</i>
     </span>
   )
 }
@@ -148,7 +141,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
     return [...filtered].sort((first, second) => (
       sort === 'title'
         ? first.title.localeCompare(second.title, 'ko-KR')
-        : calculateRiskExplorationScore(second.metricScores) - calculateRiskExplorationScore(first.metricScores)
+        : (getCandidateViewModelById(second.id)?.screeningScore.value ?? 0) - (getCandidateViewModelById(first.id)?.screeningScore.value ?? 0)
     ))
   }, [category, query, sort, sourceRecords])
 
@@ -160,7 +153,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
         <div>
           <p className="eyebrow">PRODUCTABILITY COMPARISON LENS · SEOYEON</p>
           <h2 id="risk-exploration-title">신규 위험 타당성 스크리닝 TOP-10</h2>
-          <p>각 지표 셀에서 분석 근거를 확인하고 법령 트래킹·판례·손해 자료와 함께 비교합니다.</p>
+          <p>8개 선별 지표로 무엇을 상세 검증할지 비교합니다. 상품화 승인이나 최종 보험 판단은 이 화면의 역할이 아닙니다.</p>
         </div>
         <span className="status-badge sample">{developerMode ? 'ACTUAL ARTICLE · STEP 2' : 'SAMPLE · 검토용'}</span>
       </div>
@@ -207,7 +200,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
               value={sort}
               onChange={(event) => updateSearchParam('sort', event.target.value, 'score')}
             >
-              <option value="score">AI 보조점수 순</option>
+              <option value="score">후보 선별점수 순</option>
               <option value="title">후보명 순</option>
             </select>
           </label>
@@ -218,18 +211,18 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
 
       <div className="screening-table-heading">
         <div><p className="eyebrow">AI-ASSISTED SCREENING</p><h3>동일 기준 비교표</h3></div>
-        <span>지표 셀에 마우스를 올리거나 키보드 포커스를 이동하면 심층 근거가 표시됩니다.</span>
+        <span>지표 셀에는 대표 사유만 표시합니다. 전체 근거·반증은 탭 3의 Evidence Ledger에서 확인합니다.</span>
       </div>
       <div className="screening-table-viewport">
         <table className="screening-comparison-table">
-          <caption className="sr-only">seoyeon 브랜치 보험상품화 검토 후보 TOP-10 12열 비교표</caption>
+          <caption className="sr-only">위험 후보 선별 지표와 상세 검증 진입 비교표</caption>
           <thead>
             <tr>
               <th>순위</th>
               <th>위험 후보</th>
               {metricColumns.map((metric) => <th key={metric.key}>{metricContexts[metric.key].label}</th>)}
-              <th>AI 보조점수</th>
-              <th>공동 평가</th>
+              <th>후보 선별점수</th>
+              <th>상세 검증</th>
             </tr>
           </thead>
           <tbody>
@@ -259,17 +252,31 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
                         aria-describedby={tooltipId}
                       >
                         {metric.render(record)}
-                        <MetricTooltip id={tooltipId} insight={contextualInsight} />
+                        <MetricTooltip id={tooltipId} insight={contextualInsight} evidenceCount={getCandidateViewModelById(record.id)?.evidence.count ?? 0} />
                       </button>
                     </td>
                   )
                 })}
                 <td className="screening-score">
-                  <strong>{calculateRiskExplorationScore(record.metricScores).toFixed(2)}</strong>
-                  <small>/ 5.00</small>
+                  <strong>{getCandidateViewModelById(record.id)?.screeningScore.value?.toFixed(2) ?? '—'}</strong>
+                  <small>0–5 · 우선순위 SAMPLE</small>
+                  <em>{getCandidateViewModelById(record.id)?.candidateStatus}</em>
                 </td>
                 <td>
-                  <Link className="screening-detail-link" to={`${developerMode ? '/developer-test' : ''}/risks/${record.detailRiskId}`}>상세 분석</Link>
+                  {getCandidateViewModelById(record.id)?.detailRiskId ?? record.detailRiskId ? (
+                    <Link
+                      className="screening-detail-link"
+                      to={{
+                        pathname: `${developerMode ? '/developer-test' : ''}/risks/${getCandidateViewModelById(record.id)?.detailRiskId ?? record.detailRiskId}`,
+                        search: new URLSearchParams({
+                          ...(query ? { q: query } : {}),
+                          ...(category !== 'all' ? { category } : {}),
+                          ...(sort !== 'score' ? { sort } : {}),
+                          from: developerMode ? '/developer-test/risks' : '/risks',
+                        }).toString(),
+                      }}
+                    >상세 검증</Link>
+                  ) : <span className="table-empty">canonical mapping 대기</span>}
                 </td>
               </tr>
             )) : (
@@ -280,7 +287,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
       </div>
 
       <p className="risk-exploration-disclaimer">
-        SAMPLE · AI 보조점수와 셀별 판단은 우선순위 논의를 위한 예시이며 보험료·보장·가입 가능 여부를 의미하지 않습니다.
+        SAMPLE · 후보 선별점수와 셀별 판단은 상세 검증 순서를 정하는 예시이며 보험료·보장·가입 가능 여부를 의미하지 않습니다.
         표시된 기관 자료도 공식 원문과 최신성 확인 전에는 사실 근거로 사용할 수 없습니다.
       </p>
     </section>
