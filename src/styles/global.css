@@ -2099,6 +2099,71 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   }
 }
 
+/* Risk candidate law tracking card */
+.risk-law-tracking { display: grid; grid-template-columns: minmax(260px, 35%) minmax(0, 65%); margin-top: 16px; min-height: 640px; overflow: hidden; border: 1px solid #dbe3ec; border-radius: 16px; background: #fff; }
+.risk-law-tracking-sidebar { display: flex; min-width: 0; flex-direction: column; border-right: 1px solid #dbe3ec; background: #f8fafc; }
+.risk-law-filter-panel { display: grid; gap: 11px; padding: 16px; border-bottom: 1px solid #dbe3ec; background: #fff; box-shadow: 0 2px 8px rgba(15, 23, 42, .04); }
+.risk-law-search { display: flex; align-items: center; gap: 7px; padding: 9px 10px; border: 1px solid transparent; border-radius: 9px; background: #f1f5f9; color: #94a3b8; }
+.risk-law-search:focus-within { border-color: #60a5fa; background: #fff; box-shadow: 0 0 0 2px rgba(96, 165, 250, .16); }
+.risk-law-search input { width: 100%; min-width: 0; border: 0; outline: 0; color: #1e293b; background: transparent; font: inherit; font-size: 11px; }
+.risk-law-filter-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.risk-law-filter-chips::-webkit-scrollbar { display: none; }
+.risk-law-filter-chips button { flex: 0 0 auto; padding: 6px 9px; border: 1px solid #cbd5e1; border-radius: 999px; color: #64748b; background: #fff; font: inherit; font-size: 9px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.risk-law-filter-chips button:hover, .risk-law-filter-chips button:focus-visible { border-color: #2563eb; color: #1d4ed8; }
+.risk-law-filter-chips button.active { border-color: #1e293b; color: #fff; background: #1e293b; }
+.risk-law-filter-selects { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.risk-law-filter-selects select { width: 100%; padding: 7px 8px; border: 1px solid #e2e8f0; border-radius: 7px; color: #64748b; background: #f8fafc; font: inherit; font-size: 9px; outline: 0; }
+.risk-law-filter-selects select:focus-visible { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, .13); }
+.risk-law-list { overflow-y: auto; }
+.risk-law-list-item { display: block; width: 100%; padding: 15px; border: 0; border-bottom: 1px solid #e2e8f0; border-left: 4px solid transparent; color: inherit; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+.risk-law-list-item:hover { background: #f1f5f9; }
+.risk-law-list-item.active { border-left-color: #2563eb; background: #eff6ff; }
+.risk-law-list-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.risk-law-list-meta b { padding: 4px 6px; border-radius: 5px; color: #1d4ed8; background: #dbeafe; font-size: 9px; }
+.risk-law-list-meta em { font-size: 9px; font-style: normal; font-weight: 800; white-space: nowrap; }
+.risk-law-list-meta em.is-high { color: #dc2626; }.risk-law-list-meta em.is-medium { color: #d97706; }.risk-law-list-meta em.is-low { color: #64748b; }
+.risk-law-list-item > strong { display: block; color: #1e293b; font-size: 12px; line-height: 1.4; }
+.risk-law-list-item > small { display: block; margin-top: 4px; color: #64748b; font-size: 9px; line-height: 1.45; }
+.risk-law-list-counts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.risk-law-list-counts i { padding: 3px 5px; border-radius: 4px; color: #64748b; background: #e2e8f0; font-size: 8px; font-style: normal; }
+.risk-law-detail { min-width: 0; overflow-y: auto; padding: 22px; background: #fff; }
+.risk-law-detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; }
+.risk-law-detail-heading h3 { margin: 0 0 5px; color: #1e293b; font-size: 20px; letter-spacing: -.03em; }
+.risk-law-detail-heading p { margin: 0; color: #64748b; font-size: 9px; }
+.risk-law-detail-heading a, .risk-law-source-pending { flex: 0 0 auto; padding: 8px 11px; border-radius: 7px; color: #fff; background: #1e293b; font-size: 9px; font-weight: 800; text-decoration: none; }
+.risk-law-source-pending { color: #64748b; background: #f1f5f9; }
+.risk-law-update-label { margin-top: 7px; color: #94a3b8; font-size: 8px; text-align: right; }
+.risk-law-timeline-card { margin-top: 18px; padding: 15px; border: 1px solid #dbe3ec; border-radius: 12px; background: #f8fafc; }
+.risk-law-card-heading, .risk-law-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.risk-law-card-heading h4, .risk-law-section-heading h4 { margin: 0; color: #334155; font-size: 12px; }
+.risk-law-card-heading span, .risk-law-section-heading > div > span { color: #64748b; font-size: 8px; }
+.risk-law-timeline { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 18px; }
+.risk-law-timeline-line { position: absolute; top: 13px; right: 7%; left: 7%; height: 3px; background: #e2e8f0; }
+.risk-law-timeline-step { position: relative; z-index: 1; display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.risk-law-timeline-marker { display: grid; place-items: center; width: 27px; height: 27px; border: 2px solid #cbd5e1; border-radius: 50%; color: #94a3b8; background: #fff; font-size: 10px; font-weight: 800; }
+.risk-law-timeline-step.complete .risk-law-timeline-marker, .risk-law-timeline-step.current .risk-law-timeline-marker { border-color: #2563eb; color: #fff; background: #2563eb; }
+.risk-law-timeline-step.current .risk-law-timeline-marker { box-shadow: 0 0 0 4px #dbeafe; }
+.risk-law-timeline-step strong { color: #334155; font-size: 9px; }.risk-law-timeline-step.current strong { color: #2563eb; }.risk-law-timeline-step small { color: #94a3b8; font-size: 7px; }
+.risk-law-changes { position: relative; margin-top: 18px; }
+.risk-law-change-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.risk-law-change-card { position: relative; padding: 14px; border: 1px solid #dbe3ec; border-radius: 11px; background: #f8fafc; }
+.risk-law-change-card.after { border-color: #fecdd3; background: #fff7f7; }
+.risk-law-change-card.after::before { position: absolute; top: 0; bottom: 0; left: 0; width: 4px; border-radius: 11px 0 0 11px; background: #e11d48; content: ''; }
+.risk-law-change-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+.risk-law-change-heading > div { display: flex; align-items: center; gap: 7px; }.risk-law-change-dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }.after .risk-law-change-dot { background: #e11d48; }
+.risk-law-change-heading strong { color: #475569; font-size: 11px; }.after .risk-law-change-heading strong { color: #b91c1c; }.risk-law-change-heading > span { padding: 4px 6px; border-radius: 4px; color: #64748b; background: #fff; font-size: 8px; }
+.after .risk-law-change-heading > span { color: #b91c1c; background: #fee2e2; font-weight: 800; }
+.risk-law-change-card ul { display: grid; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }.risk-law-change-card li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 9px; color: #475569; font-size: 9px; line-height: 1.45; }.risk-law-change-card li b { color: #64748b; }.risk-law-change-card.after li b { color: #dc2626; }.risk-law-change-card li span.red { color: #b91c1c; }.risk-law-change-card li span.blue { color: #1d4ed8; }
+.risk-law-change-badge { display: block; margin-top: 8px; color: #b91c1c; font-size: 8px; font-weight: 800; text-align: right; }
+.risk-law-cases { margin-top: 20px; padding-top: 18px; border-top: 1px solid #e2e8f0; }
+.risk-law-section-heading > div:first-child { display: flex; align-items: baseline; gap: 8px; }.risk-law-section-heading > div:first-child span { color: #94a3b8; font-size: 8px; }
+.risk-law-case-tabs { display: flex; gap: 2px; padding: 3px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f1f5f9; }.risk-law-case-tabs button { padding: 5px 8px; border: 0; border-radius: 4px; color: #64748b; background: transparent; font: inherit; font-size: 8px; cursor: pointer; }.risk-law-case-tabs button.active { color: #2563eb; background: #fff; box-shadow: 0 1px 3px rgba(15, 23, 42, .1); font-weight: 800; }
+.risk-law-case-card { display: grid; gap: 10px; margin-top: 10px; padding: 14px; border: 1px solid #dbe3ec; border-radius: 9px; background: #f8fafc; box-shadow: 0 2px 8px rgba(15, 23, 42, .04); }.risk-law-case-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }.risk-law-case-meta span, .risk-law-case-meta b { padding: 4px 6px; border-radius: 4px; color: #fff; background: #334155; font-size: 8px; }.risk-law-case-meta b { color: #334155; background: transparent; }.risk-law-case-meta em { margin-left: auto; padding: 4px 6px; border: 1px solid #fecdd3; border-radius: 4px; color: #dc2626; background: #fff1f2; font-size: 8px; font-style: normal; font-weight: 800; }.risk-law-case-card h5 { margin: 0; color: #334155; font-size: 11px; }.risk-law-case-summary { display: grid; gap: 5px; padding: 9px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; }.risk-law-case-summary p { margin: 0; color: #475569; font-size: 9px; line-height: 1.5; }.risk-law-case-summary b { margin-right: 6px; color: #334155; }.risk-law-case-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #64748b; font-size: 8px; }.risk-law-case-footer strong { color: #334155; }.risk-law-sample-label { color: #94a3b8; }
+.risk-law-checklist { margin-top: 15px; padding: 13px; border: 1px solid #bfdbfe; border-radius: 8px; background: #eff6ff; }.risk-law-checklist h4 { margin: 0 0 7px; color: #1e3a8a; font-size: 10px; }.risk-law-checklist ul { display: grid; gap: 5px; margin: 0; padding-left: 16px; color: #475569; font-size: 9px; line-height: 1.45; }
+.risk-law-disclaimer { margin: 13px 0 0; color: #94a3b8; font-size: 8px; line-height: 1.5; }.risk-law-empty { margin: 0; padding: 24px; color: #64748b; font-size: 10px; text-align: center; }
+@media (max-width: 920px) { .risk-law-tracking { grid-template-columns: 1fr; }.risk-law-tracking-sidebar { max-height: 420px; border-right: 0; border-bottom: 1px solid #dbe3ec; }.risk-law-detail { min-height: 600px; } }
+@media (max-width: 620px) { .risk-law-detail { padding: 16px; }.risk-law-detail-heading, .risk-law-card-heading, .risk-law-section-heading { align-items: flex-start; flex-direction: column; }.risk-law-update-label { text-align: left; }.risk-law-timeline { gap: 2px; }.risk-law-timeline-line { right: 5%; left: 5%; }.risk-law-timeline-step strong { font-size: 8px; }.risk-law-timeline-step small { min-height: 22px; }.risk-law-change-grid { grid-template-columns: 1fr; }.risk-law-case-meta em { margin-left: 0; }.risk-law-case-footer { align-items: flex-start; flex-direction: column; } }
+
 /* Risk detail refresh: keep the assessment readable while exposing the math on demand. */
 .detail-page .page-header h1 { letter-spacing: -.07em; }
 .detail-page .sh-command-bar { margin-top: -4px; }

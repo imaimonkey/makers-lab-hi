@@ -8,15 +8,13 @@ import {
 } from '../../domain/risk/riskExplorationDemo'
 import {
   getContextualScreeningInsight,
-  screeningCases,
   screeningInsights,
-  screeningLaws,
   screeningMetricContexts,
   type ContextualScreeningInsight,
   type ScreeningCategory,
   type ScreeningMetricKey,
-  type ScreeningReference,
 } from '../../domain/risk/riskScreeningInsights'
+import { RiskLawTrackingPanel } from './RiskLawTrackingPanel'
 
 const categoryFilters: Array<{ key: ScreeningCategory; label: string; icon: string }> = [
   { key: 'all', label: '전체', icon: '◈' },
@@ -114,44 +112,6 @@ function MetricTooltip({ id, insight }: { id: string; insight: ContextualScreeni
   )
 }
 
-function ReferencePanel({
-  eyebrow,
-  title,
-  icon,
-  records,
-}: {
-  eyebrow: string
-  title: string
-  icon: string
-  records: ScreeningReference[]
-}) {
-  return (
-    <article className="screening-reference-panel">
-      <div className="screening-reference-heading">
-        <div className="screening-reference-title">
-          <span className="screening-reference-icon" aria-hidden="true">{icon}</span>
-          <div><p className="eyebrow">{eyebrow}</p><h3>{title}</h3></div>
-        </div>
-        <span>원문 확인 대기</span>
-      </div>
-      <div>
-        {records.length
-          ? records.map((record) => (
-              <section data-tone={record.tone} key={record.title}>
-                <div>
-                  <span className="screening-reference-badge" data-tone={record.tone}>{record.type}</span>
-                  <time>{record.date}</time>
-                </div>
-                <strong>{record.title}</strong>
-                <p>{record.description}</p>
-              </section>
-            ))
-          : <p className="screening-empty">선택한 분류에 연결된 자료가 없습니다.</p>}
-      </div>
-    </article>
-  )
-}
-
 export function RiskExplorationLens() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [selectedId, setSelectedId] = useState(riskExplorationRecords[0]?.id ?? '')
@@ -192,8 +152,6 @@ export function RiskExplorationLens() {
   }, [category, query, sort])
 
   const selected = records.find((record) => record.id === selectedId) ?? records[0]
-  const laws = screeningLaws.filter((record) => category === 'all' || record.categories.includes(category))
-  const cases = screeningCases.filter((record) => category === 'all' || record.categories.includes(category))
 
   return (
     <section className="risk-exploration-lens surface-card screening-lens" aria-labelledby="risk-exploration-title">
@@ -201,7 +159,7 @@ export function RiskExplorationLens() {
         <div>
           <p className="eyebrow">PRODUCTABILITY COMPARISON LENS · SEOYEON</p>
           <h2 id="risk-exploration-title">신규 위험 타당성 스크리닝 TOP-10</h2>
-          <p>각 지표 셀에서 분석 근거, 데이터 출처, 최종 판단을 분리해 확인하고 법률·판례 신호와 함께 비교합니다.</p>
+          <p>각 지표 셀에서 분석 근거를 확인하고 법령 트래킹·판례·손해 자료와 함께 비교합니다.</p>
         </div>
         <span className="status-badge sample">SAMPLE · 검토용</span>
       </div>
@@ -255,10 +213,7 @@ export function RiskExplorationLens() {
         </div>
       </div>
 
-      <div className="screening-reference-grid">
-        <ReferencePanel icon="⚖️" eyebrow="LAW & REGULATION" title="주요 부처별 최신 법률·규제" records={laws} />
-        <ReferencePanel icon="📊" eyebrow="CASE & LOSS SIGNAL" title="연관 판례·실제 손해·시장 이슈" records={cases} />
-      </div>
+      <RiskLawTrackingPanel category={category} />
 
       <div className="screening-table-heading">
         <div><p className="eyebrow">AI-ASSISTED SCREENING</p><h3>동일 기준 비교표</h3></div>
@@ -323,23 +278,6 @@ export function RiskExplorationLens() {
         </table>
       </div>
 
-      {false && selected ? (
-        <aside className="risk-exploration-detail" aria-live="polite">
-          <div>
-            <p className="eyebrow">SELECTED CANDIDATE</p>
-            <h3>{selected.title}</h3>
-            <p>{selected.nextAction}</p>
-          </div>
-          <dl>
-            <div><dt>시장 수요</dt><dd>{selected.demand}</dd></div>
-            <div><dt>측정 가능성</dt><dd>{selected.measurability}</dd></div>
-            <div><dt>역선택 통제</dt><dd>{selected.adverseSelection}</dd></div>
-            <div><dt>도덕적 해이</dt><dd>{selected.moralHazard}</dd></div>
-            <div><dt>데이터·법적</dt><dd>{selected.dataConfidence} · {selected.legalExposure}</dd></div>
-            <div><dt>보장 공백</dt><dd>{selected.gap}</dd></div>
-          </dl>
-        </aside>
-      ) : null}
       <p className="risk-exploration-disclaimer">
         SAMPLE · AI 보조점수와 셀별 판단은 우선순위 논의를 위한 예시이며 보험료·보장·가입 가능 여부를 의미하지 않습니다.
         표시된 기관 자료도 공식 원문과 최신성 확인 전에는 사실 근거로 사용할 수 없습니다.
