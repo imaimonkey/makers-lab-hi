@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | `01-risk-candidate-card.md` | 위험 후보 기본 정보·비교표 행 | `RiskExplorationRecord` 기본 필드 |
 | `02-screening-metrics-card.md` | 8개 지표 비교 셀·셀별 근거 | `metricScores`, `display`, `metricEvidence` |
-| `03-law-regulation-card.md` | 주요 부처별 최신 법률·규제 | `screeningLaws` 형태의 `references` |
-| `04-case-loss-market-card.md` | 연관 판례·실제 손해·시장 이슈 | `screeningCases` 형태의 `references` |
+| `03-law-regulation-card.md` | 법령 트래킹 좌측 목록·우측 상세 | `lawTracking.items`, `timeline`, `beforeChanges`, `afterChanges` |
+| `04-case-loss-market-card.md` | 법령 상세의 연관 판례·실제 손해 탭 | `relatedCases`, `checklist` |
 | `05-article-analysis-queue-card.md` | 뉴스 본문 분석 큐 | `articleQueue` |
 | `06-candidate-review-card.md` | 상품개발 후보 카드 | `candidateReview` |
 | `07-signal-trend-card.md` | 주요 위험 신호 상승 흐름 | `signalTrend` |
