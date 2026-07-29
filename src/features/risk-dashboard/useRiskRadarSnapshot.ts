@@ -144,7 +144,7 @@ function fallbackStatus(previous: RadarSnapshotSourceStatus): RadarSnapshotSourc
   return previous === 'live' || previous === 'local' || previous === 'stale' ? 'stale' : 'sample'
 }
 
-export function useRiskRadarSnapshot() {
+export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }) {
   const requestSequence = useRef(0)
   const [snapshot, setSnapshot] = useState<RiskRadarSnapshotState>({
     dashboard: sampleDashboard,
@@ -163,6 +163,41 @@ export function useRiskRadarSnapshot() {
       refreshing: !current.initialLoading,
       errors: {},
     }))
+
+    if (options?.preferLocalArticles) {
+      const completedAt = new Date().toISOString()
+      try {
+        const localArticles = await loadArticleSourceRecords()
+        const localSnapshot = deriveArticleDashboard(localArticles)
+        if (requestId === requestSequence.current) {
+          setSnapshot((current) => ({
+            ...current,
+            dashboard: localSnapshot.dashboard,
+            news: localSnapshot.news,
+            risks: localSnapshot.risks,
+            sourceStatus: { dashboard: 'local', news: 'local', risks: 'local' },
+            errors: {},
+            initialLoading: false,
+            refreshing: false,
+            lastAttemptAt: completedAt,
+            lastSuccessfulAt: completedAt,
+          }))
+        }
+        return { failedSources: [], liveSources: [], completedAt }
+      } catch (error) {
+        if (requestId === requestSequence.current) {
+          setSnapshot((current) => ({
+            ...current,
+            sourceStatus: { dashboard: 'sample', news: 'sample', risks: 'sample' },
+            errors: { dashboard: errorMessage(error) },
+            initialLoading: false,
+            refreshing: false,
+            lastAttemptAt: completedAt,
+          }))
+        }
+        return { failedSources: ['dashboard', 'news', 'risks'], liveSources: [], completedAt }
+      }
+    }
 
     const [dashboardResult, newsResult, risksResult] = await Promise.allSettled([
       riskRadarApi.dashboard(),
@@ -207,9 +242,9 @@ export function useRiskRadarSnapshot() {
 
     if (requestId === requestSequence.current) {
       setSnapshot((current) => {
-        const dashboard = dashboardResult.status === 'fulfilled' ? dashboardResult.value : current.dashboard
-        const news = newsResult.status === 'fulfilled' ? newsResult.value.articles : current.news
-        const risks = risksResult.status === 'fulfilled' ? risksResult.value.risks : current.risks
+        const dashboard = dashboardResult.status === 'fulfilled' && dashboardResult.value && typeof dashboardResult.value === 'object' && dashboardResult.value.metrics ? dashboardResult.value : current.dashboard
+        const news = newsResult.status === 'fulfilled' && Array.isArray(newsResult.value.articles) ? newsResult.value.articles : current.news
+        const risks = risksResult.status === 'fulfilled' && Array.isArray(risksResult.value.risks) ? risksResult.value.risks : current.risks
         return {
           dashboard,
           news,
@@ -233,7 +268,7 @@ export function useRiskRadarSnapshot() {
     }
 
     return { failedSources, liveSources, completedAt }
-  }, [])
+  }, [options?.preferLocalArticles])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

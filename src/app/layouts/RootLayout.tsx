@@ -6,17 +6,20 @@ import { isNavigationItemActive, navigationGroups } from '../../shared/config/na
 
 export function RootLayout() {
   const location = useLocation()
-  const isDeveloperMode = location.pathname === '/developer-test'
+  const isDeveloperMode = location.pathname === '/developer-test' || location.pathname.startsWith('/developer-test/')
+  const navigationPathname = isDeveloperMode
+    ? location.pathname.replace(/^\/developer-test/, '') || '/'
+    : location.pathname
   const activeItem = navigationGroups
     .flatMap((group) => group.items)
-    .find((item) => isNavigationItemActive(item, location.pathname))
-  const workspaceTheme = location.pathname === '/'
+    .find((item) => isNavigationItemActive(item, navigationPathname))
+  const workspaceTheme = navigationPathname === '/'
     ? 'workspace-hyoje'
-    : location.pathname === '/risks'
+    : navigationPathname === '/risks'
       ? 'workspace-seoyeon'
-      : location.pathname.startsWith('/risks/')
+      : navigationPathname.startsWith('/risks/')
         ? 'workspace-sh'
-        : location.pathname.startsWith('/reports')
+        : navigationPathname.startsWith('/reports')
           ? 'workspace-jh'
           : ''
 
@@ -46,7 +49,7 @@ export function RootLayout() {
                 return (
                   <Link
                     key={item.id}
-                    to={item.path}
+                    to={isDeveloperMode ? `/developer-test${item.path === '/' ? '' : item.path}` : item.path}
                     className={isActive ? 'nav-item active' : 'nav-item'}
                     aria-label={`${item.label} · ${item.caption}`}
                     title={item.label}

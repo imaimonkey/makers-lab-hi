@@ -49,7 +49,12 @@ export function deriveArticleDashboard(records: ArticleSourceRecord[]): {
   news: RadarNewsArticle[]
   risks: RadarRiskCandidate[]
 } {
-  const news = records.map(({ text: _text, fileName: _fileName, ...article }) => article)
+  const news = records.map((record) => {
+    const { text, fileName, ...article } = record
+    void text
+    void fileName
+    return article
+  })
   const risks = records.map((article) => ({
     id: `RISK-${article.id}`,
     articleId: article.id,

@@ -34,11 +34,17 @@ export function RiskRadarLiveSnapshotPanel({
   state: RiskRadarSnapshotState
   onRefresh: () => Promise<RiskRadarRefreshResult>
 }) {
+  const fallbackDashboard = { generatedAt: '', metrics: { news: 0, contentReady: 0, analyzed: 0, pending: 0, failed: 0, clusters: 0, evidencePending: 0, riskCandidates: 0 }, channels: {}, analysisCounts: {}, clusters: [], topNews: [], risks: [] } as typeof state.dashboard
+  state.dashboard ??= fallbackDashboard
+  state.dashboard.metrics ??= fallbackDashboard.metrics
+  state.news ??= []
+  state.risks ??= []
+  const dashboard = state.dashboard ?? { generatedAt: '', metrics: {}, issues: [] }
   const sources = Object.keys(sourceLabels) as RadarSnapshotSource[]
   const failedSources = sources.filter((source) => state.errors[source])
   const allLive = sources.every((source) => state.sourceStatus[source] === 'live')
   const hasSample = sources.some((source) => state.sourceStatus[source] === 'sample')
-  const generatedAt = state.dashboard.generatedAt || state.dashboard.lastSync?.completedAt
+  const generatedAt = dashboard.generatedAt || dashboard.lastSync?.completedAt
 
   return (
     <section className="integration-contract surface-card" aria-live="polite" aria-busy={state.initialLoading || state.refreshing}>

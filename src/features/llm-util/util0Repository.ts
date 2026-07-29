@@ -1,4 +1,4 @@
-export async function saveUtil0RiskDiscovery(result: Record<string, unknown>, generatedAt: string, mode: 'mock' | 'gemini') {
+export async function saveUtil0RiskDiscovery(result: Record<string, unknown>, generatedAt: string, mode: 'mock' | 'gemini' | 'potens') {
   const response = await fetch('/api/llm/util-0/risk-discovery', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

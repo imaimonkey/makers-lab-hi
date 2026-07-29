@@ -6,6 +6,7 @@ import {
   sampleRiskCandidates,
   sampleRiskDetails,
 } from '../../domain/risk/sampleData'
+import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
 import { RiskDecisionWorkspace } from '../../features/risk-detail/RiskDecisionWorkspace'
 import { buildAiQualitativeSummary, buildAssessmentAiSummary, getAssessmentEvidence } from '../../features/risk-detail/qualitativeAssessment'
 import type { RadarNewsDetail } from '../../domain/risk/riskRadarTypes'
@@ -14,18 +15,18 @@ import { riskRadarApi } from '../../features/risk-dashboard/riskRadarApi'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
-export function RiskDetailPage() {
+export function RiskDetailPage({ data, developerMode = false }: { data?: { risk: SampleRiskCandidate; detail: SampleRiskDetail; articleId: string }; developerMode?: boolean } = {}) {
   const { riskId } = useParams()
   const resolvedRiskId = resolveSampleRiskId(riskId)
-  const risk = sampleRiskCandidates.find((item) => item.id === resolvedRiskId)
-  const detail = resolvedRiskId ? sampleRiskDetails[resolvedRiskId] : undefined
-  const articleId = resolvedRiskId ? getRadarArticleId(resolvedRiskId) : undefined
+  const risk = data?.risk ?? sampleRiskCandidates.find((item) => item.id === resolvedRiskId)
+  const detail = data?.detail ?? (resolvedRiskId ? sampleRiskDetails[resolvedRiskId] : undefined)
+  const articleId = data?.articleId ?? (resolvedRiskId ? getRadarArticleId(resolvedRiskId) : undefined)
   const [liveDetail, setLiveDetail] = useState<RadarNewsDetail | null>(null)
   const [liveLoading, setLiveLoading] = useState(false)
   const [liveError, setLiveError] = useState('')
 
   const refreshLiveDetail = useCallback(async () => {
-    if (!articleId) {
+    if (!articleId || developerMode) {
       setLiveDetail(null)
       setLiveError('')
       return null
@@ -43,7 +44,7 @@ export function RiskDetailPage() {
     } finally {
       setLiveLoading(false)
     }
-  }, [articleId])
+  }, [articleId, developerMode])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -55,7 +56,8 @@ export function RiskDetailPage() {
   const liveArticle = liveDetail?.article
   const liveAnalysis = liveDetail?.analysis
   const displayTitle = liveArticle?.title ?? risk?.title
-  const detailSourceLabel = liveDetail ? 'LIVE API' : liveLoading ? 'LOADING' : liveError ? 'SAMPLE fallback' : articleId ? 'SAMPLE · detail pending' : 'SAMPLE · mapping pending'
+  const detailSourceLabel = developerMode ? 'ACTUAL ARTICLE' : liveDetail ? 'LIVE API' : liveLoading ? 'LOADING' : liveError ? 'SAMPLE fallback' : articleId ? 'SAMPLE · detail pending' : 'SAMPLE · mapping pending'
+  const catalogPath = developerMode ? '/developer-test/risks' : '/risks'
 
   const printRiskDetail = useCallback(() => {
     document.body.classList.add('risk-detail-printing')
@@ -80,7 +82,7 @@ export function RiskDetailPage() {
         <section className="detail-missing surface-card">
           <AppIcon name="scan" size={28} />
           <div><strong>요청한 위험 ID: {riskId}</strong><p>샘플 후보 목록으로 돌아가 유효한 검토 대상을 선택할 수 있습니다.</p></div>
-          <Link to="/risks" className="secondary-action">위험 후보로 돌아가기 <AppIcon name="arrow" size={17} /></Link>
+          <Link to={catalogPath} className="secondary-action">위험 후보로 돌아가기 <AppIcon name="arrow" size={17} /></Link>
         </section>
       </div>
     )
@@ -98,7 +100,7 @@ export function RiskDetailPage() {
       />
       <nav className="sh-command-bar" aria-label="위험상세 명령 바">
         <div className="sh-command-context">
-          <Link to="/risks">← 위험 후보</Link>
+          <Link to={catalogPath}>← 위험 후보</Link>
           <i className={risk.status === '검토 중' ? '' : 'complete'} aria-hidden="true" />
           <span>{risk.status} · 위험상세</span>
           <span aria-label={`위험 ID ${risk.id}`}>{risk.id}</span>
@@ -108,12 +110,12 @@ export function RiskDetailPage() {
           <button type="button" onClick={printRiskDetail}>PDF 출력</button>
         </div>
       </nav>
-      <div className="sample-notice"><span>{detailSourceLabel}</span>{liveDetail ? ' API detail 응답을 사용합니다.' : `${sampleOnlyNotice}${liveError ? ` API detail 실패: ${liveError}` : ''}`}</div>
+      <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? 'src/article PDF와 Step 2 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? ' API detail 응답을 사용합니다.' : `${sampleOnlyNotice}${liveError ? ` API detail 실패: ${liveError}` : ''}`}</div>
       {liveDetail ? <div className="detail-live-strip" role="status"><strong>LIVE API</strong><span>본문 {liveArticle?.contentStatus ?? '상태 미제공'}</span><span>분석 {liveArticle?.analysisStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>검증 {liveArticle?.verificationStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>최종 응답 {liveArticle?.collectedAt ?? liveArticle?.publishedAt ?? '시각 미제공'}</span></div> : null}
 
       <section className="risk-hero surface-card">
         <div className="risk-hero-main">
-          <div className="sh-detail-breadcrumb" aria-label="현재 위치"><Link to="/risks">위험 후보</Link><span>/</span><span>상세 검토</span><strong>{risk.id}</strong></div>
+          <div className="sh-detail-breadcrumb" aria-label="현재 위치"><Link to={catalogPath}>위험 후보</Link><span>/</span><span>상세 검토</span><strong>{risk.id}</strong></div>
           <div className="risk-badges"><span>{risk.themeLabel}</span><em>{risk.status}</em></div>
           <h2>{displayTitle}</h2>
           <p><strong>위험 문장</strong> {detail.riskStatement}</p>

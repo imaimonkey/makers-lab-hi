@@ -41,7 +41,7 @@ export type NaverNewsCollectionResponse = {
 
 export type NewsManualTestResult = {
   text: string
-  mode: 'mock' | 'gemini'
+  mode: 'mock' | 'gemini' | 'potens'
   generatedAt: string
   model?: string
 }

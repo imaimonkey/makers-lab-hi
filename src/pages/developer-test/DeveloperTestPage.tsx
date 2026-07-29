@@ -138,9 +138,7 @@ export function DeveloperTestPage() {
   const sharedPrompt = sharedPrompts[selectedUtility.id]
   const systemPrompt = systemPromptDrafts[selectedUtility.id] ?? selectedUtility.defaultSystemPrompt
   const isSystemPromptDirty = systemPrompt.trim() !== sharedPrompt.text.trim()
-  const currentPromptSource: RunPromptSource = isSystemPromptDirty
-    ? 'browser'
-    : sharedPrompt.source === 'shared' ? 'shared' : 'markdown'
+  const currentPromptSource: RunPromptSource = isSystemPromptDirty ? 'browser' : sharedPrompt.source === 'shared' ? 'shared' : 'markdown'
   const markdownPath = `src/features/llm-util/${selectedUtility.id}/system-prompt.md`
   const isNewsSearchConfigDirty = JSON.stringify(newsKeywordDrafts) !== JSON.stringify(newsSearchConfig.keywords)
   const fileContext = buildFilePromptContext(uploadedFiles)
@@ -909,7 +907,7 @@ export function DeveloperTestPage() {
       )}
 
       <section className="developer-test-grid" aria-label="시스템 프롬프트 입출력 실험">
-        <section className="developer-prompt-card surface-card">
+        {import.meta.env.VITE_SHOW_SYSTEM_PROMPT_UI === 'true' && <section className="developer-prompt-card surface-card">
           <div className="developer-card-heading">
             <div>
               <p className="eyebrow">SYSTEM PROMPT LAB</p>
@@ -943,7 +941,7 @@ export function DeveloperTestPage() {
             </div>
           </div>
           {saveMessage && <p className="developer-save-message" role="status">{saveMessage}</p>}
-        </section>
+        </section>}
 
         <div className="developer-right-stack">
           <section className="developer-input-card surface-card">

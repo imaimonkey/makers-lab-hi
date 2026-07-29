@@ -80,7 +80,7 @@ export async function runLlmUtility({ utilityId, systemPrompt, prompt }: LlmRunR
 
   return {
     text: payload.text,
-    mode: payload.provider === 'gemini' ? 'gemini' : 'mock',
+    mode: payload.provider === 'gemini' || payload.provider === 'potens' ? payload.provider : 'mock',
     generatedAt: typeof payload.generatedAt === 'string' ? payload.generatedAt : new Date().toISOString(),
     model: typeof payload.model === 'string' ? payload.model : undefined,
   }

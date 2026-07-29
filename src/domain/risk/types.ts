@@ -20,6 +20,7 @@ export type CustomerSignal = {
 }
 
 export type RiskEvidenceSourceType =
+  | 'article'
   | 'news'
   | 'research'
   | 'report'
@@ -41,7 +42,7 @@ export type RiskEvidenceContract = {
   uncertainty: string
   counterpoint: string
   verificationStatus: 'source-pending' | 'link-provided-unverified'
-  dataStatus: 'sample-only'
+  dataStatus: 'sample-only' | 'actual-article'
 }
 
 export type RiskCandidateContract = {

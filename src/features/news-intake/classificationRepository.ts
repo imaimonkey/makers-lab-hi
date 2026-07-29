@@ -175,7 +175,7 @@ export async function saveNewsClassification({
   groups: NewsRiskGroup[]
   rawOutput: string
   generatedAt: string
-  mode: 'mock' | 'gemini'
+  mode: 'mock' | 'gemini' | 'potens'
   model?: string
 }) {
   const response = await fetch('/api/news/classifications', {

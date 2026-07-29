@@ -112,9 +112,9 @@ function MetricTooltip({ id, insight }: { id: string; insight: ContextualScreeni
   )
 }
 
-export function RiskExplorationLens() {
+export function RiskExplorationLens({ sourceRecords, developerMode = false }: { sourceRecords?: RiskExplorationRecord[]; developerMode?: boolean } = {}) {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [selectedId, setSelectedId] = useState(riskExplorationRecords[0]?.id ?? '')
+  const [selectedId, setSelectedId] = useState(sourceRecords?.[0]?.id ?? riskExplorationRecords[0]?.id ?? '')
 
   const categoryParam = searchParams.get('category')
   const category: ScreeningCategory = isScreeningCategory(categoryParam) ? categoryParam : 'all'
@@ -138,7 +138,7 @@ export function RiskExplorationLens() {
 
   const records = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
-    const filtered = riskExplorationRecords.filter((record) => {
+    const filtered = (sourceRecords ?? riskExplorationRecords).filter((record) => {
       const matchesCategory = category === 'all' || record.categories.includes(category as ExplorationCategory)
       const haystack = `${record.title} ${record.summary} ${record.tags.join(' ')}`.toLocaleLowerCase('ko-KR')
       return matchesCategory && (!normalizedQuery || haystack.includes(normalizedQuery))
@@ -149,7 +149,7 @@ export function RiskExplorationLens() {
         ? first.title.localeCompare(second.title, 'ko-KR')
         : calculateRiskExplorationScore(second.metricScores) - calculateRiskExplorationScore(first.metricScores)
     ))
-  }, [category, query, sort])
+  }, [category, query, sort, sourceRecords])
 
   const selected = records.find((record) => record.id === selectedId) ?? records[0]
 
@@ -161,7 +161,7 @@ export function RiskExplorationLens() {
           <h2 id="risk-exploration-title">신규 위험 타당성 스크리닝 TOP-10</h2>
           <p>각 지표 셀에서 분석 근거를 확인하고 법령 트래킹·판례·손해 자료와 함께 비교합니다.</p>
         </div>
-        <span className="status-badge sample">SAMPLE · 검토용</span>
+        <span className="status-badge sample">{developerMode ? 'ACTUAL ARTICLE · STEP 2' : 'SAMPLE · 검토용'}</span>
       </div>
 
       <div className="screening-control-bar">
@@ -245,7 +245,7 @@ export function RiskExplorationLens() {
                 {metricColumns.map((metric) => {
                   const tooltipId = `screening-tooltip-${record.id}-${metric.key}`
                   const contextualInsight = getContextualScreeningInsight(
-                    screeningInsights[record.id][metric.key],
+                    (screeningInsights[record.id] ?? screeningInsights[Object.keys(screeningInsights)[0]])[metric.key],
                     category,
                     metric.key,
                   )
@@ -268,7 +268,7 @@ export function RiskExplorationLens() {
                   <small>/ 5.00</small>
                 </td>
                 <td>
-                  <Link className="screening-detail-link" to={`/risks/${record.detailRiskId}`}>상세 분석</Link>
+                  <Link className="screening-detail-link" to={`${developerMode ? '/developer-test' : ''}/risks/${record.detailRiskId}`}>상세 분석</Link>
                 </td>
               </tr>
             )) : (

@@ -18,22 +18,25 @@ const channelRows = [
   { name: '통계·공시', role: '노출·정량 검증', count: '56', health: '정상' },
 ]
 
-export function RiskDashboardPage() {
+export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'developer' }) {
   const [customerSignals, setCustomerSignals] = useState<CustomerSignal[]>([])
-  const { snapshot: radarSnapshot, refresh: refreshRadarSnapshot } = useRiskRadarSnapshot()
-  const displayRisks = radarSnapshot.risks.map((risk) => ({
+  const { snapshot: radarSnapshot, refresh: refreshRadarSnapshot } = useRiskRadarSnapshot({ preferLocalArticles: mode === 'developer' })
+  const risks = Array.isArray(radarSnapshot.risks) ? radarSnapshot.risks : []
+  const news = Array.isArray(radarSnapshot.news) ? radarSnapshot.news : []
+  const displayRisks = risks.map((risk) => ({
     id: risk.id,
     title: risk.name,
     themeLabel: risk.source ?? 'src/article',
-    evidenceCount: radarSnapshot.news.find((article) => article.id === risk.articleId)?.contentQuality?.chars ?? 0,
+    evidenceCount: news.find((article) => article.id === risk.articleId)?.contentQuality?.chars ?? 0,
     signalStrength: risk.confidence?.level === '높음' ? 70 : 40,
   }))
   const focusRisk = {
-    id: radarSnapshot.risks[0]?.id,
-    title: radarSnapshot.risks[0]?.name ?? '원문 기반 후보 없음',
-    evidenceCount: radarSnapshot.news[0]?.contentQuality?.chars ?? 0,
-    signalStrength: radarSnapshot.risks[0] ? 40 : 0,
+    id: risks[0]?.id,
+    title: risks[0]?.name ?? '원문 기반 후보 없음',
+    evidenceCount: news[0]?.contentQuality?.chars ?? 0,
+    signalStrength: risks[0] ? 40 : 0,
   }
+  const developerPath = (path: string) => mode === 'developer' ? `/developer-test${path}` : path
 
   useEffect(() => {
     const refresh = () => setCustomerSignals(readCustomerSignals())
@@ -53,10 +56,10 @@ export function RiskDashboardPage() {
         eyebrow="EMERGING RISK RADAR"
         title="위험 레이더"
         description="산업·기술·사회 변화의 신호를 한 화면에서 비교하고, 검토할 위험 후보를 다음 단계로 넘깁니다."
-        status="INTEGRATION FRAME"
+        status={mode === 'developer' ? 'DEVELOPER / LOCAL ARTICLES' : 'INTEGRATION FRAME'}
       />
 
-      <div className="sample-notice"><span>SAMPLE</span>{sampleOnlyNotice}</div>
+      <div className="sample-notice"><span>{mode === 'developer' ? 'DEVELOPER' : 'SAMPLE'}</span>{mode === 'developer' ? 'src/article PDF에서 추출한 실제 테스트 데이터입니다. 결과는 검증 전 도출값입니다.' : sampleOnlyNotice}</div>
 
       <RiskRadarLiveSnapshotPanel state={radarSnapshot} onRefresh={refreshRadarSnapshot} />
 
@@ -66,8 +69,8 @@ export function RiskDashboardPage() {
             <p className="eyebrow">WORKBENCH OVERVIEW</p>
             <h2>오늘 주목할 위험 신호를 한눈에</h2>
             <div className="dashboard-welcome-actions" aria-label="주요 화면 바로가기">
-              <Link to="/risks" className="dashboard-icon-action" aria-label="위험 후보 보기" title="위험 후보 보기"><AppIcon name="scan" size={17} /></Link>
-              <Link to="/reports" className="dashboard-icon-action" aria-label="종합 리포트 보기" title="종합 리포트 보기"><AppIcon name="report" size={17} /></Link>
+              <Link to={developerPath('/risks')} className="dashboard-icon-action" aria-label="위험 후보 보기" title="위험 후보 보기"><AppIcon name="scan" size={17} /></Link>
+              <Link to={developerPath('/reports')} className="dashboard-icon-action" aria-label="종합 리포트 보기" title="종합 리포트 보기"><AppIcon name="report" size={17} /></Link>
             </div>
           </div>
           <div className="dashboard-welcome-orbit" aria-hidden="true">
@@ -83,10 +86,10 @@ export function RiskDashboardPage() {
             <div><p className="eyebrow">FOCUS TODAY</p><h2>대표 후보 검토</h2></div>
             <span className="status-badge ready">SAMPLE</span>
           </div>
-          <strong>{radarSnapshot.risks[0]?.name ?? '원문 기반 후보 없음'}</strong>
+          <strong>{risks[0]?.name ?? '원문 기반 후보 없음'}</strong>
           <p>근거 {focusRisk?.evidenceCount}건 · 신호 강도 {focusRisk?.signalStrength}/100</p>
-          <div className="dashboard-focus-bar"><span style={{ width: `${radarSnapshot.risks[0] ? 40 : 0}%` }} /></div>
-          <Link to={`/risks/${focusRisk?.id}`} className="dashboard-focus-link" aria-label={`${focusRisk?.title ?? '대표 후보'} 상세 보기`} title="대표 후보 상세 보기"><AppIcon name="arrow" size={14} /></Link>
+          <div className="dashboard-focus-bar"><span style={{ width: `${risks[0] ? 40 : 0}%` }} /></div>
+          <Link to={developerPath(`/risks/${focusRisk?.id}`)} className="dashboard-focus-link" aria-label={`${focusRisk?.title ?? '대표 후보'} 상세 보기`} title="대표 후보 상세 보기"><AppIcon name="arrow" size={14} /></Link>
         </article>
       </section>
 
@@ -113,11 +116,11 @@ export function RiskDashboardPage() {
         <article className="priority-panel surface-card">
           <div className="panel-heading">
             <div><p className="eyebrow">PRIORITY QUEUE</p><h2>우선 검토 후보</h2></div>
-            <Link to="/risks" className="panel-icon-link" aria-label="위험 후보 전체 보기" title="위험 후보 전체 보기"><AppIcon name="arrow" size={15} /></Link>
+            <Link to={developerPath('/risks')} className="panel-icon-link" aria-label="위험 후보 전체 보기" title="위험 후보 전체 보기"><AppIcon name="arrow" size={15} /></Link>
           </div>
           <div className="priority-list">
             {displayRisks.slice(0, 3).map((risk, index) => (
-              <Link to={`/risks/${risk.id}`} className="priority-row" key={risk.id}>
+              <Link to={developerPath(`/risks/${risk.id}`)} className="priority-row" key={risk.id}>
                 <span className="rank">0{index + 1}</span>
                 <div><strong>{risk.title}</strong><small>{risk.themeLabel} · 근거 {risk.evidenceCount}건</small></div>
                 <span className="score">{risk.signalStrength}<small>신호</small></span>

@@ -17,6 +17,7 @@ import type { NewsManualTestRun, NewsManualTestStore } from './src/features/news
 type LlmApiOptions = {
   apiKey: string
   model: string
+  provider: 'gemini' | 'potens'
 }
 
 type GeminiResponse = {
@@ -28,6 +29,49 @@ type GeminiResponse = {
   error?: {
     message?: string
   }
+}
+
+type PotensResponse = {
+  text?: unknown
+  response?: unknown
+  content?: unknown
+  choices?: Array<{ message?: { content?: unknown }; text?: unknown }>
+  error?: { message?: string } | string
+}
+
+function extractProviderText(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return value.map(extractProviderText).filter(Boolean).join('')
+  if (!value || typeof value !== 'object') return ''
+  const record = value as Record<string, unknown>
+  for (const key of ['text', 'content', 'response', 'output', 'result', 'message', 'data', 'choices', 'candidates', 'parts']) {
+    const text = extractProviderText(record[key])
+    if (text) return text
+  }
+  return ''
+}
+
+async function readPotensStream(response: Response): Promise<string> {
+  if (!response.body) return ''
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let result = ''
+  const consume = (line: string) => {
+    const value = line.trim().replace(/^data:\s*/, '')
+    if (!value || value === '[DONE]') return
+    try { result += extractProviderText(JSON.parse(value)) } catch { result += value }
+  }
+  while (true) {
+    const chunk = await reader.read()
+    buffer += decoder.decode(chunk.value ?? new Uint8Array(), { stream: !chunk.done })
+    const lines = buffer.split(/\r?\n/)
+    buffer = lines.pop() ?? ''
+    lines.forEach(consume)
+    if (chunk.done) break
+  }
+  consume(buffer)
+  return result
 }
 
 const systemPromptFiles = {
@@ -75,6 +119,60 @@ const newsManualTestRunDataFile = resolve(process.cwd(), 'data/news-manual-test-
 let newsManualTestRunWriteQueue = Promise.resolve()
 const util0WorkbookDataFile = resolve(process.cwd(), 'data/util-0-risk-discovery.xlsx')
 let util0WorkbookWriteQueue = Promise.resolve()
+const step2WorkbookDataFile = resolve(process.cwd(), 'data/developer-step2-analysis.xlsx')
+let step2WorkbookWriteQueue = Promise.resolve()
+const step4WorkbookDataFile = resolve(process.cwd(), 'data/developer-step4-analysis.xlsx')
+let step4WorkbookWriteQueue = Promise.resolve()
+
+async function saveStep2AnalysisResults(body: unknown) {
+  if (!isRecord(body) || typeof body.articleId !== 'string' || typeof body.fileName !== 'string' || !isRecord(body.results)) throw new Error('Step 2 분석 결과 형식이 올바르지 않습니다.')
+  const existing = await readStep2Workbook()
+  const rows = Object.entries(body.results).map(([step, value]) => ({
+    articleId: body.articleId,
+    fileName: body.fileName,
+    step,
+    mode: isRecord(value) ? String(value.mode ?? '') : '',
+    generatedAt: isRecord(value) ? String(value.generatedAt ?? '') : '',
+    resultJson: isRecord(value) ? String(value.text ?? '') : JSON.stringify(value),
+  }))
+  const workbook = XLSX.utils.book_new()
+  const merged = [...existing, ...rows]
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(merged), 'step2_analysis')
+  const operation = step2WorkbookWriteQueue.then(async () => {
+    await mkdir(resolve(process.cwd(), 'data'), { recursive: true })
+    await writeFile(step2WorkbookDataFile, XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }))
+    return { file: 'data/developer-step2-analysis.xlsx', savedAt: new Date().toISOString(), sheets: workbook.SheetNames }
+  })
+  step2WorkbookWriteQueue = operation.then(() => undefined, () => undefined)
+  return operation
+}
+
+async function readStep2Workbook(): Promise<unknown[]> {
+  try {
+    const workbook = XLSX.read(await readFile(step2WorkbookDataFile), { type: 'buffer' })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    return sheet ? XLSX.utils.sheet_to_json(sheet) as unknown[] : []
+  } catch {
+    return []
+  }
+}
+
+async function saveStep4AnalysisResults(body: unknown) {
+  if (!isRecord(body) || typeof body.articleId !== 'string' || typeof body.fileName !== 'string' || !isRecord(body.results)) throw new Error('Step 4 결과 형식이 올바르지 않습니다.')
+  const existing = await readStep4Workbook()
+  const incoming = Object.entries(body.results).map(([step, value]) => ({ articleId: body.articleId, fileName: body.fileName, step, mode: isRecord(value) ? String(value.mode ?? '') : '', model: isRecord(value) ? String(value.model ?? '') : '', generatedAt: isRecord(value) ? String(value.generatedAt ?? '') : '', resultJson: isRecord(value) ? String(value.text ?? '') : JSON.stringify(value), savedAt: new Date().toISOString() }))
+  const latest = new Map<string, unknown>()
+  for (const row of [...existing, ...incoming]) { if (isRecord(row)) latest.set(`${String(row.articleId)}:${String(row.step)}`, row) }
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([...latest.values()]), 'step4_analysis')
+  const operation = step4WorkbookWriteQueue.then(async () => { await mkdir(resolve(process.cwd(), 'data'), { recursive: true }); await writeFile(step4WorkbookDataFile, XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })); return { file: 'data/developer-step4-analysis.xlsx', savedAt: new Date().toISOString(), sheets: workbook.SheetNames } })
+  step4WorkbookWriteQueue = operation.then(() => undefined, () => undefined)
+  return operation
+}
+
+async function readStep4Workbook(): Promise<unknown[]> {
+  try { const workbook = XLSX.read(await readFile(step4WorkbookDataFile), { type: 'buffer' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; return sheet ? XLSX.utils.sheet_to_json(sheet) as unknown[] : [] } catch { return [] }
+}
 
 async function saveUtil0RiskDiscovery(body: unknown) {
   if (!isRecord(body) || !isRecord(body.result)) throw new Error('util-0 결과가 없습니다.')
@@ -819,6 +917,30 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
           return
         }
 
+        if (pathname === '/api/llm/util-2/step2-analysis') {
+          if (request.method === 'GET') {
+            writeJson(response, 200, { rows: await readStep2Workbook() })
+            return
+          }
+          if (request.method !== 'POST') {
+            writeJson(response, 405, { error: 'Only POST is supported.' })
+            return
+          }
+          try {
+            writeJson(response, 200, await saveStep2AnalysisResults(await readJsonBody(request)))
+          } catch (error) {
+            writeJson(response, 400, { error: error instanceof Error ? error.message : 'Step 2 분석 결과 저장에 실패했습니다.' })
+          }
+          return
+        }
+
+        if (pathname === '/api/llm/util-4/step4-analysis') {
+          if (request.method === 'GET') { writeJson(response, 200, { rows: await readStep4Workbook() }); return }
+          if (request.method !== 'POST') { writeJson(response, 405, { error: 'Only GET and POST are supported.' }); return }
+          try { writeJson(response, 200, await saveStep4AnalysisResults(await readJsonBody(request))) } catch (error) { writeJson(response, 400, { error: error instanceof Error ? error.message : 'Step 4 결과 저장에 실패했습니다.' }) }
+          return
+        }
+
         if (pathname !== '/api/llm/generate') {
           next()
           return
@@ -830,7 +952,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
         }
 
         if (!options.apiKey) {
-          writeJson(response, 503, { error: 'GEMINI_API_KEY is not configured.' })
+          writeJson(response, 503, { error: `${options.provider.toUpperCase()} API key is not configured.` })
           return
         }
 
@@ -849,7 +971,13 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
             return
           }
 
-          const geminiResponse = await fetch(
+          const upstreamResponse = options.provider === 'potens'
+            ? await fetch('https://ai.potens.ai/api/chat-stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${options.apiKey}` },
+                body: JSON.stringify({ prompt: `${systemPrompt}\n\n${prompt}`, model: options.model }),
+              })
+            : await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(options.model)}:generateContent?key=${encodeURIComponent(options.apiKey)}`,
             {
               method: 'POST',
@@ -862,34 +990,52 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               }),
             },
           )
-          const payload = await geminiResponse.json() as GeminiResponse
+          if (options.provider === 'potens' && !upstreamResponse.ok) {
+            const errorBody = await upstreamResponse.text()
+            const preview = errorBody.replace(/\s+/g, ' ').trim().slice(0, 180)
+            writeJson(response, upstreamResponse.status, { error: preview ? `${options.provider} API request failed (HTTP ${upstreamResponse.status}): ${preview}` : `${options.provider} API request failed (HTTP ${upstreamResponse.status}).` })
+            return
+          }
+          const isPotensStream = options.provider === 'potens' && upstreamResponse.headers.get('content-type')?.includes('text/event-stream')
+          const rawResponse = isPotensStream
+            ? await readPotensStream(upstreamResponse)
+            : await upstreamResponse.text()
+          let payload: GeminiResponse & PotensResponse = {}
+          if (!isPotensStream) try {
+            payload = JSON.parse(rawResponse) as GeminiResponse & PotensResponse
+          } catch {
+            const preview = rawResponse.replace(/\s+/g, ' ').trim().slice(0, 180)
+            writeJson(response, 502, { error: `${options.provider} returned non-JSON response (HTTP ${upstreamResponse.status}): ${preview}` })
+            return
+          }
 
-          if (!geminiResponse.ok) {
-            writeJson(response, geminiResponse.status, {
-              error: payload.error?.message ?? 'Gemini API request failed.',
+          if (!upstreamResponse.ok) {
+            const providerError = typeof payload.error === 'string' ? payload.error : payload.error?.message
+            writeJson(response, upstreamResponse.status, {
+              error: providerError ?? `${options.provider} API request failed.`,
             })
             return
           }
 
-          const text = payload.candidates?.[0]?.content?.parts
-            ?.map((part) => part.text ?? '')
-            .join('')
-            .trim()
+          const text = options.provider === 'potens'
+            ? extractProviderText(payload) || rawResponse
+            : payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? '').join('')
+          const normalizedText = (text ?? '').trim()
 
-          if (!text) {
-            writeJson(response, 502, { error: 'Gemini returned an empty response.' })
+          if (!normalizedText) {
+            writeJson(response, 502, { error: `${options.provider} returned an empty response.` })
             return
           }
 
           writeJson(response, 200, {
-            text,
-            provider: 'gemini',
+            text: normalizedText,
+            provider: options.provider,
             model: options.model,
             generatedAt: new Date().toISOString(),
           })
         } catch (error) {
           console.error('LLM development proxy failed.', error)
-          writeJson(response, 500, { error: 'The LLM development proxy failed.' })
+          writeJson(response, 502, { error: error instanceof Error ? `LLM provider request failed: ${error.message}` : 'LLM provider request failed.' })
         }
       })
     },
@@ -1000,8 +1146,9 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       createLlmApiPlugin({
-        apiKey: env.GEMINI_API_KEY ?? '',
-        model: env.GEMINI_MODEL || 'gemini-3.6-flash',
+        apiKey: env.POTENS_API_KEY || env.VITE_POTENS_PROXY_URL || env.GEMINI_API_KEY || '',
+        model: env.POTENS_MODEL || (env.POTENS_API_KEY || env.VITE_POTENS_PROXY_URL ? 'claude-4-6-sonnet' : env.GEMINI_MODEL || 'gemini-3.6-flash'),
+        provider: env.POTENS_API_KEY || env.VITE_POTENS_PROXY_URL ? 'potens' : 'gemini',
       }),
       reportAssistantProxy(env.VITE_POTENS_PROXY_URL?.trim() ?? ''),
     ],
