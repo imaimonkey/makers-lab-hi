@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type {
   CommercializationCriterion,
   CommercializationCriterionCategory,
@@ -22,6 +22,10 @@ import { PolicyDraftModal } from './ReportAssistPanels'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { createBriefingContent } from '../services/briefing-content'
 import { pushPreservingHistoryState, type ReportNavigation } from '../services/browser-history'
+import { WORDING_ANALYSIS_RISK, coverageClauseDrafts, type WordingCoverageOptionId, type WordingStatusType } from '../data/wording-review-mock'
+import { FEASIBILITY_EXPECTED_OUTPUTS, FEASIBILITY_FOLLOW_UP_TASKS, FEASIBILITY_JUDGMENT_CARDS, FEASIBILITY_PML_DATA } from '../data/product-feasibility-mock'
+import { PROPOSAL_CALCULATION_EVIDENCE, PROPOSAL_CLAIM_FLOW_DISPLAY, PROPOSAL_CONTRACT_ROLE_SUMMARY, PROPOSAL_COVERAGE_SUMMARY, PROPOSAL_DECISIONS, PROPOSAL_HERO_BULLETS, PROPOSAL_HERO_FACTS, PROPOSAL_PRICING_SCENARIO_OUTPUTS, PROPOSAL_RECOMMENDATION_DETAIL_BLOCKS, PROPOSAL_RECOMMENDATION_DISPLAY, PROPOSAL_UNDERWRITING_DISPLAY, type ProposalPricingScenarioOutput } from '../data/product-proposal-mock'
+import { COVERAGE_GAP_ANALYSIS_PREMISE, COVERAGE_GAP_ASSUMPTIONS, COVERAGE_GAP_CATEGORY_SUMMARY, COVERAGE_GAP_LIMITATION, COVERAGE_GAP_PRODUCT_INPUTS, COVERAGE_GAP_RESULT_CARDS } from '../data/coverage-gap-mock'
 
 type SummaryCard = {
   id: string
@@ -212,6 +216,9 @@ type ReportView = {
       question: string
       status?: string
       note?: string
+      reference?: string
+      sourceName?: string
+      assumption?: string
     }>
     structureOptions?: Array<{
       id: string
@@ -224,6 +231,7 @@ type ReportView = {
     }>
     selectedDraftType?: string
     coverageDraft?: string
+    alternativeLiabilityDraft?: string
     definitions?: Array<{
       term: string
       draftDefinition?: string
@@ -738,8 +746,6 @@ function AiSummarySection({ report }: { report: ReportView }) {
   )
 }
 
-const COVERAGE_ANALYSIS_PREMISE = '전기차가 지하주차장에서 주차 또는 충전 중 화재를 일으켜 인접 차량과 건물·시설로 손해가 확산된 상황을 기준으로 기존 보험의 적용 가능 범위와 남는 보장 공백을 검토했습니다.'
-
 function getCoverageDamageLabel(
   item: NonNullable<ReportView['riskGapSummary']['existingCoverageMap']>[number],
   data: ReportView['riskGapSummary'],
@@ -783,11 +789,11 @@ const COVERAGE_GAP_BULLETS: Record<string, readonly CoverageGapBullet[]> = {
   ],
   'COV-04': [
     { prefix: '배터리 결함과 ', emphasis: '제조사 책임 확정 전', suffix: ' 보상 지연' },
-    { prefix: '', emphasis: '제조사 책임', suffix: '이 인정되지 않으면 보험 적용 어려움' },
+    { prefix: '', emphasis: '제조사 책임이 인정되지 않으면', suffix: ' 보험 적용 어려움' },
   ],
   'COV-05': [
-    { prefix: '', emphasis: '관리상 과실', suffix: '이 인정되지 않으면 배상책임보험 적용 어려움' },
-    { prefix: '화재 확산과 관리 과실의 ', emphasis: '인과관계', suffix: '가 입증되지 않으면 보상 어려움' },
+    { prefix: '', emphasis: '관리상 과실이 인정되지 않으면', suffix: ' 배상책임보험 적용 어려움' },
+    { prefix: '', emphasis: '화재 확산과 관리 과실의 인과관계가 입증되지 않으면', suffix: ' 보상 어려움' },
   ],
 }
 
@@ -795,128 +801,313 @@ function getCoverageGapBullets(item: NonNullable<ReportView['riskGapSummary']['e
   return COVERAGE_GAP_BULLETS[item.id] ?? (item.remainingGap ? [{ prefix: item.remainingGap }] : [])
 }
 
-const COVERAGE_REVIEW_AREAS = [
-  {
-    title: '상품개발 검토',
-    description: '기존 자동차보험·화재보험·배상책임보험으로 보장되는 손해와 새로 보완할 손해의 범위를 구분해야 합니다.',
-  },
-  {
-    title: '보상·법무 검토',
-    description: '발화 원인과 책임주체가 확정되지 않은 경우의 보험금 지급 여부, 기존 보험의 보상 순서와 구상관계를 정해야 합니다.',
-  },
-  {
-    title: '계리·인수 검토',
-    description: '다수 차량과 시설에 손해가 동시에 발생하는 경우를 고려하여 사고당 보상한도, 자기부담금 및 최대가능손해를 검토해야 합니다.',
-  },
-] as const
 
-function RiskGapSection({ report }: { report: ReportView }) {
+function CoverageGapEvidenceContent({
+  coverageRows,
+  data,
+  sourceGaps,
+}: {
+  coverageRows: NonNullable<ReportView['riskGapSummary']['existingCoverageMap']>
+  data: ReportView['riskGapSummary']
+  sourceGaps: NonNullable<ReportView['riskGapSummary']['keyCoverageGaps']>
+}) {
+  return (
+    <div className="report-page__coverage-gap-evidence-content">
+      <div className="report-page__coverage-gap-evidence-grid">
+        <article><h4>AI 판단 근거</h4><ul>{coverageRows.map((item, index) => <li key={item.id}><strong>{getCoverageDamageLabel(item, data, index)}</strong><span>{item.coverageName}의 부분 적용 가능성 및 조건부 공백</span></li>)}</ul></article>
+        <article><h4>적용 가정</h4><ul>{COVERAGE_GAP_ASSUMPTIONS.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul></article>
+        <article><h4>신뢰도와 한계</h4><p><strong>신뢰도 · 보통</strong></p><p>{COVERAGE_GAP_LIMITATION}</p><p>보정 대상 · 공백의 범위, 손해 유형별 중요도, 지급절차와 한도 공백의 우선순위</p></article>
+      </div>
+      <p className="report-page__coverage-gap-source-count">기존 mock 핵심 공백 원자료 {sourceGaps.length}건과 현재 비교표 {coverageRows.length}건을 연결해 표시했습니다.</p>
+    </div>
+  )
+}
+
+function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: ReportView; onNavigateTab?: (id: ReportTabId) => void; printMode?: boolean }) {
   const data = report.riskGapSummary
   const coverageRows = data.existingCoverageMap ?? []
-  const keyGaps = data.keyCoverageGaps ?? []
+  const sourceGaps = data.keyCoverageGaps ?? []
+  const damageCount = coverageRows.length || data.damageTypes?.length || 0
+  const partialCoverageCount = coverageRows.filter((item) => Boolean(item.possibleCoverage?.trim())).length
+  const gapCount = coverageRows.filter((item) => getCoverageGapBullets(item).length > 0).length
+  void onNavigateTab
+  void printMode
+
+  const resultCardCopy = {
+    'gap-status': {
+      title: '보장 공백',
+      conclusion: '보장 공백 확인됨',
+      bullets: ['기존 보험은 일부 손해만 보장', '책임·가입·보상한도 조건에서 직접손해 공백 발생'],
+    },
+    'gap-significance': {
+      title: '상품개발 검토 가치',
+      conclusion: '검토 가치 있음',
+      bullets: ['다수 차량과 시설에 동시 손해 발생 가능', '기존 보험만으로 보완하기 어려운 직접손해 존재'],
+    },
+    'next-evaluation': {
+      title: '다음 검토 단계',
+      conclusion: '상품화 종합평가 진행',
+      bullets: ['시장성·우연성·도덕적 해이·최대가능손해 평가', '평가 결과를 바탕으로 상품개발 진행 여부 검토'],
+    },
+  } as const
+
+  const productInputCopy = [
+    { title: '기존 보험금 차감 기준', description: '기존 보험에서 지급된 금액을 제외한 직접손해만 보장합니다.' },
+    { title: '책임 확정 전 지급 여부', description: '책임 조사 중에도 보험금을 지급할지, 지급 조건과 한도를 정해야 합니다.' },
+    { title: '사고당 보상한도', description: '다수 차량과 시설에 발생한 동시 손해를 하나의 사고 한도에 반영합니다.' },
+    { title: '하나의 사고 범위', description: '동일 화재로 발생한 차량·시설 손해를 하나의 사고로 볼 기준을 정합니다.' },
+    { title: '보장할 손해 범위', description: '직접손해, 자차 미가입 차량, 시설 손해의 포함 범위를 정합니다.' },
+    { title: '보상 제외 기준', description: '고의 사고와 이미 다른 보험에서 보상받은 손해는 지급 대상에서 제외합니다.' },
+  ] as const
+
   return (
-    <section className="report-page__section" aria-labelledby="risk-gap-title">
+    <section className="report-page__section report-page__coverage-gap-section" aria-label="기존 보험의 보장 범위와 공백">
       <SectionHeading number="04" eyebrow="RISK & COVERAGE GAP" title="기존 보험의 보장 범위와 공백" />
-      <p className="report-page__section-intro">손해 유형별로 기존 보험의 적용 가능 범위와 보상 후에도 남을 수 있는 공백을 비교합니다.</p>
-      <div className="report-page__coverage-premise">
-        <div>
-          <p className="report-page__eyebrow">ANALYSIS PREMISE</p>
-          <h3>분석 전제</h3>
-          <p>{COVERAGE_ANALYSIS_PREMISE}</p>
-        </div>
-        <button
-          type="button"
-          className="report-page__risk-detail-link report-page__no-print"
-          disabled
-          aria-disabled="true"
-          data-risk-id={report.meta.sourceRiskId}
-          title={`위험 상세 화면 연결 대기 · 위험 ID ${report.meta.sourceRiskId}`}
-        >
-          위험 상세 분석 보기 <span>연결 대기</span>
-        </button>
-      </div>
-      <div className="report-page__table-wrap" id="risk-gap-title">
-        <table className="report-page__gap-table">
-          <thead>
-            <tr>
-              <th><span aria-hidden="true">①</span> 발생 가능한 손해</th>
-              <th><span aria-hidden="true">②</span> 기존 보험의 보장 가능 범위</th>
-              <th><span aria-hidden="true">③</span> 보장 공백</th>
-            </tr>
-          </thead>
-          <tbody>
-            {coverageRows.map((item, index) => {
-              return (
-              <tr key={item.id}>
-                <td><strong>{getCoverageDamageLabel(item, data, index)}</strong></td>
-                <td><strong>{item.coverageName}</strong><p>{item.possibleCoverage}</p></td>
-                <td className="report-page__gap-cell">
-                  <ul className="report-page__gap-bullets">
-                    {getCoverageGapBullets(item).map((bullet) => (
-                      <li key={`${bullet.prefix}-${bullet.emphasis ?? ''}`}>
-                        {bullet.prefix}{bullet.emphasis ? <strong>{bullet.emphasis}</strong> : null}{bullet.suffix ?? ''}
-                      </li>
-                    ))}
-                  </ul>
-                </td>
-              </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-      {keyGaps.length ? (
-        <section className="report-page__key-gaps" aria-labelledby="key-coverage-gaps-title">
-          <div className="report-page__key-gaps-heading">
-            <div>
-              <p className="report-page__eyebrow">PRODUCTIZATION GAPS</p>
-              <h3 id="key-coverage-gaps-title">상품 개발 전 확인해야 할 보장 공백</h3>
-            </div>
-            <span>{keyGaps.length}개 쟁점</span>
-          </div>
-          <div className="report-page__key-gaps-list">
-            {keyGaps.map((gap, index) => (
-              <article className="report-page__key-gap" key={gap.id}>
-                <span className="report-page__key-gap-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                <div>
-                  <code>{gap.id}</code>
-                  <h4>{gap.title}</h4>
-                  <p>{gap.description}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
-      <section className="report-page__design-direction" aria-labelledby="coverage-design-direction-title">
-        <div className="report-page__design-direction-heading">
-          <h3 id="coverage-design-direction-title">보장 공백 확인 후 다음 검토사항</h3>
-        </div>
-        <div className="report-page__design-direction-grid">
-          {COVERAGE_REVIEW_AREAS.map((area) => (
-            <article className="report-page__design-direction-card" key={area.title}>
-              <h4>{area.title}</h4>
-              <p>{area.description}</p>
-            </article>
-          ))}
-        </div>
+
+      <section className="report-page__coverage-gap-results" aria-labelledby="coverage-gap-results-title">
+        <div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">COVERAGE GAP SUMMARY</p><h3 id="coverage-gap-results-title">보장 공백 분석 요약</h3></div></div>
+        <div className="report-page__coverage-gap-judgment-copy"><p>기존 보험 적용 후에도 <strong>직접손해 보장 공백이 확인되었습니다.</strong></p><p>보장 공백이 확인되어 상품개발 검토 가치가 있으며, 다음 단계에서 시장성·우연성·도덕적 해이·최대가능손해를 종합적으로 평가합니다.</p></div>
+        <div className="report-page__coverage-gap-result-grid">{COVERAGE_GAP_RESULT_CARDS.map((card) => { const copy = resultCardCopy[card.id]; return <article className={`report-page__coverage-gap-result-card report-page__coverage-gap-result-card--${card.tone}`} key={card.id}><div className="report-page__coverage-gap-result-head"><h4>{copy.title}</h4></div><p className="report-page__coverage-gap-result-conclusion">{copy.conclusion}</p><ul>{copy.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></article> })}</div>
+        <p className="report-page__coverage-gap-meta-line">프로토타입 mock 분석 <span>·</span> 신뢰도 보통 <span>·</span> 손해 유형 {damageCount}개 분석</p>
       </section>
+
+      <section className="report-page__coverage-gap-premise" aria-labelledby="coverage-gap-premise-title"><div className="report-page__coverage-gap-scope"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">ANALYSIS SCOPE</p><h3 id="coverage-gap-premise-title">분석 범위</h3></div></div><p>{COVERAGE_GAP_ANALYSIS_PREMISE}</p></div></section>
+
+      <section className="report-page__coverage-gap-comparison" aria-labelledby="coverage-gap-comparison-title">
+        <div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">COMPARISON EVIDENCE</p><h3 id="coverage-gap-comparison-title">기존 보험의 보장 범위와 공백 비교표</h3></div></div>
+        <p className="report-page__coverage-gap-summary-line"><span>{damageCount}개 손해 유형 분석</span><span>· 기존 보험 부분 적용 {partialCoverageCount}건</span><strong>· 보장 공백 {gapCount}건</strong><span>· 주요 공백 유형 {COVERAGE_GAP_CATEGORY_SUMMARY.length}종</span></p>
+        <div className="report-page__table-wrap"><table className="report-page__gap-table"><thead><tr><th><span aria-hidden="true">①</span> 발생 가능한 손해</th><th><span aria-hidden="true">②</span> 기존 보험의 보장 가능 범위</th><th><span aria-hidden="true">③</span> 보장 공백</th></tr></thead><tbody>{coverageRows.map((item, index) => <tr key={item.id}><td><strong>{getCoverageDamageLabel(item, data, index)}</strong></td><td><strong>{item.coverageName}</strong><p>{item.possibleCoverage}</p></td><td className="report-page__gap-cell"><ul className="report-page__gap-bullets">{getCoverageGapBullets(item).map((bullet) => <li key={`${bullet.prefix}-${bullet.emphasis ?? ''}`}>{bullet.prefix}{bullet.emphasis ? <strong>{bullet.emphasis}</strong> : null}{bullet.suffix ?? ''}</li>)}</ul></td></tr>)}</tbody></table></div>
+      </section>
+
+      <section className="report-page__coverage-gap-inputs" aria-labelledby="coverage-gap-inputs-title"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">PRODUCT DEVELOPMENT INPUTS</p><h3 id="coverage-gap-inputs-title">상품개발 시 정해야 할 사항</h3><p>보장 공백을 실제 상품에 반영하기 위해 아래 기준을 먼저 정해야 합니다.</p></div></div><ul>{COVERAGE_GAP_PRODUCT_INPUTS.slice(0, 6).map((input, index) => { const copy = productInputCopy[index] ?? { title: input.condition, description: input.reason }; return <li key={input.id}><span className="report-page__coverage-gap-input-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><div><div className="report-page__coverage-gap-input-title"><strong>{copy.title}</strong></div><p>{copy.description}</p></div></li> })}</ul></section>
+
+      <section className="report-page__coverage-gap-evidence-print-only" aria-labelledby="coverage-gap-evidence-print-title"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">REASONING & ASSUMPTIONS</p><h3 id="coverage-gap-evidence-print-title">분석 근거 및 적용 가정</h3></div></div><CoverageGapEvidenceContent coverageRows={coverageRows} data={data} sourceGaps={sourceGaps} /></section>
     </section>
   )
 }
 
+type FeasibilityDisplayGroup = {
+  id: string
+  eyebrow: string
+  title: string
+  description: string
+  scope?: string
+  criterionIds: string[]
+}
+
+/** 화면용 그룹입니다. 원본 criterion.gateGroup과 데이터 계약은 변경하지 않습니다. */
+const FEASIBILITY_DISPLAY_GROUPS: FeasibilityDisplayGroup[] = [
+  {
+    id: 'insurance-gate',
+    eyebrow: 'INSURANCE PRODUCT GATE',
+    title: '보험상품 성립 필수 기준',
+    description: '보험상품으로 성립하기 위해 반드시 충족해야 하는 기준입니다.',
+    criterionIds: ['insurable_interest', 'fortuity', 'gambling_like_structure'],
+  },
+  {
+    id: 'core-judgment',
+    eyebrow: 'PRODUCTIZATION JUDGMENT',
+    title: '상품화 핵심 판단 기준',
+    description: '상품 개발 검토를 계속 진행할 수 있는지 판단하는 핵심 기준입니다.',
+    criterionIds: ['moral_hazard_control', 'coverage_gap', 'actual_market_demand', 'pml_accumulation', 'liability_clarity', 'loss_verifiability'],
+  },
+  {
+    id: 'development-readiness',
+    eyebrow: 'PRODUCT DEVELOPMENT READINESS',
+    title: '상품 개발 준비 기준',
+    description: '상품 개발 검토에 필요한 준비 상태를 확인합니다.',
+    scope: '위험 분산·재보험 · 약관 작성·운영·보상 · 데이터·인수·규제 승인 절차를 기존 기준에 통합해 표시합니다.',
+    criterionIds: ['risk_pooling', 'wording_clarity', 'pricing_data_readiness'],
+  },
+]
+
+const FEASIBILITY_QUESTION_TITLES: Record<string, string> = {
+  insurable_interest: '누가 어떤 손해를 보장받는가?',
+  fortuity: '고의로 만들기 어려운 사고인가?',
+  gambling_like_structure: '실제 발생한 손해만 보상하는 구조인가?',
+  moral_hazard_control: '고의·보험사기 위험을 통제할 수 있는가?',
+  coverage_gap: '기존 보험과 겹치지 않고 실제 보장 공백이 있는가?',
+  actual_market_demand: '실제로 가입할 기업과 계약 수요가 있는가?',
+  pml_accumulation: '사고 한 번의 최대 손해를 감당할 수 있는가?',
+  liability_clarity: '사고 책임주체를 구분할 수 있는가?',
+  loss_verifiability: '사고 여부와 손해액을 객관적으로 확인할 수 있는가?',
+  risk_pooling: '위험을 여러 계약으로 분산할 수 있는가?',
+  wording_clarity: '보장·비보장 범위를 약관으로 명확히 쓸 수 있는가?',
+  pricing_data_readiness: '보험료 산출에 필요한 데이터가 충분한가?',
+}
+
+const feasibilityQuestionTitle = (criterion: CommercializationCriterion): string => FEASIBILITY_QUESTION_TITLES[criterion.id] ?? criterion.question
+
+const formatKrwCompact = (value: number): string => {
+  if (value >= 100_000_000) {
+    const billions = value / 100_000_000
+    return `${Number.isInteger(billions) ? billions.toLocaleString('ko-KR') : billions.toFixed(1).replace(/\.0$/u, '')}억 원`
+  }
+  if (value >= 10_000) return `${Math.round(value / 10_000).toLocaleString('ko-KR')}만 원`
+  return `₩${Math.round(value).toLocaleString('ko-KR')}`
+}
+
+type FeasibilityMetricBulletTone = 'confirmed' | 'follow-up' | 'additional-check'
+
+type FeasibilityMetricDisplay = {
+  id: 'market' | 'tam' | 'frequency' | 'pml'
+  title: string
+  value: string
+  subvalue: string
+  items: Array<{ tone: FeasibilityMetricBulletTone; text: string }>
+  footer: string
+  confidence: '보통' | '낮음'
+  detailLabel: string
+  details: Array<{ label: string; value: string }>
+  scenarios?: Array<{ label: string; calculation: string; result: string }>
+  printNote: string
+}
+
+/** 상품화 종합평가 화면 전용 정량지표입니다. 원본 평가 기준·데이터 계약은 변경하지 않습니다. */
+const FEASIBILITY_METRIC_DISPLAY: FeasibilityMetricDisplay[] = [
+  {
+    id: 'market',
+    title: '시장성',
+    value: 'A · 84점',
+    subvalue: '성과 등급 기준 · A (75~89점)',
+    items: [
+      { tone: 'confirmed', text: '전기차·충전시설 시장 확대' },
+      { tone: 'confirmed', text: '관련 보험 수요와 제도적 필요성 증가' },
+      { tone: 'confirmed', text: '동일 위험의 실제 상품화 사례 확인' },
+      { tone: 'follow-up', text: '실제 가입 의향과 예상 계약 규모 확인 필요' },
+    ],
+    footer: '프로젝트 내부 평가모형 · 실제 수요조사 후 보정',
+    confidence: '보통',
+    detailLabel: '산정 근거 보기',
+    details: [
+      { label: '평가항목별 배점', value: '시장 성장성 23/25 · 보험 수요·제도 변화 24/25 · 실제 상품화 검증 22/25 · 구매 접근성·실수요 확인 15/25' },
+      { label: '합계', value: '84/100 · S 90~100점 · A 75~89점 · B 60~74점 · C 60점 미만' },
+      { label: '점수 산정 이유', value: '시장 확대와 유사 상품 사례는 확인했으나, 실제 가입 의향과 계약 규모는 내부 수요조사 전 단계입니다.' },
+      { label: '사용한 자료', value: '공개 전기차·충전시설 시장자료 및 유사 보험 상품자료' },
+      { label: '근거 유형', value: 'publicData · document · derived' },
+      { label: '추가 확인자료', value: '실제 가입 의향, 예상 계약 규모, 영업 채널별 수요조사 결과' },
+    ],
+    printNote: '배점 23/25·24/25·22/25·15/25 = 84/100 · 실제 수요조사 후 보정',
+  },
+  {
+    id: 'tam',
+    title: '총도달가능시장(TAM)',
+    value: '연 65억~191억 원',
+    subvalue: '기준 시나리오 · 약 121억 원/년',
+    items: [
+      { tone: 'confirmed', text: '의무관리대상 공동주택 중심 산정' },
+      { tone: 'confirmed', text: '시설 단위 연간 계약 가정' },
+      { tone: 'follow-up', text: '상업·공공·산업시설은 제외' },
+      { tone: 'follow-up', text: '실제 판매 대상과 보험료율 확인 후 보정' },
+    ],
+    footer: '공동주택 중심의 보수적 시장 추정',
+    confidence: '낮음',
+    detailLabel: '산식·가정 보기',
+    details: [
+      { label: '산정식', value: '대상 시설 수 × 시설당 예상 연보험료' },
+      { label: '대상 시설 수', value: '17,189개 · 시설 단위 연간 계약' },
+      { label: '보험료 입력값', value: '시설당 연 38만~111만 원 · 기준 약 70만 원' },
+      { label: '제외 범위', value: '상업·공공·산업시설 및 실제 판매 대상이 확정되지 않은 시장' },
+      { label: '근거 유형', value: 'publicData · assumption · derived' },
+      { label: '내부 확인자료', value: '실제 판매 대상, 시설별 계약 단위, 적용 보험료율' },
+    ],
+    scenarios: [
+      { label: '보수적', calculation: '17,189 × 38만 원', result: '약 65억 원' },
+      { label: '기준', calculation: '17,189 × 70만 원', result: '약 121억 원' },
+      { label: '확장', calculation: '17,189 × 111만 원', result: '약 191억 원' },
+    ],
+    printNote: '17,189개 × 시설당 연 38만~111만 원 · 기준 70만 원 = 연 65억~191억 원',
+  },
+  {
+    id: 'frequency',
+    title: '위험 발생 빈도',
+    value: '시설당 연 0.08~0.12%',
+    subvalue: '기준 추정 · 약 0.10%/년 · 1,000개 기준 연 0.8~1.2건',
+    items: [
+      { tone: 'confirmed', text: '공개 전기차 화재 통계 적용' },
+      { tone: 'confirmed', text: '주차장 화재 비중 반영' },
+      { tone: 'confirmed', text: '시설별 전기차 노출 규모 반영' },
+      { tone: 'follow-up', text: '시설별 실제 사고 이력은 미확보' },
+      { tone: 'follow-up', text: '충전 여부·주차 구조에 따라 변동' },
+    ],
+    footer: '공개 통계와 시설 노출 가정을 적용한 프로토타입 시나리오 추정',
+    confidence: '낮음',
+    detailLabel: '산식·가정 보기',
+    details: [
+      { label: '산정식', value: '전기차 1대당 연간 화재 발생률 × 주차장 발생 비중 × 시설당 전기차 노출대수' },
+      { label: '적용 값', value: '0.0107% × 38% × 시설당 전기차 20~30대' },
+      { label: '공개자료', value: '전기차 등록 규모·화재 건수 기반 차량 1대당 연간 화재 발생률' },
+      { label: '근거 유형', value: 'publicData · assumption · derived' },
+      { label: '추가 확인자료', value: '시설별 실제 사고 이력, 충전 여부, 주차 구조와 노출대수' },
+    ],
+    scenarios: [
+      { label: '낮음', calculation: '0.0107% × 38% × 20대', result: '0.08%' },
+      { label: '기준', calculation: '0.0107% × 38% × 25대', result: '0.10%' },
+      { label: '높음', calculation: '0.0107% × 38% × 30대', result: '0.12%' },
+    ],
+    printNote: '0.0107% × 38% × 20~30대 = 시설당 연 0.08~0.12% · 프로토타입 시나리오 추정',
+  },
+  {
+    id: 'pml',
+    title: '최대가능손해(PML)',
+    value: `기준 ${formatKrwCompact(FEASIBILITY_PML_DATA.scenarios.find((scenario) => scenario.id === FEASIBILITY_PML_DATA.baseScenario)?.result ?? 0)}`,
+    subvalue: `추정 범위 ${formatKrwCompact(FEASIBILITY_PML_DATA.range.low)}~${formatKrwCompact(FEASIBILITY_PML_DATA.range.high)} · 손해 규모 높음`,
+    items: [
+      { tone: 'confirmed', text: '다수 차량의 동시 피해 반영' },
+      { tone: 'confirmed', text: '시설 복구·긴급대응 비용 포함' },
+      { tone: 'follow-up', text: '실제 확정 손해액이 아닌 시나리오 추정' },
+      { tone: 'follow-up', text: '차량가액과 시설 구조에 따라 변동' },
+    ],
+    footer: '대형 지하주차장 사고 규모를 적용한 시나리오 · 상품개발 제안과 공통값',
+    confidence: '보통',
+    detailLabel: '시나리오 보기',
+    details: [
+      { label: '산정 범위', value: '전소·부분 피해 차량과 시설 복구·긴급대응 비용을 합산한 사고당 손해 규모' },
+      { label: '출처', value: FEASIBILITY_PML_DATA.source },
+      { label: '근거 유형', value: 'assumption · derived' },
+      { label: '추가 확인자료', value: '차량가액 분포, 시설 구조, 실제 손해액, 사고당 보상한도' },
+    ],
+    scenarios: FEASIBILITY_PML_DATA.scenarios.map((scenario) => ({ label: scenario.label, calculation: scenario.calculation, result: formatKrwCompact(scenario.result) })),
+    printNote: `PML 공통 시나리오 · 보수적 ${formatKrwCompact(FEASIBILITY_PML_DATA.range.low)} / 기준 ${formatKrwCompact(FEASIBILITY_PML_DATA.scenarios.find((scenario) => scenario.id === FEASIBILITY_PML_DATA.baseScenario)?.result ?? 0)} / 확대 ${formatKrwCompact(FEASIBILITY_PML_DATA.range.high)}`,
+  },
+]
+
+const feasibilityNextCheck = (criterion: CommercializationCriterion): string => {
+  const action = criterion.nextActions.find((item) => !item.completed && item.text.trim())
+  return action?.text || criterion.missingInformation[0] || UNASSESSED_GUIDANCE[criterion.id] || '추가 확인 항목을 담당 부서와 정리'
+}
+
+const confidenceLabel = (criteria: CommercializationCriterion[]): string => {
+  const values = criteria.map((criterion) => criterion.confidence)
+  if (values.includes('low')) return '낮음'
+  if (values.includes('unknown')) return '보통'
+  if (values.includes('medium')) return '보통'
+  return values.length ? '높음' : '미평가'
+}
+
+const criterionOwner = (criterion?: CommercializationCriterion): string => {
+  const owners = Array.from(new Set((criterion?.nextActions ?? []).filter((action) => !action.completed).map((action) => action.owner).filter(Boolean)))
+  return owners.join(' / ') || '담당 부서 결정 필요'
+}
+
+const criterionExpectedOutput = (criterion: CommercializationCriterion): string => FEASIBILITY_EXPECTED_OUTPUTS[criterion.id] ?? '검토 결과 및 추가 근거자료 정리본'
+
+const criterionConfidenceLabel = (criterion: CommercializationCriterion): string => ({ high: '높음', medium: '보통', low: '낮음', unknown: '미입력' } as const)[criterion.confidence]
+
+// 기존 실무 검토 필터에서 사용하는 그룹 정의입니다. 실제로 보이는 의사결정 그룹은
+// FEASIBILITY_DISPLAY_GROUPS에서 별도로 구성해 원본 데이터 계약을 유지합니다.
 const FEASIBILITY_CATEGORIES: Array<[CommercializationCriterionCategory, string]> = [
   ['market', '시장성·수요'],
   ['insurability', '보험성·위험 구조'],
-  ['coverage', '상품 설계 가능성'],
+  ['coverage', '보장 범위·위험 구조'],
   ['wording', '약관·규제'],
   ['data', '데이터·운영 준비'],
 ]
 
 const FEASIBILITY_GATE_GROUPS: Array<[CommercializationGateGroup, string, string]> = [
   ['insurance_gate', '보험성 필수 기준', '보험으로 성립하기 위해 반드시 충족해야 하는 기준입니다.'],
-  ['productization_gate', '상품화 핵심 기준', '실제 상품 개발 검토를 계속 진행할 수 있는지 판단하는 핵심 기준입니다.'],
-  ['supplementary_execution', '설계·실행 보완 기준', '상품 구조와 운영 조건을 구체화하기 위해 추가로 검토하는 기준입니다.'],
+  ['productization_gate', '상품화 핵심 기준', '상품 개발 검토를 계속 진행할 수 있는지 판단하는 핵심 기준입니다.'],
+  ['supplementary_execution', '상품 개발 준비·보완 기준', '상품 구조와 운영 조건을 구체화하기 위해 추가로 검토하는 기준입니다.'],
 ]
 
 type PrecedingAnalysisLink = {
@@ -1111,6 +1302,12 @@ const sourceSectionLabel = (source: string) => SOURCE_SECTION_LABELS[source] ?? 
 
 const sourceSectionConfig = (source: string) => PRECEDING_ANALYSIS_LINKS.find((config) => config.sourceKeys.includes(source))
 
+const feasibilitySourceLinkLabel = (source: string): string => {
+  if (source === 'evidence') return '사용 출처 보기'
+  if (source === 'coverage-gap') return '판단 근거 보기'
+  return '연동 분석 보기'
+}
+
 const evidenceTypeLabel = (evidence: CommercializationCriterion['evidence'][number]) => {
   const raw = evidence as Record<string, unknown>
   const searchable = [evidence.sourceType, evidence.sourceName, evidence.title].join(' ').toLowerCase()
@@ -1119,17 +1316,6 @@ const evidenceTypeLabel = (evidence: CommercializationCriterion['evidence'][numb
   if (/official|공식|공공/.test(searchable)) return '공식자료'
   if (!evidence.sourceName && !evidence.title) return '미확보'
   return '외부 참고자료'
-}
-
-const reasonBullets = (criterion: CommercializationCriterion) => {
-  const structured = [
-    ...criterion.missingInformation,
-    ...criterion.nextActions.filter((action) => !action.completed).map((action) => action.text),
-  ]
-  const fallback = structured.length ? [] : criterion.rationale.split(/[.!?]\s+/)
-  return Array.from(new Set([...structured, ...fallback]
-    .map((value) => neutralizeCommercializationText(value).trim())
-    .filter(Boolean))).slice(0, 6)
 }
 
 type CriterionReviewSaveResult = { persisted: boolean }
@@ -1346,72 +1532,81 @@ function FeasibilityCriterionDetail({ criterion, onNavigateTab, onSaveReview, on
   return (
     <div className="report-page__evaluation-detail">
       <div className="report-page__evaluation-ai-column">
-        <p className="report-page__evaluation-column-label">AI 분석 및 근거</p>
-      <div className="report-page__evaluation-detail-block report-page__detail-summary-block">
-        <h4>평가 질문</h4>
-        <p>{criterion.question}</p>
-      </div>
-      <div className="report-page__evaluation-detail-block report-page__detail-summary-block">
-        <h4>AI 판단 요약</h4>
-        <p>{criterionSummary(criterion)}</p>
-        <p className="report-page__assessment-confidence">AI 평가 결과: {RESULT_STATUS_LABELS[criterion.status]} · 근거 충분도: {criterion.confidence === 'high' ? '충분' : criterion.confidence === 'medium' ? '일부 확보' : criterion.confidence === 'low' ? '부족' : '미입력'} · 자료 상태: {MATERIAL_STATUS_LABELS[criterion.evidenceStatus] ?? commercializationEvidenceStatusLabel(criterion.evidenceStatus)}</p>
-      </div>
-      <div className="report-page__evaluation-detail-block">
-        <h4>판단 근거</h4>
-        {reasonBullets(criterion).length ? <ul className="report-page__reason-list">{reasonBullets(criterion).map((item) => <li key={item}>{item}</li>)}</ul> : <p className="report-page__empty-detail">구조화된 판단 근거가 아직 입력되지 않았습니다.</p>}
-      </div>
-      <div className="report-page__evaluation-detail-block">
-        <h4>연동된 선행 분석</h4>
-        {criterion.sourceSections.length ? (
-          <ul className="report-page__linked-analysis-list">
-            {criterion.sourceSections.map((source) => {
-              const config = sourceSectionConfig(source)
-              return (
-                <li key={source}>
-                  <div><strong>{sourceSectionLabel(source)}</strong><span className="report-page__linked-analysis-status">연동 출처</span></div>
-
-                  <p>{compactCriterionText(criterionSummary(criterion), 130)}</p>
-                  {config ? <button className="report-page__source-link report-page__no-print" type="button" onClick={() => onNavigateTab?.(config.tabId)}>{config.label} 결과 보기 →</button> : null}
+        <p className="report-page__evaluation-column-label">평가 상세 근거</p>
+        <div className="report-page__evaluation-standard-grid">
+          <section className="report-page__evaluation-standard-block report-page__evaluation-standard-block--status">
+            <h4>현재 판정</h4>
+            <FeasibilityStatusBadge status={appliedStatusOf(criterion)} />
+          </section>
+          <section className="report-page__evaluation-standard-block report-page__evaluation-standard-block--wide">
+            <h4>상세 판단</h4>
+            <p>{criterionSummary(criterion)}</p>
+          </section>
+          <section className="report-page__evaluation-standard-block report-page__evaluation-standard-block--wide">
+            <h4>판단 근거</h4>
+            {criterion.confirmedFacts || criterion.rationale ? (
+              <ul className="report-page__reason-list">
+                {[criterion.confirmedFacts, criterion.rationale].filter(Boolean).map((item) => <li key={item}>{neutralizeCommercializationText(item as string)}</li>)}
+              </ul>
+            ) : <p className="report-page__empty-detail">구조화된 판단 근거가 아직 입력되지 않았습니다.</p>}
+          </section>
+          <section className="report-page__evaluation-standard-block">
+            <h4>AI 1차 추정</h4>
+            <p>{neutralizeCommercializationText(criterion.rationale || criterionSummary(criterion))}</p>
+          </section>
+          <section className="report-page__evaluation-standard-block">
+            <h4>추정 신뢰도와 분석 한계</h4>
+            <p><strong>신뢰도 · {criterionConfidenceLabel(criterion)}</strong></p>
+            <p>{MATERIAL_STATUS_LABELS[criterion.evidenceStatus] ?? commercializationEvidenceStatusLabel(criterion.evidenceStatus)} · 내부 계약·손해자료 확인 전 1차 추정입니다.</p>
+          </section>
+          <section className="report-page__evaluation-standard-block">
+            <h4>추가로 필요한 자료</h4>
+            {missingInformation.length ? <ChipList items={missingInformation.map(neutralizeCommercializationText)} /> : <p className="report-page__empty-detail">추가로 확보할 정보가 없습니다.</p>}
+          </section>
+          <section className="report-page__evaluation-standard-block">
+            <h4>다음 행동</h4>
+            {openActions.length ? <ul className="report-page__compact-list">{openActions.map((action) => <li key={action.id}>{neutralizeCommercializationText(action.text)}</li>)}</ul> : <p className="report-page__empty-detail">미완료 다음 행동이 없습니다.</p>}
+          </section>
+          <section className="report-page__evaluation-standard-block">
+            <h4>담당 부서</h4>
+            <p>{criterionOwner(criterion)}</p>
+          </section>
+          <section className="report-page__evaluation-standard-block report-page__evaluation-standard-block--wide">
+            <h4>예상 산출물</h4>
+            <p>{criterionExpectedOutput(criterion)}</p>
+          </section>
+        </div>
+        <div className="report-page__evaluation-detail-block">
+          <h4>연동된 선행 분석</h4>
+          {criterion.sourceSections.length ? (
+            <ul className="report-page__linked-analysis-list">
+              {criterion.sourceSections.map((source) => {
+                const config = sourceSectionConfig(source)
+                return (
+                  <li key={source}>
+                    <div><strong>{sourceSectionLabel(source)}</strong><span className="report-page__linked-analysis-status">연동 출처</span></div>
+                    <p>{compactCriterionText(criterionSummary(criterion), 130)}</p>
+                    {config ? <button className="report-page__source-link report-page__no-print" type="button" onClick={() => onNavigateTab?.(config.tabId)}>{feasibilitySourceLinkLabel(source)} →</button> : null}
+                  </li>
+                )
+              })}
+            </ul>
+          ) : <p className="report-page__empty-detail">연동된 선행 분석이 없습니다.</p>}
+        </div>
+        <div className="report-page__evaluation-detail-block">
+          <h4>판단 근거 자료</h4>
+          {criterion.evidence.length ? (
+            <ul className="report-page__evidence-reference-list">
+              {criterion.evidence.map((evidence) => (
+                <li key={evidence.id}>
+                  <div className="report-page__evidence-reference-heading"><code>{evidence.id}</code><strong>{neutralizeCommercializationText(evidence.title)}</strong><span className="report-page__evidence-type-badge">{evidenceTypeLabel(evidence)}</span></div>
+                  {evidence.sourceName ? <span>{neutralizeCommercializationText(evidence.sourceName)}</span> : null}
+                  {evidence.excerpt ? <p>{neutralizeCommercializationText(evidence.excerpt)}</p> : null}
                 </li>
-              )
-            })}
-          </ul>
-        ) : <p className="report-page__empty-detail">연동된 선행 분석이 없습니다.</p>}
-      </div>
-      <div className="report-page__evaluation-detail-pair">
-        <div className={!criterion.confirmedFacts ? 'report-page__evaluation-detail-block--empty' : undefined}>
-          <h4>확인된 사실</h4>
-          {criterion.confirmedFacts ? <p>{neutralizeCommercializationText(criterion.confirmedFacts)}</p> : <p className="report-page__empty-detail">구조화된 확인 사실이 아직 입력되지 않았습니다.</p>}
+              ))}
+            </ul>
+          ) : <p className="report-page__empty-detail">연결된 근거자료가 없습니다. 추가로 필요한 자료입니다.</p>}
         </div>
-        <div>
-          <h4>AI 분석·추론</h4>
-          {criterion.rationale ? <p>{neutralizeCommercializationText(criterion.rationale)}</p> : <p className="report-page__empty-detail">별도 분석·추론 문장이 제공되지 않았습니다.</p>}
-        </div>
-      </div>
-      <div className="report-page__evaluation-detail-pair">
-        <div>
-          <h4>부족한 정보</h4>
-          {missingInformation.length ? <ChipList items={missingInformation.map(neutralizeCommercializationText)} /> : <p className="report-page__empty-detail">추가로 확보할 정보가 없습니다.</p>}
-        </div>
-        <div>
-          <h4>다음 확인 과제</h4>
-          {openActions.length ? <ul className="report-page__compact-list">{openActions.map((action) => <li key={action.id}>{neutralizeCommercializationText(action.text)} <span className="report-page__muted">({action.owner}, {action.priority === 'high' ? '높음' : action.priority === 'low' ? '낮음' : '보통'})</span></li>)}</ul> : <p className="report-page__empty-detail">미완료 확인 과제가 없습니다.</p>}
-        </div>
-      </div>
-      <div className="report-page__evaluation-detail-block">
-        <h4>근거자료</h4>
-        {criterion.evidence.length ? (
-          <ul className="report-page__evidence-reference-list">
-            {criterion.evidence.map((evidence) => (
-              <li key={evidence.id}>
-                <div className="report-page__evidence-reference-heading"><code>{evidence.id}</code><strong>{neutralizeCommercializationText(evidence.title)}</strong><span className="report-page__evidence-type-badge">{evidenceTypeLabel(evidence)}</span></div>
-                {evidence.sourceName ? <span>{neutralizeCommercializationText(evidence.sourceName)}</span> : null}
-                {evidence.excerpt ? <p>{neutralizeCommercializationText(evidence.excerpt)}</p> : null}
-              </li>
-            ))}
-          </ul>
-        ) : <p className="report-page__empty-detail">연결된 근거자료가 없습니다. 미확보 상태입니다.</p>}
-      </div>
       </div>
       <div className="report-page__evaluation-reviewer-column">
       <div className="report-page__inline-input-panel" data-criterion-input-id={criterion.id}>
@@ -1500,6 +1695,119 @@ function FeasibilityCriterionDetail({ criterion, onNavigateTab, onSaveReview, on
         </div>
       ) : !onSaveReview && criterion.id === 'pricing_data_readiness' ? <p className="report-page__rate-data-print-empty">요율 검토 데이터 입력 없음</p> : null}
       </div>
+    </div>
+  )
+}
+
+function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCriterionId, onOpenCriterion, onNavigateTab, onSaveReview, onRequestReanalysis, onApplyReanalysis, onInputDirtyChange, discardRevision = 0, printMode = false }: { report: ReportView; openCriterionId?: string | null; onOpenCriterion?: (id: string | null) => void; onNavigateTab?: (id: ReportTabId) => void; onSaveReview?: CriterionReviewSave; onRequestReanalysis?: CriterionReanalysisHandler; onApplyReanalysis?: CriterionReanalysisApply; onInputDirtyChange?: (criterionId: string, dirty: boolean) => void; discardRevision?: number; printMode?: boolean }) {
+  const assessment = report.productFeasibility.assessment
+  const criteria = assessment?.criteria ?? []
+  const [internalOpenCriterionId, setInternalOpenCriterionId] = useState<string | null>(null)
+  const openCriterionId = controlledOpenCriterionId ?? internalOpenCriterionId
+  const setOpenCriterionId = onOpenCriterion ?? setInternalOpenCriterionId
+  const findCriterion = (id: string) => criteria.find((criterion) => criterion.id === id)
+  const mandatory = FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.map(findCriterion).filter((criterion): criterion is CommercializationCriterion => Boolean(criterion))
+  const mandatoryPass = mandatory.filter((criterion) => appliedStatusOf(criterion) === 'pass').length
+  const mandatoryCritical = mandatory.filter((criterion) => appliedStatusOf(criterion) === 'critical').length
+  const confidence = confidenceLabel(criteria)
+  const groupCounts = (group: FeasibilityDisplayGroup) => group.criterionIds.reduce<Record<CommercializationCriterionStatus, number>>((result, id) => {
+    const criterion = findCriterion(id)
+    if (criterion) {
+      const status = appliedStatusOf(criterion)
+      result[status] = (result[status] ?? 0) + 1
+    }
+    return result
+  }, { pass: 0, needs_review: 0, additional_check: 0, critical: 0 })
+  return (
+    <div className="report-page__feasibility-redesign-content">
+      <section className="report-page__product-decision-hero" aria-labelledby="product-decision-title">
+        <div className="report-page__product-decision-copy">
+          <h2 id="product-decision-title">상품화 종합판정</h2>
+          <strong className="report-page__product-decision-title">{mandatoryCritical ? '상품화 가능성 재검토 필요' : '상품화 가능성 높음 · 상품 개발 검토 권고'}</strong>
+          <ul className="report-page__product-decision-bullets">
+            <li className="is-satisfied"><span aria-hidden="true">✓</span><span>보험성 필수 기준 {mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</span></li>
+            <li className="is-satisfied"><span aria-hidden="true">✓</span><span>동일 위험의 실제 상품화 사례 확인</span></li>
+            <li className="is-follow-up"><span aria-hidden="true">–</span><span>기존 보험과의 중복·보장 공백 비교 필요</span></li>
+            <li className="is-additional-check"><span aria-hidden="true">–</span><span>PML·시장 수요·빈도 근거 추가 검증 필요</span></li>
+          </ul>
+          <small className="report-page__product-decision-note">공개 상품자료와 mock 분석 데이터를 활용한 프로토타입 결과입니다.</small>
+        </div>
+        <div className="report-page__product-decision-facts">
+          <div className="report-page__product-decision-facts-grid">
+            <span className="is-pass"><strong>{mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length}</strong><small>필수 기준 · 충족</small></span>
+            <span className="is-neutral"><strong>{mandatoryCritical}건</strong><small>확인된 중단 사유 · {mandatoryCritical ? '확인 필요' : '현재 없음'}</small></span>
+            <span className="is-follow-up"><strong>3건</strong><small>핵심 확인과제 · 추가 검토</small></span>
+            <span className="is-info"><strong>{confidence}</strong><small>분석 신뢰도 · 공개자료 기준</small></span>
+          </div>
+          <div className="report-page__product-decision-meta" aria-label="보험 분류 요약">
+            <span>대상: 기업·법인</span><span>보험 영역: 기업성 보험</span><span>보험 종목: 일반보험 · 화재/기타화재</span><span>동일·유사 상품: 확인</span><span>연계 보험: 자동차보험 · 화재보험 · 배상책임보험</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="report-page__feasibility-judgment-section report-page__feasibility-subsection" aria-labelledby="judgment-evidence-title">
+        <div className="report-page__feasibility-subsection-heading"><div><h3 id="judgment-evidence-title">상품화 판단 핵심 근거</h3><p>상품화 가능성을 판단한 핵심 근거를 체크 항목 중심으로 확인합니다.</p></div></div>
+        <div className="report-page__judgment-evidence-grid">
+          {FEASIBILITY_JUDGMENT_CARDS.map((card) => <article className={`report-page__judgment-evidence-card report-page__judgment-evidence-card--${card.status}`} key={card.id}>
+            <header><h4>{card.title}</h4><FeasibilityStatusBadge status={card.status} /></header>
+            <ul>{'items' in card ? card.items.map((item) => <li className="is-satisfied" key={item}><span aria-hidden="true">✓</span><span>{item}</span></li>) : null}{'pendingItems' in card ? card.pendingItems.map((item) => <li className="is-follow-up" key={item}><span aria-hidden="true">–</span><span>{item}</span></li>) : null}</ul>
+            <p>{card.summary}</p>
+          </article>)}
+        </div>
+      </section>
+
+      <section className="report-page__quantitative-metrics report-page__feasibility-subsection" aria-labelledby="quantitative-metrics-title">
+        <div className="report-page__feasibility-subsection-heading">
+          <div><h3 id="quantitative-metrics-title">핵심 정량지표</h3><p>AI 추정값 · 공개자료와 mock 산식을 적용한 프로토타입 결과</p></div>
+          <div className="report-page__quantitative-data-note"><strong>데이터 확보 수준 · 부분 확보</strong><span>공개 통계·상품자료·약관 확보</span><span>내부 계약·보험금·요율 데이터 미확보</span></div>
+        </div>
+        <div className="report-page__quantitative-metric-grid">{FEASIBILITY_METRIC_DISPLAY.map((metric) => <article className={`report-page__quantitative-metric-card report-page__quantitative-metric-card--${metric.id}`} key={metric.id}>
+          <header><h4>{metric.title}</h4></header>
+          <strong className="report-page__quantitative-metric-value">{metric.value}</strong>
+          <p className="report-page__quantitative-metric-subvalue">{metric.subvalue}</p>
+          <ul>{metric.items.map((item, index) => <li className={`is-${item.tone}`} key={`${metric.id}-${index}`}><span aria-hidden="true">{item.tone === 'confirmed' ? '✓' : '–'}</span><span>{item.text}</span></li>)}</ul>
+          <div className="report-page__quantitative-metric-footer"><small>{metric.footer}</small><em>분석 신뢰도 · {metric.confidence}</em></div>
+          <details className="report-page__quantitative-metric-details" open={printMode}>
+            <summary>{metric.detailLabel}</summary>
+            <div className="report-page__quantitative-metric-detail-body">
+              <dl>{metric.details.map((detail) => <div key={detail.label}><dt>{detail.label}</dt><dd>{detail.value}</dd></div>)}</dl>
+              {metric.scenarios ? <div className="report-page__quantitative-scenario-table-wrap"><table className="report-page__quantitative-scenario-table"><thead><tr><th scope="col">시나리오</th><th scope="col">산정 과정</th><th scope="col">결과</th></tr></thead><tbody>{metric.scenarios.map((scenario) => <tr key={scenario.label}><th scope="row">{scenario.label}</th><td>{scenario.calculation}</td><td>{scenario.result}</td></tr>)}</tbody></table></div> : null}
+            </div>
+          </details>
+          <p className="report-page__quantitative-metric-print-note">{metric.printNote}</p>
+        </article>)}</div>
+        {onNavigateTab ? <button className="report-page__quantitative-proposal-link report-page__no-print" type="button" onClick={() => onNavigateTab('proposal')}>보험료·손해율 검토는 상품 개발 제안에서 확인 →</button> : null}
+      </section>
+
+      <div className="report-page__feasibility-visible-groups">
+        {FEASIBILITY_DISPLAY_GROUPS.map((group) => {
+          const groupCriteria = group.criterionIds.map(findCriterion).filter((criterion): criterion is CommercializationCriterion => Boolean(criterion))
+          const counts = groupCounts(group)
+          return <section className={'report-page__feasibility-visible-group report-page__feasibility-visible-group--' + group.id} key={group.id} aria-labelledby={'visible-group-' + group.id}>
+            <div className="report-page__feasibility-visible-group-heading"><div><p className="report-page__eyebrow">{group.eyebrow}</p><h3 id={'visible-group-' + group.id}>{group.title}</h3><p>{group.description}</p>{group.scope ? <small>{group.scope}</small> : null}</div><strong>{groupCriteria.length}개 기준 · 충족 {counts.pass} · 보완 {counts.needs_review} · 추가 확인 {counts.additional_check} · 불충족 {counts.critical}</strong></div>
+            {group.id === 'insurance-gate' ? <p className="report-page__evaluation-gate-note">필수 기준 중 하나라도 불충족이면 상품화 검토 중단 또는 재정의가 필요합니다.</p> : null}
+            <div className="report-page__evaluation-cards">{groupCriteria.map((criterion) => {
+              const status = appliedStatusOf(criterion)
+              const isOpen = printMode || openCriterionId === criterion.id
+              const questionTitle = feasibilityQuestionTitle(criterion)
+              const findingMark = status === 'pass' ? '✓' : '–'
+              return <article className={'report-page__evaluation-card report-page__evaluation-card--' + status + (isOpen ? ' is-open' : '')} key={criterion.id}>
+                <button className="report-page__evaluation-toggle" type="button" id={'redesign-feasibility-toggle-' + criterion.id} aria-label={questionTitle + ' 상세 평가 ' + (isOpen ? '접기' : '펼치기')} aria-expanded={isOpen} aria-controls={'redesign-feasibility-detail-' + criterion.id} onClick={() => { if (!printMode) setOpenCriterionId(isOpen ? null : criterion.id) }}>
+                  <span className="report-page__evaluation-card-main"><span className="report-page__evaluation-card-heading"><span className="report-page__evaluation-index">{String(criterion.order).padStart(2, '0')}</span><strong>{questionTitle}</strong></span><span className={`report-page__evaluation-judgment ${status === 'pass' ? 'is-satisfied' : 'is-follow-up'}`}><span aria-hidden="true">{findingMark}</span>{compactCriterionText(criterionSummary(criterion), 140)}</span><span className="report-page__evaluation-next-check">다음 확인: {compactCriterionText(feasibilityNextCheck(criterion), 140)}</span></span>
+                  <span className="report-page__evaluation-card-side"><FeasibilityStatusBadge status={status} /><span className="report-page__evaluation-chevron" aria-hidden="true">{isOpen ? '⌃' : '⌄'}</span></span>
+                </button>
+                <div id={'redesign-feasibility-detail-' + criterion.id} className="report-page__evaluation-detail-shell" hidden={!isOpen}><FeasibilityCriterionDetail key={criterion.id + '-' + discardRevision} criterion={criterion} onNavigateTab={onNavigateTab} onSaveReview={onSaveReview} onRequestReanalysis={onRequestReanalysis} onApplyReanalysis={onApplyReanalysis} onInputDirtyChange={onInputDirtyChange} /></div>
+              </article>
+            })}</div>
+          </section>
+        })}
+      </div>
+
+      <section className="report-page__follow-up-actions report-page__feasibility-subsection" aria-labelledby="follow-up-actions-title">
+        <div className="report-page__feasibility-subsection-heading"><div><h3 id="follow-up-actions-title">평가 후 확인과제</h3><p>상품 형태를 제안하지 않고 평가 완료에 필요한 확인 업무만 정리합니다.</p></div></div>
+        <div className="report-page__follow-up-action-list">{FEASIBILITY_FOLLOW_UP_TASKS.map((task, index) => <article className="report-page__follow-up-action-card" key={task.id}><span className="report-page__follow-up-action-index">{String(index + 1).padStart(2, '0')}</span><div><h4>{task.department}</h4><ul>{task.items.map((item) => <li key={item}>{item}</li>)}</ul></div><dl><div><dt>예상 산출물</dt><dd>{task.output}</dd></div></dl></article>)}</div>
+      </section>
+      {assessment?.reviewerMemo ? <p className="report-page__interpretation"><strong>실무자 종합 메모</strong> · {neutralizeCommercializationText(assessment.reviewerMemo)}</p> : null}
     </div>
   )
 }
@@ -1651,6 +1959,28 @@ function FeasibilitySection({ report, openCriterionId: controlledOpenCriterionId
   }, [dirtyInputIds.size, onInputDirtyChange])
 
   return (
+    <>
+      <section className="report-page__section report-page__feasibility-redesign" aria-labelledby="feasibility-title">
+        <SectionHeading
+          number="07"
+          eyebrow=""
+          title="상품화 검토 종합평가"
+        />
+        <p className="report-page__section-intro" id="feasibility-title">상품 개발 검토의 계속 여부와 후속 과제를 확인하는 화면입니다. AI는 최종 상품화 여부를 확정하지 않습니다.</p>
+        <FeasibilityDecisionOverview
+          report={report}
+          openCriterionId={controlledOpenCriterionId}
+          onOpenCriterion={onOpenCriterion}
+          onNavigateTab={onNavigateTab}
+          onSaveReview={onSaveReview}
+          onRequestReanalysis={onRequestReanalysis}
+          onApplyReanalysis={onApplyReanalysis}
+          onInputDirtyChange={handleInputDirtyChange}
+          discardRevision={discardRevision}
+          printMode={printMode}
+        />
+      </section>
+      <div className="report-page__feasibility-legacy" aria-hidden="true">
     <section className="report-page__section" aria-labelledby="feasibility-title">
       <SectionHeading
         number="07"
@@ -1877,22 +2207,12 @@ function FeasibilitySection({ report, openCriterionId: controlledOpenCriterionId
       </div>
       {assessment?.reviewerMemo ? <p className="report-page__interpretation"><strong>실무자 종합 메모</strong> · {neutralizeCommercializationText(assessment.reviewerMemo)}</p> : null}
     </section>
+      </div>
+    </>
   )
 }
 
-type ProposalRoleRow = {
-  role: string
-  candidate: string
-  decision: string
-  status?: string
-}
-
-type ProposalDesignVariable = {
-  label: string
-  direction?: string
-  owner: string
-}
-
+/* Legacy product-structure view retained here as a reference while the page-specific proposal view is reorganized.
 const proposalFallback = '현재 자료에서 확정되지 않아 추가 검토가 필요합니다.'
 
 const proposalFormLabel = (value?: string): string => {
@@ -2153,6 +2473,149 @@ function ProductProposalSection({ report, onNavigateTab }: { report: ReportView;
     </section>
   )
 }
+*/
+
+function ProductProposalSection({ report, onNavigateTab, printMode = false }: { report: ReportView; onNavigateTab?: (id: ReportTabId) => void; printMode?: boolean }) {
+  const actualEvidence = report.evidence.filter((item) => !item.isMockData)
+  void onNavigateTab
+
+  const basePricing = PROPOSAL_PRICING_SCENARIO_OUTPUTS.find((scenario) => scenario.id === 'base') ?? PROPOSAL_PRICING_SCENARIO_OUTPUTS[0]
+  const lowPricing = PROPOSAL_PRICING_SCENARIO_OUTPUTS.find((scenario) => scenario.id === 'low') ?? PROPOSAL_PRICING_SCENARIO_OUTPUTS[0]
+  const highPricing = PROPOSAL_PRICING_SCENARIO_OUTPUTS.find((scenario) => scenario.id === 'high') ?? PROPOSAL_PRICING_SCENARIO_OUTPUTS[PROPOSAL_PRICING_SCENARIO_OUTPUTS.length - 1]
+
+  type PricingCard = {
+    id: string
+    title: string
+    value: string
+    subvalue: string
+    values: (scenario: ProposalPricingScenarioOutput) => string
+    formula: string
+    assumptions: readonly string[]
+    confidence: string
+    source: string
+  }
+
+  const pricingCards: PricingCard[] = [
+    {
+      id: 'pml',
+      title: '최대가능손해(PML)',
+      value: formatKrwCompact(basePricing.pml),
+      subvalue: `추정 범위 ${formatKrwCompact(FEASIBILITY_PML_DATA.range.low)}~${formatKrwCompact(FEASIBILITY_PML_DATA.range.high)}`,
+      values: (scenario) => formatKrwCompact(scenario.pml),
+      formula: 'PML = 최대 동시 피해 차량 손해 + 시설 복구·긴급대응 비용',
+      assumptions: [...FEASIBILITY_PML_DATA.basis],
+      confidence: FEASIBILITY_PML_DATA.confidence,
+      source: FEASIBILITY_PML_DATA.source,
+    },
+    {
+      id: 'annual-loss',
+      title: '예상 연간 손해액',
+      value: formatKrwCompact(basePricing.expectedAnnualLoss),
+      subvalue: `통상손해 ${formatKrwCompact(basePricing.ordinaryExpectedLoss)} + 꼬리위험 ${formatKrwCompact(basePricing.tailRiskAmount)}`,
+      values: (scenario) => formatKrwCompact(scenario.expectedAnnualLoss),
+      formula: basePricing.formula,
+      assumptions: basePricing.assumptions,
+      confidence: basePricing.confidence,
+      source: basePricing.source,
+    },
+    {
+      id: 'premium',
+      title: '제안 보험료 범위',
+      value: formatKrwCompact(basePricing.proposedPremium),
+      subvalue: `${formatKrwCompact(lowPricing.proposedPremium)}~${formatKrwCompact(highPricing.proposedPremium)} · 시설당 연간`,
+      values: (scenario) => formatKrwCompact(scenario.proposedPremium),
+      formula: '제안 보험료 = 예상 연간 손해액 ÷ 목표 손해율 + 재보험 비용 + 사업비·불확실성 가산',
+      assumptions: basePricing.assumptions,
+      confidence: basePricing.confidence,
+      source: basePricing.source,
+    },
+    {
+      id: 'loss-ratio',
+      title: '예상 손해율',
+      value: `${basePricing.lossRatio.toFixed(1)}%`,
+      subvalue: '예상 연간 손해액 ÷ 제안 보험료',
+      values: (scenario) => `${scenario.lossRatio.toFixed(1)}%`,
+      formula: '예상 손해율 = 예상 연간 손해액 ÷ 제안 보험료 × 100',
+      assumptions: ['목표 손해율과 비용·불확실성 가산을 적용한 프로토타입 산식'],
+      confidence: basePricing.confidence,
+      source: basePricing.source,
+    },
+    {
+      id: 'limits',
+      title: '보상한도·자기부담금·재보험',
+      value: `사고당 ${formatKrwCompact(basePricing.proposedLimit)}`,
+      subvalue: `총한도 ${formatKrwCompact(basePricing.aggregateLimit)} · 자기부담금 ${formatKrwCompact(basePricing.deductible)} · 재보험 ${basePricing.reinsuranceDecision}`,
+      values: (scenario) => `${formatKrwCompact(scenario.proposedLimit)} / ${formatKrwCompact(scenario.aggregateLimit)} / ${formatKrwCompact(scenario.deductible)} · ${scenario.reinsuranceDecision}`,
+      formula: '사고당 한도 = PML × 제안 한도율 · 총한도 = 사고당 한도 × 1.5',
+      assumptions: [...basePricing.assumptions, '보유한도와 PML 비교로 재보험 검토 여부 판단'],
+      confidence: basePricing.confidence,
+      source: basePricing.source,
+    },
+  ]
+
+  return (
+    <section className="report-page__section report-page__proposal-section" aria-label="상품 개발 제안">
+      <SectionHeading number="05" eyebrow="PRODUCT DEVELOPMENT PROPOSAL" title="상품 개발 제안" aside={<span className="report-page__proposal-ai-label">AI 1차 제안</span>} />
+      <p className="report-page__proposal-lead">상품화 검토 결과와 보장 공백을 바탕으로 실제 개발 검토를 시작할 수 있는 1차 상품 구조와 산출 기준을 제안합니다.</p>
+
+      <section className="report-page__proposal-hero" aria-labelledby="proposal-hero-title">
+        <div className="report-page__proposal-hero-copy">
+          <p className="report-page__eyebrow">AI PRODUCT DEVELOPMENT PROPOSAL</p>
+          <h3 id="proposal-hero-title">기업성 일반보험 특약</h3>
+          <ul className="report-page__proposal-hero-bullets">{PROPOSAL_HERO_BULLETS.map((bullet) => <li key={bullet.label}><strong>{bullet.label}</strong><span>{bullet.text}</span></li>)}</ul>
+          <p className="report-page__proposal-hero-notice">프로토타입 시나리오 기반의 AI 1차 제안이며, 실제 상품개발 과정에서 보정됩니다.</p>
+        </div>
+        <dl className="report-page__proposal-facts">{PROPOSAL_HERO_FACTS.slice(0, 6).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+      </section>
+
+      <section className="report-page__proposal-reasons" aria-labelledby="proposal-reasons-title">
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">WHY THIS FORM</p><h3 id="proposal-reasons-title">우선 추천 이유</h3><p>이 상품 형태를 1차 개발안으로 제안한 핵심 근거입니다.</p></div></div>
+        <div className="report-page__proposal-recommendation-grid">
+          <ol>{PROPOSAL_RECOMMENDATION_DISPLAY.map((reason, index) => <li key={reason.id}><span className="report-page__proposal-check" aria-hidden="true">✓</span><div><small>{String(index + 1).padStart(2, '0')}</small><h4>{reason.title}</h4><ul>{reason.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></div></li>)}</ol>
+          <details className="report-page__proposal-recommendation-detail" open={printMode}><summary>추천 근거 상세 보기 <span>4개 영역</span></summary><div className="report-page__proposal-detail-block-grid">{PROPOSAL_RECOMMENDATION_DETAIL_BLOCKS.map((block) => <article key={block.title}><h4>{block.title}</h4><ul>{block.items.map((item) => <li key={item}>{item}</li>)}</ul></article>)}</div></details>
+        </div>
+      </section>
+
+      <section className="report-page__proposal-metrics" aria-labelledby="proposal-metrics-title">
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">FIRST PRICING VIEW</p><h3 id="proposal-metrics-title">1차 가격·손해지표</h3><p>상품화 종합평가 PML과 명시된 프로토타입 가정을 연결한 1차 산출값입니다.</p></div></div>
+        <p className="report-page__proposal-metric-note">프로토타입 시나리오 추정 · Low / Base / High</p>
+        <div className="report-page__proposal-metric-grid">{pricingCards.map((card) => <article className="report-page__proposal-metric" key={card.id}><h4>{card.title}</h4><strong className="report-page__proposal-metric-value">{card.value}</strong><p className="report-page__proposal-metric-subvalue">{card.subvalue}</p><div className="report-page__proposal-scenario-values">{PROPOSAL_PRICING_SCENARIO_OUTPUTS.map((scenario) => <div key={scenario.id}><span>{scenario.label}</span><strong>{card.values(scenario)}</strong></div>)}</div><p className="report-page__proposal-metric-confidence">신뢰도 · {card.confidence} · {card.id === 'pml' ? '종합평가 연동' : '프로토타입 추정'}</p><details className="report-page__proposal-metric-details" open={printMode}><summary>산출식·적용 가정 보기</summary><dl><div><dt>산출식</dt><dd>{card.formula}</dd></div><div><dt>적용 가정</dt><dd><ul>{card.assumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul></dd></div><div><dt>출처</dt><dd>{card.source} · isMock: true</dd></div></dl></details></article>)}</div>
+      </section>
+
+      <section className="report-page__proposal-roles" aria-labelledby="proposal-roles-title">
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">CONTRACT & PROTECTION RELATIONSHIP</p><h3 id="proposal-roles-title">계약 및 보호 관계</h3><p>가입·보호·청구 관계를 상품개발 초안 기준으로 구분합니다.</p></div></div>
+        <div className="report-page__proposal-role-grid">{PROPOSAL_CONTRACT_ROLE_SUMMARY.map((role) => <article className="report-page__proposal-role-card" key={role.id}><h4>{role.title}</h4><p className="report-page__proposal-role-proposal">{role.proposal}</p><ul>{role.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>{'note' in role ? <p className="report-page__proposal-condition-note">{role.note}</p> : null}</article>)}</div>
+      </section>
+
+      <section className="report-page__proposal-flow" aria-labelledby="proposal-flow-title">
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">CLAIM FLOW</p><h3 id="proposal-flow-title">보험금 지급 흐름</h3><p>사고 확인부터 지급·구상 검토까지의 기본 절차입니다.</p></div></div>
+        <ol>{PROPOSAL_CLAIM_FLOW_DISPLAY.map((step, index) => <li key={step.id}><div className="report-page__proposal-flow-step-head"><span>{String(index + 1).padStart(2, '0')}</span><h4>{step.label}</h4></div>{'marker' in step ? <small className="report-page__proposal-flow-marker">{step.marker}</small> : null}<ul>{step.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></li>)}</ol>
+        <p className="report-page__proposal-flow-note">기존 보험의 지급액 차감 방식과 책임 확정 전 지급 여부는 약관 초안에서 구체화합니다.</p>
+      </section>
+
+      <section className="report-page__proposal-coverage" aria-labelledby="proposal-coverage-title">
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">COVERAGE STRUCTURE</p><h3 id="proposal-coverage-title">보장 구조 요약</h3><p>기본·선택·제외 범위를 짧게 구분한 1차 보장 구조입니다.</p></div></div>
+        <div className="report-page__proposal-coverage-summary-grid"><article className="is-basic"><h4>기본 담보</h4><ul>{PROPOSAL_COVERAGE_SUMMARY.basic.map((item) => <li key={item.title}><span aria-hidden="true">✓</span><div><strong>{item.title}</strong><p>{item.description}</p></div></li>)}</ul></article><article className="is-optional"><h4>선택 담보</h4><div><span aria-hidden="true">◇</span><strong>{PROPOSAL_COVERAGE_SUMMARY.optional.title}</strong><p>{PROPOSAL_COVERAGE_SUMMARY.optional.description}</p></div></article><article className="is-excluded"><h4>보장 제외</h4><ul>{PROPOSAL_COVERAGE_SUMMARY.excluded.map((item) => <li key={item}><span aria-hidden="true">—</span>{item}</li>)}</ul></article></div>
+      </section>
+
+      <section className="report-page__proposal-underwriting" aria-labelledby="proposal-underwriting-title">
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">UNDERWRITING IMPACT</p><h3 id="proposal-underwriting-title">인수조건과 가격 영향</h3><p>확인 기준과 위험·가격 영향을 함께 표시한 1차 인수 검토 항목입니다.</p></div></div>
+        <div className="report-page__proposal-underwriting-grid">{PROPOSAL_UNDERWRITING_DISPLAY.map((factor) => <article className="report-page__proposal-underwriting-card" key={factor.id}><h4>{factor.title}</h4><dl><div><dt>확인 기준</dt><dd>{factor.check}</dd></div><div><dt>위험 영향</dt><dd>{factor.riskImpact}</dd></div><div><dt>가격·한도 영향</dt><dd>{factor.pricingImpact}</dd></div></dl><div className="report-page__proposal-impact-tags">{factor.tags.map((tag) => <span className={`is-${tag.tone}`} key={tag.label}>{tag.label}</span>)}</div></article>)}</div>
+      </section>
+
+      <section className="report-page__proposal-decisions" aria-labelledby="proposal-decisions-title">
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">PRODUCT DEVELOPMENT DECISIONS</p><h3 id="proposal-decisions-title">상품개발 확정사항</h3><p>실제 상품개발 전 우선 확정하거나 약관 기준으로 설정할 항목입니다.</p></div></div>
+        <ul>{PROPOSAL_DECISIONS.map((decision) => <li key={decision.id}><span className="report-page__proposal-decision-check" aria-hidden="true">□</span><span>{decision.text}</span><small className={decision.status === '약관 기준 설정' ? 'is-wording' : 'is-proposed'}>{decision.status}</small></li>)}</ul>
+      </section>
+
+      <section className="report-page__proposal-evidence" aria-labelledby="proposal-evidence-title">
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">CALCULATION EVIDENCE & CONFIDENCE</p><h3 id="proposal-evidence-title">산출 근거와 신뢰도</h3><p>상품 제안에 연결된 근거와 산출 방법, 결과를 바꾸는 변수를 구분합니다.</p></div></div>
+        <div className="report-page__proposal-evidence-grid"><article><h4>사용한 근거</h4><ul>{PROPOSAL_CALCULATION_EVIDENCE.used.map((item) => <li key={item}>{item}</li>)}</ul>{actualEvidence.length ? <p className="report-page__proposal-evidence-ids">연결된 근거 ID · {actualEvidence.slice(0, 5).map((item) => item.id).join(' · ')}</p> : null}</article><article><h4>산출 방법</h4><ul>{PROPOSAL_CALCULATION_EVIDENCE.methods.map((item) => <li key={item}>{item}</li>)}</ul></article><article><h4>신뢰도와 민감 변수</h4><p className="report-page__proposal-confidence">신뢰도 · {PROPOSAL_CALCULATION_EVIDENCE.confidence}</p><h5>결과를 바꾸는 핵심 변수</h5><ul>{PROPOSAL_CALCULATION_EVIDENCE.variables.map((item) => <li key={item}>{item}</li>)}</ul></article></div>
+        <p className="report-page__proposal-confidence">{PROPOSAL_CALCULATION_EVIDENCE.explanation} 한계 · {PROPOSAL_CALCULATION_EVIDENCE.limitation}</p>
+      </section>
+    </section>
+  )
+}
 
 function wordingStatusLabel(status?: string) {
   if (status && /가능/.test(status) && !/조건/.test(status)) return '작성 가능'
@@ -2172,51 +2635,106 @@ function WordingStatusBadge({ status }: { status?: string }) {
   return <span className={`report-page__wording-status report-page__wording-status--${wordingStatusTone(status)}`}><span aria-hidden="true" />{label}</span>
 }
 
+/* Legacy wording layout retained as a reference while the page-specific flow is rebuilt.
+function WordingPrintLayout({ report, data }: { report: ReportView; data: ReportView['wordingFeasibility'] }) {
+  const definitions = data.definitions ?? []
+  const primaryDefinitions = definitions.filter((item) => /기존 약관 참고/.test(String(item.status ?? '')))
+  const additionalDefinitions = definitions.filter((item) => !/기존 약관 참고/.test(String(item.status ?? '')))
+  const criteria = data.assessmentCriteria ?? []
+  const referenceDocuments = data.referenceDocuments ?? []
+
+  return (
+    <div className="report-page__wording-print-layout">
+      <p className="report-page__wording-print-note">이 PDF는 세 가지 보장 항목의 약관 검토용 mock 결과를 모두 포함합니다. 실제 약관 확정 전 상품·법무·보상 부서의 검토가 필요합니다.</p>
+      <div className="report-page__wording-print-bundles">
+        {WORDING_COVERAGE_OPTIONS.map((option, index) => (
+          <article key={option.id} className="report-page__wording-print-bundle">
+            <header><p className="report-page__eyebrow">보장 항목 {String(index + 1).padStart(2, '0')}</p><h3>{option.label}</h3><p>{option.shortDescription}</p></header>
+            <div className="report-page__wording-print-conditions">
+              <section><h4>보험금 지급요건</h4><ul>{option.paymentConditions.map((condition) => <li key={condition}>{condition}</li>)}</ul></section>
+              <section><h4>약관 확정 전 결정 필요</h4><ul>{option.decisions.map((decision) => <li key={decision}>{decision}</li>)}</ul></section>
+            </div>
+            <section className="report-page__wording-print-draft"><h4>추천 약관 문구 초안</h4><p className="report-page__wording-print-badge">AI 추천 초안 · 실무 검토 전</p><blockquote>{option.draft}</blockquote></section>
+            <div className="report-page__wording-print-losses">
+              <section className="report-page__wording-loss-card--covered"><h4>보장하는 손해</h4><ul>{option.coveredLosses.map((loss) => <li key={loss}>{loss}</li>)}</ul></section>
+              <section className="report-page__wording-loss-card--excluded"><h4>보장하지 않는 손해</h4><p>면책 검토 후보 · 실무 확정 필요</p><ul>{option.excludedLosses.map((loss) => <li key={loss}>{loss}</li>)}</ul></section>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <section className="report-page__wording-print-support"><header><p className="report-page__eyebrow">DETAILED REVIEW</p><h3>약관 초안 작성 가능성 상세 검토</h3><p>AI가 약관 초안을 작성할 수 있다고 판단한 세부 기준과 근거입니다.</p></header><div className="report-page__wording-print-criteria">{criteria.map((item, index) => <article key={String(item.id ?? index)}><div><strong>{String(index + 1).padStart(2, '0')} · {String(item.question ?? '')}</strong><WordingStatusBadge status={String(item.status ?? '')} /></div><p>{String(item.note ?? '')}</p></article>)}</div></section>
+      <section className="report-page__wording-print-support"><header><p className="report-page__eyebrow">TERMS & DEFINITIONS</p><h3>약관에서 정의해야 할 핵심 용어</h3></header><div className="report-page__wording-print-terms"><section><h4>기존 약관 참고 가능</h4>{primaryDefinitions.map((item) => <p key={String(item.term)}><strong>{String(item.term ?? '')}</strong> · {String(item.draftDefinition ?? '')}</p>)}</section><section><h4>새롭게 정의가 필요한 용어</h4>{additionalDefinitions.map((item) => <p key={String(item.term)}><strong>{String(item.term ?? '')}</strong> · {String(item.draftDefinition ?? '')}</p>)}</section></div></section>
+      <section className="report-page__wording-print-support"><header><p className="report-page__eyebrow">SOURCES & LIMITATIONS</p><h3>참고 약관과 판단 근거</h3></header><div className="report-page__wording-print-references">{referenceDocuments.map((document) => <article key={String(document.id)}><strong>{String(document.name ?? '')}</strong><span>{String(document.id ?? '')} · {String(document.usedFor ?? '')}</span><small>자료 기준일 · {displayDate(report.meta.analysisBaseDate)}</small></article>)}</div><p className="report-page__wording-print-limitation">분석 한계 · 공개자료와 mock 데이터를 바탕으로 한 검토용 초안이며, 실제 약관·상품자료·손해자료의 최신성·적용 범위·법률적 효력은 확정하지 않습니다.</p></section>
+    </div>
+  )
+}
+
 function WordingSection({
   report,
   onOpenDocument,
   onOpenPolicyDraft,
   onNavigateTab,
+  printMode = false,
 }: {
   report: ReportView
   onOpenDocument: (document: NonNullable<ReportView['wordingFeasibility']['referenceDocuments']>[number]) => void
   onOpenPolicyDraft: () => void
   onNavigateTab?: (id: ReportTabId) => void
+  printMode?: boolean
 }) {
   const data = report.wordingFeasibility
   const [copyMessage, setCopyMessage] = useState('')
+  const [showAlternativeDraft, setShowAlternativeDraft] = useState(false)
+  const [showAllDefinitions, setShowAllDefinitions] = useState(false)
+  const [selectedCoverageId, setSelectedCoverageId] = useState<WordingCoverageOptionId>('adjacent-vehicle')
+  const selectedCoverage = WORDING_COVERAGE_OPTIONS.find((option) => option.id === selectedCoverageId) ?? WORDING_COVERAGE_OPTIONS[0]
   const assessmentCriteria = data.assessmentCriteria ?? []
-  const primaryDefinitions = (data.definitions ?? []).slice(0, 4)
-  const additionalDefinitions = (data.definitions ?? []).slice(4)
-  const writingReady = assessmentCriteria.some((item) => wordingStatusLabel(item.status) === '작성 가능')
-  const summaryResult = writingReady ? '약관 초안 작성 가능' : '약관 결정사항 확인 필요'
-  const decisionDetailsRef = useRef<HTMLDetailsElement | null>(null)
-  const decisionSummaryRef = useRef<HTMLElement | null>(null)
+  const definitions = data.definitions ?? []
+  const primaryDefinitions = definitions.filter((item) => /기존 약관 참고/.test(String(item.status ?? '')))
+  const additionalDefinitions = definitions.filter((item) => !/기존 약관 참고/.test(String(item.status ?? '')))
+  const selectedStructure = (data.structureOptions ?? []).find((option) => option.selected === true)
+  const priorityTerms = ['발화 차량', '원인 미상 화재', '하나의 사고']
+  const orderedAdditionalDefinitions = [...additionalDefinitions].sort((left, right) => {
+    const leftIndex = priorityTerms.indexOf(String(left.term ?? ''))
+    const rightIndex = priorityTerms.indexOf(String(right.term ?? ''))
+    return (leftIndex < 0 ? priorityTerms.length : leftIndex) - (rightIndex < 0 ? priorityTerms.length : rightIndex)
+  })
+  const statusCounts = assessmentCriteria.reduce((counts, item) => {
+    const tone = wordingStatusTone(String(item.status ?? ''))
+    counts[tone] += 1
+    return counts
+  }, { ready: 0, conditional: 0, decision: 0 } as Record<'ready' | 'conditional' | 'decision', number>)
+  const referenceDocuments = data.referenceDocuments ?? []
+  const referenceGroups = [
+    {
+      id: 'direct',
+      title: '현재 초안에 직접 활용한 자료',
+      items: referenceDocuments.filter((item) => item.includedInAiInput && /보장|보상|보험금|배상/.test(String(item.usedFor ?? ''))),
+    },
+    {
+      id: 'structure',
+      title: '약관 구조 참고자료',
+      items: referenceDocuments.filter((item) => item.includedInAiInput && !/보장|보상|보험금|배상/.test(String(item.usedFor ?? ''))),
+    },
+    {
+      id: 'validation',
+      title: '사후 검증이 필요한 자료',
+      items: referenceDocuments.filter((item) => !item.includedInAiInput),
+    },
+  ].filter((group) => group.items.length > 0)
+  const detailedReviewRef = useRef<HTMLElement | null>(null)
   const wordingComponentsRef = useRef<HTMLElement | null>(null)
-  const paymentGroups = [
-    { id: 'event', title: '사고 성립 요건', items: (data.paymentConditions ?? []).slice(0, 4) },
-    { id: 'loss', title: '손해 및 보상 확인', items: (data.paymentConditions ?? []).slice(4) },
-  ]
-  const exclusionGroups = [
-    { id: 'conduct', title: '고의·관리 의무 위반', items: (data.exclusionCandidates ?? []).filter((item) => /고의|불법 개조|점검|관리/.test(`${item.text} ${item.reason ?? ''}`)) },
-    { id: 'scope', title: '보장대상 제외', items: (data.exclusionCandidates ?? []).filter((item) => /도로 주행|자체|명부|차량에서 시작|충전시설|건물 자체/.test(`${item.text} ${item.reason ?? ''}`)) },
-    { id: 'overlap', title: '다른 보험 및 중복보상', items: (data.exclusionCandidates ?? []).filter((item) => /기존 보험|중복/.test(`${item.text} ${item.reason ?? ''}`)) },
-    { id: 'indirect', title: '간접손해 및 특수손해', items: (data.exclusionCandidates ?? []).filter((item) => /영업중단|사용손실|신체|전쟁|테러|벌금|제재/.test(`${item.text} ${item.reason ?? ''}`)) },
-  ]
-  const ambiguityGroups = [
-    { id: 'time', title: '상태·시간 범위', items: (data.ambiguities ?? []).filter((item) => ['AMB-01', 'AMB-02'].includes(item.id)) },
-    { id: 'accident', title: '사고 인정 기준', items: (data.ambiguities ?? []).filter((item) => ['AMB-03', 'AMB-05'].includes(item.id)) },
-    { id: 'coverage', title: '보장 범위', items: (data.ambiguities ?? []).filter((item) => item.id === 'AMB-06') },
-    { id: 'settlement', title: '보상 및 구상 절차', items: (data.ambiguities ?? []).filter((item) => ['AMB-04', 'AMB-07'].includes(item.id)) },
-  ]
-  const openDecisionDetails = () => {
-    const details = decisionDetailsRef.current
-    if (!details) return
-    details.open = true
+
+  const openDetailedReview = () => {
+    const section = detailedReviewRef.current
+    if (!section) return
     const behavior = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
     window.requestAnimationFrame(() => {
-      details.scrollIntoView({ behavior, block: 'start' })
-      decisionSummaryRef.current?.focus()
+      section.scrollIntoView({ behavior, block: 'start' })
+      const firstDetails = section.querySelector<HTMLDetailsElement>('details')
+      if (firstDetails) firstDetails.open = true
+      firstDetails?.querySelector<HTMLElement>('summary')?.focus()
     })
   }
 
@@ -2243,114 +2761,532 @@ function WordingSection({
   }, [])
 
   const copyDraft = async () => {
-    if (!data.coverageDraft) return
     try {
-      await navigator.clipboard.writeText(data.coverageDraft)
-      setCopyMessage('검토용 문구를 복사했습니다.')
+      await navigator.clipboard.writeText(selectedCoverage.draft)
+      setCopyMessage('초안 문구를 복사했습니다.')
     } catch {
       setCopyMessage('브라우저에서 복사 권한을 허용해 주세요.')
     }
   }
 
   return (
-    <section className="report-page__section report-page__wording-section" aria-labelledby="wording-title">
-      <SectionHeading number="06" eyebrow="WORDING FEASIBILITY" title="약관화 검토 결과" aside={<span className="report-page__wording-draft-badge">검토용 초안</span>} />
+    <section ref={wordingComponentsRef} className="report-page__section report-page__wording-section" aria-labelledby="wording-title">
+      <SectionHeading number="06" eyebrow="WORDING FEASIBILITY" title="약관화 검토" aside={<span className="report-page__wording-draft-badge">AI 검토용 초안</span>} />
+      <p className="report-page__wording-lead" id="wording-title">상품 개발 제안의 보장 대상과 보험금 지급 조건을 구체화하고, 이를 실제 약관 문장으로 표현할 수 있는지 검토합니다.</p>
+      <p className="report-page__wording-disclaimer">현재 문구는 공개자료와 mock 데이터를 바탕으로 생성한 검토용 초안이며, 실제 약관 확정 전 상품·법무·보상 부서의 검토가 필요합니다.</p>
 
-      <div className="report-page__wording-summary" id="wording-title">
-        <p className="report-page__eyebrow">WORDING REVIEW RESULT</p>
-        <strong>{summaryResult}</strong>
-        <p>{[...(data.possibleReasons ?? []).slice(0, 2), ...(data.improvementReasons ?? []).slice(0, 2)].join(' ') || '약관 문장 구조와 결정사항을 확인해야 합니다.'}</p>
-        <small>{data.disclaimer ?? '검토용 초안이며 최종 약관 확정을 위해 담당자 검토가 필요합니다.'}</small>
-      </div>
-
-      <div className="report-page__wording-summary-grid">
-        <div className="report-page__wording-summary-card">
-          <h3>작성 가능한 근거</h3>
-          <ul className="report-page__compact-list">{(data.possibleReasons ?? []).slice(0, 3).map((item) => <li key={item}>{item}</li>)}</ul>
-        </div>
-        <div className="report-page__wording-summary-card">
-          <h3>먼저 결정할 사항</h3>
-          <ul className="report-page__compact-list">{(data.improvementReasons ?? []).slice(0, 3).map((item) => <li key={item}>{item}</li>)}</ul>
-        </div>
-      </div>
-
-      <div className="report-page__subsection report-page__wording-criteria">
-        <div className="report-page__wording-subsection-heading"><h3>약관화 판단 기준</h3><span>{assessmentCriteria.length}개 기준</span></div>
-        <div className="report-page__wording-criteria-grid">
-          {assessmentCriteria.map((item, index) => (
-            <article key={item.id} className={`report-page__wording-criteria-card--${wordingStatusTone(item.status)}`}>
-              <div className="report-page__wording-criteria-meta"><span>{String(index + 1).padStart(2, '0')}</span><WordingStatusBadge status={item.status} /></div>
-              <h4>{item.question}</h4>
-              <p>{item.note}</p>
-            </article>
+      <div className={'report-page__wording-web-flow' + (printMode ? ' report-page__wording-web-flow--print-hidden' : '')}>
+      <section className="report-page__wording-flow-section report-page__wording-selection" aria-labelledby="wording-selection-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">STEP 01 · COVERAGE SCOPE</p><h3 id="wording-selection-title">보장 내용 선택</h3><p>검토할 보장 항목을 선택하면 해당 항목의 지급요건, 약관 문구와 보장 범위를 확인할 수 있습니다.</p></div><div className="report-page__wording-flow-heading-side"><span className="report-page__wording-flow-context">{selectedCoverage.label}</span><span className="report-page__wording-flow-step">선택형 mock 데이터</span></div></div>
+        <div className="report-page__wording-option-grid" role="tablist" aria-label="보장 내용 선택">
+          {WORDING_COVERAGE_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              className={'report-page__wording-option' + (selectedCoverage.id === option.id ? ' is-selected' : '')}
+              type="button"
+              role="tab"
+              aria-selected={selectedCoverage.id === option.id}
+              onClick={() => setSelectedCoverageId(option.id)}
+            >
+              <span className="report-page__wording-option-number">{String(WORDING_COVERAGE_OPTIONS.indexOf(option) + 1).padStart(2, '0')}</span>
+              <strong>{option.label}</strong>
+              <small>{option.shortDescription}</small>
+            </button>
           ))}
         </div>
-      </div>
+      </section>
+      <div className="report-page__wording-selection-summary"><strong>현재 검토 항목 · {selectedCoverage.label}</strong><span>지급요건 {selectedCoverage.paymentConditions.length}건 · 실무 결정 {selectedCoverage.decisions.length}건 · 보장 {selectedCoverage.coveredLosses.length}건 · 제외 검토 {selectedCoverage.excludedLosses.length}건</span></div>
 
-      <div className="report-page__wording-draft">
-        <div className="report-page__wording-draft-heading">
-          <div><p className="report-page__eyebrow">AI 작성 검토용 초안</p><h3>추천 보장 문구 초안</h3></div>
-          <div className="report-page__draft-actions report-page__no-print"><button className="report-page__button" type="button" onClick={copyDraft}>문구 복사</button><button className="report-page__button report-page__button--primary" type="button" onClick={onOpenPolicyDraft}>약관 초안 작성</button></div>
+      <section className="report-page__wording-flow-section report-page__wording-result" aria-labelledby="wording-result-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">STEP 02 · CURRENT REVIEW</p><h3 id="wording-result-title">현재 약관 검토 결과</h3></div><div className="report-page__wording-flow-heading-side"><span className="report-page__wording-flow-context">{selectedCoverage.label}</span><span className="report-page__wording-flow-status">보완 후 약관 초안 작성 가능</span></div></div>
+        <p className="report-page__wording-result-copy">보장 대상과 지급요건은 문장화할 수 있으나, 발화 차량 인정 기준, 기존 보험 적용 순서, 보상한도는 실무 결정이 필요합니다.</p>
+        <div className="report-page__wording-result-meta"><span>선택 항목 · {selectedCoverage.label}</span><span>검토 구조 · {String(selectedStructure?.name ?? data.selectedDraftType ?? '피해보완형 검토안')}</span></div>
+        <div className="report-page__wording-result-actions"><span>작성 가능 근거 {data.possibleReasons?.length ?? 0}건</span><span>실무 결정 필요 {data.improvementReasons?.length ?? 0}건</span><button className="report-page__text-button report-page__no-print" type="button" onClick={openDetailedReview}>상세 판단 근거 보기 →</button></div>
+        <details className="report-page__wording-source-details"><summary>기존 AI 판단 근거 보기 <span>{(data.possibleReasons?.length ?? 0) + (data.improvementReasons?.length ?? 0)}건</span></summary><div className="report-page__wording-source-grid"><div><h4>작성 가능한 근거</h4><ul>{(data.possibleReasons ?? []).map((item) => <li key={item}>{item}</li>)}</ul></div><div><h4>먼저 결정할 사항</h4><ul>{(data.improvementReasons ?? []).map((item) => <li key={item}>{item}</li>)}</ul></div></div></details>
+      </section>
+
+      <section className="report-page__wording-flow-section report-page__wording-payment" aria-labelledby="wording-payment-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">STEP 03 · PAYMENT CONDITIONS</p><h3 id="wording-payment-title">보험금 지급요건</h3><p>아래 조건을 모두 충족하는 경우 보험금 지급 대상으로 검토합니다.</p></div><span className="report-page__wording-flow-context">{selectedCoverage.label}</span></div>
+        <div className="report-page__wording-payment-grid">
+          <div className="report-page__wording-condition-panel"><h4>초안에 반영 가능한 지급요건</h4><ul>{selectedCoverage.paymentConditions.map((condition) => <li key={condition}><span aria-hidden="true">✓</span>{condition}</li>)}</ul></div>
+          <aside className="report-page__wording-decision-note"><h4><span aria-hidden="true">?</span>약관 확정 전 결정 필요</h4><ul>{selectedCoverage.decisions.map((decision, index) => <li key={decision}><span aria-hidden="true">{index + 1}</span>{decision}</li>)}</ul></aside>
         </div>
-        <div className="report-page__wording-premise-inline">
-          <span>※ 현재 초안은 선보상 후 구상형 구조를 가정한 검토용 문구입니다.</span>
-          <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab?.('proposal')} disabled={!onNavigateTab}>상품 구조 추천에서 자세히 보기 →</button>
-        </div>
-        <blockquote>{data.coverageDraft ?? '검토용 문구를 추가 확인해야 합니다.'}</blockquote>
+        <details className="report-page__wording-source-details"><summary>지급요건별 확인자료 보기 · {data.paymentConditions?.length ?? 0}건</summary><div className="report-page__wording-source-list">{(data.paymentConditions ?? []).map((item) => <p key={String(item.id)}><strong>{String(item.text ?? '')}</strong><span>확인 방법 · {String(item.verification ?? '')}</span></p>)}</div></details>
+      </section>
+
+      <section className="report-page__wording-flow-section report-page__wording-draft-flow" aria-labelledby="wording-draft-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">STEP 04 · DRAFT WORDING</p><h3 id="wording-draft-title">추천 약관 문구 초안</h3><p><strong>AI 추천 초안</strong> · 현재 선택한 보장 항목에 우선 적용할 수 있는 검토용 문구입니다.</p></div><div className="report-page__wording-flow-heading-side"><span className="report-page__wording-flow-context">{selectedCoverage.label}</span><div className="report-page__wording-draft-badges"><span>AI 생성 초안</span><span>실무 검토 전</span></div></div></div>
+        <div className="report-page__wording-draft-toolbar report-page__no-print"><button className="report-page__button" type="button" onClick={copyDraft}>초안 복사</button><button className="report-page__button" type="button" onClick={openDetailedReview}>판단 근거 보기</button><button className="report-page__button" type="button" onClick={() => setShowAlternativeDraft((current) => !current)} aria-expanded={showAlternativeDraft}>다른 문구와 비교</button><button className="report-page__button report-page__button--primary" type="button" onClick={onOpenPolicyDraft}>약관 초안 검토</button></div>
+        <blockquote className="report-page__wording-draft-quote">“{selectedCoverage.draft}”</blockquote>
+        <p className="report-page__wording-draft-note">선택 항목에 따른 mock 약관 문구입니다. 실제 약관 확정 문구가 아니며 상품·법무·보상 검토 후 수정될 수 있습니다.</p>
         {copyMessage ? <p className="report-page__copy-message" role="status">{copyMessage}</p> : null}
-      </div>
+        {data.alternativeLiabilityDraft && showAlternativeDraft ? <details className="report-page__wording-alternative" open><summary>대안 구조의 기존 AI 초안</summary><blockquote>“{data.alternativeLiabilityDraft}”</blockquote></details> : null}
+      </section>
 
-      <div id="wording-pending-decisions" className="report-page__wording-pending-link">
-        <span>약관 확정 전 결정사항 {data.ambiguities?.length ?? 0}건</span>
-        <button className="report-page__text-button report-page__no-print" type="button" onClick={openDecisionDetails}>결정사항 확인하기 →</button>
-      </div>
+      <section className="report-page__wording-flow-section report-page__wording-loss-comparison" aria-labelledby="wording-loss-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">STEP 05 · COVERAGE BOUNDARY</p><h3 id="wording-loss-title">보장하는 손해 / 보장하지 않는 손해</h3><p>선택한 보장 항목의 보장 범위와 제외 검토 후보를 비교합니다.</p></div><div className="report-page__wording-flow-heading-side"><span className="report-page__wording-flow-context">{selectedCoverage.label}</span><span className="report-page__wording-loss-count">보장 {selectedCoverage.coveredLosses.length}건 · 제외 검토 {selectedCoverage.excludedLosses.length}건</span></div></div>
+        <div className="report-page__wording-loss-grid">
+          <article className="report-page__wording-loss-card report-page__wording-loss-card--covered"><small>이 초안 기준</small><h4>보장하는 손해</h4><ul>{selectedCoverage.coveredLosses.map((loss) => <li key={loss}>{loss}</li>)}</ul></article>
+          <article className="report-page__wording-loss-card report-page__wording-loss-card--excluded"><small>이 초안 기준</small><h4>보장하지 않는 손해</h4><span className="report-page__wording-loss-badge">면책 검토 후보 · 실무 확정 필요</span><ul>{selectedCoverage.excludedLosses.map((loss) => <li key={loss}>{loss}</li>)}</ul></article>
+        </div>
+        <details className="report-page__wording-source-details"><summary>기존 면책 검토 후보 상세 보기 <span>{data.exclusionCandidates?.length ?? 0}건</span></summary><div className="report-page__wording-source-list">{(data.exclusionCandidates ?? []).map((item) => <p key={String(item.id)}><strong>{String(item.text ?? '')}</strong><span>{String(item.reason ?? '')} · {String(item.status ?? '')}</span></p>)}</div></details>
+      </section>
 
-      <section ref={wordingComponentsRef} className="report-page__wording-components" aria-labelledby="wording-components-title">
-        <h3 id="wording-components-title">약관 구성요소 검토</h3>
-        <details className="report-page__wording-accordion" open>
-          <summary>
-            <span className="report-page__wording-accordion-copy"><strong>핵심 용어 정의</strong><small>보장 대상과 핵심 용어를 확인합니다.</small></span>
-            <span className="report-page__wording-accordion-count">{primaryDefinitions.length}개 주요 용어 · 추가 후보 {additionalDefinitions.length}개</span>
-          </summary>
-          <div className="report-page__definition-grid">
-            {primaryDefinitions.map((item) => <article key={item.term}><div><h4>{item.term}</h4><StatusBadge>{item.status}</StatusBadge></div><p>{item.draftDefinition}</p></article>)}
+      <section className="report-page__wording-flow-section report-page__wording-decisions" aria-labelledby="wording-decisions-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">STEP 06 · DECISION ITEMS</p><h3 id="wording-decisions-title">약관 확정 전 결정해야 할 사항</h3><p>AI가 임의로 확정하지 않고 상품·보상·법무·계리·인수 담당자가 결정해야 하는 영역입니다.</p></div><span className="report-page__wording-flow-context">{selectedCoverage.label}</span></div>
+        <div className="report-page__wording-decision-grid">{WORDING_DECISION_AREAS.map((area) => <article key={area.title}><h4>{area.title}</h4><ul>{area.items.map((item) => <li key={item}>{item}</li>)}</ul><div className="report-page__wording-decision-output"><strong>다음 행동</strong><span>{area.nextAction}</span><strong>예상 산출물</strong><span>{area.output}</span></div></article>)}</div>
+        <details className="report-page__wording-source-details"><summary>기존 판단 대기 데이터 보기 <span>{data.ambiguities?.length ?? 0}건</span></summary><div className="report-page__wording-source-list">{(data.ambiguities ?? []).map((item) => <p key={String(item.id)}><strong>{String(item.issue ?? '')}</strong><span>{String(item.question ?? '')} · 담당: {String(item.owner ?? '')}</span></p>)}</div></details>
+      </section>
+
+      <section ref={detailedReviewRef} id="wording-detailed-review" className="report-page__wording-flow-section report-page__wording-detailed-review" aria-labelledby="wording-detailed-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">STEP 07 · DETAILED REVIEW</p><h3 id="wording-detailed-title">약관 초안 작성 가능성 상세 검토</h3><p>AI가 약관 초안을 작성할 수 있다고 판단한 세부 기준과 근거입니다.</p></div><div className="report-page__wording-flow-heading-side"><span className="report-page__wording-flow-context">{selectedCoverage.label}</span><span className="report-page__wording-flow-context">{assessmentCriteria.length}개 기준</span></div></div>
+        <div className="report-page__wording-criteria-summary"><span>작성 가능 {statusCounts.ready}</span><span>보완 후 가능 {statusCounts.conditional}</span><span>실무 결정 필요 {statusCounts.decision}</span></div>
+        <div className="report-page__wording-criteria-list">
+          {assessmentCriteria.map((item, index) => (
+            <details key={String(item.id ?? index)} className="report-page__wording-criteria-item">
+              <summary><span className="report-page__wording-criteria-number">{String(index + 1).padStart(2, '0')}</span><span className="report-page__wording-criteria-copy"><strong>{String(item.question ?? '')}</strong><small>핵심 판단 근거 펼쳐보기</small></span><WordingStatusBadge status={String(item.status ?? '')} /></summary>
+              <div><p>{String(item.note ?? '상세 판단 근거가 준비되지 않았습니다.')}</p></div>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section className="report-page__wording-flow-section report-page__wording-terms" aria-labelledby="wording-terms-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">TERMS & DEFINITIONS</p><h3 id="wording-terms-title">약관에서 정의해야 할 핵심 용어</h3><p>기존 약관에서 참고 가능한 용어와 새롭게 정의가 필요한 용어를 구분해 확인합니다.</p></div><span className="report-page__wording-flow-context">{definitions.length}개 용어</span></div>
+        <div className="report-page__wording-priority-terms"><strong>우선 정의 필요 3건</strong><span>{priorityTerms.join(' · ')}</span></div>
+        <div className="report-page__wording-terms-grid">
+          <article><h4>기존 약관 참고 가능</h4><div className={'report-page__wording-definition-list' + (showAllDefinitions ? ' is-expanded' : '')}>{primaryDefinitions.map((item, index) => <div className={index >= 3 ? 'is-definition-extra' : ''} key={String(item.term)}><div><strong>{String(item.term ?? '')}</strong><StatusBadge>{String(item.status ?? '')}</StatusBadge></div><p>{String(item.draftDefinition ?? '')}</p></div>)}</div></article>
+          <article><h4>새롭게 정의가 필요한 용어</h4><div className={'report-page__wording-definition-list' + (showAllDefinitions ? ' is-expanded' : '')}>{orderedAdditionalDefinitions.map((item, index) => <div className={index >= 4 ? 'is-definition-extra' : ''} key={String(item.term)}><div><strong>{String(item.term ?? '')}</strong><StatusBadge>{String(item.status ?? '')}</StatusBadge></div><p>{String(item.draftDefinition ?? '')}</p></div>)}</div></article>
+        </div>
+        <button className="report-page__text-button report-page__no-print report-page__wording-terms-toggle" type="button" onClick={() => setShowAllDefinitions((current) => !current)} aria-expanded={showAllDefinitions}>{showAllDefinitions ? '핵심 용어 일부만 보기 ↑' : '전체 용어 보기 ↓'}</button>
+      </section>
+
+      <section className="report-page__wording-flow-section report-page__wording-references-flow" aria-labelledby="wording-references-title">
+        <div className="report-page__wording-flow-heading"><div><p className="report-page__eyebrow">SOURCES & LIMITATIONS</p><h3 id="wording-references-title">참고 약관과 판단 근거</h3><p>참고자료의 활용 범위와 분석 한계를 함께 확인합니다.</p></div><span className="report-page__wording-flow-context">{data.referenceDocuments?.length ?? 0}건</span></div>
+        <div className="report-page__wording-reference-groups">{referenceGroups.map((group) => <section key={group.id}><h4>{group.title}</h4><div className="report-page__wording-reference-list">{group.items.map((document) => <article key={String(document.id)}><div className="report-page__wording-reference-meta"><code>{String(document.id ?? '')}</code><span className={'report-page__badge ' + (document.includedInAiInput ? 'report-page__badge--neutral' : 'report-page__badge--warning')}>{document.includedInAiInput ? 'AI 분석 참고자료' : 'AI 입력 제외 · 사후 검증'}</span></div><h5>{String(document.name ?? '')}</h5><p>{String(document.usedFor ?? '')}</p><small>활용 영역 · {wordingReferenceUsage(String(document.usedFor ?? ''))}</small><small>자료 기준일 · {displayDate(report.meta.analysisBaseDate)}</small><button className="report-page__text-button report-page__no-print" type="button" onClick={() => onOpenDocument(document)}>자료 정보 보기 →</button></article>)}</div></section>)}</div>
+        <div className="report-page__wording-reference-notes"><article><h4>분석 한계</h4><p>현재 문구는 공개자료와 mock 데이터를 바탕으로 한 AI 검토용 초안입니다. 실제 약관·상품자료·손해자료의 최신성, 적용 범위와 법률적 효력은 확정하지 않습니다.</p></article><article><h4>추가 확인이 필요한 내부자료</h4><ul><li>승인된 상품 약관·상품설명서와 최신 개정 이력</li><li>기존 자동차보험·화재보험·배상책임보험의 실제 보상 사례</li><li>사고 빈도·동시 피해 규모·최대가능손해 및 인수 기준</li></ul></article></div>
+        <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab?.('evidence')} disabled={!onNavigateTab}>근거자료 및 추가 확인사항에서 전체 보기 →</button>
+      </section>
+      </div>
+      {printMode ? <WordingPrintLayout report={report} data={data} /> : null}
+    </section>
+  )
+}
+
+}
+*/
+
+/* Legacy wording layout retained while the full clause-draft flow is rebuilt.
+function WordingSection({
+  report,
+  onOpenDocument,
+  onOpenPolicyDraft,
+  onNavigateTab,
+  printMode = false,
+}: {
+  report: ReportView
+  onOpenDocument: (document: NonNullable<ReportView['wordingFeasibility']['referenceDocuments']>[number]) => void
+  onOpenPolicyDraft: () => void
+  onNavigateTab?: (id: ReportTabId) => void
+  printMode?: boolean
+}) {
+  const data = report.wordingFeasibility
+  const [copyMessage, setCopyMessage] = useState('')
+  const [selectedCoverageId, setSelectedCoverageId] = useState<WordingCoverageOptionId>('adjacent-vehicle')
+  const selectedCoverage = WORDING_COVERAGE_OPTIONS.find((option) => option.id === selectedCoverageId) ?? WORDING_COVERAGE_OPTIONS[0]
+  const selectedMeta = WORDING_PROPOSAL_ITEMS[selectedCoverage.id]
+  const assessmentCriteria = data.assessmentCriteria ?? []
+  const definitions = data.definitions ?? []
+  const referenceDocuments = data.referenceDocuments ?? []
+  const priorityDefinitions = selectedMeta.keyTerms.map((term) => definitions.find((item) => String(item.term ?? '') === term)).filter(Boolean)
+  const priorityTermSet = new Set(selectedMeta.keyTerms)
+  const additionalDefinitions = definitions.filter((item) => !priorityTermSet.has(String(item.term ?? '')))
+  const statusCounts = assessmentCriteria.reduce((counts, item) => {
+    const tone = wordingStatusTone(String(item.status ?? ''))
+    counts[tone] += 1
+    return counts
+  }, { ready: 0, conditional: 0, decision: 0 } as Record<'ready' | 'conditional' | 'decision', number>)
+  const detailedReviewRef = useRef<HTMLElement | null>(null)
+  const wordingComponentsRef = useRef<HTMLElement | null>(null)
+
+  // The policy-draft action remains available to the parent workflow, but this page now
+  // keeps the draft review as a self-contained mock review surface.
+  void onOpenPolicyDraft
+
+  const openDetailedReview = () => {
+    const section = detailedReviewRef.current
+    if (!section) return
+    const behavior = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+    window.requestAnimationFrame(() => {
+      section.scrollIntoView({ behavior, block: 'start' })
+      const firstDetails = section.querySelector<HTMLDetailsElement>('details')
+      if (firstDetails) firstDetails.open = true
+      firstDetails?.querySelector<HTMLElement>('summary')?.focus()
+    })
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    let previousOpenStates: boolean[] = []
+    const getDetails = () => Array.from(wordingComponentsRef.current?.querySelectorAll('details') ?? [])
+    const openDetailsForPrint = () => {
+      const details = getDetails()
+      previousOpenStates = details.map((detail) => detail.open)
+      details.forEach((detail) => { detail.open = true })
+    }
+    const restoreDetailsAfterPrint = () => {
+      getDetails().forEach((detail, index) => {
+        detail.open = previousOpenStates[index] ?? detail.open
+      })
+    }
+    window.addEventListener('beforeprint', openDetailsForPrint)
+    window.addEventListener('afterprint', restoreDetailsAfterPrint)
+    return () => {
+      window.removeEventListener('beforeprint', openDetailsForPrint)
+      window.removeEventListener('afterprint', restoreDetailsAfterPrint)
+    }
+  }, [])
+
+  const copyDraft = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedCoverage.draft)
+      setCopyMessage('초안 문구를 복사했습니다.')
+    } catch {
+      setCopyMessage('브라우저에서 복사 권한을 허용해 주세요.')
+    }
+  }
+
+  return (
+    <section ref={wordingComponentsRef} className="report-page__section report-page__wording-section" aria-labelledby="wording-title">
+      <SectionHeading number="06" eyebrow="WORDING FEASIBILITY" title="약관화 검토" />
+      <p className="report-page__wording-lead" id="wording-title">현재 분석 중인 위험의 보장 공백을 바탕으로 AI가 보장 항목을 제안하고, 항목별 보험금 지급요건과 약관 문구 초안을 제공합니다.</p>
+      <p className="report-page__wording-disclaimer">공개자료와 mock 데이터를 바탕으로 한 검토용 초안이며, 최종 약관 문구는 일반상품 개발 담당자가 확정합니다.</p>
+
+      <div className="report-page__wording-redesign-flow">
+        <section className="report-page__wording-zone report-page__wording-context-zone" aria-labelledby="wording-context-title">
+          <div className="report-page__wording-zone-heading">
+            <div><p className="report-page__eyebrow">RISK CONTEXT</p><h3 id="wording-context-title">분석 대상 위험</h3><p>현재 선택된 위험을 기준으로 아래 보장 항목을 검토합니다.</p></div>
           </div>
-          {additionalDefinitions.length ? <details className="report-page__long-details"><summary>추가 정의 후보 <span>{additionalDefinitions.length}개</span></summary><div className="report-page__definition-grid">{additionalDefinitions.map((item) => <article key={item.term}><div><h4>{item.term}</h4><StatusBadge>{item.status}</StatusBadge></div><p>{item.draftDefinition}</p></article>)}</div></details> : null}
-        </details>
+          <div className="report-page__wording-risk-context">
+            <strong>{WORDING_ANALYSIS_RISK.description}</strong>
+            <dl>
+              <div><dt>Risk ID</dt><dd>{WORDING_ANALYSIS_RISK.riskId}</dd></div>
+              <div><dt>주요 피해 대상</dt><dd>{WORDING_ANALYSIS_RISK.affected}</dd></div>
+              <div><dt>판단 근거</dt><dd>{WORDING_ANALYSIS_RISK.basis}</dd></div>
+            </dl>
+          </div>
 
-        <details className="report-page__wording-accordion">
-          <summary>
-            <span className="report-page__wording-accordion-copy"><strong>보험금 지급요건</strong><small>보험금 지급 여부를 확인하는 사고·손해 조건입니다.</small></span>
-            <span className="report-page__wording-accordion-count">{paymentGroups.length}개 범주 · {data.paymentConditions?.length ?? 0}개 조건</span>
-          </summary>
-          <div className="report-page__wording-group-grid">{paymentGroups.map((group) => <section key={group.id}><h4>{group.title}</h4><div className="report-page__condition-list">{group.items.map((item) => <article key={item.id}><code>{item.id}</code><div><h4>{item.text}</h4><p>확인 방법 · {item.verification}</p></div></article>)}</div></section>)}</div>
-        </details>
+          <div className="report-page__wording-zone-heading report-page__wording-proposal-heading">
+            <div><p className="report-page__eyebrow">AI PROPOSAL</p><h3>AI 제안 보장 항목</h3><p>보장 항목을 선택하면 해당 항목의 지급요건, 실무 결정사항, 약관 문구와 보장 범위를 함께 확인할 수 있습니다.</p></div>
+          </div>
+          <div className="report-page__wording-proposal-grid" role="tablist" aria-label="AI 제안 보장 항목">
+            {WORDING_COVERAGE_OPTIONS.map((option, index) => {
+              const meta = WORDING_PROPOSAL_ITEMS[option.id]
+              const isSelected = selectedCoverage.id === option.id
+              return (
+                <button
+                  key={option.id}
+                  className={`report-page__wording-proposal-card${isSelected ? ' is-selected' : ''}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  onClick={() => setSelectedCoverageId(option.id)}
+                >
+                  <span className="report-page__wording-proposal-number">{String(index + 1).padStart(2, '0')}</span>
+                  <span className="report-page__wording-proposal-card-title"><strong>{option.label}</strong>{meta.badge ? <em>{meta.badge}</em> : null}</span>
+                  <small>{option.shortDescription}</small>
+                  <span className="report-page__wording-proposal-reason"><b>제안 이유</b>{meta.reason}</span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
 
-        <details className="report-page__wording-accordion">
-          <summary>
-            <span className="report-page__wording-accordion-copy"><strong>보상 제외사항 검토안</strong><small>보장 범위에서 제외할 수 있는 후보를 검토합니다.</small></span>
-            <span className="report-page__wording-accordion-count">{exclusionGroups.length}개 범주 · {data.exclusionCandidates?.length ?? 0}개 후보</span>
-          </summary>
-          <div className="report-page__wording-group-grid">{exclusionGroups.map((group) => <section key={group.id}><h4>{group.title}</h4><div className="report-page__condition-list">{group.items.map((item) => <article key={item.id}><code>{item.id}</code><div><h4>{item.text}</h4><p>{item.reason}</p><StatusBadge>{item.status}</StatusBadge></div></article>)}</div></section>)}</div>
-        </details>
+        <section className="report-page__wording-zone report-page__wording-review-zone" aria-labelledby="wording-review-title">
+          <div className="report-page__wording-review-summary">
+            <div><p className="report-page__eyebrow">CURRENT REVIEW</p><h3 id="wording-review-title">현재 약관 검토 결과</h3><p><strong>{selectedCoverage.label}</strong> · 보완 후 약관 초안 작성 가능</p></div>
+            <span className="report-page__wording-review-status">보완 후 약관 초안 작성 가능</span>
+            <dl>
+              <div><dt>지급요건</dt><dd>{selectedCoverage.paymentConditions.length}건</dd></div>
+              <div><dt>AI 추천</dt><dd>{selectedMeta.decisions.length}건</dd></div>
+              <div><dt>실무 결정</dt><dd>{selectedMeta.decisions.length}건</dd></div>
+            </dl>
+          </div>
 
-        <details ref={decisionDetailsRef} id="wording-decision-details" className="report-page__wording-accordion report-page__wording-accordion--decisions">
-          <summary ref={decisionSummaryRef}>
-            <span className="report-page__wording-accordion-copy"><strong>약관 확정 전 결정사항</strong><small>약관 확정 전에 상품·법무·계리·보상 결정이 필요합니다.</small></span>
-            <span className="report-page__wording-accordion-count">{ambiguityGroups.length}개 범주 · {data.ambiguities?.length ?? 0}개 결정사항</span>
-          </summary>
-          <p className="report-page__wording-accordion-intro">AI가 임의로 확정하기 어려우며, 상품·법무·계리·손해사정 담당자의 결정이 필요한 사항입니다.</p>
-          <div className="report-page__wording-group-grid">{ambiguityGroups.map((group) => <section key={group.id}><h4>{group.title}</h4><div className="report-page__ambiguity-list">{group.items.map((item) => <article key={item.id}><span>{item.id}</span><div><h4>{item.issue}</h4><p>{item.question}</p></div><small>담당: {item.owner}</small></article>)}</div></section>)}</div>
-        </details>
-      </section>
+          <div className="report-page__wording-zone-heading report-page__wording-review-heading">
+            <div><p className="report-page__eyebrow">PAYMENT & DECISIONS</p><h3>보험금 지급요건과 확정 전 결정사항</h3><p>AI가 제안한 지급요건은 초안에 반영하고, 결정사항은 추천·근거·전제를 확인한 뒤 확정합니다.</p></div>
+          </div>
+          <div className="report-page__wording-payment-decision-grid">
+            <article className="report-page__wording-condition-card">
+              <header><span className="report-page__wording-zone-kicker">조건 4건</span><h4>보험금 지급요건</h4><p>아래 조건을 모두 충족하는 경우 보험금 지급 대상으로 검토합니다.</p></header>
+              <ol>{selectedCoverage.paymentConditions.map((condition) => <li key={condition}><span aria-hidden="true">✓</span><span>{condition}</span></li>)}</ol>
+            </article>
+            <article className="report-page__wording-decision-card">
+              <header><span className="report-page__wording-zone-kicker report-page__wording-zone-kicker--orange">결정 필요 {selectedMeta.decisions.length}건</span><h4>확정 전 결정사항</h4><p>행을 펼치면 AI 추천, 판단 근거, 전제·가정과 신뢰도를 확인할 수 있습니다.</p></header>
+              <div className="report-page__wording-decision-list">
+                {selectedMeta.decisions.map((decision, index) => (
+                  <details key={decision.id} className="report-page__wording-decision-row" open={printMode || undefined}>
+                    <summary><span className="report-page__wording-decision-number">{String(index + 1).padStart(2, '0')}</span><span className="report-page__wording-decision-question"><strong>{decision.question}</strong><small>AI 추천 · {decision.recommendation}</small></span><span className="report-page__wording-detail-hint">상세 보기</span></summary>
+                    <div className="report-page__wording-decision-detail">
+                      <div><h5>AI 추천</h5><p>{decision.recommendation}</p></div>
+                      <div><h5>판단 근거</h5><p>{decision.rationale}</p><small>{decision.basis}</small></div>
+                      <div><h5>전제·가정</h5><ul>{decision.assumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul></div>
+                      <div className="report-page__wording-decision-confidence"><span>신뢰도</span><strong>{decision.confidence}</strong><span>최종 선택</span><strong>{decision.finalChoice}</strong></div>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </article>
+          </div>
+        </section>
 
-      <section className="report-page__wording-references" aria-labelledby="wording-references-title">
-        <div className="report-page__wording-subsection-heading"><h3 id="wording-references-title">참고한 약관·상품자료 요약</h3><span>{data.referenceDocuments?.length ?? 0}건</span></div>
-        <ul>{(data.referenceDocuments ?? []).slice(0, 3).map((document) => <li key={document.id}><strong>{document.name}</strong><span>{document.usedFor}</span></li>)}</ul>
-        {(data.referenceDocuments?.length ?? 0) > 3 ? <p>외 {(data.referenceDocuments?.length ?? 0) - 3}건의 자료는 근거자료 탭에서 확인할 수 있습니다.</p> : null}
-        <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab?.('evidence')} disabled={!onNavigateTab}>근거자료에서 전체 보기 →</button>
-        <details className="report-page__long-details"><summary>참고자료 상세 보기 <span>{data.referenceDocuments?.length ?? 0}개</span></summary><div className="report-page__document-list">{(data.referenceDocuments ?? []).map((document) => <article key={document.id}><div><code>{document.id}</code><span className={`report-page__badge ${document.includedInAiInput ? 'report-page__badge--neutral' : 'report-page__badge--warning'}`}>{document.includedInAiInput ? 'AI 분석 참고자료' : 'AI 입력 제외 · 사후 검증'}</span></div><h4>{document.name}</h4><p>{document.usedFor}</p><button className="report-page__text-button report-page__no-print" type="button" onClick={() => onOpenDocument(document)}>자료 정보 보기 →</button></article>)}</div></details>
-      </section>
+        <section className="report-page__wording-zone report-page__wording-draft-zone" aria-labelledby="wording-draft-title">
+          <div className="report-page__wording-zone-heading">
+            <div><p className="report-page__eyebrow">DRAFT WORDING</p><h3 id="wording-draft-title">추천 약관 문구 초안</h3><p>현재 선택한 보장 항목에 우선 적용할 수 있는 AI 생성 초안입니다.</p></div>
+            <div className="report-page__wording-draft-badges"><span>AI 생성 초안</span><span>검토 전</span></div>
+          </div>
+          <div className="report-page__wording-draft-actions report-page__no-print"><button className="report-page__button" type="button" onClick={copyDraft}>초안 복사</button><button className="report-page__button" type="button" onClick={openDetailedReview}>근거 보기</button></div>
+          <blockquote className="report-page__wording-draft-quote">“{selectedCoverage.draft}”</blockquote>
+          <p className="report-page__wording-draft-note">선택 항목에 따른 mock 약관 문구이며, 실제 약관 확정 문구가 아닙니다.</p>
+          {copyMessage ? <p className="report-page__copy-message report-page__no-print" role="status">{copyMessage}</p> : null}
+
+          <div className="report-page__wording-loss-heading"><div><p className="report-page__eyebrow">COVERAGE BOUNDARY</p><h4>보장하는 손해와 보장하지 않는 손해</h4><p>선택한 보장 항목의 보장 범위와 제외 검토 후보입니다.</p></div></div>
+          <div className="report-page__wording-loss-grid">
+            <article className="report-page__wording-loss-card report-page__wording-loss-card--covered"><h4>보장하는 손해</h4><ul>{selectedCoverage.coveredLosses.map((loss) => <li key={loss}>{loss}</li>)}</ul></article>
+            <article className="report-page__wording-loss-card report-page__wording-loss-card--excluded"><h4>보장하지 않는 손해</h4><p className="report-page__wording-loss-candidate">면책 검토 후보 · 실무 확정 필요</p><ul>{selectedCoverage.excludedLosses.map((loss) => <li key={loss}>{loss}</li>)}</ul></article>
+          </div>
+        </section>
+
+        <section ref={detailedReviewRef} className="report-page__wording-zone report-page__wording-details-zone" aria-labelledby="wording-details-title">
+          <div className="report-page__wording-zone-heading"><div><p className="report-page__eyebrow">DETAILED GROUNDS</p><h3 id="wording-details-title">상세 판단 근거</h3><p>현재 선택 항목의 AI 판단에 사용한 기준·용어·참고자료를 확인합니다.</p></div></div>
+
+          <details className="report-page__wording-detail-toggle" open={printMode || undefined}>
+            <summary><span><strong>약관 초안 작성 가능성 상세 근거</strong><small>작성 가능성 판단 기준과 항목별 근거</small></span><em>{assessmentCriteria.length}개 기준</em></summary>
+            <div className="report-page__wording-detail-content">
+              <div className="report-page__wording-criteria-summary"><span>작성 가능 {statusCounts.ready}</span><span>보완 후 가능 {statusCounts.conditional}</span><span>실무 결정 필요 {statusCounts.decision}</span></div>
+              <div className="report-page__wording-criteria-list">{assessmentCriteria.map((item, index) => <article key={String(item.id ?? index)}><header><strong>{String(index + 1).padStart(2, '0')} · {String(item.question ?? '')}</strong><WordingStatusBadge status={String(item.status ?? '')} /></header><p>{String(item.note ?? '')}</p></article>)}</div>
+              <div className="report-page__wording-grounds-grid"><div><h4>작성 가능한 근거</h4><ul>{(data.possibleReasons ?? []).map((reason) => <li key={reason}>{reason}</li>)}</ul></div><div><h4>보완이 필요한 근거</h4><ul>{(data.improvementReasons ?? []).map((reason) => <li key={reason}>{reason}</li>)}</ul></div></div>
+            </div>
+          </details>
+
+          <details className="report-page__wording-detail-toggle" open={printMode || undefined}>
+            <summary><span><strong>약관에서 정의해야 할 핵심 용어</strong><small>현재 보장 항목에서 우선 확인할 용어</small></span><em>{definitions.length}개 용어</em></summary>
+            <div className="report-page__wording-detail-content">
+              <div className="report-page__wording-priority-terms"><strong>우선 검토 용어</strong>{selectedMeta.keyTerms.map((term) => <span key={term}>{term}</span>)}</div>
+              <div className="report-page__wording-term-columns"><section><h4>우선 검토</h4>{priorityDefinitions.map((item) => <p key={String(item?.term)}><strong>{String(item?.term ?? '')}</strong><span>{String(item?.draftDefinition ?? '')}</span></p>)}</section><section><h4>추가 정의 후보</h4>{additionalDefinitions.map((item) => <p key={String(item.term)}><strong>{String(item.term ?? '')}</strong><span>{String(item.draftDefinition ?? '')}</span></p>)}</section></div>
+            </div>
+          </details>
+
+          <details className="report-page__wording-detail-toggle" open={printMode || undefined}>
+            <summary><span><strong>참고 약관과 판단 근거</strong><small>AI 제안의 출처·전제·한계와 선택 항목별 근거</small></span><em>{referenceDocuments.length}개 자료</em></summary>
+            <div className="report-page__wording-detail-content">
+              <div className="report-page__wording-selected-grounds"><h4>현재 선택 항목의 판단 근거</h4><ul>{selectedMeta.grounds.map((ground) => <li key={ground}>{ground}</li>)}</ul></div>
+              <div className="report-page__wording-reference-list">{referenceDocuments.map((document) => <article key={String(document.id)}><div><strong>{String(document.name ?? '')}</strong><span>{String(document.id ?? '')} · {wordingReferenceUsage(String(document.usedFor ?? ''))}</span><small>자료 기준일 · {displayDate(report.meta.analysisBaseDate)}</small></div><button className="report-page__text-button report-page__no-print" type="button" onClick={() => onOpenDocument(document)}>자료 정보 보기 →</button></article>)}</div>
+              <div className="report-page__wording-reference-notes"><div><h4>전제·가정</h4><ul><li>현재 위험 설명과 보장 공백은 분석 단계의 mock 입력을 기준으로 합니다.</li><li>기존 보험의 실제 지급 범위와 내부 손해자료는 별도 확인이 필요합니다.</li></ul></div><div><h4>분석 한계·신뢰도</h4><ul><li>공개자료와 mock 데이터를 바탕으로 한 검토용 초안입니다.</li><li>약관 적용 범위와 최종 보상 여부를 확정하지 않으며, 현재 추천의 신뢰도는 보통입니다.</li></ul></div></div>
+              {onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('evidence')}>근거자료 및 추가 확인사항에서 전체 보기 →</button> : null}
+            </div>
+          </details>
+        </section>
+      </div>
+    </section>
+  )
+}
+*/
+
+const wordingClauseStatusLabel = (type: WordingStatusType): string => ({
+  satisfied: '확인 완료',
+  'needs-improvement': '보완 필요',
+  'decision-required': '실무 판단 필요',
+  failed: '진행 불가',
+  'not-evaluated': '추가 확인 필요',
+}[type])
+
+const wordingLossParts = (loss: string): [string, string] => {
+  if (/화재·열·연기/.test(loss)) return ['직접 화재손해', '화재·열·연기로 인한 물리적 손상']
+  if (/진압 과정|진압과정/.test(loss)) return ['화재진압 손해', '진압 과정에서 발생한 직접 파손']
+  if (/이동·견인|이동.*견인/.test(loss)) return ['긴급 이동·견인비', '추가 손해 방지를 위해 필요하고 합리적으로 지출한 비용']
+  if (/미보상된|미보상 손해/.test(loss)) return ['기존 보험의 미보상 손해', '기존 보험에서 지급되지 않은 직접 재산손해']
+  if (/휴차료|영업손실|간접손해/.test(loss)) return ['간접손해', '휴차료·영업손실·평가손실 등 직접 재산손해가 아닌 손실']
+  if (/사고 이전|마모|소모|열화|노후화|부식/.test(loss)) return ['기존 손상과 점진적 손해', '사고 이전부터 존재한 손상과 마모·소모·열화']
+  if (/다른 보험|이미 보상|이미 지급/.test(loss)) return ['중복 보상된 손해', '다른 보험이나 책임주체로부터 이미 지급받은 손해']
+  if (/보험 목적에 포함되지 않은/.test(loss)) return ['보험목적 미포함 손해', '보험증권에 기재되지 않은 시설·설비의 손해']
+  if (/보험가입금액|보상한도 초과/.test(loss)) return ['한도 초과 손해', '보험가입금액·보상한도를 초과한 손해']
+  if (/유지·관리/.test(loss)) return ['통상 유지·관리 비용', '사고와 직접 관련 없는 정기 점검과 설비 관리 비용']
+  if (/객관적 자료|확인되지 않는 비용/.test(loss)) return ['증빙 없는 비용', '영수증·작업기록 등 객관적인 자료로 확인되지 않는 비용']
+  return [loss, loss]
+}
+
+const wordingTermStatusTone = (status: string): string => /작성 가능|참고 가능|확인 완료/.test(status) ? 'is-ready' : /정의 불가|불충족|진행 불가/.test(status) ? 'is-failed' : /실무 결정|정의 필요|추가 확인/.test(status) ? 'is-decision' : 'is-conditional'
+
+function WordingClauseStatusBadge({ type }: { type: WordingStatusType }) {
+  return <span className={`report-page__wording-clause-status report-page__wording-clause-status--${type}`}>{wordingClauseStatusLabel(type)}</span>
+}
+
+const WORDING_CORE_HIGHLIGHT_TERMS = [
+  '법률상 배상책임',
+  '대물배상 한도 초과',
+  '보장 공백',
+  '기존 보험에서 보상받지 못한 손해',
+  '인접 차량 직접재산손해',
+  '약정된 한도 내에서 보상',
+  '직접 화재손해',
+  '긴급 이동·견인비',
+  '발화 차량 자체 손해',
+  '간접손해',
+] as const
+
+function WordingHighlightedText({ text }: { text: string }) {
+  const pattern = new RegExp(`(${WORDING_CORE_HIGHLIGHT_TERMS.join('|')})`, 'g')
+  return <>{text.split(pattern).map((part, index) => WORDING_CORE_HIGHLIGHT_TERMS.includes(part as (typeof WORDING_CORE_HIGHLIGHT_TERMS)[number]) ? <strong className="report-page__wording-key-highlight" key={`${part}-${index}`}>{part}</strong> : <Fragment key={`${part}-${index}`}>{part}</Fragment>)}</>
+}
+
+function WordingConfidenceText({ confidence }: { confidence: string }) {
+  const tone = confidence === '높음' ? 'high' : confidence === '낮음' ? 'low' : 'medium'
+  return <strong className={`report-page__wording-confidence-text is-${tone}`}>{confidence}</strong>
+}
+
+function WordingSection({
+  report,
+  onOpenDocument,
+  onOpenPolicyDraft,
+  onNavigateTab,
+  printMode = false,
+}: {
+  report: ReportView
+  onOpenDocument: (document: NonNullable<ReportView['wordingFeasibility']['referenceDocuments']>[number]) => void
+  onOpenPolicyDraft: () => void
+  onNavigateTab?: (id: ReportTabId) => void
+  printMode?: boolean
+}) {
+  const data = report.wordingFeasibility
+  const [copyMessage, setCopyMessage] = useState('')
+  const [selectedCoverageId, setSelectedCoverageId] = useState<WordingCoverageOptionId>('adjacent-vehicle')
+  const [showAllDefinitions, setShowAllDefinitions] = useState(false)
+  const [activeArticleNumber, setActiveArticleNumber] = useState<number | null>(null)
+  const selectedCoverage = coverageClauseDrafts.find((draft) => draft.id === selectedCoverageId) ?? coverageClauseDrafts[0]
+  const assessmentCriteria = data.assessmentCriteria ?? []
+  const definitions = data.definitions ?? []
+  const statusCounts = assessmentCriteria.reduce((counts, item) => {
+    const tone = wordingStatusTone(String(item.status ?? ''))
+    counts[tone] += 1
+    return counts
+  }, { ready: 0, conditional: 0, decision: 0 } as Record<'ready' | 'conditional' | 'decision', number>)
+  const detailedReviewRef = useRef<HTMLDivElement | null>(null)
+  const fullDraftRef = useRef<HTMLElement | null>(null)
+  const wordingComponentsRef = useRef<HTMLElement | null>(null)
+  const articleRefs = useRef<Record<number, HTMLElement | null>>({})
+
+  void onOpenDocument
+  void onOpenPolicyDraft
+  void onNavigateTab
+
+  const scrollToArticle = (articleNumber: number) => {
+    setActiveArticleNumber(articleNumber)
+    window.requestAnimationFrame(() => articleRefs.current[articleNumber]?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const getDetails = () => Array.from(wordingComponentsRef.current?.querySelectorAll('details') ?? [])
+    const openDetailsForPrint = () => getDetails().forEach((detail) => { detail.open = true })
+    window.addEventListener('beforeprint', openDetailsForPrint)
+    return () => window.removeEventListener('beforeprint', openDetailsForPrint)
+  }, [])
+
+  useEffect(() => {
+    wordingComponentsRef.current?.querySelectorAll<HTMLDetailsElement>('.report-page__wording-detail-toggles > details').forEach((detail) => { detail.open = true })
+  }, [selectedCoverage.id, printMode])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !fullDraftRef.current || printMode) return
+    const articles = Object.values(articleRefs.current).filter((article): article is HTMLElement => Boolean(article))
+    if (!articles.length || !('IntersectionObserver' in window)) return
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+      if (visible) setActiveArticleNumber(Number((visible.target as HTMLElement).dataset.articleNumber))
+    }, { rootMargin: '-18% 0px -68% 0px', threshold: 0 })
+    articles.forEach((article) => observer.observe(article))
+    return () => observer.disconnect()
+  }, [selectedCoverage.id, printMode])
+
+  const copyFullDraft = async () => {
+    const text = selectedCoverage.fullDraftArticles.map((article) => `제${article.articleNumber}조(${article.title})\n${article.content}`).join('\n\n')
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopyMessage('특별약관 전체 초안을 복사했습니다.')
+    } catch {
+      setCopyMessage('브라우저에서 복사 권한을 허용해 주세요.')
+    }
+  }
+
+  const definitionsByTerm = new Map(definitions.map((item) => [String(item.term ?? ''), String(item.draftDefinition ?? '')]))
+  const extraDefinitions = definitions.filter((item) => !selectedCoverage.keyTerms.includes(String(item.term ?? '')))
+  const definitionRows = selectedCoverage.keyTerms.map((term) => {
+    const item = definitions.find((candidate) => String(candidate.term ?? '') === term)
+    return { term, definition: definitionsByTerm.get(term) || '선택 항목의 보장 범위와 적용 기준을 약관에서 별도로 정의해야 합니다.', category: item ? '기존 약관 참고 가능' : '새 정의 필요', status: String(item?.status ?? '보완 필요') }
+  }).concat(showAllDefinitions ? extraDefinitions.map((item) => ({ term: String(item.term ?? ''), definition: String(item.draftDefinition ?? ''), category: '새 정의 필요', status: String(item.status ?? '실무 결정 필요') })) : [])
+
+  return (
+    <section ref={wordingComponentsRef} className="report-page__section report-page__wording-section" aria-labelledby="wording-title">
+      <SectionHeading number="06" eyebrow="" title="약관화 검토" />
+      <p className="report-page__wording-lead" id="wording-title">현재 분석 중인 위험의 보장 공백을 바탕으로 AI가 약관화가 필요한 보장 항목을 제안하고, 항목별 보험금 지급요건과 특별약관 초안을 제공합니다.</p>
+      <p className="report-page__wording-disclaimer">현재 결과는 공개된 현대해상 약관 구조와 mock 데이터를 바탕으로 작성한 검토용 초안입니다. 실제 약관 확정 전 상품개발 담당자의 검토와 내부 승인 절차가 필요합니다.</p>
+
+      <div className="report-page__wording-main-flow">
+        <section className="report-page__wording-main-zone report-page__wording-zone-a" aria-labelledby="wording-risk-title">
+          <div className="report-page__wording-zone-heading"><div><h3 id="wording-risk-title">분석 대상 위험</h3></div></div>
+          <div className="report-page__wording-risk-context">
+            <strong>{WORDING_ANALYSIS_RISK.description}</strong>
+            <dl>
+              <div><dt>위험 ID</dt><dd>{WORDING_ANALYSIS_RISK.riskId}</dd></div>
+              <div><dt>위험 유형</dt><dd>{WORDING_ANALYSIS_RISK.riskType}</dd></div>
+              <div><dt>주요 피해 대상</dt><dd>{WORDING_ANALYSIS_RISK.affected}</dd></div>
+              <div><dt>분석 근거</dt><dd>{WORDING_ANALYSIS_RISK.basis}</dd></div>
+            </dl>
+          </div>
+
+          <div className="report-page__wording-zone-heading report-page__wording-proposal-heading"><div><h3>AI 제안 보장 항목</h3><p>앞 단계에서 확인된 보장 공백과 기존 보험의 보장 범위를 바탕으로 AI가 약관화가 필요한 보장 항목을 제안했습니다. 항목을 선택하면 해당 보장의 지급요건과 특별약관 전체 초안을 확인할 수 있습니다.</p></div></div>
+          <div className="report-page__wording-proposal-grid" role="tablist" aria-label="AI 제안 보장 항목">
+            {coverageClauseDrafts.map((draft, index) => (
+              <button key={draft.id} className={`report-page__wording-proposal-card${selectedCoverage.id === draft.id ? ' is-selected' : ''}`} type="button" role="tab" aria-selected={selectedCoverage.id === draft.id} onClick={() => setSelectedCoverageId(draft.id)}>
+                <span className="report-page__wording-proposal-number">{String(index + 1).padStart(2, '0')}</span>
+                <span className="report-page__wording-proposal-card-title"><strong>{draft.title}</strong></span>
+                <small>{draft.summary}</small>
+                <span className="report-page__wording-proposal-reason"><b>AI 제안 근거</b><WordingHighlightedText text={draft.proposalReason} /></span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="report-page__wording-main-zone report-page__wording-zone-b" aria-labelledby="wording-payment-title">
+          <div className="report-page__wording-zone-heading"><div><h3 id="wording-payment-title">보험금 지급요건</h3><p>선택한 보장 항목에 대해 아래 요건을 모두 충족하는 경우 보험금 지급 대상으로 검토합니다.</p></div></div>
+          <div className="report-page__wording-payment-decision-grid">
+            <article className="report-page__wording-condition-card"><header><h4>보험금 지급요건</h4><p>선택한 보장 항목에 대해 아래 요건을 모두 충족하는 경우 보험금 지급 대상으로 검토합니다.</p></header><ol>{selectedCoverage.paymentRequirements.map((condition, index) => <li key={condition}><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span>{condition}</span></li>)}</ol></article>
+            <article className="report-page__wording-decision-card"><header><h4>약관 확정 전 결정사항</h4><p>각 항목은 AI 권고안과 판단 근거를 확인한 뒤 실무 검토가 필요한 사항입니다.</p></header><div className="report-page__wording-decision-list">{selectedCoverage.decisionItems.map((decision, index) => <details key={decision.id} className="report-page__wording-decision-row" open={printMode || undefined}><summary><span className="report-page__wording-decision-number">{String(index + 1).padStart(2, '0')}</span><span className="report-page__wording-decision-question"><strong>{decision.question}</strong><small>AI 권고 요약: <WordingHighlightedText text={compactCriterionText(decision.recommendation, 150)} /></small></span><WordingClauseStatusBadge type={decision.statusType ?? 'not-evaluated'} /></summary><div className="report-page__wording-decision-detail"><div className="report-page__wording-decision-column wording-decision-column--recommendation"><h5>AI 권고안</h5><p><WordingHighlightedText text={decision.recommendation} /></p><h5>적용한 가정</h5><ul>{decision.assumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul></div><div className="report-page__wording-decision-column wording-decision-column--basis"><h5>판단 근거</h5><p>{decision.rationale}</p><small>{decision.basis}</small><div className="report-page__wording-decision-confidence"><span className="report-page__wording-confidence-dot" aria-hidden="true" />신뢰도 <WordingConfidenceText confidence={decision.confidence} /></div></div></div></details>)}</div></article>
+          </div>
+        </section>
+
+        <section className="report-page__wording-main-zone report-page__wording-zone-c" aria-labelledby="wording-preview-title">
+          <div className="report-page__wording-zone-heading"><div><h3 id="wording-preview-title">핵심 보상조항 미리보기</h3><p>선택한 보장 특별약관 중 보상 범위를 규정하는 핵심 조항입니다.</p></div></div>
+          <div className="report-page__wording-draft-actions report-page__no-print"><button className="report-page__button" type="button" onClick={copyFullDraft}>조항 복사</button></div>
+          <blockquote className="report-page__wording-draft-quote">“<WordingHighlightedText text={selectedCoverage.previewClause} />”</blockquote>
+          {copyMessage ? <p className="report-page__copy-message report-page__no-print" role="status">{copyMessage}</p> : null}
+          <div className="report-page__wording-loss-heading"><div><h4>보장 범위와 보장 제외 범위</h4><p>선택한 특별약관이 보장하는 손해와 보장하지 않는 손해의 경계를 구분하여 확인합니다.</p></div></div>
+          <div className="report-page__wording-loss-grid"><article className="report-page__wording-loss-card"><small>보장 범위</small><h4>이 특별약관이 보장하는 손해</h4><dl>{selectedCoverage.coveredLosses.map((loss) => { const [term, description] = wordingLossParts(loss); return <div key={loss}><dt><WordingHighlightedText text={term} /></dt><dd>{description}</dd></div> })}</dl></article><article className="report-page__wording-loss-card"><small>보장 제외 범위</small><h4>이 특별약관이 보장하지 않는 손해</h4><dl>{selectedCoverage.excludedLosses.map((loss) => { const [term, description] = wordingLossParts(loss); return <div key={loss}><dt><WordingHighlightedText text={term} /></dt><dd>{description}</dd></div> })}</dl></article></div>
+        </section>
+
+        <section ref={fullDraftRef} className="report-page__wording-main-zone report-page__wording-zone-d" aria-labelledby="wording-full-draft-title">
+          <div className="report-page__wording-zone-heading"><div><h3 id="wording-full-draft-title">보장 특별약관 전체 초안</h3><p>선택한 보장 항목에 대해 AI가 작성한 전체 특별약관 조문을 검토합니다.</p></div></div>
+          <p className="report-page__wording-full-draft-notice">이 초안은 현대해상 기존 약관의 일반적인 조문 구조를 참고하여 작성한 프로토타입용 mock 데이터입니다. 실제 상품 약관이 아니며 법무·준법·계리 검토가 완료되지 않았습니다.</p>
+          <div className="report-page__wording-article-layout"><nav className="report-page__wording-article-toc report-page__no-print" aria-label="조문 목차"><strong>조문 목차</strong><div className="report-page__wording-article-toc-list">{selectedCoverage.fullDraftArticles.map((article) => <button key={article.articleNumber} className={activeArticleNumber === article.articleNumber ? 'is-active' : ''} type="button" onClick={() => scrollToArticle(article.articleNumber)}>제{article.articleNumber}조 {article.title}</button>)}</div><select aria-label="조문 선택" value={activeArticleNumber ?? ''} onChange={(event) => { if (event.target.value) scrollToArticle(Number(event.target.value)) }}><option value="">조문 선택</option>{selectedCoverage.fullDraftArticles.map((article) => <option key={article.articleNumber} value={article.articleNumber}>제{article.articleNumber}조 {article.title}</option>)}</select></nav><div className="report-page__wording-article-list">{selectedCoverage.fullDraftArticles.map((article) => <article className={activeArticleNumber === article.articleNumber ? 'is-active' : ''} key={article.articleNumber} ref={(node) => { articleRefs.current[article.articleNumber] = node }} data-article-number={article.articleNumber}><span className="report-page__wording-article-number">제{article.articleNumber}조</span><h4>{article.title}</h4><p><WordingHighlightedText text={article.content} /></p></article>)}</div></div>
+
+          <div ref={detailedReviewRef} className="report-page__wording-detail-toggles">
+            <details className="report-page__wording-detail-toggle" open={printMode || undefined}><summary><span><strong>약관 초안 작성 가능성 상세 근거</strong><small>평가 기준별 핵심 판단과 근거</small></span></summary><div className="report-page__wording-detail-content"><p className="report-page__wording-criteria-summary"><span className="is-ready">작성 가능 {statusCounts.ready}건</span><span aria-hidden="true"> · </span><span className="is-conditional">보완 필요 {statusCounts.conditional}건</span><span aria-hidden="true"> · </span><span className="is-decision">실무 판단 필요 {statusCounts.decision}건</span></p><div className="report-page__wording-criteria-list">{assessmentCriteria.map((item, index) => <details key={String(item.id ?? index)} className="report-page__wording-criteria-item" open={printMode || undefined}><summary><span className="report-page__wording-criteria-number">{String(index + 1).padStart(2, '0')}</span><span className="report-page__wording-criteria-copy"><strong>{String(item.question ?? '')}</strong><small>핵심 판단: {compactCriterionText(String(item.note ?? '상세 판단 근거가 준비되지 않았습니다.'), 120)}</small></span><WordingStatusBadge status={String(item.status ?? '')} /></summary><div className="report-page__wording-criteria-detail"><dl><div><dt>판단 근거</dt><dd>{String(item.note ?? '상세 판단 근거가 준비되지 않았습니다.')}</dd></div><div><dt>참고 약관</dt><dd>{String(item.reference ?? item.sourceName ?? '선택한 보장 항목의 참고 약관과 공개자료')}</dd></div><div><dt>적용한 가정</dt><dd>{String(item.assumption ?? '보장 대상과 사고 확인 자료가 객관적으로 확보된다는 가정')}</dd></div></dl></div></details>)}</div></div></details>
+            <details className="report-page__wording-detail-toggle" open={printMode || undefined}><summary><span><strong>약관에서 정의해야 할 핵심 용어</strong><small>우선 정의가 필요한 용어 3개와 추가 후보</small></span></summary><div className="report-page__wording-detail-content"><div className="report-page__wording-term-table-wrap"><table className="report-page__wording-term-table"><thead><tr><th>용어</th><th>정의</th><th>구분</th><th>상태</th></tr></thead><tbody>{definitionRows.map((row) => <tr key={row.term}><th scope="row">{row.term}</th><td>{row.definition}</td><td>{row.category}</td><td><span className={`report-page__wording-term-status ${wordingTermStatusTone(row.status)}`}>{row.status}</span></td></tr>)}</tbody></table></div><button className="report-page__text-button report-page__no-print report-page__wording-terms-toggle" type="button" onClick={() => setShowAllDefinitions((current) => !current)} aria-expanded={showAllDefinitions}>{showAllDefinitions ? '우선 용어만 보기 ↑' : '전체 용어 보기 ↓'}</button></div></details>
+            <details className="report-page__wording-detail-toggle" open={printMode || undefined}><summary><span><strong>참고 약관과 판단 근거</strong><small>참고 조항·반영 내용·가정·시뮬레이션·한계</small></span><em>{selectedCoverage.evidence.length}개 자료</em></summary><div className="report-page__wording-detail-content"><div className="report-page__wording-evidence-list">{selectedCoverage.evidence.map((evidence) => <article key={evidence.sourceType}><h4>{evidence.sourceType}</h4><dl><div><dt>참고한 조항</dt><dd>{evidence.clauses.join(' · ')}</dd></div><div><dt>초안에 반영한 내용</dt><dd>{evidence.reflected}</dd></div><div><dt>AI가 적용한 가정</dt><dd>{evidence.assumption}</dd></div><div><dt>프로토타입 시뮬레이션 값</dt><dd>{evidence.simulation}</dd></div><div><dt>분석 한계</dt><dd>{evidence.limitation}</dd></div><div><dt>신뢰도</dt><dd>{evidence.confidence}</dd></div></dl></article>)}</div><p className="report-page__wording-reference-date">자료 기준일 · {displayDate(report.meta.analysisBaseDate)} · 공개자료와 mock 데이터 기반</p></div></details>
+          </div>
+        </section>
+      </div>
     </section>
   )
 }
@@ -2886,7 +3822,7 @@ const REPORT_TABS = [
   { id: 'coverage-gap', label: '보장 공백', panelId: 'report-panel-coverage-gap' },
   { id: 'wording', label: '약관 검토', panelId: 'report-panel-wording' },
   { id: 'feasibility', label: '상품화 종합평가', panelId: 'report-panel-feasibility' },
-  { id: 'proposal', label: '상품 구조', panelId: 'report-panel-proposal' },
+  { id: 'proposal', label: '상품 개발 제안', panelId: 'report-panel-proposal' },
   { id: 'briefing', label: '종합 브리핑', panelId: 'report-panel-briefing' },
   { id: 'evidence', label: '근거자료 및 추가 확인사항', panelId: 'report-panel-evidence' },
 ] as const
@@ -3155,18 +4091,18 @@ function ReportPdfDocument({
           <div className="report-page__pdf-section" data-pdf-section="ai-judgment"><AiSummarySection report={report} /></div>
         ) : null}
         {includes('coverage-gap') ? (
-          <div className="report-page__pdf-section" data-pdf-section="coverage-gap"><RiskGapSection report={report} /></div>
+          <div className="report-page__pdf-section" data-pdf-section="coverage-gap"><RiskGapSection report={report} printMode /></div>
         ) : null}
         {includes('wording') ? (
           <div className="report-page__pdf-section" data-pdf-section="wording">
-            <WordingSection report={report} onOpenDocument={() => undefined} onOpenPolicyDraft={() => undefined} />
+            <WordingSection report={report} onOpenDocument={() => undefined} onOpenPolicyDraft={() => undefined} printMode />
           </div>
         ) : null}
         {includes('feasibility') ? (
           <div className="report-page__pdf-section" data-pdf-section="feasibility"><FeasibilitySection report={report} printMode /></div>
         ) : null}
         {includes('proposal') ? (
-          <div className="report-page__pdf-section" data-pdf-section="proposal"><ProductProposalSection report={report} /></div>
+          <div className="report-page__pdf-section" data-pdf-section="proposal"><ProductProposalSection report={report} printMode /></div>
         ) : null}
         {includes('briefing') ? (
           <div className="report-page__pdf-section" data-pdf-section="briefing">
@@ -3600,7 +4536,7 @@ export function ReportSections({
           {editorMode && activeTab === 'ai-judgment' ? <ReportEditorPanel activeTab="ai-judgment" report={draftReport} onChange={handleDraftChange} /> : <AiSummarySection report={report} />}
         </ReportTabPanel>
         <ReportTabPanel id="report-panel-coverage-gap" tabId="coverage-gap" index={1} active={activeTab === 'coverage-gap'} onChange={handleTabChange}>
-          {editorMode && activeTab === 'coverage-gap' ? <ReportEditorPanel activeTab="coverage-gap" report={draftReport} onChange={handleDraftChange} /> : <RiskGapSection report={report} />}
+          {editorMode && activeTab === 'coverage-gap' ? <ReportEditorPanel activeTab="coverage-gap" report={draftReport} onChange={handleDraftChange} /> : <RiskGapSection report={report} onNavigateTab={handleTabChange} />}
         </ReportTabPanel>
         <ReportTabPanel id="report-panel-wording" tabId="wording" index={2} active={activeTab === 'wording'} onChange={handleTabChange}>
           {editorMode && activeTab === 'wording' ? <ReportEditorPanel activeTab="wording" report={draftReport} onChange={handleDraftChange} /> : (
