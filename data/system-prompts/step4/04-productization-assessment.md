@@ -21,15 +21,15 @@
 | 1 | `actual_market_demand` | `market` | `productization_gate` | 실제 시장·계약 수요 | 실제로 구매·가입할 기업이나 계약자가 존재하는가? | 고객 요청, 가입 의향, 예상 계약 수와 대체 대응수단을 기준으로 반복 가능한 수요를 검토 |
 | 2 | `risk_pooling` | `insurability` | `productization_gate` | 위험 분산 가능성 | 동질 위험을 가진 계약자가 충분하고 여러 계약으로 분산할 수 있는가? | 특정 고객·시설·지역에 집중되지 않고 위험군을 나눌 수 있는지 검토 |
 | 3 | `fortuity` | `insurability` | `insurance_gate` | 우연성 | 사고가 우연하고 사전에 통제되지 않는가? | 계약 전 이미 발생했거나 의도적으로 만든 손해가 아닌지 검토 |
-| 4 | `insurable_interest` | `insurability` | `insurance_gate` | 피보험이익 | 보험금을 받을 주체가 사고로 실제 경제적 손해를 입는가? | 보장 대상과 실제 경제적 손해의 관계를 검토 |
+| 4 | `insurable_interest` | `insurability` | `insurance_gate` | 피보험이익 명확성 | 보험금을 받을 주체가 사고로 실제 경제적 손해를 입는가? | 계약자·피보험자·피해자·수령자의 관계와 보호할 경제적 이해관계를 검토 |
 | 5 | `moral_hazard_control` | `insurability` | `supplementary_execution` | 고의·도덕적 해이·보험사기 통제 | 고의·조작·과다 청구를 객관적으로 통제할 수 있는가? | 인수기준, 사고 검증, 면책·자기부담 등으로 도덕적 해이를 관리할 수 있는지 검토 |
-| 6 | `gambling_like_structure` | `insurability` | `insurance_gate` | 사행성 배제·실손보상 원칙 | 실제 경제적 손해와 무관한 투자·베팅 구조가 아닌가? | 실제 발생한 직접 재산손해 범위에서 보상하고 중복 보상액을 조정할 수 있는지 검토 |
-| 7 | `loss_verifiability` | `coverage` | `productization_gate` | 손해 확인·산정 가능성 | 사고와 직접·간접 손해를 객관적 자료로 확인하고 산정할 수 있는가? | 사고 발생 여부와 손해액을 객관적 자료로 확인할 수 있는지 검토 |
-| 8 | `pml_accumulation` | `coverage` | `productization_gate` | 최대가능손해(PML) | 단일 사고의 PML과 동시다발 누적 위험을 관리할 수 있는가? | 사고 한 번에 발생할 수 있는 최대 손해와 누적 위험을 검토 |
+| 6 | `gambling_like_structure` | `insurability` | `insurance_gate` | 사행성·유사수신 배제 | 실제 경제적 손해와 무관한 투자·베팅 구조가 아닌가? | 보험 목적과 실제 손해 보전의 연결이 약한 정액·확정수익 구조인지 검토 |
+| 7 | `loss_verifiability` | `coverage` | `productization_gate` | 사고 확인·손해액 산정 가능성 | 사고와 직접·간접 손해를 객관적 자료로 확인하고 산정할 수 있는가? | 사고 시점·장소·원인, 피해별 손해와 기존 보험 중복 여부를 검토 |
+| 8 | `pml_accumulation` | `coverage` | `productization_gate` | 최대 가능 손해·누적 위험 | 단일 사고의 PML과 동시다발 누적 위험을 관리할 수 있는가? | 집중·확산 손해와 재보험 이전 필요성을 포함해 인수 가능 범위를 검토 |
 | 9 | `liability_clarity` | `coverage` | `supplementary_execution` | 책임주체 명확성 | 사고 관련 책임 주체와 책임 분담 기준을 구분할 수 있는가? | 계약상·법률상 책임, 복수 주체와 구상 가능성을 검토 |
 | 10 | `wording_clarity` | `wording` | `productization_gate` | 약관·보장조건 명확성 | 보장·면책·지급조건을 객관적인 약관으로 표현할 수 있는가? | 보장 대상·사고·손해·기간·한도 방향과 분쟁 가능성을 검토 |
-| 11 | `pricing_data_readiness` | `data` | `supplementary_execution` | 위험 데이터 확보 가능성 | 사고·손해·노출 데이터를 바탕으로 요율 검토를 진행할 준비가 되어 있는가? | 사고 빈도와 손해액을 추정할 데이터를 확보할 수 있는지 검토 |
-| 12 | `coverage_gap` | `coverage` | `supplementary_execution` | 보장 공백·중복 여부 | 기존 보험의 공백과 중복을 구분하고 개정·신규 개발 방향을 정할 수 있는가? | 기존 보험과 겹치는 보장과 새롭게 보완할 보장 공백을 확인 |
+| 11 | `pricing_data_readiness` | `data` | `supplementary_execution` | 요율 검토를 위한 데이터 준비도 | 사고·손해·노출 데이터를 바탕으로 요율 검토를 진행할 준비가 되어 있는가? | 요율을 확정하지 않고 빈도·심도·노출 단위와 위험 특성별 자료 확보 수준을 검토 |
+| 12 | `coverage_gap` | `coverage` | `supplementary_execution` | 기존 보험 보장 공백·중복·개정 가능성 | 기존 보험의 공백과 중복을 구분하고 개정·신규 개발 방향을 정할 수 있는가? | 기존 보험의 보장 범위, 이중보상 가능성과 특약 개정 대비 신규 개발의 현실성을 검토 |
 
 `gateGroup`과 기준 순서는 프로젝트 계약의 고정값이다. 입력에 다른 분류가 들어와도 이 계약을 임의로 바꾸지 않는다.
 
@@ -40,14 +40,6 @@
 - `confidence`: `high`, `medium`, `low`, `unknown`
 - `overallStatus`: `reviewable`, `conditional`, `needs_more_data`, `redesign`, `not_viable`
 - `aiProductJudgment`: `review_worthy`, `additional_check_required`, `likely_initial_rejection`
-
-### AI 판단과 실무자 판단의 분리
-
-- `aiDecision`은 각 기준의 AI 이진 판단으로 `fulfilled` 또는 `unfulfilled`만 사용한다. 화면의 `AI 충족` 집계와 상태 표시가 이 값을 기준으로 계산되므로 `status`의 `pass` 여부를 대신 사용하지 않는다.
-- `status`는 `pass`, `needs_review`, `additional_check`, `critical`의 상세 분석 상태다. AI 판단 결과와 보완·추가 확인·불충족의 분석 맥락을 함께 보존한다.
-- `reviewStatus`는 `pending` 또는 `completed`, `reviewAction`은 `accepted` 또는 `modified`로 실무 검토 진행을 표시한다. 실무자 검토 전에는 `reviewerReview`를 만들지 않는다.
-- 검토 완료 시 `reviewerReview.decision`, `resultAiDecision`, `resultStatus`, `changeReason`, `confirmed`, `updatedAt`을 사용해 AI 원결과와 실무 최종 판단을 비교할 수 있게 한다. AI 결과를 삭제하거나 덮어쓰지 않는다.
-- 그룹 헤더와 요약 수치는 `criteria` 배열에서 계산한다. `12/12 충족`, `보완 필요 0건`을 입력 프롬프트에서 고정하지 말고 현재 실제 상태를 집계한다.
 
 기사에 직접 근거가 없으면 `pass`나 `high`로 올리지 않는다. 특히 보험료·요율·보상한도·가입 가능 여부는 산출하거나 확정하지 않는다.
 
@@ -86,8 +78,6 @@
           "question": "실제로 구매·가입할 기업이나 계약자가 존재하는가?",
           "description": "고객 요청, 가입 의향, 예상 계약 수와 대체 대응수단을 기준으로 반복 가능한 수요를 검토합니다.",
           "status": "additional_check",
-          "aiDecision": "unfulfilled",
-          "reviewStatus": "pending",
           "evidenceStatus": "external_data_required",
           "sourceSections": ["evidence"],
           "requiresReviewerInput": true,

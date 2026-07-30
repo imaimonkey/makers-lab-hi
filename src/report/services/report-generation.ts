@@ -123,10 +123,6 @@ const completeReportForUi = (
     meta: {
       ...report.meta,
       generatedAt,
-      updatedAt: generatedAt,
-      revision: Math.max(1, report.meta.revision ?? 1),
-      sourceAsOf: report.meta.sourceAsOf ?? fallbackReport.meta.analysisBaseDate,
-      evidenceSnapshotVersion: report.meta.evidenceSnapshotVersion ?? `evidence:${report.meta.evidenceCount}`,
     },
     validationComparison: fallbackReport.validationComparison
       ? clone(fallbackReport.validationComparison)
@@ -162,10 +158,6 @@ const createFallbackReport = (
     meta: {
       ...report.meta,
       generatedAt,
-      updatedAt: generatedAt,
-      revision: Math.max(1, report.meta.revision ?? 1),
-      sourceAsOf: report.meta.sourceAsOf ?? fallbackReport.meta.analysisBaseDate,
-      evidenceSnapshotVersion: report.meta.evidenceSnapshotVersion ?? `evidence:${report.meta.evidenceCount}`,
       badges: badges.includes("시연용 fallback 데이터")
         ? badges
         : [...badges, "시연용 fallback 데이터"],
@@ -186,14 +178,7 @@ export const generateMockReport = async ({
     mode: "success",
     report: {
       ...report,
-      meta: {
-        ...report.meta,
-        generatedAt: now().toISOString(),
-        updatedAt: now().toISOString(),
-        revision: Math.max(1, report.meta.revision ?? 1),
-        sourceAsOf: report.meta.sourceAsOf ?? riskData.meta.analysisBaseDate,
-        evidenceSnapshotVersion: report.meta.evidenceSnapshotVersion ?? `evidence:${report.meta.evidenceCount}`,
-      },
+      meta: { ...report.meta, generatedAt: now().toISOString() },
       reviewer: defaultReviewer(report),
     },
     warnings: [],

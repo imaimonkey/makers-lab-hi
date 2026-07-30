@@ -46,19 +46,15 @@ export const cloneReport = (report: ReportResult): ReportResult => {
 
 export const parseStoredReportContent = (
   value: unknown,
-  reportId: string,
-  sourceRiskId = reportId,
+  sourceRiskId: string,
 ): ReportResult | null => {
-  if (!isRecord(value) || (value.reportId !== reportId && value.reportId !== sourceRiskId) || !isRecord(value.content)) {
+  if (!isRecord(value) || value.reportId !== sourceRiskId || !isRecord(value.content)) {
     return null;
   }
 
   const content = value.content;
   const meta = content.meta;
   if (!isRecord(meta) || meta.sourceRiskId !== sourceRiskId) {
-    return null;
-  }
-  if (typeof meta.reportId === 'string' && meta.reportId !== reportId && meta.reportId !== sourceRiskId) {
     return null;
   }
 
