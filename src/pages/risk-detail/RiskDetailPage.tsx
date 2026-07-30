@@ -15,8 +15,9 @@ import { getRadarArticleId } from '../../domain/risk/riskRadarMappings'
 import { riskRadarApi } from '../../features/risk-dashboard/riskRadarApi'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
+import type { SavedStep3AnalysisRow } from '../../features/llm-util/util-3'
 
-export function RiskDetailPage({ data, developerMode = false }: { data?: { risk: SampleRiskCandidate; detail: SampleRiskDetail; articleId: string }; developerMode?: boolean } = {}) {
+export function RiskDetailPage({ data, developerMode = false, step3Results = [] }: { data?: { risk: SampleRiskCandidate; detail: SampleRiskDetail; articleId: string }; developerMode?: boolean; step3Results?: SavedStep3AnalysisRow[] } = {}) {
   const { riskId } = useParams()
   const resolvedRiskId = resolveSampleRiskId(riskId)
   const risk = data?.risk ?? sampleRiskCandidates.find((item) => item.id === resolvedRiskId)
@@ -106,7 +107,9 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
     )
   }
 
-  const aiQualitativeSummary = buildAiQualitativeSummary(risk, detail)
+  const aiQualitativeSummary = developerMode && step3Results.length
+    ? detail.assessments.find((item) => item.label === '증가성')?.interpretation ?? detail.riskStatement
+    : buildAiQualitativeSummary(risk, detail)
 
   return (
     <div className="page detail-page sh-visual">
@@ -151,7 +154,7 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
             <span>점수 범위</span><strong>0–100</strong>
             <span>신뢰도</span><strong>{detailSourceLabel === 'LIVE API' ? 'API 응답' : '확인 대기'}</strong>
           </div>
-           <p>0–100 · signalStrength 기반 우선순위 SAMPLE · 사고확률·손해액 아님</p>
+           <p>0–100 · {developerMode ? (step3Results.length ? 'Step 3 저장 평가 기반 보조 우선순위' : 'Step 2 저장 점수 기반 우선순위') : 'signalStrength 기반 우선순위 SAMPLE'} · 사고확률·손해액 아님</p>
           <details className="hero-score-logic">
             <summary>산출 근거</summary>
             <div className="logic-step-list">
@@ -160,7 +163,7 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
               <p><b>03</b><span>판정</span><code>{risk.signalStrength >= 80 ? '80 이상 → CRITICAL' : risk.signalStrength >= 65 ? '65–79 → HIGH' : '64 이하 → REVIEW'}</code></p>
               <p className="logic-step-note">이 지수는 손해액이나 사고 확률이 아닙니다. 현재 후보를 어떤 순서로 먼저 확인할지 정하는 우선순위 기준입니다.</p>
               <div className="ai-qualitative-assessment">
-                <span>AI 정성 해석 · SAMPLE</span>
+                <span>AI 정성 해석 · {developerMode ? (step3Results.length ? 'Step 3 결과' : 'Step 2 결과') : 'SAMPLE'}</span>
                 <p>{aiQualitativeSummary}</p>
               </div>
             </div>
@@ -170,15 +173,16 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
 
       <section className="detail-grid detail-assessment-grid" id="assessment-criteria">
         <article className="assessment-panel surface-card">
-           <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY · AUTHORITY</p><h2>평가 요약</h2><p className="panel-heading-description">6개 평가 항목의 원점수 1–5와 표시용 0–100을 함께 보여줍니다. priorityIndex와 다른 의미의 평가 근거입니다.</p></div><span className="updated-label">{detailSourceLabel} · 담당자 검토 필요</span></div>
+          <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY · AUTHORITY</p><h2>{detail.assessments.length}개 지표 평가 요약</h2><p className="panel-heading-description">AI가 저장한 원점수(0–5)와 표시용 점수(0–100), 대표 사유, 원문 인용 검증 상태를 한 화면에서 확인합니다.{developerMode && step3Results.length ? ' Step 3 저장 결과가 최신 판단으로 반영되어 있습니다.' : ''}</p></div><span className="updated-label">{detailSourceLabel} · 담당자 검토 필요</span></div>
           <div className="assessment-list">
             {detail.assessments.map((item) => {
               const assessmentEvidence = getAssessmentEvidence(item.label, risk.id, detail.evidence)
               return (
               <div className="assessment-row" key={item.label}>
-                <div><strong>{item.label}</strong><small>{assessmentEvidence.length}건 연결 근거 · 신뢰도 {item.confidence}</small></div>
-                <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}<small>/100</small><em>원점수 {item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)}/5</em></strong></div>
-                <p>{item.note}</p>
+                <div><strong>{item.label}</strong><small>{item.evidenceStatus === 'verified' ? `${assessmentEvidence.length}건 연결 근거` : developerMode && step3Results.length ? `Step 3 원장 ${detail.evidence.length}건 · 지표별 연결 보류` : `${assessmentEvidence.length}건 연결 근거`} · 신뢰도 {item.confidence}</small><span className={`assessment-evidence-status ${item.evidenceStatus === 'verified' ? 'is-verified' : 'is-pending'}`}>{item.evidenceStatus === 'verified' ? '원문 인용 확인' : '원문 인용 확인 필요'}</span></div>
+                <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}<small>/100</small><em>AI 원점수 {item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)}/5</em></strong></div>
+                <p className="assessment-reason"><b>왜 이 점수인가</b>{item.note}</p>
+                {item.evidenceQuotes?.length ? <div className="assessment-quotes"><b>원문 인용</b>{item.evidenceQuotes.map((quote) => <q key={quote}>{quote}</q>)}</div> : <div className="assessment-quotes is-pending"><b>원문 인용</b><span>{developerMode && step3Results.length ? 'Step 3 결과에 이 지표를 직접 가리키는 evidenceRefs·인용 연결이 없어, AI 사유는 표시하되 지표별 근거 확정은 보류했습니다.' : 'Step 2 저장 결과에 정확한 인용 구간이 없어, AI 사유는 표시하되 근거 확정은 보류했습니다.'}</span></div>}
                 <details className="assessment-logic">
                    <summary>계산·자료 보기</summary>
                   <dl className="assessment-logic-grid">
@@ -193,8 +197,8 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
                     </dd></div>
                   </dl>
                   <div className="ai-qualitative-assessment">
-                    <span>AI 정성 해석 · SAMPLE</span>
-                    <p>{buildAssessmentAiSummary(item)}</p>
+                  <span>AI 정성 해석 · {developerMode ? (step3Results.length ? 'Step 3 결과' : 'Step 2 결과') : 'SAMPLE'}</span>
+                    <p>{developerMode && step3Results.length ? item.interpretation ?? item.note : buildAssessmentAiSummary(item)}</p>
                   </div>
                   <small>모든 원점수는 1–5 척도이며, 최종 표시값은 원점수 × 20으로 환산합니다.</small>
                 </details>
@@ -205,13 +209,15 @@ export function RiskDetailPage({ data, developerMode = false }: { data?: { risk:
         </article>
       </section>
 
-      <RiskDecisionWorkspace key={`review-${risk.id}`} risk={risk} detail={detail} />
+      <RiskDecisionWorkspace key={`review-${risk.id}`} risk={risk} detail={detail} developerMode={developerMode} step3Results={step3Results} />
       <EvidenceVerificationWorkspace
         key={`verification-${risk.id}`}
         risk={risk}
         detail={detail}
         liveDetail={liveDetail}
         onDetailRefresh={refreshLiveDetail}
+        developerMode={developerMode}
+        step3Results={step3Results}
       />
     </div>
   )

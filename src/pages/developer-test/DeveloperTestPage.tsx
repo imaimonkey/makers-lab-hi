@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   llmUtilityDefinitions,
   readSharedSystemPrompts,
@@ -7,13 +8,13 @@ import {
   buildFilePromptContext,
   parsePromptFile,
   saveUtil0RiskDiscovery,
+  readDeveloperPromptFile,
 } from '../../features/llm-util'
 import type { LlmRunResult, LlmUtilityId, SharedSystemPromptMap, UploadedPromptFile } from '../../features/llm-util'
 import {
   buildNewsClassificationPrompt,
   bindNewsGroupsToSourceItems,
   collectNaverNews,
-  createMockNewsClassification,
   createNewsSourceRecords,
   defaultNaverNewsSearchKeywords,
   parseNewsClassificationOutput,
@@ -30,7 +31,7 @@ import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 
 const defaultUtilityId: LlmUtilityId = 'util-0'
-const isMockMode = import.meta.env.VITE_LLM_USE_MOCK !== 'false'
+const isMockMode = import.meta.env.VITE_LLM_USE_MOCK === 'true'
 const showDeveloperNewsPanel = import.meta.env.VITE_SHOW_DEVELOPER_NEWS_PANEL === 'true'
 
 type RunPromptSource = 'markdown' | 'shared' | 'browser'
@@ -428,16 +429,16 @@ export function DeveloperTestPage() {
     setResult(null)
 
     try {
+      const step1Prompt = await readDeveloperPromptFile('step1', '01-news-risk-clustering.md')
+      setLastRunSystemPrompt({ text: step1Prompt.text, source: 'shared' })
       const response = await runLlmUtility({
         utilityId: 'util-1',
-        systemPrompt,
+        systemPrompt: step1Prompt.text,
         prompt,
       })
-      const classificationText = response.mode === 'mock'
-        ? JSON.stringify(createMockNewsClassification(sourceItems, storedNewsGroups), null, 2)
-        : response.text
-      const displayResponse = response.mode === 'mock' ? { ...response, text: classificationText } : response
-      setResult(displayResponse)
+      if (response.mode === 'mock') throw new Error('개발자 화면에서는 mock Step 1 결과를 저장하지 않습니다. Gemini 또는 Potens 연결을 확인하세요.')
+      const classificationText = response.text
+      setResult(response)
 
       const parsed = parseNewsClassificationOutput(classificationText)
       const groups = bindNewsGroupsToSourceItems(parsed.groups, sourceItems)
@@ -451,7 +452,7 @@ export function DeveloperTestPage() {
       })
       setStoredNewsGroups(saved.store.groups)
       setNewsStoreSnapshot(saved.store)
-      setNewsConfigMessage(`${response.mode === 'mock' ? 'SAMPLE · ' : ''}${sourceItems.length}건을 ${parsed.groups.length}개 동적 위험 묶음으로 분류하고 저장했습니다.`)
+      setNewsConfigMessage(`${sourceItems.length}건을 ${parsed.groups.length}개 동적 위험 묶음으로 분류하고 저장했습니다.`)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : '뉴스 분류·저장에 실패했습니다.')
     } finally {
@@ -620,6 +621,9 @@ export function DeveloperTestPage() {
           ? '현재 Mock 응답 모드입니다. 분류·저장 결과는 SAMPLE로 표시되며 실제 위험 판단에 사용하지 않습니다.'
           : '서버 전용 Gemini 프록시로 공유 시스템 프롬프트와 테스트 입력을 각각 전달합니다. 결과는 반드시 실무자가 검토합니다.'}
       </div>
+      <nav className="developer-workflow-nav" aria-label="개발자 분석 흐름">
+        <span className="active">01 · 신호 수집·분류</span><Link to="/developer-test/risks">02 · 위험 후보 분석 →</Link><span>03 · 위험 상세</span><span>04 · 종합 리포트</span>
+      </nav>
 
       <section className="developer-utility-switcher surface-card" aria-label="LLM 유틸리티 선택">
         <div className="developer-switcher-heading">
@@ -1010,7 +1014,7 @@ export function DeveloperTestPage() {
               )}
               {result && (
                 <span className={`developer-mode-chip ${result.mode}`}>
-                  {result.mode === 'gemini' ? 'GEMINI API' : 'MOCK'}
+                  {result.mode === 'gemini' ? 'GEMINI API' : result.mode === 'potens' ? 'POTENS API' : 'MOCK'}
                 </span>
               )}
             </div>

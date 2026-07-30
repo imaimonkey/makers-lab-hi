@@ -53,15 +53,21 @@ export async function runLlmUtility({ utilityId, systemPrompt, prompt }: LlmRunR
 
   if (useMock) return createMockResult(normalizedSystemPrompt, normalizedPrompt)
 
-  const response = await fetch(`${apiBaseUrl}/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      utilityId,
-      systemPrompt: normalizedSystemPrompt,
-      prompt: normalizedPrompt,
-    }),
-  })
+  let response: Response
+  try {
+    response = await fetch(`${apiBaseUrl}/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        utilityId,
+        systemPrompt: normalizedSystemPrompt,
+        prompt: normalizedPrompt,
+      }),
+    })
+  } catch (error) {
+    const detail = error instanceof Error && error.message ? ` (${error.message})` : ''
+    throw new Error(`LLM 개발 서버에 연결하지 못했습니다. 새 프로젝트의 dev 서버를 실행하고 ${apiBaseUrl}/generate 경로를 확인하세요.${detail}`, { cause: error })
+  }
   let payload: LlmApiResponse
   try {
     payload = await response.json() as LlmApiResponse

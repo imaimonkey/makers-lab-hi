@@ -12,9 +12,10 @@ import type {
 } from '../../domain/risk/riskRadarTypes'
 import { riskRadarApi } from './riskRadarApi'
 import { deriveArticleDashboard, loadArticleSourceRecords } from './articleSourceData'
+import { readNewsClassificationStore } from '../news-intake/classificationRepository'
 
 export type RadarSnapshotSource = 'dashboard' | 'news' | 'risks'
-export type RadarSnapshotSourceStatus = 'loading' | 'live' | 'local' | 'stale' | 'sample'
+export type RadarSnapshotSourceStatus = 'loading' | 'live' | 'local' | 'stale' | 'sample' | 'empty'
 
 export type RiskRadarSnapshotState = {
   dashboard: RadarDashboardData
@@ -136,6 +137,16 @@ const sampleDashboard: RadarDashboardData = {
   lastSync: { completedAt: sampleGeneratedAt, status: 'sample-fallback' },
 }
 
+// The practitioner API fallback keeps this fixture isolated from developer mode.
+void sampleDashboard
+
+const emptyDashboard: RadarDashboardData = {
+  generatedAt: '',
+  metrics: { news: 0, contentReady: 0, analyzed: 0, pending: 0, failed: 0, clusters: 0, evidencePending: 0, riskCandidates: 0 },
+  channels: {}, analysisCounts: {}, clusters: [], topNews: [], risks: [], issues: [], signals: [], recentActivities: [], failures: [],
+  apiStatus: { potens: 'unavailable', law: 'unavailable', products: 'unavailable' }, lastSync: null,
+}
+
 function errorMessage(reason: unknown) {
   return reason instanceof Error ? reason.message : String(reason)
 }
@@ -147,9 +158,9 @@ function fallbackStatus(previous: RadarSnapshotSourceStatus): RadarSnapshotSourc
 export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }) {
   const requestSequence = useRef(0)
   const [snapshot, setSnapshot] = useState<RiskRadarSnapshotState>({
-    dashboard: sampleDashboard,
-    news: sampleNews,
-    risks: sampleRisks,
+    dashboard: emptyDashboard,
+    news: [],
+    risks: [],
     sourceStatus: { dashboard: 'loading', news: 'loading', risks: 'loading' },
     errors: {},
     initialLoading: true,
@@ -167,12 +178,41 @@ export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }
     if (options?.preferLocalArticles) {
       const completedAt = new Date().toISOString()
       try {
-        const localArticles = await loadArticleSourceRecords()
-        const localSnapshot = deriveArticleDashboard(localArticles)
+        const [localArticles, classificationStore] = await Promise.all([
+          loadArticleSourceRecords(),
+          readNewsClassificationStore(true).catch(() => null),
+        ])
+        const baseSnapshot = deriveArticleDashboard(localArticles)
+        const groups = classificationStore?.groups ?? []
+        const localSnapshot = groups.length
+          ? {
+            ...baseSnapshot,
+            risks: groups.map((group) => {
+              const articleId = group.sourceIds.find((sourceId) => localArticles.some((article) => article.id === sourceId)) ?? group.sourceIds[0]
+              return {
+                id: `RISK-${group.groupKey}`,
+                articleId,
+                clusterId: `CLUSTER-${group.groupKey}`,
+                name: group.title,
+                source: group.sourceNames.join(' · ') || 'Step 1 분류 저장소',
+                status: 'Step 1 분류 완료 · Step 2 대기',
+                eligibleForProductReview: false,
+                promotionBlockReason: group.needsReview.join(' · ') || 'Step 2 후보 분석과 독립 근거 확인 필요',
+                facts: { facts: group.observedFacts, event: group.summary, changeType: group.changeDirection, affectedTargets: group.exposedGroups, damageTypes: group.potentialLoss, industries: [], timeAndPlace: '확인 필요' },
+                confidence: { level: group.confidence, reason: group.groupingReason },
+              }
+            }),
+            dashboard: {
+              ...baseSnapshot.dashboard,
+              metrics: { ...baseSnapshot.dashboard.metrics, analyzed: groups.length, pending: Math.max(0, localArticles.length - groups.length), riskCandidates: groups.length },
+              risks: [],
+            },
+          }
+          : baseSnapshot
         if (requestId === requestSequence.current) {
           setSnapshot((current) => ({
             ...current,
-            dashboard: localSnapshot.dashboard,
+            dashboard: { ...localSnapshot.dashboard, risks: localSnapshot.risks },
             news: localSnapshot.news,
             risks: localSnapshot.risks,
             sourceStatus: { dashboard: 'local', news: 'local', risks: 'local' },
@@ -188,7 +228,10 @@ export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }
         if (requestId === requestSequence.current) {
           setSnapshot((current) => ({
             ...current,
-            sourceStatus: { dashboard: 'sample', news: 'sample', risks: 'sample' },
+            dashboard: emptyDashboard,
+            news: [],
+            risks: [],
+            sourceStatus: { dashboard: 'empty', news: 'empty', risks: 'empty' },
             errors: { dashboard: errorMessage(error) },
             initialLoading: false,
             refreshing: false,

@@ -7,7 +7,7 @@
 | 파일 | 화면 카드 | 주요 출력 |
 | --- | --- | --- |
 | `01-risk-candidate-card.md` | 위험 후보 기본 정보·비교표 행 | `RiskExplorationRecord` 기본 필드 |
-| `02-screening-metrics-card.md` | 8개 지표 비교 셀·셀별 근거 | `metricScores`, `display`, `metricEvidence` |
+| `02-screening-metrics-card.md` | 8개 지표 비교 셀·셀별 근거 | `metricScores`, `display`, `metricEvidence.reasons`, `metricEvidence.quotes`, `metricEvidence.sources` |
 | `03-law-regulation-card.md` | 법령 트래킹 좌측 목록·우측 상세 | `lawTracking.items`, `timeline`, `beforeChanges`, `afterChanges` |
 | `04-case-loss-market-card.md` | 법령 상세의 연관 판례·실제 손해 탭 | `relatedCases`, `checklist` |
 | `05-article-analysis-queue-card.md` | 뉴스 본문 분석 큐 | `articleQueue` |
@@ -16,7 +16,7 @@
 
 ## 공통 입력
 
-기사 원문을 입력할 때 다음 메타데이터를 함께 전달한다.
+기사 원문을 입력할 때 다음 메타데이터를 함께 전달한다. 원문 자체는 `ARTICLE-001-source`처럼 별도 근거 ID로 연결하며, 모델은 입력된 `knownEvidenceIds` 밖의 출처 ID를 만들지 않는다.
 
 ```json
 {

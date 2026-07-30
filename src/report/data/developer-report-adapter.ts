@@ -1,5 +1,4 @@
 import type { ReportResult, RiskSourceData } from '../types'
-import { getMockReportData } from './mock-data-adapter'
 
 type Article = { id: string; title: string; source?: string; fileName: string; collectedAt?: string; text: string }
 
@@ -316,7 +315,6 @@ function normalizeReferenceDocuments(value: unknown) {
 }
 
 export function createDeveloperReportData(article: Article, results: Partial<Record<string, { text: string; generatedAt: string }>>) {
-  const base = getMockReportData()
   const parsed = Object.fromEntries(Object.entries(results).map(([key, result]) => [key, parse(result?.text)]))
   const summary = objectValue(parsed.summary)
   const gap = objectValue(parsed.gap)
@@ -333,7 +331,7 @@ export function createDeveloperReportData(article: Article, results: Partial<Rec
   const proposalData = objectValue(structure.productProposal ?? structure)
   const briefingUi = objectValue(briefing.ui)
   const briefingData = objectValue(briefingUi.briefing ?? briefing.briefing ?? briefing)
-  const evidenceItem = { id: article.id, type: 'PDF article', title: article.title, source: article.source ?? 'src/article', referenceDate: article.collectedAt ?? null, usedFor: ['Step 4 report'], reliability: '실제 아티클 원문', isMockData: false, originalAvailable: true }
+  const evidenceItem = { id: article.id + '-source', type: 'PDF article', title: article.title, source: article.source ?? 'src/article', referenceDate: article.collectedAt ?? null, usedFor: ['Step 4 report'], reliability: '실제 아티클 원문', isMockData: false, originalAvailable: true }
   const generatedAt = Object.values(results).map((item) => item?.generatedAt).filter(Boolean).sort().at(-1) ?? new Date().toISOString()
   const aiEvidence = listValue(evidence.evidence).map((item, index) => {
     const source = objectValue(item)
@@ -458,8 +456,8 @@ export function createDeveloperReportData(article: Article, results: Partial<Rec
     ui: { briefing: briefingData },
   } as unknown as ReportResult
   const riskData = {
-    schemaVersion: base.riskData.schemaVersion,
-    meta: { ...base.riskData.meta, riskId: article.id, analysisMode: 'developer / actual article', analysisBaseDate: article.collectedAt ?? generatedAt, preparedAt: article.collectedAt, dataStatus: 'ACTUAL ARTICLE', isMockData: false, inputEvidenceCount: 1 },
+    schemaVersion: 'developer-actual-v1',
+    meta: { riskId: article.id, analysisMode: 'developer / actual article', analysisBaseDate: article.collectedAt ?? generatedAt, preparedAt: article.collectedAt, dataStatus: 'ACTUAL ARTICLE', isMockData: false, inputEvidenceCount: 1, badges: ['ACTUAL ARTICLE', 'STEP 4'] },
     risk: { title: article.title, shortTitle: article.title, formalDefinition: article.title, categories: ['실제 아티클'] },
     demoContext: { mode: 'developer', source: article.source ?? 'src/article', fileName: article.fileName },
     selectionPreview: { oneLineReason: article.title, source: article.source ?? 'src/article', articleId: article.id },
@@ -473,8 +471,8 @@ export function createDeveloperReportData(article: Article, results: Partial<Rec
     evidenceItems: [evidenceItem],
     missingResearch: [],
     analysisQuestions: [],
-    expectedReportSections: base.riskData.expectedReportSections,
-    aiGuardrails: base.riskData.aiGuardrails,
+    expectedReportSections: ['summary', 'gap', 'structure', 'assessment', 'wording', 'briefing', 'evidence'],
+    aiGuardrails: { sourcePolicy: 'actual-article-only', missingEvidencePolicy: '확인 필요로 표시', finalDecisionPolicy: '보험 인수·판매 승인 아님' },
     disclaimer: '실제 아티클 원문과 Step 4 분석 결과를 결합한 개발자 테스트용 데이터입니다.',
   } as RiskSourceData
   return { riskData, report }

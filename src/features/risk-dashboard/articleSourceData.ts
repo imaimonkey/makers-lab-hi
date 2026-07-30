@@ -1,7 +1,17 @@
 import { readPdfFile } from '../llm-util/fileContext'
 import type { RadarDashboardData, RadarNewsArticle, RadarRiskCandidate } from '../../domain/risk/riskRadarTypes'
 
-const articleFiles = import.meta.glob('../../article/*.pdf', { eager: true, import: 'default', query: '?url' }) as Record<string, string>
+// The source PDFs are kept in public/articles so the browser can load the same
+// files that are referenced by the saved Step 2 workbook. Keep the manifest
+// explicit: Vite cannot enumerate files in its public directory at runtime.
+const articleFiles = [
+  '/articles/Warming Switzerland_ supporting our community to thrive in a hotter future _ Swiss Re-B08qVvNS.pdf',
+  '/articles/sri-2026-06-warming-switzerland-version-de-DFNu51l8.pdf',
+  '/articles/afoMp8BOoF08xomN_AXA_PR_20260505-DtwmCOyG.pdf',
+  '/articles/고용보험_및_산업재해보상보험의_보험료징수_등에_관한_법률(법률)(제21472호)(20270101) (1)-BsQPp5NI.pdf',
+  '/articles/보험개발원_신기술-CerngTVi.pdf',
+  '/articles/보험연구원_AI_데이터센터_건설_붐과_보장_공백-Ct_yc2Xr.pdf',
+] as const
 
 function fileName(path: string) {
   return path.split(/[\\/]/).pop() ?? path
@@ -18,9 +28,8 @@ function articleId(index: number) {
 export type ArticleSourceRecord = RadarNewsArticle & { text: string; fileName: string }
 
 export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]> {
-  const entries = Object.entries(articleFiles)
-  return Promise.all(entries.map(async ([path, url], index) => {
-    const name = fileName(path)
+  return Promise.all(articleFiles.map(async (url, index) => {
+    const name = fileName(url)
     const response = await fetch(url)
     if (!response.ok) throw new Error(`${name}: 원문 파일을 읽지 못했습니다.`)
     const blob = await response.blob()

@@ -16,6 +16,7 @@ export type SampleRiskCandidate = {
   status: '신규' | '검토 중' | '관찰'
   trend: string
   updatedAt: string
+  articleId?: string
 }
 
 export type SampleRiskAssessment = {
@@ -29,6 +30,10 @@ export type SampleRiskAssessment = {
   inputs?: string
   calculation?: string
   interpretation?: string
+  evidenceStatus?: 'verified' | 'pending'
+  evidenceQuotes?: string[]
+  uncertainty?: string[]
+  counterEvidence?: string[]
 }
 
 export type SampleRiskEvidence = RiskEvidenceContract & {

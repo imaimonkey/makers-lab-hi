@@ -24,6 +24,8 @@ export type Step2ArticleInput = {
   collectedAt: string
   knownEvidenceIds: string[]
   priorArticles: string[]
+  priorRiskGroups?: unknown[]
+  officialLawResults?: unknown
 }
 
 export function runUtil2(prompt: string, systemPrompt?: string) {

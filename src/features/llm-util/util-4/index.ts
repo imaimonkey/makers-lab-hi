@@ -13,6 +13,7 @@ export type Step4ArticleInput = {
   collectedAt: string
   knownEvidenceIds: string[]
   priorArticles: string[]
+  step3Results?: Array<{ step: string; resultJson: string }>
 }
 
 export function runUtil4(prompt: string, systemPrompt?: string) {

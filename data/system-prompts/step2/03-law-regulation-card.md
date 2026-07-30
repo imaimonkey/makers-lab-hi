@@ -80,3 +80,9 @@
 - 동일 법령의 재게시 기사는 하나의 항목으로 묶고 독립 출처 ID를 별도로 보존한다.
 - 모든 사실성 문장은 입력된 기사 ID 또는 공식 근거 ID로 추적 가능해야 한다.
 
+## OFFICIAL LAW API CONTRACT
+
+If `officialLawResults` is present in the input, treat it as the only authoritative law search result. Match the article to a law only when the returned law title, institution, effective date, or amendment identifier is materially supported. For every matched item return `evidenceIds`, `sourceUrl`, `sourceType`, `institution`, `title`, `status`, `expectedEffectiveDate`, and `verificationStatus`.
+
+If the API returns no result, an error, or only an ambiguous match, return an empty `items` array or an item marked `확인 필요`; never turn an AI inference into a confirmed law. Separate `articleEvidence` from `officialLawEvidence`, include exact short quotes for both when available, and add `unmatchedReason` plus `nextVerificationAction`. A law card without an official law evidence ID must display `원문 확인 필요` and must not be used as confirmed legal exposure.
+

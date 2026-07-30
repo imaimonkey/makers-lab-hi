@@ -1,9 +1,11 @@
 import { readStep2AnalysisResults, type SavedStep2AnalysisRow } from '../llm-util/util-2'
-import { type RiskExplorationMetricKey, type RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
+import { type RiskExplorationMetricKey, type RiskExplorationMetricEvidence, type RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
 import type { ProductRisk } from '../../domain/risk/riskRadarDemo'
-import { sampleRiskDetails, type SampleRiskCandidate, type SampleRiskDetail, type SampleRiskEvidence } from '../../domain/risk/sampleData'
+import type { SampleRiskCandidate, SampleRiskDetail, SampleRiskEvidence } from '../../domain/risk/sampleData'
 import type { RiskTheme } from '../../domain/risk/types'
 import type { ArticleSourceRecord } from '../risk-dashboard/articleSourceData'
+import type { SavedStep3AnalysisRow } from '../llm-util/util-3'
+import { step3Nested, step3Root, step3Text } from '../risk-detail/step3ResultAdapter'
 
 const actualCheckRequired = '확인 필요'
 
@@ -31,9 +33,9 @@ function firstText(...values: unknown[]): string {
   return actualCheckRequired
 }
 
-function scoreFrom(value: unknown, fallback = 1): number {
+function scoreFrom(value: unknown, fallback = 0): number {
   const parsed = typeof value === 'number' ? value : Number(value)
-  return Number.isFinite(parsed) ? Math.max(1, Math.min(5, parsed)) : fallback
+  return Number.isFinite(parsed) ? Math.max(0, Math.min(5, parsed)) : fallback
 }
 
 function confidenceFrom(score: number): SampleRiskEvidence['confidence'] {
@@ -77,6 +79,36 @@ function makeActualEvidence(article: ArticleSourceRecord, riskId: string, uncert
   }
 }
 
+function makeMetricEvidence(
+  article: ArticleSourceRecord,
+  riskId: string,
+  key: string,
+  metric: Record<string, unknown>,
+  score: number,
+  verified: boolean,
+): SampleRiskEvidence {
+  const reasons = asTextList(metric.reasons)
+  const uncertainty = asTextList(metric.uncertainty)
+  const counterEvidence = asTextList(metric.counterEvidence)
+  return {
+    id: `${article.id}-metric-${key}`,
+    type: 'Step 2 AI 평가 근거',
+    sourceType: 'article',
+    sourceName: `${article.source} · ${article.fileName}`,
+    title: `${key} 평가 · ${article.title}`,
+    sourceUrl: null,
+    publishedAt: article.collectedAt ?? null,
+    date: article.collectedAt ?? actualCheckRequired,
+    excerpt: reasons.join(' · ') || asText(metric.judgment),
+    supports: [`risk:${riskId}`, `assessment:${key}`],
+    confidence: verified ? confidenceFrom(score) : 'low',
+    uncertainty: uncertainty.join(' · ') || 'AI 점수의 원문 인용 구간을 추가 확인해야 합니다.',
+    counterpoint: counterEvidence.join(' · ') || '독립 출처·정량 손해 데이터 추가 확인 필요',
+    verificationStatus: verified ? 'source-pending' : 'source-pending',
+    dataStatus: 'actual-article',
+  }
+}
+
 export type DeveloperRiskDetailData = {
   risk: SampleRiskCandidate
   detail: SampleRiskDetail
@@ -91,15 +123,29 @@ export function buildDeveloperRiskDetailData(article: ArticleSourceRecord, rows:
   const metricScores = asRecord(metrics.metricScores)
   const metricEvidence = asRecord(metrics.metricEvidence)
   const keys = ['demand', 'fortuity', 'accumulation', 'measurability', 'adverseSelection', 'moralHazard', 'dataConfidence', 'legalExposure'] as const
+  const knownEvidenceIds = new Set([article.id, `${article.id}-source`, ...asTextList(metrics.evidenceIds)])
+  const normalizedArticleText = article.text.replace(/\s+/g, ' ').trim()
+  const metricHasValidatedEvidence = (key: typeof keys[number]) => {
+    const item = asRecord(metricEvidence[key])
+    const structuredEvidence = Array.isArray(item.evidence) ? item.evidence : []
+    const sourceIds = [...asTextList(item.sources), ...asTextList(item.evidenceId), ...structuredEvidence.map((entry) => asRecord(entry).evidenceId).filter((value): value is string => typeof value === 'string')]
+    const quotes = [...asTextList(item.quotes), ...asTextList(item.quote), ...structuredEvidence.map((entry) => asRecord(entry).quote).filter((value): value is string => typeof value === 'string')]
+    return sourceIds.some((sourceId) => knownEvidenceIds.has(sourceId)) && quotes.some((quote) => {
+      const normalizedQuote = quote.replace(/\s+/g, ' ').trim()
+      return normalizedQuote.length >= 8 && normalizedArticleText.includes(normalizedQuote)
+    })
+  }
   const scores = Object.fromEntries(keys.map((key) => [key, scoreFrom(metricScores[key])])) as Record<typeof keys[number], number>
   const uncertainty = [...asTextList(candidate.uncertainty), ...asTextList(review.uncertainty), ...asTextList(queue.uncertainty)]
   const counterEvidence = [...asTextList(candidate.counterEvidence), ...asTextList(review.counterEvidenceIds)]
   const evidence = makeActualEvidence(article, 'developer-' + article.id, uncertainty, counterEvidence, scores.dataConfidence)
-  const baseLabels = sampleRiskDetails['generative-ai-copyright']?.assessments.map((item) => item.label) ?? keys.map((key) => key)
+  const baseLabels = ['시장 수요', '우연성', '누적 위험', '측정 가능성', '역선택', '도덕적 해이', '데이터 신뢰도', '법률 노출']
   const metricLabels = ['demand', 'fortuity', 'accumulation', 'measurability', 'adverseSelection', 'moralHazard', 'dataConfidence', 'legalExposure'] as const
   const assessments = metricLabels.map((key, index) => {
     const metric = asRecord(metricEvidence[key])
-    const reasons = asTextList(metric.reasons)
+    const verified = metricHasValidatedEvidence(key)
+    const rationale = asText(metric.scoreRationale, '저장된 Step 2 분석의 대표 사유입니다.')
+    const reasons = asTextList(metric.reasons).length ? asTextList(metric.reasons) : [rationale]
     const judgment = firstText(metric.judgment, asRecord(metrics.display)[key + 'Val'], actualCheckRequired)
     const score = Math.round(scores[key] * 20)
     return {
@@ -108,9 +154,13 @@ export function buildDeveloperRiskDetailData(article: ArticleSourceRecord, rows:
       confidence: score >= 80 ? '높음' as const : score >= 50 ? '보통' as const : '낮음' as const,
       note: reasons.join(' · ') || judgment,
       formula: key + ' = ' + scores[key].toFixed(1) + ' / 5',
-      inputs: '근거 ' + article.id + ' · ' + asText(metrics.scoreBasis, '점수 산정 근거 확인 필요'),
+      inputs: '근거 ' + ([article.id + '-source', ...asTextList(metric.sources)].filter((value, position, values) => values.indexOf(value) === position).join(' · ') || '근거 ID 확인 필요') + ' · ' + asText(metrics.scoreBasis, '점수 산정 근거 확인 필요'),
       calculation: scores[key].toFixed(1) + ' × 20 = ' + score,
-      interpretation: judgment + (asTextList(metric.uncertainty).length ? ' · ' + asTextList(metric.uncertainty).join(' · ') : ''),
+      interpretation: rationale + (asTextList(metric.uncertainty).length ? ' · ' + asTextList(metric.uncertainty).join(' · ') : ''),
+      evidenceStatus: (verified ? 'verified' : 'pending') as 'verified' | 'pending',
+      evidenceQuotes: [...asTextList(metric.quotes), ...asTextList(metric.quote)].slice(0, 3),
+      uncertainty: asTextList(metric.uncertainty),
+      counterEvidence: asTextList(metric.counterEvidence),
     }
   })
   const title = firstText(candidate.title, review.keyword, queue.headline, article.title)
@@ -130,7 +180,7 @@ export function buildDeveloperRiskDetailData(article: ArticleSourceRecord, rows:
     decisionTone,
     decisionChecks: [...new Set(checks.length ? checks : [actualCheckRequired])].slice(0, 4),
     assessments,
-    evidence: [evidence],
+    evidence: [evidence, ...keys.map((key) => makeMetricEvidence(article, 'developer-' + article.id, key, asRecord(metricEvidence[key]), scores[key], metricHasValidatedEvidence(key)))],
   }
   return {
     articleId: article.id,
@@ -145,8 +195,130 @@ export function buildDeveloperRiskDetailData(article: ArticleSourceRecord, rows:
       status,
       trend: 'ACTUAL ARTICLE · Step 2',
       updatedAt: article.collectedAt ?? new Date().toISOString(),
+      articleId: article.id,
     },
     detail,
+  }
+}
+
+function step3SourceType(value: unknown): SampleRiskEvidence['sourceType'] {
+  const allowed = ['article', 'news', 'research', 'report', 'statistics', 'regulation', 'customer-voice', 'internal-sample']
+  const text = step3Text(value)
+  return allowed.includes(text) ? text as SampleRiskEvidence['sourceType'] : 'article'
+}
+
+function step3EvidenceToSample(value: unknown, article: ArticleSourceRecord, riskId: string): SampleRiskEvidence[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((entry, index) => {
+    const item = asRecord(entry)
+    const excerpt = step3Text(item.excerpt, '')
+    const id = step3Text(item.id, `${article.id}#step3-evidence-${index + 1}`)
+    if (!excerpt) return []
+    return [{
+      id,
+      type: step3Text(item.type, 'Step 3 근거 원장'),
+      sourceType: step3SourceType(item.sourceType),
+      sourceName: step3Text(item.sourceName, article.source ?? 'src/article PDF'),
+      title: step3Text(item.title, article.title),
+      sourceUrl: /^https?:\/\//i.test(step3Text(item.sourceUrl)) ? step3Text(item.sourceUrl) : null,
+      publishedAt: step3Text(item.publishedAt, '') || null,
+      date: step3Text(item.date, article.collectedAt ?? actualCheckRequired),
+      excerpt,
+      supports: asTextList(item.supports).length ? asTextList(item.supports) : [`risk:${riskId}`],
+      confidence: (['high', 'medium', 'low'].includes(step3Text(item.confidence)) ? step3Text(item.confidence) : 'low') as SampleRiskEvidence['confidence'],
+      uncertainty: step3Text(item.uncertainty, 'Step 3 결과의 불확실성 확인 필요'),
+      counterpoint: step3Text(item.counterpoint, '반증 자료 추가 확인 필요'),
+      verificationStatus: 'source-pending',
+      dataStatus: item.dataStatus === 'live' ? 'actual-article' : 'actual-article',
+    }]
+  })
+}
+
+function findStep3Array(value: unknown, key: string): unknown[] {
+  if (!value || typeof value !== 'object') return []
+  if (Array.isArray(value)) return value
+  const record = value as Record<string, unknown>
+  if (Array.isArray(record[key])) return record[key] as unknown[]
+  for (const child of Object.values(record)) {
+    const found = findStep3Array(child, key)
+    if (found.length) return found
+  }
+  return []
+}
+
+/** Step 3 결과가 있으면 위험 상세의 표시용 모델을 최신 AI 결과로 갱신합니다. */
+export function applyStep3ResultsToDeveloperRiskDetailData(data: DeveloperRiskDetailData, rows: SavedStep3AnalysisRow[]): DeveloperRiskDetailData {
+  if (!rows.length) return data
+  const summary = step3Nested(rows, 'summary', 'riskSummary')
+  const context = step3Nested(rows, 'context', 'context')
+  const articleFacts = asRecord(context.articleFacts)
+  const decision = step3Nested(rows, 'decisionBrief', 'decisionBrief')
+  const assessmentRoot = step3Root(rows, 'assessment')
+  const rawAssessments = findStep3Array(assessmentRoot, 'assessments')
+  const trend = step3Nested(rows, 'trend', 'signalTrend')
+  const evidenceRoot = step3Root(rows, 'evidence')
+  const step3Evidence = step3EvidenceToSample(evidenceRoot.evidence, { id: data.articleId, title: data.risk.title, source: 'Step 3 evidence ledger', fileName: '', text: '' }, data.risk.id)
+  const evidenceById = new Map(step3Evidence.map((item) => [item.id, item.excerpt]))
+  const mappedAssessments = rawAssessments.flatMap((value) => {
+    const item = asRecord(value)
+    const rawScore = scoreFrom(item.rawScore, scoreFrom(item.score) / 20)
+    const score = Number.isFinite(Number(item.score)) ? Math.max(0, Math.min(100, Number(item.score))) : Math.round(rawScore * 20)
+    const label = step3Text(item.label, '')
+    if (!label) return []
+    const refs = asTextList(item.evidenceRefs)
+    return [{
+      label,
+      rawScore,
+      score,
+      confidence: (['높음', '보통', '낮음'].includes(step3Text(item.confidence)) ? step3Text(item.confidence) : '낮음') as SampleRiskDetail['assessments'][number]['confidence'],
+      note: step3Text(item.interpretation, step3Text(item.note, 'Step 3 AI 판단 사유 확인 필요')),
+      formula: step3Text(item.formula, 'Step 3 원점수 × 20'),
+      inputs: step3Text(item.inputs, 'Step 3 입력 근거 확인 필요'),
+      calculation: step3Text(item.calculation, `${rawScore.toFixed(1)} × 20 = ${score}`),
+      interpretation: step3Text(item.interpretation, step3Text(item.note)),
+      evidenceStatus: refs.length && refs.some((ref) => evidenceById.has(ref)) ? 'verified' as const : 'pending' as const,
+      evidenceQuotes: refs.map((ref) => evidenceById.get(ref)).filter((quote): quote is string => Boolean(quote)).slice(0, 3),
+      uncertainty: asTextList(item.uncertainty),
+      counterEvidence: asTextList(item.counterpoint),
+    }]
+  })
+  const nextChecks = Array.isArray(decision.nextChecks)
+    ? decision.nextChecks.map((item) => asRecord(item)).map((item) => step3Text(item.task)).filter(Boolean)
+    : []
+  const blockers = asTextList(decision.blockers)
+  const summaryTitle = step3Text(summary.title, data.risk.title)
+  const riskStatement = step3Text(summary.riskStatement, data.detail.riskStatement)
+  const exposedParty = step3Text(summary.exposedParty, data.detail.exposedParty)
+  const primaryLoss = step3Text(summary.primaryLoss, data.detail.primaryLoss)
+  const tone = step3Text(decision.recommendedTone, data.detail.decisionTone)
+  const decisionTone = tone === 'advance' ? 'advance' : tone === 'observe' ? 'observe' : 'hold'
+  const scoreForSignal = mappedAssessments.find((item) => /증가성|시장 수요|수요/.test(item.label))?.score
+  const productFit = mappedAssessments.length
+    ? Math.round(mappedAssessments.reduce((sum, item) => sum + item.score, 0) / mappedAssessments.length)
+    : data.risk.productFit
+  const actualEvidence = step3Evidence.length ? [data.detail.evidence[0], ...step3Evidence] : data.detail.evidence
+  return {
+    articleId: data.articleId,
+    risk: {
+      ...data.risk,
+      title: summaryTitle,
+      themeLabel: step3Text(summary.themeLabel, data.risk.themeLabel),
+      signalStrength: scoreForSignal ?? data.risk.signalStrength,
+      productFit,
+      trend: step3Text(trend.direction, data.risk.trend),
+    },
+    detail: {
+      ...data.detail,
+      riskStatement,
+      exposedParty,
+      primaryLoss,
+      decisionStatus: step3Text(decision.recommendedStatus, data.detail.decisionStatus),
+      decisionTitle: step3Text(decision.title, data.detail.decisionTitle),
+      decisionTone,
+      decisionChecks: [...new Set([...nextChecks, ...blockers, ...asTextList(articleFacts.timeAndPlace), ...data.detail.decisionChecks])].filter(Boolean).slice(0, 6),
+      assessments: mappedAssessments.length ? mappedAssessments : data.detail.assessments,
+      evidence: actualEvidence,
+    },
   }
 }
 
@@ -158,7 +330,7 @@ export function parseStep2Json(text: string): Record<string, unknown> {
 }
 
 const textValue = (value: unknown, fallback = '확인 필요') => typeof value === 'string' && value.trim() ? value : fallback
-const numberValue = (value: unknown, fallback = 3) => typeof value === 'number' && Number.isFinite(value) ? Math.max(1, Math.min(5, value)) : fallback
+const numberValue = (value: unknown, fallback = 0) => typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(5, value)) : fallback
 
 export function getStep2Root(row?: SavedStep2AnalysisRow): Record<string, unknown> {
   if (!row) return {}
@@ -169,25 +341,73 @@ export function getStep2Root(row?: SavedStep2AnalysisRow): Record<string, unknow
 
 export function buildDeveloperStep2Records(rows: SavedStep2AnalysisRow[], articles: ArticleSourceRecord[] = []): RiskExplorationRecord[] {
   const grouped = new Map<string, SavedStep2AnalysisRow[]>()
-  articles.forEach((article) => grouped.set(article.id, []))
-  rows.forEach((row) => grouped.set(row.articleId, [...(grouped.get(row.articleId) ?? []), row]))
+  rows.filter((row) => row.mode !== 'mock').forEach((row) => grouped.set(row.articleId, [...(grouped.get(row.articleId) ?? []), row]))
   return [...grouped.entries()].map(([articleId, articleRows], index) => {
     const article = articles.find((item) => item.id === articleId)
     const candidate = getStep2Root(articleRows.find((row) => row.step === 'candidate') ?? articleRows[0])
     const metrics = getStep2Root(articleRows.find((row) => row.step === 'metrics') ?? articleRows[0])
     const scores = (metrics.metricScores && typeof metrics.metricScores === 'object' ? metrics.metricScores : {}) as Record<string, unknown>
+    const rawMetricEvidence = asRecord(metrics.metricEvidence)
+    const articleText = article?.text ?? ''
+    const normalizedArticleText = articleText.replace(/\s+/g, ' ').trim()
+    const validatedEvidence = (key: RiskExplorationMetricKey) => {
+      const item = asRecord(rawMetricEvidence[key])
+      const structuredEvidence = Array.isArray(item.evidence) ? item.evidence : []
+      const sourceIds = [...asTextList(item.sources), ...structuredEvidence.map((evidence) => asRecord(evidence).evidenceId).filter((value): value is string => typeof value === 'string')]
+      const quotes = [...asTextList(item.quotes), ...asTextList(item.quote), ...structuredEvidence.map((evidence) => asRecord(evidence).quote).filter((value): value is string => typeof value === 'string' && value.trim().length > 0)]
+      const knownIds = new Set([articleId, `${articleId}-source`, ...asTextList(metrics.evidenceIds)])
+      return sourceIds.some((sourceId) => knownIds.has(sourceId)) && quotes.some((quote) => {
+        const normalizedQuote = quote.replace(/\s+/g, ' ').trim()
+        return normalizedQuote.length >= 8 && normalizedArticleText.includes(normalizedQuote)
+      })
+    }
+    // Keep the stored AI suggestion visible for practical review, but carry the
+    // evidence state separately so an unquoted score is never mistaken for a
+    // verified underwriting conclusion.
     const score = (key: RiskExplorationMetricKey) => numberValue(scores[key], 0)
+    const metricEvidence = Object.fromEntries((['demand', 'fortuity', 'accumulation', 'measurability', 'adverseSelection', 'moralHazard', 'dataConfidence', 'legalExposure'] as RiskExplorationMetricKey[]).map((key) => {
+      const item = asRecord(rawMetricEvidence[key])
+      const structuredEvidence = Array.isArray(item.evidence) ? item.evidence : []
+      const quotes = [
+        ...asTextList(item.quotes),
+        ...asTextList(item.quote),
+        ...structuredEvidence.map((evidence) => asRecord(evidence).quote).filter((quote): quote is string => typeof quote === 'string' && quote.trim().length > 0),
+      ]
+      const sourceIds = [
+        ...asTextList(item.sources),
+        ...structuredEvidence.map((evidence) => asRecord(evidence).evidenceId).filter((sourceId): sourceId is string => typeof sourceId === 'string' && sourceId.trim().length > 0),
+      ]
+      const verified = validatedEvidence(key)
+      const scoreRationale = asText(item.scoreRationale, '저장된 Step 2 분석의 대표 사유입니다.')
+      const value: RiskExplorationMetricEvidence = {
+        reasons: asTextList(item.reasons).length ? asTextList(item.reasons) : [scoreRationale],
+        sourceIds: [...new Set(sourceIds)],
+        quotes: [...new Set(quotes)].slice(0, 3),
+        judgment: asText(item.judgment),
+        scoreRationale,
+        confidence: verified ? asText(item.confidence, 'low') : 'low',
+        evidenceStatus: verified ? 'verified' : 'pending',
+        counterEvidence: asTextList(item.counterEvidence),
+        uncertainty: asTextList(item.uncertainty),
+      }
+      return [key, value]
+    })) as Partial<Record<RiskExplorationMetricKey, RiskExplorationMetricEvidence>>
+    const evidenceIds = [...new Set([
+      ...asTextList(candidate.evidenceIds),
+      ...asTextList(metrics.evidenceIds),
+      ...Object.values(metricEvidence).flatMap((item) => item?.sourceIds ?? []),
+    ])]
     const title = textValue(candidate.title, article?.title ?? `실제 아티클 위험 후보 ${index + 1}`)
     const tags = Array.isArray(candidate.tags) ? candidate.tags.map(String) : ['실제 아티클']
-    const displayScore = (key: RiskExplorationMetricKey) => score(key) > 0 ? `${score(key)}/5` : actualCheckRequired
+    const displayScore = (key: RiskExplorationMetricKey) => score(key) > 0 ? `${score(key).toFixed(1)}/5` : actualCheckRequired
     const displayPercent = score('dataConfidence') > 0 ? `${Math.round(score('dataConfidence') * 20)}%` : actualCheckRequired
     const display = {
-      demandVal: textValue(candidate.demand), fortVal: displayScore('fortuity'), fortuityDots: Math.round(score('fortuity')),
+      demandVal: displayScore('demand'), fortVal: displayScore('fortuity'), fortuityDots: Math.round(score('fortuity')),
       accumVal: displayScore('accumulation'), accumulationDots: Math.round(score('accumulation')),
       measVal: displayScore('measurability'), measurabilityDots: Math.round(score('measurability')),
-      adverseVal: textValue(candidate.adverseSelection), moralVal: textValue(candidate.moralHazard),
+      adverseVal: displayScore('adverseSelection'), moralVal: displayScore('moralHazard'),
       dataVal: displayPercent, dataConfidencePercent: Math.round(score('dataConfidence') * 20),
-      riskLabel: textValue(candidate.legalExposure), riskSub: textValue(candidate.uncertainty), legalRiskSub: textValue(candidate.uncertainty),
+      riskLabel: displayScore('legalExposure'), riskSub: textValue(candidate.uncertainty), legalRiskSub: textValue(candidate.uncertainty),
     }
     return {
       id: `developer-${articleId}`, detailRiskId: `developer-${articleId}`, title,
@@ -196,6 +416,7 @@ export function buildDeveloperStep2Records(rows: SavedStep2AnalysisRow[], articl
       measurability: display.measVal, adverseSelection: display.adverseVal, moralHazard: display.moralVal,
       dataConfidence: display.dataVal, legalExposure: display.riskLabel,
       metricScores: { demand: score('demand'), fortuity: score('fortuity'), accumulation: score('accumulation'), measurability: score('measurability'), adverseSelection: score('adverseSelection'), moralHazard: score('moralHazard'), dataConfidence: score('dataConfidence'), legalExposure: score('legalExposure') },
+      metricEvidence, evidenceIds, articleId, sourceName: article?.source, collectedAt: article?.collectedAt,
       display, gap: textValue(candidate.gap), nextAction: textValue(candidate.nextAction),
     }
   })
@@ -246,6 +467,7 @@ export type DeveloperLawQueueItem = {
   description: string
   date: string
   sourceName: string
+  sourceUrl?: string
   verificationStatus: string
 }
 
@@ -299,6 +521,7 @@ export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[
         description: asText(reference.description),
         date: asText(reference.date ?? reference.publishedAt),
         sourceName: asText(reference.sourceName, article.source),
+        sourceUrl: asText(reference.sourceUrl ?? reference.url),
         verificationStatus: asText(reference.verificationStatus),
       })
     })
@@ -344,6 +567,6 @@ export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[
 }
 
 export async function loadDeveloperStep2Detail(articleId: string) {
-  const rows = (await readStep2AnalysisResults()).filter((row) => row.articleId === articleId)
+  const rows = (await readStep2AnalysisResults()).filter((row) => row.articleId === articleId && row.mode !== 'mock')
   return { rows, results: Object.fromEntries(rows.map((row) => [row.step, getStep2Root(row)])) }
 }

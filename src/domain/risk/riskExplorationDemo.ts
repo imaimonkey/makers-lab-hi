@@ -14,6 +14,18 @@ export const riskExplorationMetricKeys = [
 export type RiskExplorationMetricKey = (typeof riskExplorationMetricKeys)[number]
 export type RiskExplorationMetricScores = Record<RiskExplorationMetricKey, number>
 
+export type RiskExplorationMetricEvidence = {
+  reasons: string[]
+  sourceIds: string[]
+  quotes: string[]
+  judgment: string
+  scoreRationale: string
+  confidence: string
+  evidenceStatus?: 'verified' | 'pending'
+  counterEvidence: string[]
+  uncertainty: string[]
+}
+
 export type RiskExplorationDisplay = {
   /** Seoyeon parity labels; these are presentation values, not scoring inputs. */
   demandVal: string
@@ -49,6 +61,11 @@ export type RiskExplorationRecord = {
   dataConfidence: string
   legalExposure: string
   metricScores: RiskExplorationMetricScores
+  metricEvidence?: Partial<Record<RiskExplorationMetricKey, RiskExplorationMetricEvidence>>
+  evidenceIds?: string[]
+  articleId?: string
+  sourceName?: string
+  collectedAt?: string
   display: RiskExplorationDisplay
   gap: string
   nextAction: string

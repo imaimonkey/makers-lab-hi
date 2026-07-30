@@ -14,10 +14,12 @@
 
 ## 점수 규칙
 
-- 모든 `metricScores` 값은 1.0~5.0 범위의 숫자다.
+- 모든 `metricScores` 값은 0~5 범위의 숫자다. 입력 원문에서 근거를 찾지 못한 지표는 0으로 두고 `확인 필요`를 반환한다.
 - `demand`, `fortuity`, `measurability`, `adverseSelection`, `dataConfidence`는 높을수록 해당 속성의 검토 적합성이 높다는 의미로 해석한다.
 - `accumulation`, `moralHazard`, `legalExposure`는 원 위험도가 높을수록 불리한 지표다. 화면의 보조점수 계산에서는 이 세 값이 역점수화된다.
-- 기사의 정량 근거가 없으면 임의의 정밀한 숫자를 만들지 말고 `scoreBasis`에 `정성 추정`과 `추가 데이터 필요`를 명시한다.
+- 기사의 정량 근거가 없으면 임의의 정밀한 숫자를 만들지 말고 0 또는 낮은 정성 점수와 함께 `scoreBasis`에 `정성 추정`과 `추가 데이터 필요`를 명시한다.
+- 각 지표의 `metricEvidence`에는 반드시 입력 원문에서 그대로 복사한 짧은 `quote`를 넣는다. 인용할 문장이 없으면 `quotes`와 `evidence`를 빈 배열로 두고 `uncertainty`에 `원문 근거 없음`을 명시한다.
+- `sourceIds`와 `evidenceId`는 입력의 `knownEvidenceIds`에 포함된 값만 사용한다. 원문에 없는 URL·사례·손해액·통계·법령을 생성하지 않는다.
 - `dataConfidencePercent`는 실제 손해율이나 보험료가 아니다. 입력 데이터의 최신성·독립성·대표성을 표현하는 표시값이며, 근거가 없으면 낮게 평가하고 불확실성을 적는다.
 
 ## 출력 형식
@@ -52,7 +54,7 @@
       "legalRiskSub": "관련 법령 원문 확인 필요"
     },
     "metricEvidence": {
-      "demand": {"reasons": ["근거 문장"], "sources": ["A-001"], "judgment": "추가 확인 필요", "uncertainty": ["표본 부족"]},
+      "demand": {"reasons": ["근거 문장 요약"], "sources": ["ARTICLE-001-source"], "quotes": ["원문 그대로의 짧은 인용"], "evidence": [{"evidenceId": "ARTICLE-001-source", "quote": "원문 그대로의 짧은 인용", "relation": "supports|limits"}], "judgment": "추가 확인 필요", "uncertainty": ["표본 부족"]},
       "fortuity": {"reasons": [], "sources": [], "judgment": "확인 필요", "uncertainty": []},
       "accumulation": {"reasons": [], "sources": [], "judgment": "확인 필요", "uncertainty": []},
       "measurability": {"reasons": [], "sources": [], "judgment": "확인 필요", "uncertainty": []},
@@ -72,4 +74,12 @@
 - 지표명과 의미를 혼동하지 않는다. 특히 `역선택 통제성`은 역선택 위험 자체와 구분한다.
 - 화면의 점수만 보고 보험료·손해율·가입 가능성을 말하지 않는다.
 - 근거가 없는 지표는 보수적으로 평가하고 `uncertainty`를 비워 두지 않는다.
+
+## NON-NEGOTIABLE EVIDENCE AND SCORING CONTRACT
+
+For every metric, return a numeric `metricScores` value from 0 to 5 and a matching `metricEvidence` object. The score is invalid unless the object contains at least one `evidence` item with an exact short quote copied from the input article, a valid `evidenceId` from `knownEvidenceIds`, and `relation` set to `supports` or `limits`. Never invent a quote, URL, law, statistic, incident, or source ID.
+
+Use this five-point scale consistently: 0 = no evidence or not assessable, 1 = weak indirect signal, 2 = limited evidence, 3 = moderate direct evidence, 4 = strong direct evidence, 5 = repeated or quantified direct evidence. Add `scoreRationale` with the calculation logic, `confidence` as `low|medium|high`, `uncertainty`, and `counterEvidence`. If the quote does not support the direction of the score, set the score to 0 and mark `judgment` as `확인 필요`.
+
+The aggregate candidate score must be calculated from the eight metric scores only after evidence validation. Do not use a display label as a score. Return `evidenceIds` as the deduplicated list of validated IDs and include `sourceCoverage` with `coveredMetrics`, `uncoveredMetrics`, and `coveragePercent`.
 

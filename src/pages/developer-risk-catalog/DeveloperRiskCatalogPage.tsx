@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { loadArticleSourceRecords, type ArticleSourceRecord } from '../../features/risk-dashboard/articleSourceData'
 import { runStep2Analysis, saveStep2AnalysisResults, step2PromptDefinitions, type Step2AnalysisKey } from '../../features/llm-util/util-2'
+import { readNewsClassificationStore } from '../../features/news-intake'
+import { searchOfficialLaw } from '../../features/law/lawOpenApi'
 import { PageHeader } from '../../shared/components/PageHeader'
 
 const promptLabels: Record<Step2AnalysisKey, string> = {
@@ -35,19 +38,22 @@ function DerivedCard({ result }: { result: AnalysisResult }) {
   return <div className="developer-derived-view"><dl>{Object.entries(record).filter(([key]) => !['metricEvidence', 'observations'].includes(key)).slice(0, 12).map(([key, value]) => <div className="developer-derived-field" key={key}><dt>{key}</dt><dd>{Array.isArray(value) ? <ul className="developer-derived-list">{value.slice(0, 8).map((item, index) => <li key={`${String(item)}-${index}`}>{String(item)}</li>)}</ul> : value === null || value === undefined || value === '' ? <span className="developer-derived-empty">확인 필요</span> : String(value)}</dd></div>)}</dl><details className="developer-raw-result"><summary>원본 JSON 결과</summary><pre>{JSON.stringify(data, null, 2)}</pre></details></div>
 }
 
-function buildArticleInput(article: ArticleSourceRecord) {
+function buildArticleInput(article: ArticleSourceRecord, priorRiskGroups: unknown[] = [], officialLawResults: unknown = { status: 'not-requested' }, officialLawEvidenceIds: string[] = []) {
   return JSON.stringify({
     articleId: article.id,
     title: article.title,
     body: article.text,
     sourceName: article.source,
     collectedAt: article.collectedAt,
-    knownEvidenceIds: [article.id],
+    knownEvidenceIds: [article.id, `${article.id}-source`, ...officialLawEvidenceIds],
+    officialLawResults,
     priorArticles: [],
+    priorRiskGroups,
   }, null, 2)
 }
 
 export function DeveloperRiskCatalogPage() {
+  const navigate = useNavigate()
   const [articles, setArticles] = useState<ArticleSourceRecord[]>([])
   const [selectedArticleId, setSelectedArticleId] = useState('')
   const [loading, setLoading] = useState(true)
@@ -58,6 +64,7 @@ export function DeveloperRiskCatalogPage() {
   const [autoProgress, setAutoProgress] = useState({ current: 0, total: 0, fileName: '' })
   const [autoError, setAutoError] = useState('')
   const [saveMessage, setSaveMessage] = useState('')
+  const [priorRiskGroups, setPriorRiskGroups] = useState<unknown[]>([])
 
   const selectedArticle = useMemo(
     () => articles.find((article) => article.id === selectedArticleId) ?? articles[0],
@@ -81,6 +88,8 @@ export function DeveloperRiskCatalogPage() {
     return () => { active = false }
   }, [])
 
+  useEffect(() => { void readNewsClassificationStore().then((store) => setPriorRiskGroups(store.groups)).catch(() => setPriorRiskGroups([])) }, [])
+
   const runPrompt = async (key: Step2AnalysisKey, article = selectedArticle) => {
     if (!article) return
     const definition = promptCards.find((item) => item[0] === key)
@@ -89,7 +98,19 @@ export function DeveloperRiskCatalogPage() {
     setRunningKey(key)
     setResults((current) => ({ ...current, [key]: { key, label, text: '', generatedAt: new Date().toISOString(), mode: 'loading' } }))
     try {
-      const response = await runStep2Analysis(key, JSON.parse(buildArticleInput(article)))
+      let officialLawResults: unknown = { status: 'not-requested' }
+      let officialLawEvidenceIds: string[] = []
+      if (key === 'law') {
+        try {
+          officialLawResults = await searchOfficialLaw(article.title.slice(0, 80))
+          const raw = JSON.stringify(officialLawResults)
+          officialLawEvidenceIds = [...new Set([...raw.matchAll(/(?:법령ID|법령일련번호|lawId|"id")\s*[:：]\s*"?([A-Za-z0-9가-힣_-]+)/g)].map((match) => match[1]).filter(Boolean))]
+        } catch (reason) {
+          officialLawResults = { status: 'error', message: reason instanceof Error ? reason.message : 'official law API error' }
+        }
+      }
+      const response = await runStep2Analysis(key, JSON.parse(buildArticleInput(article, priorRiskGroups, officialLawResults, officialLawEvidenceIds)))
+      if (response.mode === 'mock') throw new Error('개발자 화면에서는 mock Step 2 결과를 저장하지 않습니다. Gemini 또는 Potens 연결을 확인하세요.')
       setResults((current) => ({ ...current, [key]: { key, label, text: response.text, generatedAt: response.generatedAt, mode: response.mode } }))
     } catch (error) {
       setResults((current) => ({ ...current, [key]: { key, label, text: '', generatedAt: new Date().toISOString(), mode: 'error', error: error instanceof Error ? error.message : 'AI 분석에 실패했습니다.' } }))
@@ -121,14 +142,22 @@ export function DeveloperRiskCatalogPage() {
     }
   }
 
-  const saveResults = async () => {
-    if (!selectedArticle || !Object.keys(results).length) return
+  const saveResults = async (): Promise<boolean> => {
+    if (!selectedArticle || !Object.keys(results).length) return false
     try {
       const saved = await saveStep2AnalysisResults({ articleId: selectedArticle.id, fileName: selectedArticle.fileName, results })
       setSaveMessage(`${saved.file ?? '서버 Excel'}에 저장했습니다.`)
+      return true
     } catch (error) {
       setSaveMessage(error instanceof Error ? error.message : '서버 Excel 저장에 실패했습니다.')
+      return false
     }
+  }
+
+  const moveToDetail = async () => {
+    if (!selectedArticle || !Object.keys(results).length) return
+    if (!await saveResults()) return
+    navigate(`/developer-test/risks/developer-${encodeURIComponent(selectedArticle.id)}`)
   }
 
   return (
@@ -137,7 +166,7 @@ export function DeveloperRiskCatalogPage() {
         step="02"
         eyebrow="DEVELOPER MODE / ARTICLE ANALYSIS"
         title="실제 아티클 기반 위험 후보"
-        description="src/article PDF와 Step 2 시스템 프롬프트를 연결해 개발자용 도출값을 확인하는 화면입니다. 모든 결과는 SAMPLE이며 실무자 검토 전 초안입니다."
+        description="src/article PDF와 Step 2 시스템 프롬프트를 연결해 개발자용 도출값을 확인하는 화면입니다. 저장된 결과가 없으면 빈 상태로 표시합니다."
         status="GEMINI INTEGRATION"
       />
 
@@ -154,7 +183,7 @@ export function DeveloperRiskCatalogPage() {
             <div className="developer-article-controls">
               <label htmlFor="developer-article-select">아티클<select id="developer-article-select" value={selectedArticle.id} onChange={(event) => { setSelectedArticleId(event.target.value); setResults({}) }}><option value="" disabled>아티클 선택</option>{articles.map((article) => <option value={article.id} key={article.id}>{article.id} · {article.fileName}</option>)}</select></label>
               <div className="developer-article-meta"><span><strong>{selectedArticle.id}</strong> · {selectedArticle.source}</span><span>{selectedArticle.contentQuality?.chars.toLocaleString('ko-KR')}자 · {selectedArticle.contentQuality?.paragraphs}문단</span></div>
-              <div className="developer-run-actions"><button type="button" className="secondary-action developer-run-button" onClick={() => void runAll()} disabled={Boolean(runningKey) || autoRunning}>현재 아티클 실행</button><button type="button" className="primary-action developer-run-button" onClick={() => void runAllArticles()} disabled={Boolean(runningKey) || autoRunning}>{autoRunning ? `자동 분석 ${autoProgress.current}/${autoProgress.total}` : '전체 아티클 자동 분석'}</button><button type="button" className="secondary-action developer-run-button" onClick={() => void saveResults()} disabled={autoRunning || !Object.keys(results).length}>서버 Excel 저장</button></div>
+              <div className="developer-run-actions"><button type="button" className="secondary-action developer-run-button" onClick={() => void runAll()} disabled={Boolean(runningKey) || autoRunning}>현재 아티클 실행</button><button type="button" className="primary-action developer-run-button" onClick={() => void runAllArticles()} disabled={Boolean(runningKey) || autoRunning}>{autoRunning ? `자동 분석 ${autoProgress.current}/${autoProgress.total}` : '전체 아티클 자동 분석'}</button><button type="button" className="secondary-action developer-run-button" onClick={() => void saveResults()} disabled={autoRunning || !Object.keys(results).length}>서버 Excel 저장</button><button type="button" className="primary-action developer-run-button" onClick={() => void moveToDetail()} disabled={autoRunning || !Object.keys(results).length}>Step 3 위험 상세로 이동 →</button></div>
             </div>
             {autoRunning && <p className="developer-save-message" role="status">{autoProgress.current}/{autoProgress.total} · {autoProgress.fileName} 분석 중입니다.</p>}
             {autoError && <p className="developer-inline-error" role="alert">{autoError}</p>}

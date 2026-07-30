@@ -82,6 +82,7 @@ const collectReviewFlags = (report: ReportResult): string[] => {
 export const createGeneratedReportList = (
   riskData: RiskSourceData,
   report: ReportResult,
+  options: { includeLayoutMocks?: boolean } = {},
 ): GeneratedReportListItem[] => {
   const reportId = asText(report.meta.reportId) || report.meta.sourceRiskId
   const riskId = report.meta.sourceRiskId || riskData.meta.riskId
@@ -130,5 +131,5 @@ export const createGeneratedReportList = (
     detailAvailable: false,
   }))
 
-  return [primaryReport, ...layoutMocks]
+  return options.includeLayoutMocks === false ? [primaryReport] : [primaryReport, ...layoutMocks]
 }

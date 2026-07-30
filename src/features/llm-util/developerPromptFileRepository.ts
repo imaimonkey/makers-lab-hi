@@ -1,4 +1,4 @@
-export type DeveloperPromptStep = 'step2' | 'step3' | 'step4' | `util-${0 | 1 | 2 | 3 | 4}`
+export type DeveloperPromptStep = 'step1' | 'step2' | 'step3' | 'step4' | `util-${0 | 1 | 2 | 3 | 4}`
 
 type PromptFileResponse = { text?: unknown; fileName?: unknown; path?: unknown; error?: unknown }
 

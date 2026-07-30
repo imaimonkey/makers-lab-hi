@@ -7,6 +7,7 @@ import { buildDeveloperRiskCatalogViewData, buildDeveloperStep2Records, type Dev
 import type { RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
 import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
 import { readStep2AnalysisResults, runStep2Analysis, saveStep2AnalysisResults, step2PromptDefinitions, type Step2AnalysisKey } from '../../features/llm-util/util-2'
+import { searchOfficialLaw } from '../../features/law/lawOpenApi'
 
 export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'developer' }) {
   const [developerRecords, setDeveloperRecords] = useState<RiskExplorationRecord[]>([])
@@ -24,6 +25,10 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
       if (cancelled) return
       setDeveloperViewData(viewData)
       setDeveloperRecords(records)
+      setDeveloperMessage('')
+    }).catch((error) => {
+      if (cancelled) return
+      setDeveloperMessage(error instanceof Error ? `실제 원문 로딩 실패: ${error.message}` : '실제 원문 로딩 실패')
     })
     return () => { cancelled = true }
   }, [mode])
@@ -35,7 +40,16 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
       for (const article of articles) {
         const results: Record<string, { text: string; mode: string; generatedAt: string }> = {}
         for (const [, key] of step2PromptDefinitions) {
-          const result = await runStep2Analysis(key as Step2AnalysisKey, { articleId: article.id, title: article.title, body: article.text, sourceName: article.source ?? '', collectedAt: article.collectedAt ?? new Date().toISOString(), knownEvidenceIds: [article.id], priorArticles: [] })
+          let officialLawResults: unknown = { status: 'not-requested' }
+          if (key === 'law') {
+            try {
+              officialLawResults = await searchOfficialLaw(article.title.slice(0, 80))
+            } catch (error) {
+              officialLawResults = { status: 'error', message: error instanceof Error ? error.message : 'official law API error' }
+            }
+          }
+          const result = await runStep2Analysis(key as Step2AnalysisKey, { articleId: article.id, title: article.title, body: article.text, sourceName: article.source ?? '', collectedAt: article.collectedAt ?? new Date().toISOString(), knownEvidenceIds: [article.id, `${article.id}-source`], officialLawResults, priorArticles: [] })
+          if (result.mode === 'mock') throw new Error('개발자 화면에서는 mock Step 2 결과를 저장하지 않습니다. Gemini 또는 Potens 연결을 확인하세요.')
           results[key] = { text: result.text, mode: result.mode, generatedAt: result.generatedAt }
         }
         await saveStep2AnalysisResults({ articleId: article.id, fileName: article.fileName, results })
@@ -56,7 +70,7 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
         description="새로운 위험 신호를 카테고리와 근거 중심으로 탐색하고 상품화 가능성을 비교합니다."
       />
       <div className="sample-notice"><span>{mode === 'developer' ? 'DEVELOPER' : 'SAMPLE'}</span>{mode === 'developer' ? <><span>Step 2 Gemini/Excel 결과를 이 실무자 UI 형식으로 표시하는 개발자 화면입니다.</span><button type="button" onClick={() => void runDeveloperStep2()} disabled={developerRunning}>{developerRunning ? '분석 중...' : 'Step 2 전체 실행 · Excel 저장'}</button>{developerMessage ? <small role="status">{developerMessage}</small> : null}</> : sampleOnlyNotice}</div>
-      <RiskExplorationLens developerMode={mode === 'developer'} developerLaws={mode === 'developer' ? developerViewData?.laws : undefined} sourceRecords={mode === 'developer' && developerRecords.length ? developerRecords : undefined} />
+      <RiskExplorationLens developerMode={mode === 'developer'} developerLaws={mode === 'developer' ? (developerViewData?.laws ?? []) : undefined} sourceRecords={mode === 'developer' ? developerRecords : undefined} developerData={mode === 'developer' ? developerViewData : undefined} onRunDeveloperStep2={mode === 'developer' ? runDeveloperStep2 : undefined} developerRunning={developerRunning} />
       <RiskExplorationOperations developerMode={mode === 'developer'} sourceRisks={mode === 'developer' ? developerViewData?.risks : undefined} developerData={mode === 'developer' ? developerViewData : undefined} onRunDeveloperStep2={mode === 'developer' ? runDeveloperStep2 : undefined} />
       <section className="integration-contract surface-card">
         <span className="contract-label">TEAM 02 INTEGRATION CONTRACT</span>
