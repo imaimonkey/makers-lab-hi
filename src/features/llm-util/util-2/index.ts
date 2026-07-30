@@ -1,22 +1,6 @@
 import { runLlmUtility } from '../llmService'
-import riskCandidatePrompt from '../systemprompting-base-key-value-docs/step2/01-risk-candidate-card.md?raw'
-import screeningMetricsPrompt from '../systemprompting-base-key-value-docs/step2/02-screening-metrics-card.md?raw'
-import lawRegulationPrompt from '../systemprompting-base-key-value-docs/step2/03-law-regulation-card.md?raw'
-import caseLossMarketPrompt from '../systemprompting-base-key-value-docs/step2/04-case-loss-market-card.md?raw'
-import articleQueuePrompt from '../systemprompting-base-key-value-docs/step2/05-article-analysis-queue-card.md?raw'
-import candidateReviewPrompt from '../systemprompting-base-key-value-docs/step2/06-candidate-review-card.md?raw'
-import signalTrendPrompt from '../systemprompting-base-key-value-docs/step2/07-signal-trend-card.md?raw'
+import { readDeveloperPromptFile } from '../developerPromptFileRepository'
 export { llmUtilityDefinition } from './systemPrompt'
-
-const step2PromptFiles: Record<string, string> = {
-  '01-risk-candidate-card.md': riskCandidatePrompt,
-  '02-screening-metrics-card.md': screeningMetricsPrompt,
-  '03-law-regulation-card.md': lawRegulationPrompt,
-  '04-case-loss-market-card.md': caseLossMarketPrompt,
-  '05-article-analysis-queue-card.md': articleQueuePrompt,
-  '06-candidate-review-card.md': candidateReviewPrompt,
-  '07-signal-trend-card.md': signalTrendPrompt,
-}
 
 export const step2PromptDefinitions = [
   ['01-risk-candidate-card.md', 'candidate'],
@@ -46,13 +30,13 @@ export function runUtil2(prompt: string, systemPrompt?: string) {
   return runLlmUtility({ utilityId: 'util-2', systemPrompt, prompt })
 }
 
-export function runStep2Analysis(key: Step2AnalysisKey, article: Step2ArticleInput) {
+export async function runStep2Analysis(key: Step2AnalysisKey, article: Step2ArticleInput) {
   const definition = step2PromptDefinitions.find((item) => item[1] === key)
   if (!definition) throw new Error(`알 수 없는 Step 2 분석 유형입니다: ${key}`)
   const [fileName] = definition
-  const systemPrompt = step2PromptFiles[fileName]
+  const systemPrompt = await readDeveloperPromptFile('step2', fileName)
   if (!systemPrompt) throw new Error(`${fileName} 프롬프트를 찾지 못했습니다.`)
-  return runUtil2(JSON.stringify(article, null, 2), systemPrompt)
+  return runUtil2(JSON.stringify(article, null, 2), systemPrompt.text)
 }
 
 export async function saveStep2AnalysisResults(input: {

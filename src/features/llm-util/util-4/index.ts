@@ -1,25 +1,9 @@
 import { runLlmUtility } from '../llmService'
-import summaryPrompt from '../systemprompting-base-key-value-docs/step4/01-productization-review-summary.md?raw'
-import gapPrompt from '../systemprompting-base-key-value-docs/step4/02-coverage-gap.md?raw'
-import wordingPrompt from '../systemprompting-base-key-value-docs/step4/03-wording-review.md?raw'
-import assessmentPrompt from '../systemprompting-base-key-value-docs/step4/04-productization-assessment.md?raw'
-import structurePrompt from '../systemprompting-base-key-value-docs/step4/05-product-structure.md?raw'
-import briefingPrompt from '../systemprompting-base-key-value-docs/step4/06-executive-briefing.md?raw'
-import evidencePrompt from '../systemprompting-base-key-value-docs/step4/07-evidence-and-follow-up.md?raw'
+import { readDeveloperPromptFile } from '../developerPromptFileRepository'
 export { llmUtilityDefinition } from './systemPrompt'
 
-const step4Prompts = {
-  summary: summaryPrompt,
-  gap: gapPrompt,
-  wording: wordingPrompt,
-  assessment: assessmentPrompt,
-  structure: structurePrompt,
-  briefing: briefingPrompt,
-  evidence: evidencePrompt,
-} as const
-
-export const step4PromptDefinitions = Object.keys(step4Prompts) as Array<keyof typeof step4Prompts>
-export type Step4AnalysisKey = keyof typeof step4Prompts
+export const step4PromptDefinitions = ['summary', 'gap', 'wording', 'assessment', 'structure', 'briefing', 'evidence'] as const
+export type Step4AnalysisKey = typeof step4PromptDefinitions[number]
 
 export type Step4ArticleInput = {
   articleId: string
@@ -35,10 +19,11 @@ export function runUtil4(prompt: string, systemPrompt?: string) {
   return runLlmUtility({ utilityId: 'util-4', systemPrompt, prompt })
 }
 
-export function runStep4Analysis(key: Step4AnalysisKey, input: Step4ArticleInput) {
-  const systemPrompt = step4Prompts[key]
+export async function runStep4Analysis(key: Step4AnalysisKey, input: Step4ArticleInput) {
+  const promptFiles: Record<Step4AnalysisKey, string> = { summary: '01-productization-review-summary.md', gap: '02-coverage-gap.md', wording: '03-wording-review.md', assessment: '04-productization-assessment.md', structure: '05-product-structure.md', briefing: '06-executive-briefing.md', evidence: '07-evidence-and-follow-up.md' }
+  const systemPrompt = await readDeveloperPromptFile('step4', promptFiles[key])
   if (!systemPrompt) throw new Error(`알 수 없는 Step 4 분석 유형입니다: ${key}`)
-  return runUtil4(JSON.stringify(input, null, 2), systemPrompt)
+  return runUtil4(JSON.stringify(input, null, 2), systemPrompt.text)
 }
 
 export type SavedStep4AnalysisRow = { articleId: string; fileName: string; step: Step4AnalysisKey; mode: string; model?: string; generatedAt: string; resultJson: string; savedAt?: string }

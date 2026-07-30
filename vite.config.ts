@@ -75,11 +75,11 @@ async function readPotensStream(response: Response): Promise<string> {
 }
 
 const systemPromptFiles = {
-  'util-0': resolve(process.cwd(), 'src/features/llm-util/util-0/system-prompt.md'),
-  'util-1': resolve(process.cwd(), 'src/features/llm-util/util-1/system-prompt.md'),
-  'util-2': resolve(process.cwd(), 'src/features/llm-util/util-2/system-prompt.md'),
-  'util-3': resolve(process.cwd(), 'src/features/llm-util/util-3/system-prompt.md'),
-  'util-4': resolve(process.cwd(), 'src/features/llm-util/util-4/system-prompt.md'),
+  'util-0': resolve(process.cwd(), 'data/system-prompts/util-0/system-prompt.md'),
+  'util-1': resolve(process.cwd(), 'data/system-prompts/util-1/system-prompt.md'),
+  'util-2': resolve(process.cwd(), 'data/system-prompts/util-2/system-prompt.md'),
+  'util-3': resolve(process.cwd(), 'data/system-prompts/util-3/system-prompt.md'),
+  'util-4': resolve(process.cwd(), 'data/system-prompts/util-4/system-prompt.md'),
 } as const
 
 type SystemPromptUtilityId = keyof typeof systemPromptFiles
@@ -90,6 +90,13 @@ type SharedPromptStore = {
 }
 
 const sharedPromptDataFile = resolve(process.cwd(), 'data/llm-system-prompts.json')
+const developerPromptDataRoot = resolve(process.cwd(), 'data/system-prompts')
+const developerPromptFiles = new Set([
+  'util-0/system-prompt.md', 'util-1/system-prompt.md', 'util-2/system-prompt.md', 'util-3/system-prompt.md', 'util-4/system-prompt.md',
+  'step2/01-risk-candidate-card.md', 'step2/02-screening-metrics-card.md', 'step2/03-law-regulation-card.md', 'step2/04-case-loss-market-card.md', 'step2/05-article-analysis-queue-card.md', 'step2/06-candidate-review-card.md', 'step2/07-signal-trend-card.md',
+  'step3/01-risk-context-and-input.md', 'step3/02-risk-summary.md', 'step3/03-assessment-scores.md', 'step3/04-signal-trend.md', 'step3/05-evidence-ledger.md', 'step3/06-decision-brief.md', 'step3/07-productization-review.md', 'step3/08-human-review-handoff.md',
+  'step4/01-productization-review-summary.md', 'step4/02-coverage-gap.md', 'step4/03-wording-review.md', 'step4/04-productization-assessment.md', 'step4/05-product-structure.md', 'step4/06-executive-briefing.md', 'step4/07-evidence-and-follow-up.md',
+])
 let sharedPromptWriteQueue = Promise.resolve()
 
 const defaultNaverNewsSearchKeywords = [
@@ -847,6 +854,29 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
           }
 
           writeJson(response, 405, { error: 'Only GET and PUT are supported.' })
+          return
+        }
+
+        if (pathname === '/api/llm/prompt-files') {
+          if (request.method !== 'GET') {
+            writeJson(response, 405, { error: 'Only GET is supported.' })
+            return
+          }
+          const query = new URL(request.url ?? '/', 'http://localhost').searchParams
+          const step = query.get('step') ?? ''
+          const fileName = query.get('fileName') ?? 'system-prompt.md'
+          const relativePath = `${step}/${fileName}`
+          if (!developerPromptFiles.has(relativePath)) {
+            writeJson(response, 404, { error: '요청한 개발자 모드 시스템 프롬프트 파일을 찾을 수 없습니다.' })
+            return
+          }
+          try {
+            const filePath = resolve(developerPromptDataRoot, relativePath)
+            writeJson(response, 200, { text: await readFile(filePath, 'utf8'), fileName, path: `data/system-prompts/${relativePath}` })
+          } catch (error) {
+            console.error('Developer prompt file read failed.', error)
+            writeJson(response, 500, { error: '개발자 모드 시스템 프롬프트를 읽지 못했습니다.' })
+          }
           return
         }
 
