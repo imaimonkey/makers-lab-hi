@@ -148,6 +148,27 @@ function makeEvidence(coverageTitle: string): WordingClauseEvidence[] {
   ]
 }
 
+const WORDING_PAYMENT_REQUIREMENTS: Record<WordingCoverageOptionId, string[]> = {
+  'adjacent-vehicle': [
+    '보험기간 중 보험증권에 기재된 지하주차장에서 전기자동차 화재가 발생할 것',
+    '해당 화재로 인해 인접한 제3자의 차량에 직접적인 물리적 손해가 발생할 것',
+    '화재 발생 사실과 인접 차량의 손해 범위가 소방·경찰·감정자료 등 객관적인 자료로 확인될 것',
+    '기존 자동차보험이나 다른 보상제도에서 이미 지급된 금액과 중복되지 않을 것',
+  ],
+  'facility-damage': [
+    '보험기간 중 보험증권에 기재된 지하주차장에서 전기자동차 화재가 발생할 것',
+    '해당 화재로 인해 건물, 주차장 구조물 또는 충전설비에 직접적인 물리적 손해가 발생할 것',
+    '손해를 입은 건물·시설 또는 충전설비가 보험증권상 보장 대상에 포함될 것',
+    '화재 발생 사실과 복구비용이 소방 확인자료·감정자료·복구견적서 등으로 확인될 것',
+  ],
+  'suppression-cost': [
+    '보험기간 중 약관에서 정한 보장 대상 전기자동차 화재가 발생할 것',
+    '화재의 확산을 막거나 추가 손해를 줄이기 위해 지출한 비용일 것',
+    '소화·진압, 화재 차량 이동·견인 또는 긴급 안전조치에 필요하고 합리적으로 지출한 비용일 것',
+    '영수증·작업기록·출동기록·견인확인서 등 객관적인 자료로 비용을 확인할 수 있을 것',
+  ],
+}
+
 function makeDraft(input: {
   id: WordingCoverageOptionId
   title: string
@@ -164,14 +185,9 @@ function makeDraft(input: {
     summary,
     proposalReason,
     status: { label: '보완 후 약관 초안 작성 가능', type: 'needs-improvement' },
-    paymentRequirements: [
-      '보험기간 중 보험증권에 기재된 지하주차장에서 전기차 화재가 발생할 것',
-      '해당 화재로 인해 보장 대상에 직접적인 물리적 손해가 발생할 것',
-      '소방·경찰·감정자료로 사고 사실과 손해 범위를 확인할 수 있을 것',
-      '기존 보험에서 이미 보상받은 금액과 중복되지 않을 것',
-    ],
+    paymentRequirements: WORDING_PAYMENT_REQUIREMENTS[id],
     decisionItems: makeDecisions(title, id),
-    previewClause: `${title}에 대하여 사고와 직접 관련된 손해를 보상하되, 기존 보험의 보상 범위와 중복되는 금액은 공제합니다. 구체적인 지급요건과 한도는 최종 약관 검토에서 확정합니다.`,
+    previewClause: `${title}에 대하여 사고와 직접 관련된 손해를 보상하되, 기존 보험과 중복되는 금액은 공제합니다. 구체적인 지급요건과 보상한도는 특별약관에서 정합니다.`,
     coveredLosses,
     excludedLosses,
     fullDraftArticles: makeArticles(title),

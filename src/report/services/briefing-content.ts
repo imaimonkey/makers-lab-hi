@@ -141,10 +141,10 @@ const createDefaults = (report: ReportResult): BriefingContent => {
         firstValue(report.missingResearch.map((item) => item.reason), unknown),
       ]
       : [
-        '기존 보험 적용 후에도 남는 보장 공백이 확인됨',
-        '피보험이익·우연성 등 보험성 필수 기준을 충족함',
-        '후속 상품 구조 검토를 진행할 필요가 있음',
-        '손해 데이터와 기존 보험 간 보상 관계는 추가 확인이 필요함',
+        '기존 보험 적용 후에도 보장 공백이 확인됨',
+        '보험성 필수 기준을 충족함',
+        '상품 구조 구체화를 위한 후속 검토가 필요함',
+        '손해 데이터와 기존 보험 보상 관계는 추가 확인이 필요함',
       ],
     counts: [
       { label: '필수 기준', value: `${mandatoryPass}/${mandatory.length || 3} 충족` },

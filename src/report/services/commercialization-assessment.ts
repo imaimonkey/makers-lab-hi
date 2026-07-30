@@ -1,7 +1,10 @@
 import type {
   CommercializationAssessment,
+  CommercializationAiDecision,
   CommercializationCriterion,
   CommercializationCriterionCategory,
+  CommercializationCriterionDetail,
+  CommercializationCriterionReviewStatus,
   CommercializationCriterionStatus,
   CommercializationAiProductJudgment,
   CommercializationEvidenceStatus,
@@ -18,6 +21,7 @@ import type {
   ProductFeasibility,
   ReportResult,
 } from "../types";
+import { FEASIBILITY_CRITERION_DETAILS } from "../data/product-feasibility-mock";
 
 export const COMMERCIALIZATION_CRITERION_DEFINITIONS: Array<{
   id: string;
@@ -27,18 +31,18 @@ export const COMMERCIALIZATION_CRITERION_DEFINITIONS: Array<{
   question: string;
   description: string;
 }> = [
-  { id: "actual_market_demand", category: "market", order: 1, title: "실제 시장·계약 수요", question: "실제로 구매·가입할 기업이나 계약자가 존재하는가?", description: "고객 요청, 가입 의향, 예상 계약 수와 대체 대응수단을 기준으로 반복 가능한 수요를 검토합니다." },
-  { id: "risk_pooling", category: "insurability", order: 2, title: "위험 분산 가능성", question: "동질 위험을 가진 계약자가 충분하고 여러 계약으로 분산할 수 있는가?", description: "특정 고객·시설·지역에 집중되지 않고 위험군을 나눌 수 있는지 검토합니다." },
-  { id: "fortuity", category: "insurability", order: 3, title: "우연성", question: "사고가 우연하고 사전에 통제되지 않는가?", description: "계약 전 이미 발생했거나 의도적으로 만든 손해가 아닌지 검토합니다." },
-  { id: "insurable_interest", category: "insurability", order: 4, title: "피보험이익 명확성", question: "보험금을 받을 주체가 사고로 실제 경제적 손해를 입는가?", description: "계약자·피보험자·피해자·수령자의 관계와 보호할 경제적 이해관계를 검토합니다." },
-  { id: "moral_hazard_control", category: "insurability", order: 5, title: "고의·도덕적 해이·보험사기 통제", question: "고의·조작·과다 청구를 객관적으로 통제할 수 있는가?", description: "인수기준, 사고 검증, 면책·자기부담 등으로 도덕적 해이를 관리할 수 있는지 검토합니다." },
-  { id: "gambling_like_structure", category: "insurability", order: 6, title: "사행성·유사수신 배제", question: "실제 경제적 손해와 무관한 투자·베팅 구조가 아닌가?", description: "보험 목적과 실제 손해 보전의 연결이 약한 정액·확정수익 구조인지 검토합니다." },
-  { id: "loss_verifiability", category: "coverage", order: 7, title: "사고 확인·손해액 산정 가능성", question: "사고와 직접·간접 손해를 객관적 자료로 확인하고 산정할 수 있는가?", description: "사고 시점·장소·원인, 피해별 손해와 기존 보험 중복 여부를 검토합니다." },
-  { id: "pml_accumulation", category: "coverage", order: 8, title: "최대 가능 손해·누적 위험", question: "단일 사고의 PML과 동시다발 누적 위험을 관리할 수 있는가?", description: "집중·확산 손해와 재보험 이전 필요성을 포함해 인수 가능 범위를 검토합니다." },
-  { id: "liability_clarity", category: "coverage", order: 9, title: "책임주체 명확성", question: "사고 관련 책임 주체와 책임 분담 기준을 구분할 수 있는가?", description: "계약상·법률상 책임, 복수 주체와 구상 가능성을 검토합니다." },
-  { id: "wording_clarity", category: "wording", order: 10, title: "약관·보장조건 명확성", question: "보장·면책·지급조건을 객관적인 약관으로 표현할 수 있는가?", description: "보장 대상·사고·손해·기간·한도 방향과 분쟁 가능성을 검토합니다." },
-  { id: "pricing_data_readiness", category: "data", order: 11, title: "요율 검토를 위한 데이터 준비도", question: "사고·손해·노출 데이터를 바탕으로 요율 검토를 진행할 준비가 되어 있는가?", description: "요율을 확정하거나 산출하는 것이 아니라, 빈도·심도·노출 단위와 위험 특성별 자료 확보 수준을 검토합니다." },
-  { id: "coverage_gap", category: "coverage", order: 12, title: "기존 보험 보장 공백·중복·개정 가능성", question: "기존 보험의 공백과 중복을 구분하고 개정·신규 개발 방향을 정할 수 있는가?", description: "기존 보험의 보장 범위, 이중보상 가능성과 특약 개정 대비 신규 상품의 현실성을 검토합니다." },
+  { id: "actual_market_demand", category: "market", order: 1, title: "실제 시장 수요", question: "실제로 구매·가입할 기업이나 계약자가 존재하는가?", description: "실제로 가입할 기업과 계약 수요가 있는지 확인합니다." },
+  { id: "risk_pooling", category: "insurability", order: 2, title: "위험 분산 가능성", question: "동질 위험을 가진 계약자가 충분하고 여러 계약으로 분산할 수 있는가?", description: "특정 지역이나 시설에 손해가 집중되지 않도록 위험을 분산할 수 있는지 검토합니다." },
+  { id: "fortuity", category: "insurability", order: 3, title: "우연성", question: "사고가 우연하고 사전에 통제되지 않는가?", description: "화재 발생 여부와 시점을 사전에 확정하기 어려워 우연한 사고로 볼 수 있습니다." },
+  { id: "insurable_interest", category: "insurability", order: 4, title: "피보험이익", question: "보험금을 받을 주체가 사고로 실제 경제적 손해를 입는가?", description: "보장 대상과 실제 경제적 손해의 관계를 확인할 수 있습니다." },
+  { id: "moral_hazard_control", category: "insurability", order: 5, title: "고의·도덕적 해이 통제", question: "고의·조작·과다 청구를 객관적으로 통제할 수 있는가?", description: "고의사고와 보험사기 위험을 확인하고 통제할 수 있는지 검토합니다." },
+  { id: "gambling_like_structure", category: "insurability", order: 6, title: "사행성 배제·실손보상 원칙", question: "실제 경제적 손해와 무관한 투자·베팅 구조가 아닌가?", description: "실제 발생한 직접 재산손해 범위에서 보상하고, 중복 보상액을 조정할 수 있습니다." },
+  { id: "loss_verifiability", category: "coverage", order: 7, title: "손해 확인·산정 가능성", question: "사고와 직접·간접 손해를 객관적 자료로 확인하고 산정할 수 있는가?", description: "사고 발생 여부와 손해액을 객관적인 자료로 확인할 수 있는지 검토합니다." },
+  { id: "pml_accumulation", category: "coverage", order: 8, title: "최대가능손해(PML)", question: "단일 사고의 PML과 동시다발 누적 위험을 관리할 수 있는가?", description: "사고 한 번에 발생할 수 있는 최대 손해와 누적 위험을 검토합니다." },
+  { id: "liability_clarity", category: "coverage", order: 9, title: "책임주체 명확성", question: "사고 관련 책임 주체와 책임 분담 기준을 구분할 수 있는가?", description: "차량 소유자, 제조사, 충전시설과 시설관리자의 책임을 구분할 수 있는지 검토합니다." },
+  { id: "wording_clarity", category: "wording", order: 10, title: "약관·보장조건 명확성", question: "보장·면책·지급조건을 객관적인 약관으로 표현할 수 있는가?", description: "보장하는 손해, 보장하지 않는 손해와 보험금 지급요건을 명확히 정할 수 있는지 검토합니다." },
+  { id: "pricing_data_readiness", category: "data", order: 11, title: "위험 데이터 확보 가능성", question: "사고·손해·노출 데이터를 바탕으로 요율 검토를 진행할 준비가 되어 있는가?", description: "위험을 지속적으로 확인할 수 있는 자료가 있고, 사고 빈도와 손해액을 추정할 데이터를 확보할 수 있는지 검토합니다." },
+  { id: "coverage_gap", category: "coverage", order: 12, title: "보장 공백·중복 여부", question: "기존 보험의 공백과 중복을 구분하고 개정·신규 개발 방향을 정할 수 있는가?", description: "기존 보험과 겹치는 보장과 새롭게 보완할 보장 공백을 확인합니다." },
 ];
 
 const LEGACY_ID_MAP: Record<string, string> = {
@@ -54,8 +58,8 @@ const LEGACY_ID_MAP: Record<string, string> = {
 /** 상품성 판단의 우선순위를 정의하는 3단계 기준 그룹입니다. 기준 ID는 기존 값을 유지합니다. */
 export const COMMERCIALIZATION_GATE_GROUPS: Record<"insurance_gate" | "productization_gate" | "supplementary_execution", string[]> = {
   insurance_gate: ["insurable_interest", "fortuity", "gambling_like_structure"],
-  productization_gate: ["actual_market_demand", "risk_pooling", "pml_accumulation", "loss_verifiability", "wording_clarity"],
-  supplementary_execution: ["moral_hazard_control", "liability_clarity", "coverage_gap", "pricing_data_readiness"],
+  productization_gate: ["moral_hazard_control", "coverage_gap", "actual_market_demand", "pml_accumulation", "loss_verifiability"],
+  supplementary_execution: ["risk_pooling", "wording_clarity", "liability_clarity", "pricing_data_readiness"],
 };
 
 export const COMMERCIALIZATION_GATE_GROUP_BY_ID: Record<string, "insurance_gate" | "productization_gate" | "supplementary_execution"> = Object.entries(COMMERCIALIZATION_GATE_GROUPS).reduce((result, [group, ids]) => {
@@ -154,15 +158,18 @@ const asStatus = (value: unknown, context = ""): CommercializationCriterionStatu
   return "additional_check";
 };
 
-/**
- * Older persisted prototype records sometimes stored `additional_check` after
- * a migration even though their summary/rationale clearly described a
- * satisfied criterion. Evidence status remains separate and is deliberately
- * not considered here.
- */
-const clearlySatisfiedByNarrative = (text: string): boolean => {
-  if (/추가 확인이 필요|보완이 필요|자료가 필요|판단하기 어렵|확정이 필요|불명확|미확보|근거 부족|부족합니다/i.test(text)) return false;
-  return /충족|확인할 수 있어|확인할 수 있습니다|설정할 수|구체화할 수|통제할 수|실제[^.]*손해[^.]*기준|손해와 무관한[^.]*아닙니다/i.test(text);
+const asAiDecision = (value: unknown): CommercializationAiDecision | undefined => {
+  const raw = asString(value).trim().toLowerCase();
+  if (["fulfilled", "pass", "충족", "통과", "양호", "가능", "적합"].includes(raw)) return "fulfilled";
+  if (["unfulfilled", "critical", "불충족", "중대 위험", "위험", "실패"].includes(raw)) return "unfulfilled";
+  return undefined;
+};
+
+const asCriterionReviewStatus = (value: unknown): CommercializationCriterionReviewStatus | undefined => {
+  const raw = asString(value).trim().toLowerCase();
+  if (["completed", "완료", "검토 완료"].includes(raw)) return "completed";
+  if (["pending", "판단 전", "검토 전", "not_started", "in_progress", "additional_data_required"].includes(raw)) return "pending";
+  return undefined;
 };
 
 const asEvidenceStatus = (value: unknown): CommercializationEvidenceStatus | undefined => {
@@ -216,6 +223,8 @@ function normalizeReviewerReview(raw: unknown, legacyMemo = ""): Commercializati
   return {
     decision,
     status: source.status ? asReviewStatus(source.status) : confirmed ? (decision === "deferred" ? "deferred" : "completed") : "not_started",
+    action: source.action === "accepted" || source.action === "modified" ? source.action : undefined,
+    resultAiDecision: asAiDecision(source.resultAiDecision ?? source.resultStatus),
     acceptedAi: source.acceptedAi === true || (confirmed && decision === "keep_ai"),
     resultStatus: source.resultStatus ? asStatus(source.resultStatus, `${asString(source.changeReason)} ${asString(source.memo)}`) : undefined,
     changeReason: asString(source.changeReason),
@@ -225,6 +234,30 @@ function normalizeReviewerReview(raw: unknown, legacyMemo = ""): Commercializati
     memo: asString(source.memo, legacyMemo),
     confirmed,
     updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : null,
+  };
+}
+
+function normalizeCriterionDetail(
+  raw: unknown,
+  fallback: CommercializationCriterionDetail,
+  summary: string,
+  rationale: string,
+  evidence: CommercializationEvidence[],
+  missingInformation: string[],
+  nextActions: CommercializationNextAction[],
+): CommercializationCriterionDetail {
+  const source = isRecord(raw) ? raw : {};
+  const list = (key: string, fallbackItems: readonly string[]): string[] => {
+    const items = asStringArray(source[key]);
+    return items.length ? items : [...fallbackItems];
+  };
+  return {
+    aiSummary: asString(source.aiSummary, fallback.aiSummary || summary),
+    rationale: list("rationale", fallback.rationale.length ? fallback.rationale : [rationale]),
+    materials: list("materials", fallback.materials.length ? fallback.materials : evidence.map((item) => `${item.title}${item.sourceName ? ` · ${item.sourceName}` : ""}`)),
+    assumptions: list("assumptions", fallback.assumptions),
+    limitations: list("limitations", fallback.limitations.length ? fallback.limitations : missingInformation),
+    reviewerChecks: list("reviewerChecks", fallback.reviewerChecks.length ? fallback.reviewerChecks : nextActions.map((action) => action.text)),
   };
 }
 
@@ -370,18 +403,37 @@ function createCriterion(definition: typeof COMMERCIALIZATION_CRITERION_DEFINITI
     ...asStringArray(raw?.additionalChecks),
   ]));
   const evidenceIds = asStringArray(raw?.evidenceIds);
-  const summary = asString(raw?.summary, asString(raw?.judgment, "추가 평가가 필요합니다."));
+  const defaultDetail = FEASIBILITY_CRITERION_DETAILS[definition.id as keyof typeof FEASIBILITY_CRITERION_DETAILS];
+  const defaultDetailForUse: CommercializationCriterionDetail | undefined = defaultDetail ? {
+    aiSummary: defaultDetail.aiSummary,
+    rationale: [...defaultDetail.rationale],
+    materials: [...defaultDetail.materials],
+    assumptions: [...defaultDetail.assumptions],
+    limitations: [...defaultDetail.limitations],
+    reviewerChecks: [...defaultDetail.reviewerChecks],
+  } : undefined;
+  const summary = asString(raw?.summary, asString(raw?.judgment, defaultDetail?.aiSummary ?? "평가 근거를 기준으로 이진 판단을 산출했습니다."));
   const evidence = toEvidence(raw?.evidence, evidenceIds, report, definition.id);
   const nextActions = toActions(raw?.nextActions, missing, definition.id);
-  const statusContext = [summary, asString(raw?.rationale), ...missing, ...nextActions.map((action) => action.text)].join(" ");
-  const rawStatus = asString(raw?.status ?? raw?.displayStatus).trim().toLowerCase();
-  const parsedStatus = asStatus(raw?.status ?? raw?.displayStatus, statusContext);
-  const status = parsedStatus === "additional_check"
-    && ["additional_check", "additional check", "추가 확인", "미평가", "unknown"].includes(rawStatus)
-    && clearlySatisfiedByNarrative(`${summary} ${asString(raw?.rationale)}`)
-    ? "pass"
-    : parsedStatus;
+  const explicitAiDecision = asAiDecision(raw?.aiDecision);
+  const legacyAiDecision = asAiDecision(raw?.status ?? raw?.displayStatus);
+  const aiDecision = explicitAiDecision ?? legacyAiDecision ?? "fulfilled";
+  const status: CommercializationCriterionStatus = aiDecision === "fulfilled" ? "pass" : "critical";
+  const normalizedReviewerReview = normalizeReviewerReview(raw?.reviewerReview, asString(raw?.reviewerMemo, ""));
+  const reviewStatus = asCriterionReviewStatus(raw?.reviewStatus) ?? (normalizedReviewerReview.confirmed ? "completed" : "pending");
+  const reviewAction = raw?.reviewAction === "accepted" || raw?.reviewAction === "modified"
+    ? raw.reviewAction
+    : normalizedReviewerReview.action;
   const evidenceStatus = deriveEvidenceStatus(definition.id, raw, status, evidence, missing, nextActions);
+  const rationale = asString(raw?.rationale, defaultDetail?.rationale.join(" ") ?? asString(raw?.judgment));
+  const analysisDetail = normalizeCriterionDetail(raw?.analysisDetail, defaultDetailForUse ?? {
+    aiSummary: summary,
+    rationale: [rationale],
+    materials: [],
+    assumptions: [],
+    limitations: [],
+    reviewerChecks: [],
+  }, summary, rationale, evidence, missing, nextActions);
   return {
     id: definition.id,
     category: definition.category,
@@ -390,12 +442,16 @@ function createCriterion(definition: typeof COMMERCIALIZATION_CRITERION_DEFINITI
     gateGroup: COMMERCIALIZATION_GATE_GROUP_BY_ID[definition.id],
     question: definition.question,
     description: definition.description,
+    aiDecision,
+    reviewStatus,
+    reviewAction,
+    analysisDetail,
     status,
     evidenceStatus,
     sourceSections: deriveSourceSections(definition.id, raw, evidenceStatus),
     requiresReviewerInput: raw?.requiresReviewerInput === true || evidenceStatus === "reviewer_confirmation_required",
     summary,
-    rationale: asString(raw?.rationale, asString(raw?.judgment)),
+    rationale,
     confirmedFacts: asString(raw?.confirmedFacts, asString(raw?.confirmed_facts)),
     evidence,
     confidence: asConfidence(raw?.confidence),
@@ -403,7 +459,7 @@ function createCriterion(definition: typeof COMMERCIALIZATION_CRITERION_DEFINITI
     nextActions,
     isBlocking: raw?.isBlocking === true,
     reviewerMemo: asString(raw?.reviewerMemo),
-    reviewerReview: normalizeReviewerReview(raw?.reviewerReview, asString(raw?.reviewerMemo, "")),
+    reviewerReview: normalizedReviewerReview,
     rateData: normalizeRateData(raw?.rateData, definition.id),
     inputData: normalizeInputData(raw?.inputData, definition.id, missing, nextActions),
     inputChangedAt: typeof raw?.inputChangedAt === "string" ? raw.inputChangedAt : null,
@@ -423,7 +479,7 @@ export function deriveCommercializationGate(
   const actions = criteria.flatMap((item) => item.nextActions.filter((action) => !action.completed).map((action) => action.text));
   if (externalBlocking.length) return { overallStatus: "redesign", reason: `확정된 외부 제약: ${externalBlocking.join(", ")}`, blockingCriteria: externalBlocking, unresolvedCriteria: unresolved, priorityActions: unique(actions).slice(0, 5) };
   if (blockingCriteria.length) return { overallStatus: "redesign", reason: `핵심 불충족: ${blockingCriteria.join(", ")}`, blockingCriteria, unresolvedCriteria: unresolved, priorityActions: unique(actions).slice(0, 5) };
-  const coreIds = new Set(["fortuity", "insurable_interest", "gambling_like_structure", "loss_verifiability", "liability_clarity"]);
+  const coreIds = new Set(COMMERCIALIZATION_GATE_GROUPS.productization_gate);
   const coreUnresolved = criteria.filter((item) => coreIds.has(item.id) && ["needs_review", "additional_check"].includes(item.status));
   if (unresolved.length >= 4 || coreUnresolved.length) return { overallStatus: "needs_more_data", reason: "핵심 판단에 필요한 자료와 검토가 아직 충분하지 않습니다.", blockingCriteria: [], unresolvedCriteria: unresolved, priorityActions: unique(actions).slice(0, 5) };
   const hasUnresolved = criteria.some((item) => ["additional_check", "needs_review"].includes(item.status));
@@ -584,6 +640,8 @@ export function validateCommercializationAssessment(assessment: Commercializatio
   const required = COMMERCIALIZATION_CRITERION_DEFINITIONS.map((item) => item.id).filter((id) => !ids.includes(id));
   if (required.length) errors.push(`필수 평가항목이 누락되었습니다: ${required.join(", ")}`);
   assessment.criteria.forEach((item) => {
+    if (!item.aiDecision || !["fulfilled", "unfulfilled"].includes(item.aiDecision)) errors.push(`${item.title}: AI 판단을 충족 또는 불충족으로 입력해 주세요.`);
+    if (!item.reviewStatus || !["pending", "completed"].includes(item.reviewStatus)) errors.push(`${item.title}: 실무자 판단 상태를 판단 전 또는 완료로 입력해 주세요.`);
     if (!STATUS_LABELS[item.status]) errors.push(`${item.title}: 상태값을 확인해 주세요.`);
     if (!EVIDENCE_STATUS_LABELS[item.evidenceStatus]) errors.push(`${item.title}: 근거 상태를 확인해 주세요.`);
     if (!Array.isArray(item.sourceSections)) errors.push(`${item.title}: 연동 출처를 확인해 주세요.`);
