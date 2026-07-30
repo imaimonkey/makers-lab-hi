@@ -249,6 +249,7 @@
 .workspace-seoyeon .screening-reference-badge[data-tone='blue'] { background: #e0f2fe; color: #0284c7; }
 .workspace-seoyeon .screening-reference-badge[data-tone='gray'] { background: #e2e8f0; color: #475569; }
 .workspace-seoyeon .screening-tag-group { display: flex; flex-wrap: wrap; gap: 4px; }
+.workspace-seoyeon .risk-candidate-tags .screening-tag { border-radius: 999px; padding: 4px 8px; font-size: 10px; font-style: normal; font-weight: 700; }
 .workspace-seoyeon .screening-keyword .screening-tag { border-radius: 5px; padding: 3px 6px; font-size: 10px; font-style: normal; font-weight: 700; }
 .workspace-seoyeon .screening-tag.tag-blue { background: #e0f2fe; color: #0369a1; }
 .workspace-seoyeon .screening-tag.tag-purple { background: #f3e8ff; color: #7e22ce; }

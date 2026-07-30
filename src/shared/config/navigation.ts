@@ -31,7 +31,7 @@ export const navigationGroups: NavigationGroup[] = [
       {
         id: 'catalog',
         step: '02',
-        label: '위험 후보',
+        label: '위험 탐색',
         caption: '탐지 요소 리스팅',
         path: '/risks',
         icon: 'list',

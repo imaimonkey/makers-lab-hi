@@ -7,6 +7,7 @@ import {
   type LawTrackingRiskLevel,
   type RiskLawTrackingItem,
 } from '../../domain/risk/riskLawTracking'
+import { riskLawTrackingItems } from '../../domain/risk/riskLawTracking'
 import type { DeveloperLawQueueItem } from './developerStep2Adapter'
 
 type LawTrackingFilter = 'all' | 'assembly' | 'administrative'
@@ -200,7 +201,7 @@ function buildDeveloperTrackingItems(laws: DeveloperLawQueueItem[]): RiskLawTrac
 
 export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperStep2, developerRunning = false }: { category: ScreeningCategory; developerLaws?: DeveloperLawQueueItem[]; onRunDeveloperStep2?: () => void; developerRunning?: boolean }) {
   const developerMode = developerLaws !== undefined
-  const sourceItems = useMemo(() => developerMode ? buildDeveloperTrackingItems(developerLaws) : [], [developerLaws, developerMode])
+  const sourceItems = useMemo(() => developerMode ? buildDeveloperTrackingItems(developerLaws) : riskLawTrackingItems, [developerLaws, developerMode])
   const [query, setQuery] = useState('')
   const [sourceFilter, setSourceFilter] = useState<LawTrackingFilter>('all')
   const [institution, setInstitution] = useState('all')
@@ -328,7 +329,7 @@ export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperSt
       <div className="risk-law-detail" aria-live="polite">
         {selectedWithPrecedents ? <>
           <div className="risk-law-detail-heading"><div><h3 id="risk-law-tracking-title">{selectedWithPrecedents.title}</h3><p>소관: {selectedWithPrecedents.institution} | 상태: {selectedWithPrecedents.status} | 예상 시행일: {selectedWithPrecedents.expectedEffectiveDate}</p></div>{selectedWithPrecedents.sourceUrl ? <a href={selectedWithPrecedents.sourceUrl} target="_blank" rel="noreferrer">원문 확인하기 ↗</a> : <span className="risk-law-source-pending">원문 확인 필요</span>}</div>
-          <div className="risk-law-update-label">{developerMode ? 'ACTUAL ARTICLE · STEP 2' : '공식 API 결과'} {selectedWithPrecedents.lastUpdated}</div>
+          <div className="risk-law-update-label">{developerMode ? 'ACTUAL ARTICLE · STEP 2' : 'SAMPLE · 기존 더미 데이터'} {selectedWithPrecedents.lastUpdated}</div>
           <section className="risk-law-timeline-card"><div className="risk-law-card-heading"><h4>📍 입법·개정 진행 단계</h4><span>최근 상태 변경: <strong>{selectedWithPrecedents.lastUpdated}</strong></span></div><TrackingTimeline item={selectedWithPrecedents} /></section>
           <section className="risk-law-changes"><div className="risk-law-change-grid"><ChangeCard title="기존 기준" changes={selectedWithPrecedents.beforeChanges} variant="before" /><ChangeCard title="개정안·현재 기준" changes={selectedWithPrecedents.afterChanges} variant="after" /></div><span className="risk-law-change-badge">{selectedWithPrecedents.changeBadge}</span></section>
           <RelatedCases item={selectedWithPrecedents} officialCases={precedentResults} />

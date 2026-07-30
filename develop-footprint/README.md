@@ -23,6 +23,7 @@
 - [기획·프로젝트 구성 멘토링 요청서](mentoring/project-planning-mentoring-request.md): 제품 범위·운영 모델·개발 순서에 대한 질문
 - [보험상품 개발 실무자 멘토링 요청서](mentoring/product-development-practitioner-mentoring-request.md): 실제 업무 적합성·판단 기준·도입 조건에 대한 질문
 - [개발자 테스트 워크벤치 루트 통합](features/developer-test-root-integration.md): 네 방 데모와 분리한 LLM·뉴스 실험 기능의 루트 연결
+- [탭 2·3·4 QA 반영 개발 프롬프트](features/tab-2-3-4-development-prompts.md): 위험 후보·위험 상세·종합 리포트의 중복·정보 흐름 개선 작업 지시서
 
 ## 상태 용어
 

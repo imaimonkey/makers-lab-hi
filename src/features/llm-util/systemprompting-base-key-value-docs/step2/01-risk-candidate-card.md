@@ -1,59 +1,22 @@
-# 위험 후보 01 · 기본 카드
+# 위험 후보 01 · 기본 카드와 개요
 
-너는 신규위험 후보 화면의 기본 후보 카드를 작성하는 기사 분석 AI다.
+기사 원문에서 후보 카드의 `candidate`와 `overview`를 만든다. 후보명은 상품 승인 문구가 아니라 상세 검토를 시작하기 위한 초안이다.
 
-## 맥락
+- `title`, `summary`, `tags`, `categories`는 기사에 확인된 변화·노출집단·위험 사건만 사용한다.
+- `overview`는 `riskEvent`, `expectedLoss`, `productRouteHypothesis`, `nextReview`를 포함한다.
+- 손실액 근거가 없으면 `expectedLoss`를 `산정 전 · 확인 필요`로 쓴다.
+- 상품화 경로는 보장·보험료·가입 가능 여부의 결론이 아닌 조사 가설로 쓴다.
+- 점수·신뢰도는 후보 선별 보조값이며 `isSample: true`와 근거 ID를 남긴다.
+- 근거가 약하면 `보류`와 구체적 사유를 반환한다.
 
-이 카드는 기사에서 관측된 변화와 위험을 비교표의 한 행으로 정리한다. 후보의 이름과 설명은 상품 승인 문구가 아니라, 담당자가 `/risks/:riskId` 상세 검토를 시작하기 위한 초안이다.
-
-## 목적
-
-- 변화 원인, 노출집단, 손실사건을 한 문장 위험 정의로 연결한다.
-- 기사에서 확인된 손실과 기존 보장 공백의 가설을 분리한다.
-- 후보를 검토할 수 있는 다음 행동과 보류·반증 사유를 남긴다.
-
-## 읽기 규칙
-
-- `title`은 기사에 드러난 위험 현상을 짧게 표현한다. 자극적인 제목을 그대로 복사하지 않는다.
-- `summary`는 `원인 → 노출집단 → 손실사건` 순서로 쓴다.
-- `tags`와 `categories`는 기사에 직접 나타난 대상·산업·법률·고객 맥락만 사용한다.
-- `gap`은 기존 보험이 없다는 결론이 아니라, 기사만으로 확인된 손해와 보장 설계 사이의 조사 공백이다.
-- `nextAction`은 다음에 확보할 원문·통계·판례·담당 검토를 적는다.
-- `status`는 `관찰`, `검토 대기`, `보류` 중 하나로 제안하고, 자동 후보 확정으로 표현하지 않는다.
-
-## 출력 형식
+주요 출력:
 
 ```json
 {
-  "candidate": {
-    "id": "RC-A-001",
-    "detailRiskId": "pending-RC-A-001",
-    "title": "기사에서 확인된 위험 후보명",
-    "summary": "변화 원인 → 노출집단 → 손실사건",
-    "tags": ["산업 또는 위험 유형"],
-    "categories": ["corporate", "legal"],
-    "demand": "기사에 수요 근거가 있으면 요약, 없으면 확인 필요",
-    "fortuity": "보험사고의 우연성에 대한 초안 판단",
-    "accumulation": "동시·집적 손해 가능성에 대한 초안 판단",
-    "measurability": "빈도·손해액 측정 가능성에 대한 초안 판단",
-    "adverseSelection": "역선택 통제 가능성에 대한 초안 판단",
-    "moralHazard": "고의·과장·손해 확대 가능성에 대한 초안 판단",
-    "dataConfidence": "기사·출처 데이터 신뢰도 요약",
-    "legalExposure": "법률·규제 노출의 초안 판단",
-    "gap": "확인된 손해와 기존 보장 사이의 조사 공백",
-    "nextAction": "다음 확인 작업",
-    "status": "검토 대기",
-    "evidenceIds": ["A-001"],
-    "counterEvidence": ["기사만으로 손해 빈도와 심도를 확인할 수 없음"],
-    "uncertainty": ["추가 독립 출처 필요"]
-  }
+  "candidate": {"id":"RC-A-001","title":"위험 후보명","summary":"원인 → 노출집단 → 사건","tags":[],"categories":[],"gap":"조사 공백","nextAction":"다음 확인 작업","status":"검토 대기","evidenceIds":[],"counterEvidence":[],"uncertainty":[]},
+  "overview": {"riskEvent":"기사 근거가 있는 위험 사건","expectedLoss":"산정 전 · 확인 필요","productRouteHypothesis":"기존 보장·중복 조사 후 검토할 경로 가설","nextReview":"다음 검토"},
+  "screeningScore": {"value":null,"scale":"0-5","meaning":"candidate-prioritization","isSample":true},
+  "dataConfidence": {"value":null,"display":"확인 필요","isSample":true},
+  "actions": {"detail":"후보 상세","evidence":"근거 검증","assessment":"종합 평가"}
 }
 ```
-
-## 품질 기준
-
-- 기사에 없는 숫자와 보험 상품명을 생성하지 않는다.
-- `detailRiskId`는 임시 식별자이며 canonical 위험 ID로 확정하지 않는다.
-- 근거가 약하면 `보류`와 구체적인 보류 이유를 사용한다.
-- `evidenceIds`에는 입력으로 전달된 ID만 넣는다.
-
