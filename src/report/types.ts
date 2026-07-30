@@ -454,12 +454,6 @@ export interface WordingFeasibility extends JsonObject {
 export interface ReportMeta extends JsonObject {
   reportId?: string;
   sourceRiskId: string;
-  /** 기준 위험 데이터의 시점과 snapshot 계약. 없으면 이전 저장본 호환 상태입니다. */
-  sourceAsOf?: string | null;
-  sourceAssessmentVersion?: string | null;
-  evidenceSnapshotVersion?: string | null;
-  revision?: number;
-  updatedAt?: string | null;
   title: string;
   riskTitle: string;
   riskCategories: string[];

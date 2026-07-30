@@ -56,12 +56,6 @@ type ReportView = {
   meta: {
     reportId?: string
     sourceRiskId: string
-    sourceAsOf?: string | null
-    sourceAssessmentVersion?: string | null
-    evidenceSnapshotVersion?: string | null
-    revision?: number
-    updatedAt?: string | null
-    isMockData?: boolean
     title: string
     riskTitle?: string
     riskCategories?: string[]
@@ -286,7 +280,6 @@ type ReportView = {
 type ModalState =
   | { type: 'evidence'; evidence: EvidenceItem }
   | { type: 'document'; document: NonNullable<ReportView['wordingFeasibility']['referenceDocuments']>[number] }
-  | { type: 'unsaved'; target: ReportTabId | null; reason: 'editor' | 'review' | 'both' }
   | null
 
 function asReportView(report: ReportResult): ReportView {
@@ -504,14 +497,10 @@ function ReportHeader({
       </div>
 
       <dl className="report-page__meta-grid">
-        <div><dt>리포트 ID</dt><dd>{meta.reportId ?? '이전 저장본 · sourceRiskId 사용'}</dd></div>
         <div><dt>위험 ID</dt><dd>{meta.sourceRiskId}</dd></div>
         <div><dt>분석 기준일</dt><dd>{displayDate(meta.analysisBaseDate)}</dd></div>
-        <div><dt>원본 기준 시각</dt><dd>{displayDate(meta.sourceAsOf ?? null)}</dd></div>
         <div><dt>생성일시</dt><dd>{displayDate(meta.generatedAt, true)}</dd></div>
         <div><dt>근거자료</dt><dd>{meta.evidenceCount ?? report.evidence.length}건</dd></div>
-        <div><dt>snapshot</dt><dd>{meta.evidenceSnapshotVersion ?? '이전 저장본 · 확인 필요'} · rev {meta.revision ?? 1}</dd></div>
-        <div><dt>데이터 상태</dt><dd>{meta.dataStatus ?? '확인 필요'}{meta.isMockData ? ' · SAMPLE' : ''}</dd></div>
       </dl>
       {meta.disclaimer ? <p className="report-page__disclaimer">{activeTab === 'feasibility' ? neutralizeCommercializationText(meta.disclaimer) : meta.disclaimer}</p> : null}
     </section>
@@ -1721,7 +1710,6 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
   const mandatoryPass = mandatory.filter((criterion) => appliedStatusOf(criterion) === 'pass').length
   const mandatoryCritical = mandatory.filter((criterion) => appliedStatusOf(criterion) === 'critical').length
   const confidence = confidenceLabel(criteria)
-  const pmlBaseScenario = FEASIBILITY_PML_DATA.scenarios.find((scenario) => scenario.id === FEASIBILITY_PML_DATA.baseScenario)
   const groupCounts = (group: FeasibilityDisplayGroup) => group.criterionIds.reduce<Record<CommercializationCriterionStatus, number>>((result, id) => {
     const criterion = findCriterion(id)
     if (criterion) {
@@ -1739,22 +1727,20 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
           <ul className="report-page__product-decision-bullets">
             <li className="is-satisfied"><span aria-hidden="true">✓</span><span>보험성 필수 기준 {mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</span></li>
             <li className="is-satisfied"><span aria-hidden="true">✓</span><span>동일 위험의 실제 상품화 사례 확인</span></li>
-            {mandatoryCritical === 0 ? <li className="is-satisfied"><span aria-hidden="true">✓</span><span>확인된 검토 중단 사유 없음</span></li> : null}
             <li className="is-follow-up"><span aria-hidden="true">–</span><span>기존 보험과의 중복·보장 공백 비교 필요</span></li>
             <li className="is-additional-check"><span aria-hidden="true">–</span><span>PML·시장 수요·빈도 근거 추가 검증 필요</span></li>
           </ul>
-          <small className="report-page__product-decision-follow-up">추가 확인 · 기존 보험 중복 / PML 검증 / 실제 계약 수요</small>
-          <small className="report-page__product-decision-note"><span>분석 신뢰도 · {confidence}</span><span>공개 상품자료와 mock 분석 데이터를 활용한 프로토타입 결과입니다.</span></small>
+          <small className="report-page__product-decision-note">공개 상품자료와 mock 분석 데이터를 활용한 프로토타입 결과입니다.</small>
         </div>
         <div className="report-page__product-decision-facts">
           <div className="report-page__product-decision-facts-grid">
-            <span className="report-page__product-decision-fact-card is-pass"><span className="report-page__product-decision-fact-label">보험성 필수 기준</span><strong>{mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</strong><small>피보험이익 · 우연성 · 실손보상 원칙</small></span>
-            <span className="report-page__product-decision-fact-card is-market"><span className="report-page__product-decision-fact-label">시장성</span><strong>A · 84점</strong><small>성장성·보험 수요·상품화 사례 기준</small></span>
-            <span className="report-page__product-decision-fact-card is-tam"><span className="report-page__product-decision-fact-label">총도달가능시장</span><strong>기준 연 121억 원</strong><small>추정 범위 · 연 65억~191억 원</small><em>공동주택 중심의 프로토타입 추정</em></span>
-            <span className="report-page__product-decision-fact-card is-pml"><span className="report-page__product-decision-fact-label">최대가능손해(PML)</span><strong>기준 {formatKrwCompact(pmlBaseScenario?.result ?? 0)}</strong><small>추정 범위 · {formatKrwCompact(FEASIBILITY_PML_DATA.range.low)}~{formatKrwCompact(FEASIBILITY_PML_DATA.range.high)}</small></span>
+            <span className="is-pass"><strong>{mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length}</strong><small>필수 기준 · 충족</small></span>
+            <span className="is-neutral"><strong>{mandatoryCritical}건</strong><small>확인된 중단 사유 · {mandatoryCritical ? '확인 필요' : '현재 없음'}</small></span>
+            <span className="is-follow-up"><strong>3건</strong><small>핵심 확인과제 · 추가 검토</small></span>
+            <span className="is-info"><strong>{confidence}</strong><small>분석 신뢰도 · 공개자료 기준</small></span>
           </div>
           <div className="report-page__product-decision-meta" aria-label="보험 분류 요약">
-            <span><em>대상:</em> 기업·법인</span><span><em>보험 영역:</em> 기업성 보험</span><span><em>보험 종목:</em> 일반보험 · 화재/기타화재</span><span><em>동일·유사 상품:</em> 확인</span><span><em>연계 보험:</em> 자동차보험 · 화재보험 · 배상책임보험</span>
+            <span>대상: 기업·법인</span><span>보험 영역: 기업성 보험</span><span>보험 종목: 일반보험 · 화재/기타화재</span><span>동일·유사 상품: 확인</span><span>연계 보험: 자동차보험 · 화재보험 · 배상책임보험</span>
           </div>
         </div>
       </section>
@@ -3159,14 +3145,6 @@ function WordingConfidenceText({ confidence }: { confidence: string }) {
   return <strong className={`report-page__wording-confidence-text is-${tone}`}>{confidence}</strong>
 }
 
-const WORDING_RISK_SUMMARY_COPY = {
-  title: '지하주차장 전기차 화재 확산 위험',
-  description: '주차 또는 충전 중인 전기자동차에서 시작된 화재가 인접 차량, 건물·주차장 시설 및 충전설비로 확산되어 다수의 재산손해를 발생시키는 위험입니다.',
-  insuranceType: '기업성 일반보험',
-  affected: '인접 차량 · 건물·주차장 시설 · 충전설비',
-  basis: '발생 가능한 손해와 기존 보험의 보장 공백 분석',
-} as const
-
 function WordingSection({
   report,
   onOpenDocument,
@@ -3249,26 +3227,25 @@ function WordingSection({
   }).concat(showAllDefinitions ? extraDefinitions.map((item) => ({ term: String(item.term ?? ''), definition: String(item.draftDefinition ?? ''), category: '새 정의 필요', status: String(item.status ?? '실무 결정 필요') })) : [])
 
   return (
-    <section ref={wordingComponentsRef} className="report-page__section report-page__wording-section" aria-label="약관화 검토">
+    <section ref={wordingComponentsRef} className="report-page__section report-page__wording-section" aria-labelledby="wording-title">
       <SectionHeading number="06" eyebrow="" title="약관화 검토" />
+      <p className="report-page__wording-lead" id="wording-title">현재 분석 중인 위험의 보장 공백을 바탕으로 AI가 약관화가 필요한 보장 항목을 제안하고, 항목별 보험금 지급요건과 특별약관 초안을 제공합니다.</p>
+      <p className="report-page__wording-disclaimer">현재 결과는 공개된 현대해상 약관 구조와 mock 데이터를 바탕으로 작성한 검토용 초안입니다. 실제 약관 확정 전 상품개발 담당자의 검토와 내부 승인 절차가 필요합니다.</p>
 
       <div className="report-page__wording-main-flow">
-        <section className="report-page__wording-risk-summary" aria-labelledby="wording-risk-title">
-          <div className="report-page__wording-risk-summary-card">
-            <p className="report-page__wording-risk-summary-label">분석 대상 위험</p>
-            <h3 id="wording-risk-title">{WORDING_RISK_SUMMARY_COPY.title}</h3>
-            <p className="report-page__wording-risk-summary-description">{WORDING_RISK_SUMMARY_COPY.description}</p>
-            <dl className="report-page__wording-risk-summary-meta">
+        <section className="report-page__wording-main-zone report-page__wording-zone-a" aria-labelledby="wording-risk-title">
+          <div className="report-page__wording-zone-heading"><div><h3 id="wording-risk-title">분석 대상 위험</h3></div></div>
+          <div className="report-page__wording-risk-context">
+            <strong>{WORDING_ANALYSIS_RISK.description}</strong>
+            <dl>
               <div><dt>위험 ID</dt><dd>{WORDING_ANALYSIS_RISK.riskId}</dd></div>
-              <div><dt>보험종목</dt><dd>{WORDING_RISK_SUMMARY_COPY.insuranceType}</dd></div>
-              <div><dt>주요 피해 대상</dt><dd>{WORDING_RISK_SUMMARY_COPY.affected}</dd></div>
-              <div><dt>도출 근거</dt><dd>{WORDING_RISK_SUMMARY_COPY.basis}</dd></div>
+              <div><dt>위험 유형</dt><dd>{WORDING_ANALYSIS_RISK.riskType}</dd></div>
+              <div><dt>주요 피해 대상</dt><dd>{WORDING_ANALYSIS_RISK.affected}</dd></div>
+              <div><dt>분석 근거</dt><dd>{WORDING_ANALYSIS_RISK.basis}</dd></div>
             </dl>
           </div>
-        </section>
 
-        <section className="report-page__wording-main-zone report-page__wording-zone-a" aria-labelledby="wording-proposal-title">
-          <div className="report-page__wording-zone-heading report-page__wording-proposal-heading"><div><h3 id="wording-proposal-title">AI 제안 보장 항목</h3><p>앞 단계에서 확인된 보장 공백과 기존 보험의 보장 범위를 바탕으로 AI가 약관화가 필요한 보장 항목을 제안했습니다. 항목을 선택하면 해당 보장의 지급요건과 특별약관 전체 초안을 확인할 수 있습니다.</p></div></div>
+          <div className="report-page__wording-zone-heading report-page__wording-proposal-heading"><div><h3>AI 제안 보장 항목</h3><p>앞 단계에서 확인된 보장 공백과 기존 보험의 보장 범위를 바탕으로 AI가 약관화가 필요한 보장 항목을 제안했습니다. 항목을 선택하면 해당 보장의 지급요건과 특별약관 전체 초안을 확인할 수 있습니다.</p></div></div>
           <div className="report-page__wording-proposal-grid" role="tablist" aria-label="AI 제안 보장 항목">
             {coverageClauseDrafts.map((draft, index) => (
               <button key={draft.id} className={`report-page__wording-proposal-card${selectedCoverage.id === draft.id ? ' is-selected' : ''}`} type="button" role="tab" aria-selected={selectedCoverage.id === draft.id} onClick={() => setSelectedCoverageId(draft.id)}>
@@ -4077,12 +4054,9 @@ function ReportPdfCover({
       <h1>{report.meta.title}</h1>
       <p className="report-page__pdf-cover-label">상품화 검토 리포트</p>
       <dl className="report-page__pdf-cover-meta">
-        <div><dt>리포트 ID</dt><dd>{report.meta.reportId ?? '이전 저장본 · sourceRiskId 사용'}</dd></div>
         <div><dt>위험 ID</dt><dd>{report.meta.sourceRiskId}</dd></div>
         <div><dt>분석 기준일</dt><dd>{displayDate(report.meta.analysisBaseDate)}</dd></div>
-        <div><dt>원본 기준 시각</dt><dd>{displayDate(report.meta.sourceAsOf ?? null)}</dd></div>
         <div><dt>근거자료</dt><dd>{report.meta.evidenceCount ?? report.evidence.length}건</dd></div>
-        <div><dt>데이터 상태</dt><dd>{report.meta.dataStatus ?? '확인 필요'}{report.meta.isMockData ? ' · SAMPLE' : ''}</dd></div>
         {includeGeneratedAt ? <div><dt>PDF 생성일시</dt><dd>{displayDate(createdAt, true)}</dd></div> : null}
       </dl>
       {report.meta.disclaimer ? <p className="report-page__disclaimer">{report.meta.disclaimer}</p> : null}
@@ -4263,9 +4237,7 @@ export function ReportSections({
   const [feasibilityOpenId, setFeasibilityOpenId] = useState<string | null>(null)
   const [reviewInputDirty, setReviewInputDirty] = useState(false)
   const [reviewDiscardRevision, setReviewDiscardRevision] = useState(0)
-  const [pendingTabId, setPendingTabId] = useState<ReportTabId | null>(null)
   const previousDocumentTitle = useRef<string | null>(null)
-  const persistenceReportId = sourceReport.meta.reportId ?? sourceReport.meta.sourceRiskId
 
   useEffect(() => {
     let cancelled = false
@@ -4273,12 +4245,8 @@ export function ReportSections({
     const loadStoredContent = async () => {
       if (!reportProxy.getReportContent) return
       try {
-        const response = await reportProxy.getReportContent(persistenceReportId)
-        let stored = parseStoredReportContent(response, persistenceReportId, sourceReport.meta.sourceRiskId)
-        if (!stored && persistenceReportId !== sourceReport.meta.sourceRiskId) {
-          const legacyResponse = await reportProxy.getReportContent(sourceReport.meta.sourceRiskId)
-          stored = parseStoredReportContent(legacyResponse, sourceReport.meta.sourceRiskId, sourceReport.meta.sourceRiskId)
-        }
+        const response = await reportProxy.getReportContent(sourceReport.meta.sourceRiskId)
+        const stored = parseStoredReportContent(response, sourceReport.meta.sourceRiskId)
         if (!cancelled && stored) {
           const normalizedStored = ensureCommercializationAssessment(stored)
           setSavedReport(normalizedStored)
@@ -4290,7 +4258,7 @@ export function ReportSections({
     }
     void loadStoredContent()
     return () => { cancelled = true }
-  }, [persistenceReportId, reportProxy, sourceReport])
+  }, [reportProxy, sourceReport])
 
   useEffect(() => {
     const warnBeforeLeave = (event: BeforeUnloadEvent) => {
@@ -4311,37 +4279,19 @@ export function ReportSections({
     })
   }
 
-  const commitTabChange = (id: ReportTabId) => {
-    setActiveTab(id)
-    const nextHash = `#report-tab=${id}`
-    if (window.location.hash !== nextHash) {
-      if (navigation) {
-        navigation(`${window.location.pathname}${window.location.search}${nextHash}`)
-      } else {
-        pushPreservingHistoryState(nextHash, { reportTab: id })
-      }
-    }
-    window.requestAnimationFrame(() => {
-      const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-      document.getElementById(`report-tab-${id}`)?.scrollIntoView({ behavior, block: 'nearest', inline: 'center' })
-      scrollToTabContent(id, behavior)
-    })
-  }
-
-  const restoreActiveHash = useCallback(() => {
-    const url = new URL(window.location.href)
-    url.hash = `report-tab=${activeTab}`
-    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
-  }, [activeTab])
-
   useEffect(() => {
     const syncTabFromHash = () => {
       const nextTab = getTabFromHash()
-      if (nextTab !== activeTab && (editorDirty || editorMode || editorPreview || reviewInputDirty)) {
-        restoreActiveHash()
-        setPendingTabId(nextTab)
-        setModal({ type: 'unsaved', target: nextTab, reason: editorDirty || editorMode || editorPreview ? (reviewInputDirty ? 'both' : 'editor') : 'review' })
-        return
+      if (nextTab !== activeTab && (editorMode || editorPreview || reviewInputDirty)) {
+        if (reviewInputDirty) {
+          setReviewDiscardRevision((value) => value + 1)
+          setReviewInputDirty(false)
+        }
+        setEditorMode(false)
+        setEditorPreview(false)
+        setEditorDirty(false)
+        setDraftReport(cloneReport(savedReport))
+        setEditorMessage('')
       }
       setActiveTab(nextTab)
       scrollToTabContent(nextTab, 'auto')
@@ -4353,7 +4303,7 @@ export function ReportSections({
       window.removeEventListener('hashchange', syncTabFromHash)
       window.removeEventListener('popstate', syncTabFromHash)
     }
-  }, [activeTab, editorDirty, editorMode, editorPreview, restoreActiveHash, reviewInputDirty, savedReport])
+  }, [activeTab, editorDirty, editorMode, editorPreview, reviewInputDirty, savedReport])
 
   useEffect(() => {
     const restoreAfterPrint = () => {
@@ -4389,38 +4339,44 @@ export function ReportSections({
   }
 
   const handleTabChange = (id: ReportTabId) => {
-    if (id === activeTab) return
-    if (editorDirty || editorMode || editorPreview || reviewInputDirty) {
-      setPendingTabId(id)
-      setModal({ type: 'unsaved', target: id, reason: editorDirty || editorMode || editorPreview ? (reviewInputDirty ? 'both' : 'editor') : 'review' })
-      return
+    if (id !== activeTab && (editorMode || editorPreview || reviewInputDirty)) {
+      if (reviewInputDirty) {
+        setReviewDiscardRevision((value) => value + 1)
+        setReviewInputDirty(false)
+      }
+      setEditorMode(false)
+      setEditorPreview(false)
+      setEditorDirty(false)
+      setDraftReport(cloneReport(savedReport))
+      setEditorMessage('')
     }
-    commitTabChange(id)
+    setActiveTab(id)
+    const nextHash = `#report-tab=${id}`
+    if (window.location.hash !== nextHash) {
+      if (navigation) {
+        navigation(`${window.location.pathname}${window.location.search}${nextHash}`)
+      } else {
+        pushPreservingHistoryState(nextHash, { reportTab: id })
+      }
+    }
+    window.requestAnimationFrame(() => {
+      const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+      document.getElementById(`report-tab-${id}`)?.scrollIntoView({ behavior, block: 'nearest', inline: 'center' })
+      scrollToTabContent(id, behavior)
+    })
   }
 
   const openEditor = () => {
+    if (reviewInputDirty && !window.confirm('저장하지 않은 실무자 메모가 있습니다. 편집 모드로 이동할까요?')) return
     if (reviewInputDirty) {
-      setModal({ type: 'unsaved', target: null, reason: 'review' })
-      return
+      setReviewDiscardRevision((value) => value + 1)
+      setReviewInputDirty(false)
     }
     setDraftReport(cloneReport(savedReport))
     setEditorMode(true)
     setEditorPreview(false)
     setEditorDirty(false)
     setEditorMessage('')
-  }
-
-  const stampReportUpdate = (nextReport: ReportResult): ReportResult => {
-    const updatedAt = new Date().toISOString()
-    return {
-      ...nextReport,
-      meta: {
-        ...nextReport.meta,
-        reportId: nextReport.meta.reportId ?? persistenceReportId,
-        updatedAt,
-        revision: Math.max(1, (nextReport.meta.revision ?? savedReport.meta.revision ?? 1) + 1),
-      },
-    }
   }
 
   const handleDraftChange = (nextReport: ReportResult) => {
@@ -4437,7 +4393,7 @@ export function ReportSections({
     const inputChanged = JSON.stringify(currentCriterion?.inputData ?? []) !== JSON.stringify(inputData)
       || JSON.stringify(currentCriterion?.rateData ?? []) !== JSON.stringify(rateData)
     const inputChangedAt = inputChanged ? new Date().toISOString() : (currentCriterion?.inputChangedAt ?? currentAssessment.inputChangedAt ?? null)
-    const nextReport = stampReportUpdate(ensureCommercializationAssessment({
+    const nextReport = ensureCommercializationAssessment({
       ...savedReport,
       productFeasibility: {
         ...savedReport.productFeasibility,
@@ -4449,7 +4405,7 @@ export function ReportSections({
           inputChangedAt,
         },
       },
-    }))
+    })
     const previousReport = savedReport
     // Apply the normalized review locally before waiting for the persistence
     // request so the progress count and screening row update immediately.
@@ -4460,7 +4416,7 @@ export function ReportSections({
     }
     try {
       await reportProxy.saveReportContent({
-        reportId: persistenceReportId,
+        reportId: sourceReport.meta.sourceRiskId,
         content: nextReport,
       })
       return { persisted: true }
@@ -4477,13 +4433,13 @@ export function ReportSections({
       throw new Error('저장 기능이 설정되지 않았습니다.')
     }
     const withStatus = updateReportContent(savedReport, ['ui', 'briefing', 'reviewerStatus'], status)
-    const nextReport = stampReportUpdate(updateReportContent(withStatus, ['ui', 'briefing', 'reviewerOpinion'], opinion))
+    const nextReport = updateReportContent(withStatus, ['ui', 'briefing', 'reviewerOpinion'], opinion)
     const previousReport = savedReport
     setSavedReport(cloneReport(nextReport))
     setDraftReport(cloneReport(nextReport))
     try {
       await reportProxy.saveReportContent({
-        reportId: persistenceReportId,
+        reportId: sourceReport.meta.sourceRiskId,
         content: nextReport,
       })
       setReviewInputDirty(false)
@@ -4494,11 +4450,11 @@ export function ReportSections({
     }
   }
 
-  const saveEditorContent = async (): Promise<boolean> => {
+  const saveEditorContent = async () => {
     if (!reportProxy.saveReportContent) {
       setSaveState('error')
       setEditorMessage('저장 API가 설정되지 않았습니다.')
-      return false
+      return
     }
     const normalizedDraft = ensureCommercializationAssessment(draftReport)
     if (activeTab === 'feasibility') {
@@ -4506,18 +4462,18 @@ export function ReportSections({
       if (validation.errors.length) {
         setSaveState('error')
         setEditorMessage(validation.errors[0])
-        return false
+        return
       }
       if (validation.warnings.length) setEditorMessage(`저장 전 확인: ${validation.warnings[0]}`)
     }
     setSaveState('loading')
     setEditorMessage('')
     try {
-      const contentToSave = stampReportUpdate(activeTab === 'feasibility'
+      const contentToSave = activeTab === 'feasibility'
         ? { ...savedReport, productFeasibility: normalizedDraft.productFeasibility }
-        : normalizedDraft)
+        : normalizedDraft
       await reportProxy.saveReportContent({
-        reportId: persistenceReportId,
+        reportId: sourceReport.meta.sourceRiskId,
         content: contentToSave,
       })
       setSavedReport(cloneReport(contentToSave))
@@ -4526,11 +4482,9 @@ export function ReportSections({
       setEditorPreview(false)
       setEditorDirty(false)
       setSaveState('idle')
-      return true
     } catch (error) {
       setSaveState('error')
       setEditorMessage(error instanceof Error ? error.message : '보고서 저장에 실패했습니다.')
-      return false
     }
   }
 
@@ -4551,40 +4505,6 @@ export function ReportSections({
   const continueEditorContent = () => {
     setEditorPreview(false)
     setEditorMode(true)
-  }
-
-  const discardUnsavedAndContinue = (target: ReportTabId | null) => {
-    if (reviewInputDirty) {
-      setReviewDiscardRevision((value) => value + 1)
-      setReviewInputDirty(false)
-    }
-    setEditorMode(false)
-    setEditorPreview(false)
-    setEditorDirty(false)
-    setDraftReport(cloneReport(savedReport))
-    setEditorMessage('')
-    setPendingTabId(null)
-    setModal(null)
-    if (target) commitTabChange(target)
-    else {
-      setDraftReport(cloneReport(savedReport))
-      setEditorMode(true)
-    }
-  }
-
-  const saveUnsavedAndContinue = async () => {
-    if (modal?.type !== 'unsaved') return
-    if (modal.reason !== 'editor') {
-      setModal(null)
-      setEditorMessage('현재 탭의 실무자 입력을 먼저 저장한 뒤 다시 이동을 선택하세요.')
-      return
-    }
-    const didSave = await saveEditorContent()
-    if (!didSave) return
-    const target = pendingTabId ?? modal.target
-    setPendingTabId(null)
-    setModal(null)
-    if (target) commitTabChange(target)
   }
 
   return (
@@ -4672,27 +4592,6 @@ export function ReportSections({
           onGenerate={() => requestPdfPrint(pdfSelectionSections, pdfOptions, createPdfFilename('selected'))}
           onClose={() => setPdfSelectionOpen(false)}
         />
-      ) : null}
-
-      {modal?.type === 'unsaved' ? (
-        <ReportModal
-          eyebrow="UNSAVED CHANGES"
-          title="저장하지 않은 변경이 있습니다"
-          onClose={() => { setPendingTabId(null); setModal(null) }}
-        >
-          <p className="report-page__modal-intro">
-            {modal.reason === 'editor'
-              ? '현재 리포트 draft를 저장한 뒤 이동할지, 변경을 폐기할지 선택하세요.'
-              : '실무자 입력은 현재 탭의 저장 버튼으로 먼저 저장해야 합니다. 저장하지 않고 이동하면 입력을 폐기할 수 있습니다.'}
-          </p>
-          <div className="report-page__modal-actions">
-            <button className="report-page__button report-page__button--primary" type="button" onClick={() => void saveUnsavedAndContinue()}>
-              {modal.reason === 'editor' ? '저장 후 이동' : '현재 탭에서 저장하기'}
-            </button>
-            {modal.target ? <button className="report-page__button report-page__button--secondary" type="button" onClick={() => discardUnsavedAndContinue(modal.target)}>변경 폐기 후 이동</button> : null}
-            <button className="report-page__button" type="button" onClick={() => { setPendingTabId(null); setModal(null) }}>취소</button>
-          </div>
-        </ReportModal>
       ) : null}
 
       {modal?.type === 'evidence' ? (
