@@ -288,12 +288,12 @@ export const PROPOSAL_RECOMMENDATION_DISPLAY = [
   {
     id: 'contract',
     title: '계약 대상이 명확함',
-    bullets: ['가입 후보 · 주차시설 운영자·건물 소유자', '보험료 부담과 시설 위험관리를 하나의 계약에 연결'],
+    bullets: ['주차시설 운영자·건물 소유자가 가입', '보험료 부담과 시설 위험관리를 하나의 계약으로 연결'],
   },
   {
     id: 'coverage-gap',
     title: '기존 보험 적용 후 보장 공백 존재',
-    bullets: ['자동차·화재·배상책임보험은 일부 손해만 적용', '책임 미확정·한도 초과·시설손해에 보장 공백 발생'],
+    bullets: ['기존 보험은 일부 직접손해만 보장', '책임 미확정·한도 초과·시설손해에 공백 발생'],
   },
   {
     id: 'accumulation',
@@ -310,9 +310,9 @@ export const PROPOSAL_CONTRACT_ROLE_SUMMARY = [
 ] as const
 
 export const PROPOSAL_CLAIM_FLOW_DISPLAY = [
-  { id: 'incident', label: '사고 및 보장 대상 확인', bullets: ['화재 발생 사실', '보험증권상 시설·대상 확인'] },
-  { id: 'existing-insurance', label: '기존 보험 지급액 확인', bullets: ['자동차·화재·배상책임보험 적용', '실제 지급액과 중복 범위 확인'] },
-  { id: 'coverage-gap', label: '보장 공백 산정', marker: '핵심 산정 단계', bullets: ['미보상 직접손해 계산', '한도 초과와 제외 손해 구분'] },
+  { id: 'incident', label: '사고 및 보장 대상 확인', bullets: ['화재 발생 사실 확인', '보험증권상 시설·대상 확인'] },
+  { id: 'existing-insurance', label: '기존 보험 지급액 확인', bullets: ['자동차·화재·배상책임보험 적용 확인', '실제 지급액과 중복 범위 확인'] },
+  { id: 'coverage-gap', label: '보장 공백 산정', bullets: ['미보상 직접손해 계산', '한도 초과 및 제외 손해 구분'] },
   { id: 'new-coverage', label: '신규 담보 지급액 산정', bullets: ['지급요건 적용', '보상한도·자기부담금 반영'] },
   { id: 'payment-recovery', label: '보험금 지급 및 구상 검토', bullets: ['보험금 지급', '책임 확정 후 구상 가능성 검토'] },
 ] as const
@@ -413,32 +413,98 @@ export const PROPOSAL_PRICING_SCENARIO_OUTPUTS: ProposalPricingScenarioOutput[] 
   }
 })
 
+const proposalPmlBase = FEASIBILITY_PML_DATA.scenarios.find((scenario) => scenario.id === FEASIBILITY_PML_DATA.baseScenario)?.result ?? 0
+
+export const PROPOSAL_UNDERWRITING_AI_SUMMARY = {
+  label: 'AI 핵심 판단',
+  prefix: '현재 시나리오에서는 ',
+  exposure: '노출 규모와 최대 동시 피해 규모',
+  middle: '가 PML과 보상한도에 가장 큰 영향을 미치며, ',
+  mitigation: '방재·관리 수준',
+  suffix: '은 보험료와 자기부담금을 조정하는 주요 요인입니다.',
+} as const
+
 export const PROPOSAL_UNDERWRITING_DISPLAY = [
-  { id: 'parking-scale', title: '주차장 규모', check: '주차면 수, 층수, 지하 구조, 최대 수용 차량', riskImpact: '최대 동시 피해와 PML 증가', pricingImpact: '규모가 클수록 보험료와 사고당 보상한도 상승', tags: [{ label: 'PML ↑', tone: 'risk' }, { label: '보험료 ↑', tone: 'risk' }] },
-  { id: 'charger-density', title: '충전기 수와 밀집도', check: '완속·급속 충전기 수, 배치, 충전구역 밀집도', riskImpact: '화재 발생 및 확산 노출 증가', pricingImpact: '고밀도 시설에 위험가산 적용', tags: [{ label: '위험도 ↑', tone: 'risk' }, { label: '보험료 ↑', tone: 'risk' }] },
-  { id: 'fire-protection', title: '방재설비', check: '스프링클러, 감지·경보장치, 배연설비, 진압장비', riskImpact: '화재 확산과 손해심도 감소', pricingImpact: '우수한 설비에 할인 또는 자기부담금 완화', tags: [{ label: '손해심도 ↓', tone: 'positive' }, { label: '보험료 ↓', tone: 'positive' }, { label: '자기부담금 ↓', tone: 'positive' }] },
-  { id: 'vehicle-battery', title: '차량·배터리 관리정보', check: '대상 차량 명부, 충전기록, 배터리 이상 이력', riskImpact: '위험 분류와 사고 원인 판별 정확도 향상', pricingImpact: '정보 부족 시 불확실성 가산', tags: [{ label: '정보 부족 시 보험료 ↑', tone: 'neutral' }] },
-  { id: 'incident-history', title: '사고·고장 이력', check: '화재, 과열, 충전기 고장, 안전점검 이력', riskImpact: '향후 사고빈도 증가 가능성', pricingImpact: '사고빈도에 따라 할증 및 자기부담금 상향', tags: [{ label: '사고빈도 ↑', tone: 'risk' }, { label: '보험료 ↑', tone: 'risk' }, { label: '자기부담금 ↑', tone: 'risk' }] },
-  { id: 'accumulation', title: '최대 동시 피해 규모', check: '화재 확산 가능 구역과 동시 피해 차량 수', riskImpact: 'PML과 누적손해 증가', pricingImpact: '사고당 한도와 재보험 필요성 결정', tags: [{ label: 'PML ↑', tone: 'risk' }, { label: '재보험 가능성 ↑', tone: 'neutral' }] },
-  { id: 'management', title: '시설 관리 수준', check: '정기점검, 비상대응 매뉴얼, 관리인력', riskImpact: '사고 예방과 초기 대응력 개선', pricingImpact: '관리 수준에 따라 할인·할증 차등', tags: [{ label: '관리 우수 시 보험료 ↓', tone: 'positive' }] },
+  {
+    id: 'exposure',
+    title: '노출 규모',
+    sourceFactorIds: ['parking-scale', 'accumulation'],
+    aiAssessment: '피해 대상이 많을수록 한 번의 사고에서 발생할 수 있는 최대손해가 커집니다.',
+    criteria: ['주차면 수와 최대 수용 차량', '지하층 수와 주차장 구조', '화재 확산 가능 구역', '최대 동시 피해 차량 수'],
+    pricingEffects: ['규모가 클수록 PML과 사고당 보상한도 상승', '최대 동시 피해가 커질수록 보험료와 재보험 필요성 증가'],
+    scenarioReference: { low: FEASIBILITY_PML_DATA.range.low, base: proposalPmlBase, high: FEASIBILITY_PML_DATA.range.high },
+    conditionImpact: 'PML·보상한도',
+    conditionTone: 'risk',
+  },
+  {
+    id: 'frequency',
+    title: '화재 발생 가능성',
+    sourceFactorIds: ['charger-density', 'incident-history'],
+    aiAssessment: '충전설비가 밀집되어 있거나 사고·고장 이력이 많을수록 예상 사고빈도가 높아질 수 있습니다.',
+    criteria: ['완속·급속 충전기 수', '충전구역 밀집도와 배치', '최근 화재·과열 이력', '충전기 고장과 안전점검 이력'],
+    pricingEffects: ['예상 사고빈도가 높을수록 보험료 위험가산', '반복 사고 이력이 있으면 자기부담금 또는 가입조건 강화'],
+    scenarioReference: null,
+    conditionImpact: '보험료·자기부담금',
+    conditionTone: 'risk',
+  },
+  {
+    id: 'mitigation',
+    title: '피해 확산 통제 수준',
+    sourceFactorIds: ['fire-protection', 'management'],
+    aiAssessment: '방재설비와 관리체계가 우수할수록 화재 확산과 사고당 손해 규모를 줄일 수 있습니다.',
+    criteria: ['스프링클러와 감지·경보장치', '배연설비와 진압장비', '정기점검과 비상대응 매뉴얼', '대응 인력과 초기 조치 체계'],
+    pricingEffects: ['우수한 방재설비는 사고당 손해 규모 감소에 반영', '관리 수준이 우수하면 보험료 또는 자기부담금 완화 가능'],
+    scenarioReference: null,
+    conditionImpact: '할인·할증',
+    conditionTone: 'positive',
+  },
+  {
+    id: 'data-quality',
+    title: '위험정보 확보 수준',
+    sourceFactorIds: ['vehicle-battery'],
+    aiAssessment: '차량과 충전 기록이 충분할수록 사고원인과 노출 규모를 정확하게 분류할 수 있습니다.',
+    criteria: ['대상 차량 명부', '충전기 이용 기록', '배터리 이상 이력', '시설별 사고·점검 기록'],
+    pricingEffects: ['정보가 충분하면 위험 분류와 보험료 산출 정확도 향상', '정보가 부족하면 불확실성 가산을 보험료에 반영'],
+    scenarioReference: null,
+    conditionImpact: '불확실성 가산',
+    conditionTone: 'neutral',
+  },
 ] as const
 
 export const PROPOSAL_DECISIONS = [
-  { id: 'basic-optional', text: '기본 담보와 선택 담보 구분', status: '우선안' },
-  { id: 'deduct-existing', text: '기존 보험 지급액 차감 방식', status: '약관 기준 설정' },
-  { id: 'pre-liability-payment', text: '책임 확정 전 보험금 지급 여부', status: '약관 기준 설정' },
-  { id: 'pml-limit', text: 'PML 기반 사고당 보상한도', status: 'AI 제안값' },
-  { id: 'aggregate-limit', text: '계약기간 중 총 보상한도', status: 'AI 제안값' },
-  { id: 'deductible-risk', text: '자기부담금과 위험등급 기준', status: '우선안' },
-  { id: 'direct-claim', text: '제3자 직접청구 적용 여부', status: '약관 기준 설정' },
-  { id: 'recovery', text: '보험금 지급 후 구상 구조', status: '약관 기준 설정' },
+  { id: 'basic-optional', text: '기본 담보와 선택 담보 구분' },
+  { id: 'deduct-existing', text: '기존 보험 지급액 차감 방식' },
+  { id: 'pre-liability-payment', text: '책임 확정 전 보험금 지급 여부' },
+  { id: 'pml-limit', text: 'PML 기반 사고당 보상한도' },
+  { id: 'aggregate-limit', text: '계약기간 중 총 보상한도' },
+  { id: 'deductible-risk', text: '자기부담금과 위험등급 기준' },
+  { id: 'direct-claim', text: '제3자 직접청구 적용 여부' },
+  { id: 'recovery', text: '보험금 지급 후 구상 구조' },
 ] as const
 
 export const PROPOSAL_CALCULATION_EVIDENCE = {
-  used: ['상품화 종합평가의 PML', '보장 공백 분석 결과', '기존 보험과의 중복관계', '기존 근거자료 페이지의 사고·시장 자료', '약관화 검토 결과'],
-  methods: ['사고빈도 × 평균 보장손해', 'PML 기반 대형사고 위험가산', '시설 위험요인별 할인·할증', '기존 보험 지급액 차감', '목표 손해율을 활용한 제안 보험료 산정'],
-  variables: ['연간 사고빈도', '사고당 평균 손해액', '최대가능손해(PML)', '기존 보험 지급 비율', '시설 방재 수준', '보상한도와 자기부담금'],
+  used: [
+    { label: '상품화 종합평가', detail: 'PML 35억~79억 원' },
+    { label: '보장 공백 분석', detail: '책임·범위·한도 공백' },
+    { label: '기존 보험 비교', detail: '자동차·화재·배상책임보험' },
+    { label: '사고·시장 자료', detail: '공개 사고사례와 시장 근거' },
+    { label: '약관화 검토', detail: '지급요건과 보장 제외 기준' },
+  ],
+  methods: [
+    { label: '예상 연간 손해액', detail: '사고빈도 × 평균 보장손해 + 대형사고 위험가산' },
+    { label: '제안 보험료', detail: '예상 손해액 ÷ 목표 손해율 + 사업비·불확실성 가산' },
+    { label: '제안 보상한도', detail: '최대가능손해(PML) × 한도 적용 비율' },
+    { label: '할인·할증', detail: '시설 방재·관리 수준과 사고 이력 반영' },
+    { label: '기존 보험 차감', detail: '보장 대상 손해에서 기존 보험 지급액 제외' },
+  ],
+  variables: [
+    { label: '연간 사고빈도', impact: '높아질수록 예상 손해액과 보험료 상승' },
+    { label: '사고당 평균 손해액', impact: '높아질수록 예상 손해액과 손해율 상승' },
+    { label: '최대가능손해(PML)', impact: '사고당 보상한도와 재보험 판단에 반영' },
+    { label: '기존 보험 지급 비율', impact: '높아질수록 신규 담보의 지급 대상 손해 감소' },
+    { label: '시설 방재 수준', impact: '우수할수록 손해심도와 보험료 완화 가능' },
+    { label: '보상한도·자기부담금', impact: '보험료와 실제 지급액에 직접 영향' },
+  ],
   confidence: '보통 이하',
-  explanation: '공개자료와 프로토타입 시나리오 기반 1차 추정이며, 실제 데이터 연결 시 자동 보정됩니다.',
-  limitation: '실제 내부 계약 및 손해 데이터 미확보',
+  explanation: '공개자료와 프로토타입 산식 기반의 1차 추정 · 실제 데이터 연결 시 자동 보정',
 } as const

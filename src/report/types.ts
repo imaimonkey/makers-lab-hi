@@ -191,6 +191,17 @@ export interface FeasibilityItem extends JsonObject {
 
 /** AI 기준 평가 결과. 기존 conditional 값은 정규화 단계에서 needs_review 또는 additional_check로 이관합니다. */
 export type CommercializationCriterionStatus = "pass" | "needs_review" | "additional_check" | "critical";
+export type CommercializationAiDecision = "fulfilled" | "unfulfilled";
+export type CommercializationCriterionReviewStatus = "pending" | "completed";
+export type CommercializationReviewAction = "accepted" | "modified";
+export interface CommercializationCriterionDetail extends JsonObject {
+  aiSummary: string;
+  rationale: string[];
+  materials: string[];
+  assumptions: string[];
+  limitations: string[];
+  reviewerChecks: string[];
+}
 export type CommercializationEvidenceStatus = "sufficient" | "external_data_required" | "internal_data_required" | "reviewer_confirmation_required";
 export type CommercializationCriterionCategory = "market" | "insurability" | "coverage" | "wording" | "data";
 export type CommercializationGateGroup = "insurance_gate" | "productization_gate" | "supplementary_execution";
@@ -242,6 +253,8 @@ export interface CommercializationNextAction extends JsonObject {
 export interface CommercializationReviewerReview extends JsonObject {
   decision: CommercializationReviewerDecision;
   status?: CommercializationReviewStatus;
+  action?: CommercializationReviewAction;
+  resultAiDecision?: CommercializationAiDecision;
   acceptedAi?: boolean;
   resultStatus?: CommercializationCriterionStatus;
   changeReason?: string;
@@ -273,6 +286,12 @@ export interface CommercializationCriterion extends JsonObject {
   gateGroup: CommercializationGateGroup;
   question: string;
   description: string;
+  /** AI 화면 표시용 이진 판단. 기존 status는 저장/API 하위 호환용으로 유지합니다. */
+  aiDecision?: CommercializationAiDecision;
+  /** AI 판단과 분리된 실무자 검토 상태입니다. */
+  reviewStatus?: CommercializationCriterionReviewStatus;
+  reviewAction?: CommercializationReviewAction;
+  analysisDetail?: CommercializationCriterionDetail;
   status: CommercializationCriterionStatus;
   evidenceStatus: CommercializationEvidenceStatus;
   sourceSections: string[];
@@ -454,6 +473,12 @@ export interface WordingFeasibility extends JsonObject {
 export interface ReportMeta extends JsonObject {
   reportId?: string;
   sourceRiskId: string;
+  /** 기준 위험 데이터의 시점과 snapshot 계약. 없으면 이전 저장본 호환 상태입니다. */
+  sourceAsOf?: string | null;
+  sourceAssessmentVersion?: string | null;
+  evidenceSnapshotVersion?: string | null;
+  revision?: number;
+  updatedAt?: string | null;
   title: string;
   riskTitle: string;
   riskCategories: string[];

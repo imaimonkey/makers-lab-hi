@@ -1,0 +1,127 @@
+export const PRODUCT_REVIEW_SUMMARY_COPY = {
+  pageDescription: '',
+  recommendation: {
+    eyebrow: 'REVIEW RECOMMENDATION',
+    title: '상품 개발 검토 가치 있음',
+    actionTitle: '보완 후 상품개발 검토 권고',
+    status: '보완 조건 있음',
+    description: '기존 보험 적용 후에도 책임 확정 전 보상 지연과 다수 피해 발생 시 보상한도 공백이 남을 가능성이 있으며, 잠재 수요도 확인되어 후속 검토 가치가 있습니다. 다만 기존 보험과의 중복 범위 및 손해 데이터를 추가 확인해야 합니다.',
+  },
+  evaluationStatusFallback: {
+    pass: 12,
+    needsReview: 0,
+    additionalCheck: 0,
+    critical: 0,
+  },
+  coreJudgments: {
+    insurability: {
+      title: '보험성',
+      status: '핵심 요건 충족',
+      result: '보험 설계 가능성 확인',
+      description: '피보험이익, 우연성, 사행성 배제 등 보험으로 성립하기 위한 주요 필수 요건을 충족합니다.',
+    },
+    marketability: {
+      title: '보장 공백·시장성',
+      status: '검토 가치 있음',
+      result: '보장 공백 및 잠재 수요 확인',
+      description: '기존 자동차보험과 화재보험 적용 후에도 남을 수 있는 초과손해와 기업·기관의 잠재 보장 수요가 확인됩니다.',
+    },
+    existingInsurance: {
+      title: '기존 보험과의 관계',
+      status: '중복 범위 추가 확인',
+      result: '일부 중복되나 주요 공백 존재',
+      description: '자동차보험·자기차량손해담보·화재보험에서 일부 보장이 가능하지만, 책임 확정 전 보상 지연과 다수 피해 보상한도에는 공백이 남을 수 있습니다.',
+      comparison: [
+        { label: '자동차보험 대물배상', result: '책임 성립 시 일부 보상 가능', sourceId: 'COV-01' },
+        { label: '피해 차량 자기차량손해담보', result: '가입 여부와 조건에 따라 보상 가능', sourceId: 'COV-02' },
+        { label: '건물 화재보험', result: '건물·주차장 시설손해 일부 보상 가능', sourceId: 'COV-03' },
+        { label: '직접 대응 통합상품', result: '미확인', sourceId: null },
+      ],
+      action: '상세 검토 결과 보기',
+      tab: 'coverage-gap',
+    },
+    coverageGap: {
+      title: '기존 보험과 보장 공백',
+      status: '보장 공백 확인',
+      result: '자동차보험·자기차량손해담보·화재보험에서 일부 손해를 보상할 수 있으나, 책임 확정 전 보상 지연과 다수 피해에 대한 보상한도 공백이 남을 수 있습니다.',
+      gaps: ['책임 확정 전 보험금 지급 지연', '다수 차량과 시설 피해 발생 시 기존 보상한도 부족', '보험별 우선 보상 순서와 구상관계의 복잡성'],
+      differentiation: '기존 보험을 대체하는 상품이 아니라, 기존 보험 적용 후에도 남는 보장 공백을 보완하는 상품 구조입니다.',
+      action: '상세 검토 결과 보기',
+      tab: 'coverage-gap',
+    },
+    market: {
+      title: '시장성·수요 추정',
+      target: '기업·기관 단체계약 시장',
+      basis: ['전기차 보급과 공동주택·업무시설의 지하주차장 노출 증가', '유사 보험상품과 보상 구조 확인', '실제 가입 의향과 계약 규모는 후속 수요조사 대상'],
+    },
+    loss: {
+      title: '손해 규모·보험료 추정',
+      basis: ['상품화 종합평가 PML 시나리오', '공개 전기차 화재 통계와 프로토타입 요율 가정', '실제 계약·손해 데이터 연결 후 보정'],
+    },
+  },
+  reviewOpinions: [
+    {
+      id: 'coverage-gap',
+      title: '기존 보험과 보장 공백',
+      content: '자동차보험·자기차량손해담보·화재보험에서 일부 손해를 보상할 수 있으나, 책임 확정 전 보상 지연과 다수 피해에 대한 보상한도 공백이 남을 수 있습니다.',
+    },
+    {
+      id: 'productization',
+      title: '상품화 판단 근거',
+      content: '보험성 필수 기준을 충족하고, 기존 보험 적용 후에도 보장 공백이 확인되어 보완형 보험상품으로 후속 검토할 가치가 있습니다.',
+    },
+    {
+      id: 'verification',
+      title: '추가 검증 자료',
+      content: '타사 유사상품 판매 여부, 사고당 최대가능손해, 실제 보상사례와 손해 데이터는 실무자료를 통해 추가 검증해야 합니다.',
+    },
+  ],
+  productProposal: {
+    title: '추천 상품 개발안',
+    structure: '기업·기관 단체계약형 피해보완보험',
+    productName: '전기차 화재 제3자 재산손해 보완보험',
+    facts: [
+      ['보험 구분', '일반보험'],
+      ['계약 형태', '기업·기관 단체계약형'],
+      ['상품 역할', '기존 보험 적용 후 보장 공백 보완'],
+      ['자동차보험 여부', '자동차보험 자체가 아닌 보완형 일반보험 검토안'],
+      ['주요 피해 대상', '인접 차량, 건물·주차장 시설, 충전설비'],
+    ],
+    coverages: ['인접 차량 직접재산손해', '건물·주차장 시설 직접 화재손해', '화재 진압·긴급조치 비용'],
+    compensation: '기존 보험의 적용 여부와 실제 지급액을 먼저 확인한 뒤, 기존 보험으로 보상되지 않은 손해 또는 약정한 초과손해를 보완하고, 책임 확정 전 지급한 보험금은 책임주체에 사후 구상하는 구조를 검토합니다.',
+    perspectives: [
+      ['영업 관점', '실제 계약 수요와 보험료 수용도'],
+      ['상품개발 관점', '담보 구성과 약관 문구'],
+      ['언더라이팅 관점', '인수조건과 위험등급'],
+      ['계리·재보험 관점', 'PML, 보험료와 예상 손해율'],
+    ],
+    action: '상품 개발안 상세 보기',
+    tab: 'proposal',
+  },
+  criteria: {
+    groups: [
+      { id: 'insurance', title: '보험성 필수 기준', itemLabels: ['피보험이익', '우연성', '사행성·유사수신 배제'], criterionIds: ['insurable_interest', 'fortuity', 'gambling_like_structure'] },
+      { id: 'product', title: '상품개발 핵심 기준', itemLabels: ['고의·도덕적 해이 통제', '보장 공백·중복 여부', '실제 시장 수요', '최대가능손해(PML)', '손해 확인·산정 가능성'], criterionIds: ['moral_hazard_control', 'coverage_gap', 'actual_market_demand', 'pml_accumulation', 'loss_verifiability'] },
+      { id: 'operation', title: '구조·운영 검토 기준', itemLabels: ['위험 분산 가능성', '약관화 가능성', '보험료·손해율 데이터 확보', '책임주체 명확성'], criterionIds: ['risk_pooling', 'wording_clarity', 'pricing_data_readiness', 'liability_clarity'] },
+    ],
+    focus: [
+      { id: 'coverage-gap', title: '기존 보험 보장 공백·중복', criterionId: 'coverage_gap' },
+      { id: 'moral-hazard', title: '고의·도덕적 해이 통제', criterionId: 'moral_hazard_control' },
+      { id: 'pml', title: '최대가능손해와 위험률 추정', criterionId: 'pml_accumulation' },
+    ],
+    action: '12개 기준 상세 보기',
+    tab: 'feasibility',
+  },
+  nextTasks: [
+    { id: 'comparison', title: '기존 보험과 유사상품 확인', action: '보험별 실제 보상사례와 우선 보상 순서, 타사의 유사·중복 상품 판매 여부를 확인합니다.', output: '기존 보험 중복·차별성 비교표' },
+    { id: 'pricing', title: '손해 규모 자료 보정', action: '사고 빈도, 평균·최대 손해액과 사고당 PML 자료를 확보하여 보상한도 가정을 보정합니다.', output: 'PML·보상한도 보정안' },
+    { id: 'demand', title: '실제 시장 수요 확인', action: '잠재 계약자의 가입 의향과 보험료 수용도를 확인하여 시장성 등급을 검증합니다.', output: '시장성 검증 결과' },
+  ],
+  evidence: {
+    title: 'AI 판단 근거 요약',
+    conclusion: '기존 보험의 일부 적용 가능성과 보장 공백, 전기차·지하주차장 노출 확대, 화재 집적손해 시나리오 및 유사 화재보험의 보장 구조를 바탕으로 상품개발 검토 가치가 있다고 판단했습니다.',
+    sources: ['기존 자동차보험·화재보험 약관', '기존 보험 보장 공백 분석', '전기차·충전설비 노출 자료', '화재 확산 및 집적손해 시나리오', '유사상품 구조와 보상 흐름'],
+    action: '근거자료 보기',
+    tab: 'evidence',
+  },
+} as const
