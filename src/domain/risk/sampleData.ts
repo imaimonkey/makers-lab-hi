@@ -16,10 +16,13 @@ export type SampleRiskCandidate = {
   status: '신규' | '검토 중' | '관찰'
   trend: string
   updatedAt: string
+  articleId?: string
 }
 
 export type SampleRiskAssessment = {
   label: string
+  /** 원점수 1–5. score는 화면 표시용 0–100 환산값입니다. */
+  rawScore?: number
   score: number
   confidence: '높음' | '보통' | '낮음'
   note: string
@@ -27,6 +30,10 @@ export type SampleRiskAssessment = {
   inputs?: string
   calculation?: string
   interpretation?: string
+  evidenceStatus?: 'verified' | 'pending'
+  evidenceQuotes?: string[]
+  uncertainty?: string[]
+  counterEvidence?: string[]
 }
 
 export type SampleRiskEvidence = RiskEvidenceContract & {
@@ -298,6 +305,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
   return [
     {
       label: '신규성',
+      rawScore: novelty,
       score: toPercent(novelty),
       confidence,
       note: '기존 위험과 다른 원인·노출 형태가 등장했는지 확인하는 SAMPLE 대리 지수입니다.',
@@ -308,6 +316,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
     },
     {
       label: '증가성',
+      rawScore: record.metricScores.demand,
       score: toPercent(record.metricScores.demand),
       confidence,
       note: `${record.demand} · TOP-10 비교용 SAMPLE이며 실제 가입 수요가 아닙니다.`,
@@ -318,6 +327,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
     },
     {
       label: '피해 심각성',
+      rawScore: severity,
       score: toPercent(severity),
       confidence,
       note: `${record.fortuity} · 사고가 발생했을 때 손해 규모와 누적 영향을 함께 봅니다.`,
@@ -328,6 +338,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
     },
     {
       label: '확산 가능성',
+      rawScore: spread,
       score: toPercent(spread),
       confidence,
       note: `${record.accumulation} · 특정 개인을 넘어 조직·지역·산업으로 번질 가능성을 봅니다.`,
@@ -338,6 +349,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
     },
     {
       label: '보험 사각지대 가능성',
+      rawScore: blindSpot,
       score: toPercent(blindSpot),
       confidence,
       note: `${record.gap} · 기존 상품·약관으로 충분히 보장되지 않는 공백을 확인합니다.`,
@@ -348,6 +360,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
     },
     {
       label: '근거 신뢰도',
+      rawScore: record.metricScores.dataConfidence,
       score: toPercent(record.metricScores.dataConfidence),
       confidence,
       note: `${record.dataConfidence} · 원문·표본·최신 시각 확인 전 SAMPLE입니다.`,

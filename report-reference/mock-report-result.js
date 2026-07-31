@@ -360,6 +360,24 @@ const mockReportResult = {
         additionalChecks: ["고의·불법 개조 통제", "안전점검 미이행 처리"],
       },
       {
+        id: "insurable_interest",
+        criterion: "피보험이익",
+        status: "양호",
+        judgment:
+          "보험금 수령 주체와 실제 경제적 손해의 관계를 확인할 수 있어 보험이익 기준을 충족하는 구조입니다.",
+        evidenceIds: ["EVD-003", "EVD-006"],
+        additionalChecks: ["계약자·피보험자 역할 확정"],
+      },
+      {
+        id: "gambling_like_structure",
+        criterion: "실손보상 원칙",
+        status: "양호",
+        judgment:
+          "실제 발생한 직접 재산손해를 기준으로 보상하는 구조이므로 손해 보전 원칙에 부합합니다.",
+        evidenceIds: ["EVD-004", "EVD-006"],
+        additionalChecks: ["실제 손해와 지급조건의 연계 확인"],
+      },
+      {
         id: "measurability",
         criterion: "손해 측정 가능성",
         status: "조건부",

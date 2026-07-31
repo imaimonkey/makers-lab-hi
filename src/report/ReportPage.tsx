@@ -13,6 +13,7 @@ export type ReportPageProps = {
   reportProxy: ReportProxy
   listIntro?: ReactNode
   navigation?: ReportNavigation
+  includeLayoutMocks?: boolean
 }
 
 const getRequestedReportId = (): string | null => {
@@ -34,11 +35,12 @@ function ReportPageSession({
   reportProxy,
   listIntro,
   navigation,
+  includeLayoutMocks = true,
 }: ReportPageProps) {
   const [showDetail, setShowDetail] = useState(() => hasDetailQuery(fallbackReport))
   const reports = useMemo(
-    () => createGeneratedReportList(riskData, fallbackReport),
-    [fallbackReport, riskData],
+    () => createGeneratedReportList(riskData, fallbackReport, { includeLayoutMocks }),
+    [fallbackReport, includeLayoutMocks, riskData],
   )
 
   useEffect(() => {

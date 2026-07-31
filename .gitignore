@@ -8,7 +8,9 @@ dist
 *.local
 *.log
 
-data/
+data/*
+!data/system-prompts/
+!data/system-prompts/**
 !src/report/data/
 
 otherstatus

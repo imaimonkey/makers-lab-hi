@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+﻿import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { resolve } from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
@@ -17,6 +17,10 @@ import type { NewsManualTestRun, NewsManualTestStore } from './src/features/news
 type LlmApiOptions = {
   apiKey: string
   model: string
+  provider: 'gemini' | 'potens'
+  naverClientId?: string
+  naverClientSecret?: string
+  lawOpenApiKey?: string
 }
 
 type GeminiResponse = {
@@ -30,12 +34,55 @@ type GeminiResponse = {
   }
 }
 
+type PotensResponse = {
+  text?: unknown
+  response?: unknown
+  content?: unknown
+  choices?: Array<{ message?: { content?: unknown }; text?: unknown }>
+  error?: { message?: string } | string
+}
+
+function extractProviderText(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return value.map(extractProviderText).filter(Boolean).join('')
+  if (!value || typeof value !== 'object') return ''
+  const record = value as Record<string, unknown>
+  for (const key of ['text', 'content', 'response', 'output', 'result', 'message', 'data', 'choices', 'candidates', 'parts']) {
+    const text = extractProviderText(record[key])
+    if (text) return text
+  }
+  return ''
+}
+
+async function readPotensStream(response: Response): Promise<string> {
+  if (!response.body) return ''
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let result = ''
+  const consume = (line: string) => {
+    const value = line.trim().replace(/^data:\s*/, '')
+    if (!value || value === '[DONE]') return
+    try { result += extractProviderText(JSON.parse(value)) } catch { result += value }
+  }
+  while (true) {
+    const chunk = await reader.read()
+    buffer += decoder.decode(chunk.value ?? new Uint8Array(), { stream: !chunk.done })
+    const lines = buffer.split(/\r?\n/)
+    buffer = lines.pop() ?? ''
+    lines.forEach(consume)
+    if (chunk.done) break
+  }
+  consume(buffer)
+  return result
+}
+
 const systemPromptFiles = {
-  'util-0': resolve(process.cwd(), 'src/features/llm-util/util-0/system-prompt.md'),
-  'util-1': resolve(process.cwd(), 'src/features/llm-util/util-1/system-prompt.md'),
-  'util-2': resolve(process.cwd(), 'src/features/llm-util/util-2/system-prompt.md'),
-  'util-3': resolve(process.cwd(), 'src/features/llm-util/util-3/system-prompt.md'),
-  'util-4': resolve(process.cwd(), 'src/features/llm-util/util-4/system-prompt.md'),
+  'util-0': resolve(process.cwd(), 'data/system-prompts/util-0/system-prompt.md'),
+  'util-1': resolve(process.cwd(), 'data/system-prompts/util-1/system-prompt.md'),
+  'util-2': resolve(process.cwd(), 'data/system-prompts/util-2/system-prompt.md'),
+  'util-3': resolve(process.cwd(), 'data/system-prompts/util-3/system-prompt.md'),
+  'util-4': resolve(process.cwd(), 'data/system-prompts/util-4/system-prompt.md'),
 } as const
 
 type SystemPromptUtilityId = keyof typeof systemPromptFiles
@@ -46,18 +93,26 @@ type SharedPromptStore = {
 }
 
 const sharedPromptDataFile = resolve(process.cwd(), 'data/llm-system-prompts.json')
+const developerPromptDataRoot = resolve(process.cwd(), 'data/system-prompts')
+const developerPromptFiles = new Set([
+  'util-0/system-prompt.md', 'util-1/system-prompt.md', 'util-2/system-prompt.md', 'util-3/system-prompt.md', 'util-4/system-prompt.md',
+  'step1/01-news-risk-clustering.md',
+  'step2/01-risk-candidate-card.md', 'step2/02-screening-metrics-card.md', 'step2/03-law-regulation-card.md', 'step2/04-case-loss-market-card.md', 'step2/05-article-analysis-queue-card.md', 'step2/06-candidate-review-card.md', 'step2/07-signal-trend-card.md',
+  'step3/01-risk-context-and-input.md', 'step3/02-risk-summary.md', 'step3/03-assessment-scores.md', 'step3/04-signal-trend.md', 'step3/05-evidence-ledger.md', 'step3/06-decision-brief.md', 'step3/07-productization-review.md', 'step3/08-human-review-handoff.md',
+  'step4/01-productization-review-summary.md', 'step4/02-coverage-gap.md', 'step4/03-wording-review.md', 'step4/04-productization-assessment.md', 'step4/05-product-structure.md', 'step4/06-executive-briefing.md', 'step4/07-evidence-and-follow-up.md',
+])
 let sharedPromptWriteQueue = Promise.resolve()
 
 const defaultNaverNewsSearchKeywords = [
-  '생성형 AI 업무 오류',
-  'AI 배상책임',
-  '가정용 ESS 화재',
-  '전기차 배터리 화재',
-  '충전시설 화재',
+  '?앹꽦??AI ?낅Т ?ㅻ쪟',
+  'AI 諛곗긽梨낆엫',
+  '媛?뺤슜 ESS ?붿옱',
+  '?꾧린李?諛고꽣由??붿옱',
+  '異⑹쟾?쒖꽕 ?붿옱',
   '생활로봇 오작동',
-  '드론 배송 사고',
-  '플랫폼 노동 소득 공백',
-  '소상공인 영업중단',
+  '?쒕줎 諛곗넚 ?ш퀬',
+  '?뚮옯???몃룞 ?뚮뱷 怨듬갚',
+  '?뚯긽怨듭씤 ?곸뾽以묐떒',
 ]
 
 type NewsSearchConfigStore = {
@@ -75,9 +130,82 @@ const newsManualTestRunDataFile = resolve(process.cwd(), 'data/news-manual-test-
 let newsManualTestRunWriteQueue = Promise.resolve()
 const util0WorkbookDataFile = resolve(process.cwd(), 'data/util-0-risk-discovery.xlsx')
 let util0WorkbookWriteQueue = Promise.resolve()
+const step2WorkbookDataFile = resolve(process.cwd(), 'data/developer-step2-analysis.xlsx')
+let step2WorkbookWriteQueue = Promise.resolve()
+const step3WorkbookDataFile = resolve(process.cwd(), 'data/developer-step3-analysis.xlsx')
+let step3WorkbookWriteQueue = Promise.resolve()
+const step4WorkbookDataFile = resolve(process.cwd(), 'data/developer-step4-analysis.xlsx')
+let step4WorkbookWriteQueue = Promise.resolve()
+
+async function saveStep2AnalysisResults(body: unknown) {
+  if (!isRecord(body) || typeof body.articleId !== 'string' || typeof body.fileName !== 'string' || !isRecord(body.results)) throw new Error('Step 2 遺꾩꽍 寃곌낵 ?뺤떇???щ컮瑜댁? ?딆뒿?덈떎.')
+  const existing = await readStep2Workbook()
+  const rows = Object.entries(body.results).map(([step, value]) => ({
+    articleId: body.articleId,
+    fileName: body.fileName,
+    step,
+    mode: isRecord(value) ? String(value.mode ?? '') : '',
+    generatedAt: isRecord(value) ? String(value.generatedAt ?? '') : '',
+    resultJson: isRecord(value) ? String(value.text ?? '') : JSON.stringify(value),
+  }))
+  const workbook = XLSX.utils.book_new()
+  const merged = [...existing, ...rows]
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(merged), 'step2_analysis')
+  const operation = step2WorkbookWriteQueue.then(async () => {
+    await mkdir(resolve(process.cwd(), 'data'), { recursive: true })
+    await writeFile(step2WorkbookDataFile, XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }))
+    return { file: 'data/developer-step2-analysis.xlsx', savedAt: new Date().toISOString(), sheets: workbook.SheetNames }
+  })
+  step2WorkbookWriteQueue = operation.then(() => undefined, () => undefined)
+  return operation
+}
+
+async function readStep2Workbook(): Promise<unknown[]> {
+  try {
+    const workbook = XLSX.read(await readFile(step2WorkbookDataFile), { type: 'buffer' })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    return sheet ? XLSX.utils.sheet_to_json(sheet) as unknown[] : []
+  } catch {
+    return []
+  }
+}
+
+async function saveStep3AnalysisResults(body: unknown) {
+  if (!isRecord(body) || typeof body.riskId !== 'string' || typeof body.articleId !== 'string' || !isRecord(body.results)) throw new Error('Step 3 遺꾩꽍 寃곌낵 ?뺤떇???щ컮瑜댁? ?딆뒿?덈떎.')
+  const existing = await readStep3Workbook()
+  const incoming = Object.entries(body.results).map(([step, value]) => ({ riskId: body.riskId, articleId: body.articleId, step, mode: isRecord(value) ? String(value.mode ?? '') : '', model: isRecord(value) ? String(value.model ?? '') : '', generatedAt: isRecord(value) ? String(value.generatedAt ?? '') : '', resultJson: isRecord(value) ? String(value.text ?? '') : JSON.stringify(value), savedAt: new Date().toISOString() }))
+  const latest = new Map<string, unknown>()
+  for (const row of [...existing, ...incoming]) if (isRecord(row)) latest.set(`${String(row.riskId)}:${String(row.step)}`, row)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([...latest.values()]), 'step3_analysis')
+  const operation = step3WorkbookWriteQueue.then(async () => { await mkdir(resolve(process.cwd(), 'data'), { recursive: true }); await writeFile(step3WorkbookDataFile, XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })); return { file: 'data/developer-step3-analysis.xlsx', savedAt: new Date().toISOString(), sheets: workbook.SheetNames } })
+  step3WorkbookWriteQueue = operation.then(() => undefined, () => undefined)
+  return operation
+}
+
+async function readStep3Workbook(): Promise<unknown[]> {
+  try { const workbook = XLSX.read(await readFile(step3WorkbookDataFile), { type: 'buffer' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; return sheet ? XLSX.utils.sheet_to_json(sheet) as unknown[] : [] } catch { return [] }
+}
+
+async function saveStep4AnalysisResults(body: unknown) {
+  if (!isRecord(body) || typeof body.articleId !== 'string' || typeof body.fileName !== 'string' || !isRecord(body.results)) throw new Error('Step 4 寃곌낵 ?뺤떇???щ컮瑜댁? ?딆뒿?덈떎.')
+  const existing = await readStep4Workbook()
+  const incoming = Object.entries(body.results).map(([step, value]) => ({ articleId: body.articleId, fileName: body.fileName, step, mode: isRecord(value) ? String(value.mode ?? '') : '', model: isRecord(value) ? String(value.model ?? '') : '', generatedAt: isRecord(value) ? String(value.generatedAt ?? '') : '', resultJson: isRecord(value) ? String(value.text ?? '') : JSON.stringify(value), savedAt: new Date().toISOString() }))
+  const latest = new Map<string, unknown>()
+  for (const row of [...existing, ...incoming]) { if (isRecord(row)) latest.set(`${String(row.articleId)}:${String(row.step)}`, row) }
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet([...latest.values()]), 'step4_analysis')
+  const operation = step4WorkbookWriteQueue.then(async () => { await mkdir(resolve(process.cwd(), 'data'), { recursive: true }); await writeFile(step4WorkbookDataFile, XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })); return { file: 'data/developer-step4-analysis.xlsx', savedAt: new Date().toISOString(), sheets: workbook.SheetNames } })
+  step4WorkbookWriteQueue = operation.then(() => undefined, () => undefined)
+  return operation
+}
+
+async function readStep4Workbook(): Promise<unknown[]> {
+  try { const workbook = XLSX.read(await readFile(step4WorkbookDataFile), { type: 'buffer' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; return sheet ? XLSX.utils.sheet_to_json(sheet) as unknown[] : [] } catch { return [] }
+}
 
 async function saveUtil0RiskDiscovery(body: unknown) {
-  if (!isRecord(body) || !isRecord(body.result)) throw new Error('util-0 결과가 없습니다.')
+  if (!isRecord(body) || !isRecord(body.result)) throw new Error('util-0 寃곌낵媛 ?놁뒿?덈떎.')
   const existing = await readUtil0Workbook()
   const merged: Record<string, unknown[]> = {}
   for (const [key, value] of Object.entries(body.result)) {
@@ -215,11 +343,14 @@ async function readNewsClassificationStore(): Promise<NewsClassificationStore> {
     const raw = await readFile(newsClassificationDataFile, 'utf8')
     const parsed = JSON.parse(raw) as Partial<NewsClassificationStore>
     if (parsed.version === 1 && Array.isArray(parsed.runs) && Array.isArray(parsed.groups)) {
+      const runs = (parsed.runs as NewsClassificationRun[]).filter((run) => run.mode !== 'mock' && run.dataQuality !== 'sample')
+      const allowedRunIds = new Set(runs.map((run) => run.id))
+      const groups = (parsed.groups as NewsRiskGroupRecord[]).filter((group) => group.dataQuality !== 'sample' && (!group.history.length || group.history.some((revision) => allowedRunIds.has(revision.runId))))
       return {
         version: 1,
-        updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null,
-        runs: parsed.runs as NewsClassificationRun[],
-        groups: parsed.groups as NewsRiskGroupRecord[],
+        updatedAt: runs.length ? (typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null) : null,
+        runs,
+        groups,
       }
     }
   } catch {
@@ -252,7 +383,7 @@ function normalizeNewsManualTestResult(value: unknown) {
   const text = readStringField(value, 'text')
   const mode = readStringField(value, 'mode')
   const generatedAt = readStringField(value, 'generatedAt')
-  if (!text || !generatedAt || (mode !== 'mock' && mode !== 'gemini')) return null
+  if (!text || !generatedAt || (mode !== 'mock' && mode !== 'gemini' && mode !== 'potens')) return null
 
   const model = readStringField(value, 'model')
   return {
@@ -264,19 +395,19 @@ function normalizeNewsManualTestResult(value: unknown) {
 }
 
 async function saveNewsManualTestRun(body: unknown) {
-  if (!isRecord(body)) throw new Error('저장할 기능 1번 수동 입력이 없습니다.')
+  if (!isRecord(body)) throw new Error('??ν븷 湲곕뒫 1踰??섎룞 ?낅젰???놁뒿?덈떎.')
 
   const utilityId = readStringField(body, 'utilityId')
   const systemPrompt = readStringField(body, 'systemPrompt')
   const prompt = readStringField(body, 'prompt')
   const result = normalizeNewsManualTestResult(body.result)
 
-  if (utilityId !== 'util-1') throw new Error('기능 1번 수동 입력만 저장할 수 있습니다.')
+  if (utilityId !== 'util-1') throw new Error('湲곕뒫 1踰??섎룞 ?낅젰留???ν븷 ???덉뒿?덈떎.')
   if (!systemPrompt || !prompt || !result) {
-    throw new Error('시스템 프롬프트, 입력, AI 응답이 모두 필요합니다.')
+    throw new Error('?쒖뒪???꾨＼?꾪듃, ?낅젰, AI ?묐떟??紐⑤몢 ?꾩슂?⑸땲??')
   }
   if (systemPrompt.length > 100_000 || prompt.length > 100_000 || result.text.length > 200_000) {
-    throw new Error('저장할 수동 입력 데이터가 너무 깁니다.')
+    throw new Error('??ν븷 ?섎룞 ?낅젰 ?곗씠?곌? ?덈Т 源곷땲??')
   }
 
   const operation = newsManualTestRunWriteQueue.then(async () => {
@@ -313,10 +444,10 @@ function normalizeNewsSourceItems(value: unknown): NewsSourceRecord[] {
     return [{
       id,
       title,
-      sourceName: readStringField(item, 'sourceName') || '출처 확인 필요',
-      sourceUrl: readStringField(item, 'sourceUrl') || '확인 필요',
+      sourceName: readStringField(item, 'sourceName') || '異쒖쿂 ?뺤씤 ?꾩슂',
+      sourceUrl: readStringField(item, 'sourceUrl') || '?뺤씤 ?꾩슂',
       excerpt: readStringField(item, 'excerpt'),
-      publishedAt: readStringField(item, 'publishedAt') || '확인 필요',
+      publishedAt: readStringField(item, 'publishedAt') || '?뺤씤 ?꾩슂',
       collectedAt: readStringField(item, 'collectedAt') || new Date().toISOString(),
       ...(readStringField(item, 'query') ? { query: readStringField(item, 'query') } : {}),
     } satisfies NewsSourceRecord]
@@ -359,17 +490,19 @@ async function saveNewsClassification(body: unknown) {
   const sourceItems = normalizeNewsSourceItems(isRecord(body) ? body.sourceItems : null)
   const groups = normalizeNewsGroups(isRecord(body) ? body.groups : null, sourceItems)
   const rawOutput = isRecord(body) ? readStringField(body, 'rawOutput') : ''
-  if (!sourceItems.length || !groups.length || !rawOutput) throw new Error('저장할 뉴스 원문과 AI 위험 묶음이 필요합니다.')
+  if (!sourceItems.length || !groups.length || !rawOutput) throw new Error('??ν븷 ?댁뒪 ?먮Ц怨?AI ?꾪뿕 臾띠쓬???꾩슂?⑸땲??')
   if (groups.some((group) => !group.sourceIds.length)) {
-    throw new Error('모든 AI 위험 묶음은 구조화된 뉴스 source_id를 하나 이상 참조해야 합니다.')
+    throw new Error('紐⑤뱺 AI ?꾪뿕 臾띠쓬? 援ъ“?붾맂 ?댁뒪 source_id瑜??섎굹 ?댁긽 李몄“?댁빞 ?⑸땲??')
   }
 
   const now = new Date().toISOString()
   const generatedAt = isRecord(body) && readStringField(body, 'generatedAt')
     ? readStringField(body, 'generatedAt')
     : now
-  const mode = isRecord(body) && readStringField(body, 'mode') === 'gemini' ? 'gemini' as const : 'mock' as const
-  const dataQuality = mode === 'gemini' ? 'actual' as const : 'sample' as const
+  const rawMode = isRecord(body) ? readStringField(body, 'mode') : ''
+  const mode = rawMode === 'gemini' || rawMode === 'potens' ? rawMode : 'mock' as const
+  const dataQuality = mode === 'mock' ? 'sample' as const : 'actual' as const
+  if (mode === 'mock') throw new Error('개발자 화면에서는 mock 분류 결과를 저장하지 않습니다. Gemini 또는 Potens 연결을 확인하세요.')
   const model = isRecord(body) ? readStringField(body, 'model') : ''
   const runId = `news-run-${Date.now().toString(36)}`
   const run: NewsClassificationRun = {
@@ -450,7 +583,7 @@ function uniqueStrings(values: string[]) {
 }
 
 function parseDate(value: string | null) {
-  if (!value || value === '확인 필요') return null
+  if (!value || value === '?뺤씤 ?꾩슂') return null
   const timestamp = Date.parse(value)
   return Number.isNaN(timestamp) ? null : timestamp
 }
@@ -520,7 +653,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               writeJson(response, 200, { store: await readNewsClassificationStore() })
             } catch (error) {
               console.error('News classification store read failed.', error)
-              writeJson(response, 500, { error: 'AI 뉴스 분류 저장소를 불러오지 못했습니다.' })
+              writeJson(response, 500, { error: 'AI ?댁뒪 遺꾨쪟 ??μ냼瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??' })
             }
             return
           }
@@ -530,7 +663,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               const saved = await saveNewsClassification(await readJsonBody(request))
               writeJson(response, 200, saved)
             } catch (error) {
-              const message = error instanceof Error ? error.message : 'AI 뉴스 분류 결과 저장에 실패했습니다.'
+              const message = error instanceof Error ? error.message : 'AI ?댁뒪 遺꾨쪟 寃곌낵 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.'
               writeJson(response, 400, { error: message })
             }
             return
@@ -546,7 +679,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               writeJson(response, 200, { store: await readNewsManualTestStore() })
             } catch (error) {
               console.error('News manual test store read failed.', error)
-              writeJson(response, 500, { error: '기능 1번 수동 입력 저장소를 불러오지 못했습니다.' })
+              writeJson(response, 500, { error: '湲곕뒫 1踰??섎룞 ?낅젰 ??μ냼瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??' })
             }
             return
           }
@@ -555,13 +688,105 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
             try {
               writeJson(response, 200, await saveNewsManualTestRun(await readJsonBody(request)))
             } catch (error) {
-              const message = error instanceof Error ? error.message : '기능 1번 수동 입력 저장에 실패했습니다.'
+              const message = error instanceof Error ? error.message : '湲곕뒫 1踰??섎룞 ?낅젰 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.'
               writeJson(response, 400, { error: message })
             }
             return
           }
 
           writeJson(response, 405, { error: 'Only GET and POST are supported.' })
+          return
+        }
+
+        if (pathname === '/api/law/search') {
+          if (request.method !== 'POST') { writeJson(response, 405, { error: 'Only POST is supported.' }); return }
+          try {
+            const body = await readJsonBody(request)
+            const query = readStringField(body, 'query')
+            const apiKey = options.lawOpenApiKey || ''
+            if (!apiKey) { writeJson(response, 400, { error: '국가법령정보 API 인증키가 설정되지 않았습니다.' }); return }
+            if (!query) { writeJson(response, 400, { error: '검색할 법령 키워드가 없습니다.' }); return }
+            const params = new URLSearchParams({ OC: apiKey, target: 'law', type: 'JSON', query, display: '20', page: '1' })
+            const lawResponse = await fetch(`https://www.law.go.kr/DRF/lawSearch.do?${params.toString()}`)
+            const text = await lawResponse.text()
+            if (!lawResponse.ok) { writeJson(response, lawResponse.status, { error: '국가법령정보 API 요청에 실패했습니다.' }); return }
+            try { writeJson(response, 200, JSON.parse(text)) } catch { writeJson(response, 200, { raw: text, source: 'law.go.kr' }) }
+          } catch (error) { writeJson(response, 502, { error: `국가법령정보 API 연결 실패: ${error instanceof Error ? error.message : '네트워크 오류'}` }) }
+          return
+        }
+
+        if (pathname === '/api/law/detail') {
+          if (request.method !== 'POST') { writeJson(response, 405, { error: 'Only POST is supported.' }); return }
+          try {
+            const body = await readJsonBody(request)
+            const id = readStringField(body, 'id')
+            const lawId = readStringField(body, 'lawId')
+            const apiKey = options.lawOpenApiKey || ''
+            if (!apiKey) { writeJson(response, 400, { error: '국가법령정보 API 인증키가 설정되지 않았습니다.' }); return }
+            if (!id) { writeJson(response, 400, { error: '조회할 법령 일련번호가 없습니다.' }); return }
+            const params = new URLSearchParams({ OC: apiKey, target: 'law', type: 'JSON' })
+            if (lawId) params.set('ID', lawId)
+            else params.set('MST', id)
+            const lawResponse = await fetch(`https://www.law.go.kr/DRF/lawService.do?${params.toString()}`)
+            const text = await lawResponse.text()
+            if (!lawResponse.ok) { writeJson(response, lawResponse.status, { error: '국가법령정보 법령 본문 API 요청에 실패했습니다.' }); return }
+            try { writeJson(response, 200, JSON.parse(text)) } catch { writeJson(response, 200, { raw: text, source: 'law.go.kr' }) }
+          } catch (error) { writeJson(response, 502, { error: `국가법령정보 법령 상세 연결 실패: ${error instanceof Error ? error.message : '네트워크 오류'}` }) }
+          return
+        }
+
+        if (pathname === '/api/law/article') {
+          if (request.method !== 'POST') { writeJson(response, 405, { error: 'Only POST is supported.' }); return }
+          try {
+            const body = await readJsonBody(request)
+            const id = readStringField(body, 'id')
+            const lawId = readStringField(body, 'lawId')
+            const jo = readStringField(body, 'jo') || '000100'
+            const apiKey = options.lawOpenApiKey || ''
+            if (!apiKey) { writeJson(response, 400, { error: '국가법령정보 API 인증키가 설정되지 않았습니다.' }); return }
+            if (!id) { writeJson(response, 400, { error: '조회할 법령 일련번호가 없습니다.' }); return }
+            const params = new URLSearchParams({ OC: apiKey, target: 'lawjosub', type: 'JSON', JO: jo })
+            if (lawId) params.set('ID', lawId)
+            else params.set('MST', id)
+            const lawResponse = await fetch(`https://www.law.go.kr/DRF/lawService.do?${params.toString()}`)
+            const text = await lawResponse.text()
+            if (!lawResponse.ok) { writeJson(response, lawResponse.status, { error: '국가법령정보 조문 API 요청에 실패했습니다.' }); return }
+            try { writeJson(response, 200, JSON.parse(text)) } catch { writeJson(response, 200, { raw: text, source: 'law.go.kr' }) }
+          } catch (error) { writeJson(response, 502, { error: `국가법령정보 조문 연결 실패: ${error instanceof Error ? error.message : '네트워크 오류'}` }) }
+          return
+        }
+
+        if (pathname === '/api/precedent/search') {
+          if (request.method !== 'POST') { writeJson(response, 405, { error: 'Only POST is supported.' }); return }
+          try {
+            const body = await readJsonBody(request)
+            const query = readStringField(body, 'query')
+            const apiKey = options.lawOpenApiKey || ''
+            if (!apiKey) { writeJson(response, 400, { error: '국가법령정보 API 인증키가 설정되지 않았습니다.' }); return }
+            if (!query) { writeJson(response, 400, { error: '검색할 판례 키워드가 없습니다.' }); return }
+            const params = new URLSearchParams({ OC: apiKey, target: 'prec', type: 'JSON', query, display: '20', page: '1' })
+            const precedentResponse = await fetch(`https://www.law.go.kr/DRF/lawSearch.do?${params.toString()}`)
+            const text = await precedentResponse.text()
+            if (!precedentResponse.ok) { writeJson(response, precedentResponse.status, { error: '국가법령정보 판례 API 요청에 실패했습니다.' }); return }
+            try { writeJson(response, 200, JSON.parse(text)) } catch { writeJson(response, 200, { raw: text, source: 'law.go.kr' }) }
+          } catch (error) { writeJson(response, 502, { error: `국가법령정보 판례 API 연결 실패: ${error instanceof Error ? error.message : '네트워크 오류'}` }) }
+          return
+        }
+
+        if (pathname === '/api/precedent/detail') {
+          if (request.method !== 'POST') { writeJson(response, 405, { error: 'Only POST is supported.' }); return }
+          try {
+            const body = await readJsonBody(request)
+            const id = readStringField(body, 'id')
+            const apiKey = options.lawOpenApiKey || ''
+            if (!apiKey) { writeJson(response, 400, { error: '국가법령정보 API 인증키가 설정되지 않았습니다.' }); return }
+            if (!id) { writeJson(response, 400, { error: '조회할 판례 일련번호가 없습니다.' }); return }
+            const params = new URLSearchParams({ OC: apiKey, target: 'prec', type: 'JSON', ID: id })
+            const precedentResponse = await fetch(`https://www.law.go.kr/DRF/lawService.do?${params.toString()}`)
+            const text = await precedentResponse.text()
+            if (!precedentResponse.ok) { writeJson(response, precedentResponse.status, { error: '국가법령정보 판례 본문 API 요청에 실패했습니다.' }); return }
+            try { writeJson(response, 200, JSON.parse(text)) } catch { writeJson(response, 200, { raw: text, source: 'law.go.kr' }) }
+          } catch (error) { writeJson(response, 502, { error: `국가법령정보 판례 본문 API 연결 실패: ${error instanceof Error ? error.message : '네트워크 오류'}` }) }
           return
         }
 
@@ -573,8 +798,8 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
 
           try {
             const body = await readJsonBody(request)
-            const clientId = readStringField(body, 'clientId')
-            const clientSecret = readStringField(body, 'clientSecret')
+            const clientId = readStringField(body, 'clientId') || options.naverClientId || ''
+            const clientSecret = readStringField(body, 'clientSecret') || options.naverClientSecret || ''
             const query = readStringField(body, 'query')
             const rawDisplay = typeof body === 'object' && body !== null && 'display' in body
               ? Number((body as Record<string, unknown>).display)
@@ -582,12 +807,12 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
             const display = Number.isFinite(rawDisplay) ? Math.min(Math.max(Math.trunc(rawDisplay), 1), 100) : 20
 
             if (!clientId || !clientSecret) {
-              writeJson(response, 400, { error: '네이버 Client ID와 Client Secret을 입력해 주세요.' })
+              writeJson(response, 400, { error: '?ㅼ씠踰?Client ID? Client Secret???낅젰??二쇱꽭??' })
               return
             }
 
             if (!query) {
-              writeJson(response, 400, { error: '검색어를 선택해 주세요.' })
+              writeJson(response, 400, { error: '寃?됱뼱瑜??좏깮??二쇱꽭??' })
               return
             }
 
@@ -614,7 +839,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
 
             if (!naverResponse.ok) {
               writeJson(response, naverResponse.status, {
-                error: `네이버 뉴스 API 오류: ${payload.message ?? payload.errorCode ?? '요청을 처리하지 못했습니다.'}`,
+                error: `?ㅼ씠踰??댁뒪 API ?ㅻ쪟: ${payload.message ?? payload.errorCode ?? '?붿껌??泥섎━?섏? 紐삵뻽?듬땲??'}`,
               })
               return
             }
@@ -622,7 +847,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
             writeJson(response, 200, payload)
           } catch (error) {
             console.error('Naver news search failed.', error)
-            writeJson(response, 502, { error: '네이버 뉴스 API에 연결하지 못했습니다.' })
+            writeJson(response, 502, { error: `네이버 뉴스 API 연결 실패: ${error instanceof Error ? error.message : '네트워크 오류'}` })
           }
           return
         }
@@ -635,8 +860,8 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
 
           try {
             const body = await readJsonBody(request)
-            const clientId = readStringField(body, 'clientId')
-            const clientSecret = readStringField(body, 'clientSecret')
+            const clientId = readStringField(body, 'clientId') || options.naverClientId || ''
+            const clientSecret = readStringField(body, 'clientSecret') || options.naverClientSecret || ''
             const keywords = readStringArrayField(body, 'keywords')
             const rawDisplay = typeof body === 'object' && body !== null && 'display' in body
               ? Number((body as Record<string, unknown>).display)
@@ -644,17 +869,17 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
             const display = Number.isFinite(rawDisplay) ? Math.min(Math.max(Math.trunc(rawDisplay), 1), 100) : 10
 
             if (!clientId || !clientSecret) {
-              writeJson(response, 400, { error: '네이버 Client ID와 Client Secret을 입력해 주세요.' })
+              writeJson(response, 400, { error: '?ㅼ씠踰?Client ID? Client Secret???낅젰??二쇱꽭??' })
               return
             }
 
             if (!keywords.length) {
-              writeJson(response, 400, { error: '수집할 검색어가 없습니다.' })
+              writeJson(response, 400, { error: '?섏쭛??寃?됱뼱媛 ?놁뒿?덈떎.' })
               return
             }
 
             if (keywords.length > 50 || keywords.some((keyword) => keyword.length > 100)) {
-              writeJson(response, 413, { error: '검색어는 최대 50개, 각 검색어는 100자까지 수집할 수 있습니다.' })
+              writeJson(response, 413, { error: '寃?됱뼱??理쒕? 50媛? 媛?寃?됱뼱??100?먭퉴吏 ?섏쭛?????덉뒿?덈떎.' })
               return
             }
 
@@ -682,7 +907,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               }
 
               if (!naverResponse.ok) {
-                failures.push({ query, message: payload.message ?? payload.errorCode ?? '요청을 처리하지 못했습니다.' })
+                failures.push({ query, message: payload.message ?? payload.errorCode ?? '?붿껌??泥섎━?섏? 紐삵뻽?듬땲??' })
                 continue
               }
 
@@ -708,7 +933,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
             })
           } catch (error) {
             console.error('Naver news collection failed.', error)
-            writeJson(response, 502, { error: '네이버 뉴스 정보 수집에 실패했습니다.' })
+            writeJson(response, 502, { error: '?ㅼ씠踰??댁뒪 ?뺣낫 ?섏쭛???ㅽ뙣?덉뒿?덈떎.' })
           }
           return
         }
@@ -719,7 +944,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               writeJson(response, 200, await readNewsSearchConfigSnapshot())
             } catch (error) {
               console.error('Naver news search config read failed.', error)
-              writeJson(response, 500, { error: '네이버 뉴스 검색어를 불러오지 못했습니다.' })
+              writeJson(response, 500, { error: '?ㅼ씠踰??댁뒪 寃?됱뼱瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??' })
             }
             return
           }
@@ -730,12 +955,12 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               const keywords = readStringArrayField(body, 'keywords')
 
               if (!keywords.length) {
-                writeJson(response, 400, { error: '검색어를 하나 이상 입력해 주세요.' })
+                writeJson(response, 400, { error: '寃?됱뼱瑜??섎굹 ?댁긽 ?낅젰??二쇱꽭??' })
                 return
               }
 
               if (keywords.length > 50 || keywords.some((keyword) => keyword.length > 100)) {
-                writeJson(response, 413, { error: '검색어는 최대 50개, 각 검색어는 100자까지 저장할 수 있습니다.' })
+                writeJson(response, 413, { error: '寃?됱뼱??理쒕? 50媛? 媛?寃?됱뼱??100?먭퉴吏 ??ν븷 ???덉뒿?덈떎.' })
                 return
               }
 
@@ -743,12 +968,35 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               writeJson(response, 200, { ...saved, source: 'shared' })
             } catch (error) {
               console.error('Naver news search config save failed.', error)
-              writeJson(response, 500, { error: '네이버 뉴스 검색어 저장에 실패했습니다.' })
+              writeJson(response, 500, { error: '?ㅼ씠踰??댁뒪 寃?됱뼱 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.' })
             }
             return
           }
 
           writeJson(response, 405, { error: 'Only GET and PUT are supported.' })
+          return
+        }
+
+        if (pathname === '/api/llm/prompt-files') {
+          if (request.method !== 'GET') {
+            writeJson(response, 405, { error: 'Only GET is supported.' })
+            return
+          }
+          const query = new URL(request.url ?? '/', 'http://localhost').searchParams
+          const step = query.get('step') ?? ''
+          const fileName = query.get('fileName') ?? 'system-prompt.md'
+          const relativePath = `${step}/${fileName}`
+          if (!developerPromptFiles.has(relativePath)) {
+            writeJson(response, 404, { error: '?붿껌??媛쒕컻??紐⑤뱶 ?쒖뒪???꾨＼?꾪듃 ?뚯씪??李얠쓣 ???놁뒿?덈떎.' })
+            return
+          }
+          try {
+            const filePath = resolve(developerPromptDataRoot, relativePath)
+            writeJson(response, 200, { text: await readFile(filePath, 'utf8'), fileName, path: `data/system-prompts/${relativePath}` })
+          } catch (error) {
+            console.error('Developer prompt file read failed.', error)
+            writeJson(response, 500, { error: '媛쒕컻??紐⑤뱶 ?쒖뒪???꾨＼?꾪듃瑜??쎌? 紐삵뻽?듬땲??' })
+          }
           return
         }
 
@@ -761,7 +1009,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               })
             } catch (error) {
               console.error('Shared system prompt read failed.', error)
-              writeJson(response, 500, { error: '공유 시스템 프롬프트를 불러오지 못했습니다.' })
+              writeJson(response, 500, { error: '怨듭쑀 ?쒖뒪???꾨＼?꾪듃瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??' })
             }
             return
           }
@@ -774,17 +1022,17 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               const isSupportedUtility = Object.prototype.hasOwnProperty.call(systemPromptFiles, utilityId)
 
               if (!isSupportedUtility) {
-                writeJson(response, 400, { error: '지원하지 않는 LLM 유틸리티입니다.' })
+                writeJson(response, 400, { error: '吏?먰븯吏 ?딅뒗 LLM ?좏떥由ы떚?낅땲??' })
                 return
               }
 
               if (!text) {
-                writeJson(response, 400, { error: '시스템 프롬프트를 입력해 주세요.' })
+                writeJson(response, 400, { error: '?쒖뒪???꾨＼?꾪듃瑜??낅젰??二쇱꽭??' })
                 return
               }
 
               if (text.length > 100_000) {
-                writeJson(response, 413, { error: '시스템 프롬프트가 너무 깁니다.' })
+                writeJson(response, 413, { error: '?쒖뒪???꾨＼?꾪듃媛 ?덈Т 源곷땲??' })
                 return
               }
 
@@ -797,7 +1045,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               })
             } catch (error) {
               console.error('Shared system prompt save failed.', error)
-              writeJson(response, 500, { error: '공유 시스템 프롬프트 저장에 실패했습니다.' })
+              writeJson(response, 500, { error: '怨듭쑀 ?쒖뒪???꾨＼?꾪듃 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.' })
             }
             return
           }
@@ -814,8 +1062,43 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
           try {
             writeJson(response, 200, await saveUtil0RiskDiscovery(await readJsonBody(request)))
           } catch (error) {
-            writeJson(response, 400, { error: error instanceof Error ? error.message : 'util-0 엑셀 저장에 실패했습니다.' })
+            writeJson(response, 400, { error: error instanceof Error ? error.message : 'util-0 ?묒? ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.' })
           }
+          return
+        }
+
+        if (pathname === '/api/llm/util-2/step2-analysis') {
+          if (request.method === 'GET') {
+            writeJson(response, 200, { rows: await readStep2Workbook() })
+            return
+          }
+          if (request.method !== 'POST') {
+            writeJson(response, 405, { error: 'Only POST is supported.' })
+            return
+          }
+          try {
+            writeJson(response, 200, await saveStep2AnalysisResults(await readJsonBody(request)))
+          } catch (error) {
+            writeJson(response, 400, { error: error instanceof Error ? error.message : 'Step 2 遺꾩꽍 寃곌낵 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.' })
+          }
+          return
+        }
+
+        if (pathname === '/api/llm/util-3/step3-analysis') {
+          if (request.method === 'GET') { writeJson(response, 200, { rows: await readStep3Workbook() }); return }
+          if (request.method === 'POST') {
+            try { writeJson(response, 200, await saveStep3AnalysisResults(await readJsonBody(request))) }
+            catch (error) { writeJson(response, 400, { error: error instanceof Error ? error.message : 'Step 3 遺꾩꽍 寃곌낵 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.' }) }
+            return
+          }
+          writeJson(response, 405, { error: 'Only GET and POST are supported.' })
+          return
+        }
+
+        if (pathname === '/api/llm/util-4/step4-analysis') {
+          if (request.method === 'GET') { writeJson(response, 200, { rows: await readStep4Workbook() }); return }
+          if (request.method !== 'POST') { writeJson(response, 405, { error: 'Only GET and POST are supported.' }); return }
+          try { writeJson(response, 200, await saveStep4AnalysisResults(await readJsonBody(request))) } catch (error) { writeJson(response, 400, { error: error instanceof Error ? error.message : 'Step 4 寃곌낵 ??μ뿉 ?ㅽ뙣?덉뒿?덈떎.' }) }
           return
         }
 
@@ -830,7 +1113,7 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
         }
 
         if (!options.apiKey) {
-          writeJson(response, 503, { error: 'GEMINI_API_KEY is not configured.' })
+          writeJson(response, 503, { error: `${options.provider.toUpperCase()} API key is not configured.` })
           return
         }
 
@@ -849,7 +1132,13 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
             return
           }
 
-          const geminiResponse = await fetch(
+          const upstreamResponse = options.provider === 'potens'
+            ? await fetch('https://ai.potens.ai/api/chat-stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${options.apiKey}` },
+                body: JSON.stringify({ prompt: `${systemPrompt}\n\n${prompt}`, model: options.model }),
+              })
+            : await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(options.model)}:generateContent?key=${encodeURIComponent(options.apiKey)}`,
             {
               method: 'POST',
@@ -862,34 +1151,52 @@ function createLlmApiPlugin(options: LlmApiOptions): Plugin {
               }),
             },
           )
-          const payload = await geminiResponse.json() as GeminiResponse
+          if (options.provider === 'potens' && !upstreamResponse.ok) {
+            const errorBody = await upstreamResponse.text()
+            const preview = errorBody.replace(/\s+/g, ' ').trim().slice(0, 180)
+            writeJson(response, upstreamResponse.status, { error: preview ? `${options.provider} API request failed (HTTP ${upstreamResponse.status}): ${preview}` : `${options.provider} API request failed (HTTP ${upstreamResponse.status}).` })
+            return
+          }
+          const isPotensStream = options.provider === 'potens' && upstreamResponse.headers.get('content-type')?.includes('text/event-stream')
+          const rawResponse = isPotensStream
+            ? await readPotensStream(upstreamResponse)
+            : await upstreamResponse.text()
+          let payload: GeminiResponse & PotensResponse = {}
+          if (!isPotensStream) try {
+            payload = JSON.parse(rawResponse) as GeminiResponse & PotensResponse
+          } catch {
+            const preview = rawResponse.replace(/\s+/g, ' ').trim().slice(0, 180)
+            writeJson(response, 502, { error: `${options.provider} returned non-JSON response (HTTP ${upstreamResponse.status}): ${preview}` })
+            return
+          }
 
-          if (!geminiResponse.ok) {
-            writeJson(response, geminiResponse.status, {
-              error: payload.error?.message ?? 'Gemini API request failed.',
+          if (!upstreamResponse.ok) {
+            const providerError = typeof payload.error === 'string' ? payload.error : payload.error?.message
+            writeJson(response, upstreamResponse.status, {
+              error: providerError ?? `${options.provider} API request failed.`,
             })
             return
           }
 
-          const text = payload.candidates?.[0]?.content?.parts
-            ?.map((part) => part.text ?? '')
-            .join('')
-            .trim()
+          const text = options.provider === 'potens'
+            ? extractProviderText(payload) || rawResponse
+            : payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? '').join('')
+          const normalizedText = (text ?? '').trim()
 
-          if (!text) {
-            writeJson(response, 502, { error: 'Gemini returned an empty response.' })
+          if (!normalizedText) {
+            writeJson(response, 502, { error: `${options.provider} returned an empty response.` })
             return
           }
 
           writeJson(response, 200, {
-            text,
-            provider: 'gemini',
+            text: normalizedText,
+            provider: options.provider,
             model: options.model,
             generatedAt: new Date().toISOString(),
           })
         } catch (error) {
           console.error('LLM development proxy failed.', error)
-          writeJson(response, 500, { error: 'The LLM development proxy failed.' })
+          writeJson(response, 502, { error: error instanceof Error ? `LLM provider request failed: ${error.message}` : 'LLM provider request failed.' })
         }
       })
     },
@@ -1000,8 +1307,12 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       createLlmApiPlugin({
-        apiKey: env.GEMINI_API_KEY ?? '',
-        model: env.GEMINI_MODEL || 'gemini-3.6-flash',
+        apiKey: env.POTENS_API_KEY || env.VITE_POTENS_PROXY_URL || env.GEMINI_API_KEY || '',
+        model: env.POTENS_MODEL || (env.POTENS_API_KEY || env.VITE_POTENS_PROXY_URL ? 'claude-4-6-sonnet' : env.GEMINI_MODEL || 'gemini-3.6-flash'),
+        provider: env.POTENS_API_KEY || env.VITE_POTENS_PROXY_URL ? 'potens' : 'gemini',
+        naverClientId: env.NAVER_CLIENT_ID,
+        naverClientSecret: env.NAVER_CLIENT_SECRET,
+        lawOpenApiKey: env.LAW_OPEN_API_KEY || env.LAW_API_KEY || env.LAW_API_ID,
       }),
       reportAssistantProxy(env.VITE_POTENS_PROXY_URL?.trim() ?? ''),
     ],

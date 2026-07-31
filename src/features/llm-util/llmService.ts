@@ -10,7 +10,9 @@ type LlmApiResponse = {
   error?: unknown
 }
 
-const useMock = import.meta.env.VITE_LLM_USE_MOCK !== 'false'
+// 개발자 모드는 명시적으로 켠 경우에만 샘플 응답을 사용합니다.
+// 환경 변수가 빠져도 실제 서버 프록시를 호출해야 테스트 화면에서 AI가 동작합니다.
+const useMock = import.meta.env.VITE_LLM_USE_MOCK === 'true'
 const apiBaseUrl = import.meta.env.VITE_LLM_API_BASE_URL || '/api/llm'
 
 function assertSupportedUtility(utilityId: LlmRunRequest['utilityId']) {
@@ -51,16 +53,27 @@ export async function runLlmUtility({ utilityId, systemPrompt, prompt }: LlmRunR
 
   if (useMock) return createMockResult(normalizedSystemPrompt, normalizedPrompt)
 
-  const response = await fetch(`${apiBaseUrl}/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      utilityId,
-      systemPrompt: normalizedSystemPrompt,
-      prompt: normalizedPrompt,
-    }),
-  })
-  const payload = await response.json() as LlmApiResponse
+  let response: Response
+  try {
+    response = await fetch(`${apiBaseUrl}/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        utilityId,
+        systemPrompt: normalizedSystemPrompt,
+        prompt: normalizedPrompt,
+      }),
+    })
+  } catch (error) {
+    const detail = error instanceof Error && error.message ? ` (${error.message})` : ''
+    throw new Error(`LLM 개발 서버에 연결하지 못했습니다. 새 프로젝트의 dev 서버를 실행하고 ${apiBaseUrl}/generate 경로를 확인하세요.${detail}`, { cause: error })
+  }
+  let payload: LlmApiResponse
+  try {
+    payload = await response.json() as LlmApiResponse
+  } catch {
+    throw new Error('LLM 서버가 올바른 JSON 응답을 반환하지 않았습니다. 개발 서버를 재시작해 주세요.')
+  }
 
   if (!response.ok) {
     const message = typeof payload.error === 'string' ? payload.error : 'LLM API 호출에 실패했습니다.'
@@ -73,7 +86,7 @@ export async function runLlmUtility({ utilityId, systemPrompt, prompt }: LlmRunR
 
   return {
     text: payload.text,
-    mode: payload.provider === 'gemini' ? 'gemini' : 'mock',
+    mode: payload.provider === 'gemini' || payload.provider === 'potens' ? payload.provider : 'mock',
     generatedAt: typeof payload.generatedAt === 'string' ? payload.generatedAt : new Date().toISOString(),
     model: typeof payload.model === 'string' ? payload.model : undefined,
   }

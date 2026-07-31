@@ -3,7 +3,8 @@ import { CustomerLayout } from './layouts/CustomerLayout'
 import { RootLayout } from './layouts/RootLayout'
 import { SalesLayout } from './layouts/SalesLayout'
 import { CustomerInsightPage } from '../pages/customer-insight/CustomerInsightPage'
-import { DeveloperTestPage } from '../pages/developer-test/DeveloperTestPage'
+import { DeveloperReportsPage } from '../pages/developer-reports/DeveloperReportsPage'
+import { DeveloperRiskDetailPage } from '../pages/developer-risk-detail/DeveloperRiskDetailPage'
 import { NotFoundPage } from '../pages/not-found/NotFoundPage'
 import { ReportsPage } from '../pages/reports/ReportsPage'
 import { RiskCatalogPage } from '../pages/risk-catalog/RiskCatalogPage'
@@ -21,7 +22,10 @@ export const router = createBrowserRouter([
       { path: 'risks', element: <RiskCatalogPage /> },
       { path: 'risks/:riskId', element: <RiskDetailPage /> },
       { path: 'reports', element: <ReportsPage /> },
-      { path: 'developer-test', element: <DeveloperTestPage /> },
+      { path: 'developer-test', element: <RiskDashboardPage mode="developer" /> },
+      { path: 'developer-test/risks', element: <RiskCatalogPage mode="developer" /> },
+      { path: 'developer-test/risks/:riskId', element: <DeveloperRiskDetailPage /> },
+      { path: 'developer-test/reports', element: <DeveloperReportsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

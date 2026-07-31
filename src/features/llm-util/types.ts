@@ -19,7 +19,7 @@ export type LlmRunRequest = {
 
 export type LlmRunResult = {
   text: string
-  mode: 'mock' | 'gemini'
+  mode: 'mock' | 'gemini' | 'potens'
   generatedAt: string
   model?: string
 }

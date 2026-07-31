@@ -10,7 +10,7 @@ export type NewsSourceRecord = {
 }
 
 export type NewsRiskGroupAction = 'matched' | 'new' | 'uncertain'
-export type NewsClassificationMode = 'mock' | 'gemini'
+export type NewsClassificationMode = 'mock' | 'gemini' | 'potens'
 export type NewsClassificationDataQuality = 'sample' | 'actual'
 
 export type NewsRiskGroup = {

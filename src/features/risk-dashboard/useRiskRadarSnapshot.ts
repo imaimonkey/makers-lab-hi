@@ -11,9 +11,11 @@ import type {
   RadarRiskCandidate,
 } from '../../domain/risk/riskRadarTypes'
 import { riskRadarApi } from './riskRadarApi'
+import { deriveArticleDashboard, loadArticleSourceRecords } from './articleSourceData'
+import { readNewsClassificationStore } from '../news-intake/classificationRepository'
 
 export type RadarSnapshotSource = 'dashboard' | 'news' | 'risks'
-export type RadarSnapshotSourceStatus = 'loading' | 'live' | 'stale' | 'sample'
+export type RadarSnapshotSourceStatus = 'loading' | 'live' | 'local' | 'stale' | 'sample' | 'empty'
 
 export type RiskRadarSnapshotState = {
   dashboard: RadarDashboardData
@@ -135,20 +137,30 @@ const sampleDashboard: RadarDashboardData = {
   lastSync: { completedAt: sampleGeneratedAt, status: 'sample-fallback' },
 }
 
+// The practitioner API fallback keeps this fixture isolated from developer mode.
+void sampleDashboard
+
+const emptyDashboard: RadarDashboardData = {
+  generatedAt: '',
+  metrics: { news: 0, contentReady: 0, analyzed: 0, pending: 0, failed: 0, clusters: 0, evidencePending: 0, riskCandidates: 0 },
+  channels: {}, analysisCounts: {}, clusters: [], topNews: [], risks: [], issues: [], signals: [], recentActivities: [], failures: [],
+  apiStatus: { potens: 'unavailable', law: 'unavailable', products: 'unavailable' }, lastSync: null,
+}
+
 function errorMessage(reason: unknown) {
   return reason instanceof Error ? reason.message : String(reason)
 }
 
 function fallbackStatus(previous: RadarSnapshotSourceStatus): RadarSnapshotSourceStatus {
-  return previous === 'live' || previous === 'stale' ? 'stale' : 'sample'
+  return previous === 'live' || previous === 'local' || previous === 'stale' ? 'stale' : 'sample'
 }
 
-export function useRiskRadarSnapshot() {
+export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }) {
   const requestSequence = useRef(0)
   const [snapshot, setSnapshot] = useState<RiskRadarSnapshotState>({
-    dashboard: sampleDashboard,
-    news: sampleNews,
-    risks: sampleRisks,
+    dashboard: emptyDashboard,
+    news: [],
+    risks: [],
     sourceStatus: { dashboard: 'loading', news: 'loading', risks: 'loading' },
     errors: {},
     initialLoading: true,
@@ -162,6 +174,73 @@ export function useRiskRadarSnapshot() {
       refreshing: !current.initialLoading,
       errors: {},
     }))
+
+    if (options?.preferLocalArticles) {
+      const completedAt = new Date().toISOString()
+      try {
+        const [localArticles, classificationStore] = await Promise.all([
+          loadArticleSourceRecords(),
+          readNewsClassificationStore(true).catch(() => null),
+        ])
+        const baseSnapshot = deriveArticleDashboard(localArticles)
+        const groups = classificationStore?.groups ?? []
+        const localSnapshot = groups.length
+          ? {
+            ...baseSnapshot,
+            risks: groups.map((group) => {
+              const articleId = group.sourceIds.find((sourceId) => localArticles.some((article) => article.id === sourceId)) ?? group.sourceIds[0]
+              return {
+                id: `RISK-${group.groupKey}`,
+                articleId,
+                clusterId: `CLUSTER-${group.groupKey}`,
+                name: group.title,
+                source: group.sourceNames.join(' · ') || 'Step 1 분류 저장소',
+                status: 'Step 1 분류 완료 · Step 2 대기',
+                eligibleForProductReview: false,
+                promotionBlockReason: group.needsReview.join(' · ') || 'Step 2 후보 분석과 독립 근거 확인 필요',
+                facts: { facts: group.observedFacts, event: group.summary, changeType: group.changeDirection, affectedTargets: group.exposedGroups, damageTypes: group.potentialLoss, industries: [], timeAndPlace: '확인 필요' },
+                confidence: { level: group.confidence, reason: group.groupingReason },
+              }
+            }),
+            dashboard: {
+              ...baseSnapshot.dashboard,
+              metrics: { ...baseSnapshot.dashboard.metrics, analyzed: groups.length, pending: Math.max(0, localArticles.length - groups.length), riskCandidates: groups.length },
+              risks: [],
+            },
+          }
+          : baseSnapshot
+        if (requestId === requestSequence.current) {
+          setSnapshot((current) => ({
+            ...current,
+            dashboard: { ...localSnapshot.dashboard, risks: localSnapshot.risks },
+            news: localSnapshot.news,
+            risks: localSnapshot.risks,
+            sourceStatus: { dashboard: 'local', news: 'local', risks: 'local' },
+            errors: {},
+            initialLoading: false,
+            refreshing: false,
+            lastAttemptAt: completedAt,
+            lastSuccessfulAt: completedAt,
+          }))
+        }
+        return { failedSources: [], liveSources: [], completedAt }
+      } catch (error) {
+        if (requestId === requestSequence.current) {
+          setSnapshot((current) => ({
+            ...current,
+            dashboard: emptyDashboard,
+            news: [],
+            risks: [],
+            sourceStatus: { dashboard: 'empty', news: 'empty', risks: 'empty' },
+            errors: { dashboard: errorMessage(error) },
+            initialLoading: false,
+            refreshing: false,
+            lastAttemptAt: completedAt,
+          }))
+        }
+        return { failedSources: ['dashboard', 'news', 'risks'], liveSources: [], completedAt }
+      }
+    }
 
     const [dashboardResult, newsResult, risksResult] = await Promise.allSettled([
       riskRadarApi.dashboard(),
@@ -181,11 +260,34 @@ export function useRiskRadarSnapshot() {
       .filter(([, result]) => result.status === 'fulfilled')
       .map(([source]) => source)
 
+    if (requestId === requestSequence.current && liveSources.length === 0) {
+      try {
+        const localArticles = await loadArticleSourceRecords()
+        const localSnapshot = deriveArticleDashboard(localArticles)
+        setSnapshot((current) => ({
+          ...current,
+          dashboard: localSnapshot.dashboard,
+          news: localSnapshot.news,
+          risks: localSnapshot.risks,
+          sourceStatus: { dashboard: 'local', news: 'local', risks: 'local' },
+          errors: Object.fromEntries(failedSources.map((source) => [source, '운영 API 미연결 · 로컬 원문으로 대체'])) as RiskRadarSnapshotState['errors'],
+          initialLoading: false,
+          refreshing: false,
+          lastAttemptAt: completedAt,
+          lastSuccessfulAt: completedAt,
+        }))
+        return { failedSources: [], liveSources: ['dashboard', 'news', 'risks'], completedAt }
+      } catch (error) {
+        failedSources.push('dashboard', 'news', 'risks')
+        console.error('Local article source fallback failed.', error)
+      }
+    }
+
     if (requestId === requestSequence.current) {
       setSnapshot((current) => {
-        const dashboard = dashboardResult.status === 'fulfilled' ? dashboardResult.value : current.dashboard
-        const news = newsResult.status === 'fulfilled' ? newsResult.value.articles : current.news
-        const risks = risksResult.status === 'fulfilled' ? risksResult.value.risks : current.risks
+        const dashboard = dashboardResult.status === 'fulfilled' && dashboardResult.value && typeof dashboardResult.value === 'object' && dashboardResult.value.metrics ? dashboardResult.value : current.dashboard
+        const news = newsResult.status === 'fulfilled' && Array.isArray(newsResult.value.articles) ? newsResult.value.articles : current.news
+        const risks = risksResult.status === 'fulfilled' && Array.isArray(risksResult.value.risks) ? risksResult.value.risks : current.risks
         return {
           dashboard,
           news,
@@ -209,7 +311,7 @@ export function useRiskRadarSnapshot() {
     }
 
     return { failedSources, liveSources, completedAt }
-  }, [])
+  }, [options?.preferLocalArticles])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

@@ -1,5 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
 
+.developer-report-result { display: grid; gap: 12px; }
+.developer-report-hero { display: grid; gap: 7px; padding: 14px; border: 1px solid #dbe7f2; border-left: 4px solid var(--hi-orange); border-radius: 12px; background: #f8fbff; }
+.developer-report-hero strong { color: var(--hi-navy); font-size: 12px; line-height: 1.6; }
+.developer-report-hero small, .developer-report-subcard small, .developer-report-evidence { color: #71849a; font-size: 9px; }
+.developer-report-status { width: fit-content; border-radius: 999px; padding: 4px 8px; color: #9b5b00; background: #fff0d7; font-size: 9px; font-weight: 800; }
+.developer-report-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.developer-report-subcard { display: grid; gap: 7px; min-width: 0; padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.developer-report-subcard > div { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.developer-report-subcard > div span { color: var(--muted); font-size: 9px; font-weight: 800; }
+.developer-report-subcard b { border-radius: 999px; padding: 4px 7px; color: #35698e; background: #eaf5ff; font-size: 8px; }
+.developer-report-subcard b[data-status*='필요'], .developer-report-subcard b[data-status*='보완'] { color: #a25a00; background: #fff0d7; }
+.developer-report-subcard strong { color: var(--ink); font-size: 11px; line-height: 1.5; }
+.developer-report-subcard p { margin: 0; color: #64778d; font-size: 9px; line-height: 1.55; }
+.developer-report-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.developer-report-fields > div { min-width: 0; padding: 10px; border-radius: 10px; background: #f6f8fb; }
+.developer-report-fields dt { color: #7a8da1; font-size: 8px; font-weight: 800; }
+.developer-report-fields dd { margin: 5px 0 0; color: var(--navy); font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.developer-report-list { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.developer-report-list h3 { margin: 0 0 8px; color: var(--navy); font-size: 10px; }
+.developer-report-list ul { display: grid; gap: 7px; margin: 0; padding-left: 17px; color: #52677e; font-size: 9px; line-height: 1.55; }
+.developer-report-evidence, .developer-report-warning, .developer-report-disclaimer { margin: 0; padding: 9px 11px; border-radius: 9px; font-size: 9px; line-height: 1.5; }
+.developer-report-evidence { background: #edf8f2; color: #317653; }
+.developer-report-warning { background: #fff4e5; color: #9a5b10; }
+.developer-report-disclaimer { background: #f4f6f8; color: #718095; }
+
 :root {
   font-family: 'Noto Sans KR', system-ui, sans-serif;
   color: #18324c;
@@ -60,9 +85,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* App shell */
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
-.developer-mode-shell { display: block; }
-.developer-mode-shell .sidebar { display: none; }
-.developer-mode-shell .app-main { min-height: 100vh; }
+.developer-mode-shell { display: grid; }
+.developer-mode-shell .sidebar { display: flex; }
+.developer-mode-shell .app-main { grid-column: 2; min-height: 100vh; }
 .sidebar {
   min-height: 100vh; padding: 28px 20px 22px; display: flex; flex-direction: column;
   color: #fff; background: linear-gradient(180deg, var(--hi-navy) 0%, var(--hi-navy-deep) 100%);
@@ -164,6 +189,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* Developer AI test workbench */
 .developer-test-notice > span { color: #fff; background: var(--hi-navy); }
+.developer-workflow-nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 18px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.developer-workflow-nav span, .developer-workflow-nav a { padding: 7px 10px; border-radius: 999px; color: var(--muted); background: #f5f7fa; font-size: 9px; font-weight: 800; }
+.developer-workflow-nav .active { color: var(--hi-navy); background: #eaf3fb; }
+.developer-workflow-nav a:hover { color: var(--hi-navy); background: #fff0d7; }
+.developer-risk-detail-step3 { padding-top: 0; }
+.developer-step3-panel { display: grid; gap: 18px; }
+.developer-step3-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.developer-step3-card { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe; }
+.developer-step3-card > div { display: grid; gap: 4px; }
+.developer-step3-card small, .developer-step3-card p { color: var(--muted); font-size: 9px; }
+.developer-step3-card > button { margin-top: 10px; }
+.developer-step3-card details { margin-top: 10px; }
+.developer-step3-card pre { max-height: 220px; margin: 8px 0 0; overflow: auto; padding: 10px; white-space: pre-wrap; word-break: break-word; color: #415168; background: #f1f5f9; font-size: 9px; line-height: 1.5; }
+@media (max-width: 760px) { .developer-step3-card-grid { grid-template-columns: 1fr; } }
 .developer-utility-switcher { margin-bottom: 18px; padding: 18px 22px; }
 .developer-news-config { margin-bottom: 18px; padding: 24px; }
 .developer-news-config-description { margin: 13px 0 0; color: var(--muted); font-size: 10px; line-height: 1.65; }
@@ -579,6 +618,36 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 1100px) { .risk-operations-filters { grid-template-columns: 1.5fr repeat(2, 1fr); }.risk-operations-summary { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 720px) { .risk-exploration-operations { padding: 18px; }.risk-operations-heading { display: grid; }.risk-operations-heading > div:last-child { justify-content: flex-start; }.risk-operations-filters, .risk-operations-summary, .risk-operations-context-grid, .risk-operations-queue-grid { grid-template-columns: 1fr; } }
 
+/* Integrated workflow refinements: both pipeline and candidate stages use the same horizontal queue. */
+.risk-operations-workflow { display: flex; align-items: center; gap: 6px; overflow-x: auto; }
+.risk-operations-workflow-row { display: flex; align-items: center; gap: 6px; min-width: max-content; }
+.risk-operations-workflow-row > strong { min-width: 106px; color: var(--navy); font-size: 9px; letter-spacing: .02em; }
+.risk-operations-workflow-row span { font-size: 9px; }
+.risk-operations-workflow-row span b { color: inherit; font-size: 10px; }
+.candidate-status-row { padding-top: 8px; border-top: 1px dashed var(--line); }
+.candidate-status-row > strong { color: var(--orange-dark); }
+.screening-score em { display: block; margin-top: 5px; color: var(--orange-dark); font-size: 8px; font-style: normal; font-weight: 700; }
+.screening-tooltip-evidence { display: block; margin-top: 9px; color: #d8e2ee; font-size: 8px; line-height: 1.5; }
+
+/* Tab 1 is the cross-tab operating entry point. */
+.dashboard-workflow { margin: 18px 0; padding: 22px 24px; border-top: 3px solid var(--hi-orange); }
+.dashboard-workflow-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; gap: 8px; margin-top: 18px; }
+.dashboard-workflow-steps a { min-height: 94px; padding: 15px; display: grid; align-content: start; gap: 6px; border: 1px solid var(--line); border-radius: 12px; color: inherit; background: var(--canvas); text-decoration: none; transition: border-color .18s ease, transform .18s ease, background .18s ease; }
+.dashboard-workflow-steps a:hover, .dashboard-workflow-steps a:focus-visible { border-color: var(--hi-orange); background: #fff; transform: translateY(-2px); outline: none; }
+.dashboard-workflow-steps a.is-current { border-color: var(--hi-navy); background: #f1f6fb; }
+.dashboard-workflow-steps a span { color: var(--hi-orange); font: 800 10px/1 'DM Sans', sans-serif; }
+.dashboard-workflow-steps a strong { color: var(--hi-navy); font-size: 12px; }
+.dashboard-workflow-steps a small { color: var(--muted); font-size: 9px; line-height: 1.45; }
+.dashboard-workflow-steps > i { color: var(--muted); font-style: normal; text-align: center; }
+.dashboard-workflow-note { margin: 15px 0 0; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.dashboard-focus-link.is-disabled { width: auto; padding: 0 9px; color: var(--muted); font-size: 8px; }
+@media (max-width: 800px) {
+  .dashboard-workflow-steps { grid-template-columns: 1fr; }
+  .dashboard-workflow-steps > i { transform: rotate(90deg); }
+  .dashboard-workflow { padding: 18px; }
+  .risk-operations-workflow { overflow-x: auto; }
+}
+
 /* Seoyeon branch parity: TOP-5 screening, source panels, and deep metric tooltips */
 .screening-lens { overflow: visible; }
 .screening-control-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
@@ -598,7 +667,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .screening-empty { color: var(--muted); font-size: 10px; text-align: center; }
 .screening-table-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: 18px; }
 .screening-table-heading h3 { margin: 4px 0 0; font-size: 16px; }.screening-table-heading > span { color: var(--muted); font-size: 9px; }
-.screening-table-viewport { margin-top: 10px; overflow-x: auto; overflow-y: hidden; border: 1px solid var(--line); border-radius: 14px; background: #fff; padding-bottom: 280px; margin-bottom: -260px; }
+.screening-table-viewport { margin-top: 10px; overflow-x: auto; overflow-y: visible; border: 1px solid var(--line); border-radius: 14px; background: #fff; padding-bottom: 280px; margin-bottom: -260px; }
+.screening-table-viewport:has(.screening-tooltip:hover), .screening-table-viewport:focus-within { overflow: visible; }
 .screening-comparison-table { width: 100%; min-width: 1420px; border-collapse: collapse; }
 .screening-comparison-table th { background: var(--canvas); padding: 11px 9px; color: var(--muted); font-size: 8px; text-align: left; white-space: nowrap; }
 .screening-comparison-table td { position: relative; border-top: 1px solid var(--line); padding: 11px 9px; font-size: 9px; vertical-align: middle; }
@@ -884,6 +954,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .risk-exploration-detail dt { color: #8995a4; font-size: 7px; }
 .risk-exploration-detail dd { margin: 5px 0 0; color: var(--ink); font-size: 8px; font-weight: 700; line-height: 1.4; }
 .risk-exploration-disclaimer { grid-column: 1 / -1; margin: 0; color: #8793a5; font-size: 7px; line-height: 1.55; }
+.risk-candidate-grid-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: 20px; }
+.risk-candidate-grid-heading h3 { margin: 4px 0 0; color: var(--hi-navy); font-size: 18px; }
+.risk-candidate-grid-heading > span { color: var(--muted); font-size: 10px; }
+.risk-candidate-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 11px; }
+.risk-candidate-card { min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 8px 18px rgba(15, 42, 73, .06); }
+.risk-candidate-card-topline, .risk-candidate-section-heading, .risk-candidate-score > div, .risk-candidate-confidence > div, .risk-candidate-detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.risk-candidate-rank { color: var(--hi-blue); font: 800 9px/1 'DM Sans', sans-serif; letter-spacing: .04em; }
+.risk-candidate-level { padding: 4px 7px; border-radius: 999px; font-size: 8px; font-weight: 800; }
+.risk-candidate-level.high { color: #a13c3c; background: #fff0ef; }.risk-candidate-level.medium { color: #99600c; background: #fff6df; }.risk-candidate-level.low { color: #3b7c59; background: #edf9f0; }
+.risk-candidate-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }.risk-candidate-card h4 { margin: 9px 0 5px; color: var(--hi-navy); font-size: 16px; letter-spacing: -.03em; }.risk-candidate-summary { min-height: 36px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.risk-candidate-score { margin-top: 12px; padding: 10px; border-radius: 10px; background: #f6f9fc; }.risk-candidate-score span, .risk-candidate-confidence span { color: var(--muted); font-size: 9px; }.risk-candidate-score strong { color: var(--hi-navy); font: 800 20px/1 'DM Sans', sans-serif; }.risk-candidate-score small { display: block; margin-top: 5px; color: #8b98a8; font-size: 8px; }
+.risk-candidate-overview, .risk-candidate-quantification { margin-top: 13px; }.risk-candidate-overview { padding-top: 12px; border-top: 1px solid var(--line); }.risk-candidate-overview h5, .risk-candidate-quantification h5 { margin: 0; color: var(--hi-navy); font-size: 10px; }.risk-candidate-overview dl { margin: 8px 0 0; display: grid; gap: 6px; }.risk-candidate-overview dl > div { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: 6px; }.risk-candidate-overview dt { color: #8b98a8; font-size: 8px; }.risk-candidate-overview dd { margin: 0; color: var(--ink); font-size: 8px; line-height: 1.45; }
+.risk-candidate-section-heading { margin-bottom: 7px; }.risk-candidate-section-heading span { color: #8b98a8; font-size: 7px; }.risk-candidate-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }.risk-candidate-metric { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fbfcfe; }.risk-candidate-metric > button { width: 100%; min-height: 67px; padding: 8px; border: 0; color: var(--ink); background: transparent; text-align: left; cursor: pointer; }.risk-candidate-metric > button:hover, .risk-candidate-metric > button:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }.risk-candidate-metric > button span, .risk-candidate-metric > button strong, .risk-candidate-metric > button small { display: block; }.risk-candidate-metric > button span { font-size: 8px; font-weight: 800; }.risk-candidate-metric > button strong { margin-top: 5px; font: 800 13px/1.1 'DM Sans', sans-serif; }.risk-candidate-metric > button small { margin-top: 5px; color: var(--muted); font-size: 7px; line-height: 1.35; }.risk-candidate-metric.orange { color: #dd6b20; }.risk-candidate-metric.blue { color: #1c78b5; }.risk-candidate-metric.purple { color: #8054b9; }.risk-candidate-metric.red { color: #be4c4c; }
+.risk-candidate-metric-detail { padding: 10px; color: #dce7f5; background: #16273b; }.risk-candidate-detail-heading strong { color: #fff; font-size: 9px; }.risk-candidate-detail-heading span { color: #a7bfd8; font-size: 7px; }.risk-candidate-metric-detail dl { margin: 8px 0 0; display: grid; gap: 6px; }.risk-candidate-metric-detail dl > div { display: grid; grid-template-columns: 67px minmax(0, 1fr); gap: 5px; }.risk-candidate-metric-detail dt { color: #8ca9c5; font-size: 7px; }.risk-candidate-metric-detail dd { margin: 0; color: #f5f9ff; font-size: 7px; line-height: 1.45; }
+.risk-candidate-confidence { margin-top: 12px; }.risk-candidate-confidence strong { color: var(--hi-navy); font-size: 9px; }.risk-candidate-confidence-track { height: 5px; margin-top: 6px; overflow: hidden; border-radius: 999px; background: #e8eef5; }.risk-candidate-confidence-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6ba7dc, var(--hi-navy)); }.risk-candidate-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 13px; }.risk-candidate-actions a { padding: 7px 4px; border: 1px solid var(--line); border-radius: 7px; color: var(--hi-navy); background: #fff; font-size: 8px; font-weight: 800; text-align: center; text-decoration: none; }.risk-candidate-actions a:hover, .risk-candidate-actions a:focus-visible { border-color: var(--hi-navy); background: #f4f8fc; outline: none; }.risk-candidate-empty { margin-top: 11px; padding: 36px 15px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 10px; text-align: center; }
+.risk-candidate-content-row { display: grid; grid-template-columns: .92fr 1.08fr; gap: 10px; margin-top: 12px; align-items: start; }
+.risk-candidate-content-row .risk-candidate-overview, .risk-candidate-content-row .risk-candidate-quantification { margin-top: 0; padding-top: 0; border-top: 0; }
+.risk-candidate-overview-list, .risk-candidate-metric-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.risk-candidate-overview-item { min-height: 49px; padding: 8px 9px; border-radius: 8px; background: #f5f8fc; }.risk-candidate-overview-item span { display: block; margin-bottom: 3px; color: #8190a5; font-size: 8px; }.risk-candidate-overview-item strong { display: block; color: #34465e; font-size: 9px; line-height: 1.35; }
+.risk-candidate-metric > button { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; min-height: 49px; padding: 7px 9px; border: 1px solid #dee7f1; border-radius: 8px; background: #fff; text-align: left; cursor: pointer; }.risk-candidate-metric > button:hover, .risk-candidate-metric.active > button { border-color: #9fc4f4; background: #f8fbff; outline: none; }.risk-candidate-metric > button span { display: block; }.risk-candidate-metric > button strong { display: block; color: #53657c; font-size: 10px; font-weight: 800; }.risk-candidate-metric > button small { display: block; margin-top: 2px; color: var(--muted); font-size: 8px; }.risk-candidate-metric > button b { text-align: right; color: var(--hi-navy); font-size: 10px; white-space: nowrap; }.risk-candidate-metric.orange > button b { color: #f59e0b; }.risk-candidate-metric.blue > button b { color: #2563eb; }.risk-candidate-metric.purple > button b { color: #8054b9; }.risk-candidate-metric.red > button b { color: #ef4444; }
+.risk-candidate-metric-detail { margin-top: 11px; padding: 12px; border-radius: 10px; background: #0f172a; color: #fff; }.risk-candidate-detail-heading { padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.13); }.risk-candidate-detail-heading strong { color: #7dd3fc; font-size: 11px; }.risk-candidate-detail-heading span { padding: 4px 7px; border-radius: 6px; color: #fff; background: rgba(255,255,255,.1); font-size: 8px; }.risk-candidate-metric-detail dl { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }.risk-candidate-metric-detail dl > div { display: block; }.risk-candidate-metric-detail dt { margin-bottom: 4px; font-size: 9px; font-weight: 800; }.risk-candidate-metric-detail dl > div:nth-child(1) dt { color: #7dd3fc; }.risk-candidate-metric-detail dl > div:nth-child(2) dt { color: #fbbf24; }.risk-candidate-metric-detail dl > div:nth-child(3) dt { color: #6ee7b7; }.risk-candidate-metric-detail dl > div:nth-child(4) dt { color: #c4b5fd; }.risk-candidate-metric-detail dd { margin: 0; color: #d7deea; font-size: 9px; line-height: 1.48; }.risk-candidate-actions a:last-child { border-color: #2563eb; background: #2563eb; color: #fff; }
+@media (max-width: 1120px) { .risk-candidate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .risk-candidate-grid-heading { display: grid; }.risk-candidate-grid { grid-template-columns: 1fr; }.risk-candidate-content-row, .risk-candidate-metric-detail dl { grid-template-columns: 1fr; }.risk-candidate-card h4 { font-size: 16px; } }
 .risk-exploration-table { min-width: 860px; }
 .risk-exploration-table th:nth-child(6) { min-width: 145px; }
 .risk-exploration-source-grid { margin-top: 18px; padding: 19px; border: 1px solid var(--line); border-radius: 13px; background: linear-gradient(135deg, #fff, #f8fbff); }
@@ -2099,6 +2192,71 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   }
 }
 
+/* Risk candidate law tracking card */
+.risk-law-tracking { display: grid; grid-template-columns: minmax(260px, 35%) minmax(0, 65%); margin-top: 16px; min-height: 640px; overflow: hidden; border: 1px solid #dbe3ec; border-radius: 16px; background: #fff; }
+.risk-law-tracking-sidebar { display: flex; min-width: 0; flex-direction: column; border-right: 1px solid #dbe3ec; background: #f8fafc; }
+.risk-law-filter-panel { display: grid; gap: 11px; padding: 16px; border-bottom: 1px solid #dbe3ec; background: #fff; box-shadow: 0 2px 8px rgba(15, 23, 42, .04); }
+.risk-law-search { display: flex; align-items: center; gap: 7px; padding: 9px 10px; border: 1px solid transparent; border-radius: 9px; background: #f1f5f9; color: #94a3b8; }
+.risk-law-search:focus-within { border-color: #60a5fa; background: #fff; box-shadow: 0 0 0 2px rgba(96, 165, 250, .16); }
+.risk-law-search input { width: 100%; min-width: 0; border: 0; outline: 0; color: #1e293b; background: transparent; font: inherit; font-size: 11px; }
+.risk-law-filter-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.risk-law-filter-chips::-webkit-scrollbar { display: none; }
+.risk-law-filter-chips button { flex: 0 0 auto; padding: 6px 9px; border: 1px solid #cbd5e1; border-radius: 999px; color: #64748b; background: #fff; font: inherit; font-size: 9px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.risk-law-filter-chips button:hover, .risk-law-filter-chips button:focus-visible { border-color: #2563eb; color: #1d4ed8; }
+.risk-law-filter-chips button.active { border-color: #1e293b; color: #fff; background: #1e293b; }
+.risk-law-filter-selects { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.risk-law-filter-selects select { width: 100%; padding: 7px 8px; border: 1px solid #e2e8f0; border-radius: 7px; color: #64748b; background: #f8fafc; font: inherit; font-size: 9px; outline: 0; }
+.risk-law-filter-selects select:focus-visible { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, .13); }
+.risk-law-list { overflow-y: auto; }
+.risk-law-list-item { display: block; width: 100%; padding: 15px; border: 0; border-bottom: 1px solid #e2e8f0; border-left: 4px solid transparent; color: inherit; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+.risk-law-list-item:hover { background: #f1f5f9; }
+.risk-law-list-item.active { border-left-color: #2563eb; background: #eff6ff; }
+.risk-law-list-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.risk-law-list-meta b { padding: 4px 6px; border-radius: 5px; color: #1d4ed8; background: #dbeafe; font-size: 9px; }
+.risk-law-list-meta em { font-size: 9px; font-style: normal; font-weight: 800; white-space: nowrap; }
+.risk-law-list-meta em.is-high { color: #dc2626; }.risk-law-list-meta em.is-medium { color: #d97706; }.risk-law-list-meta em.is-low { color: #64748b; }
+.risk-law-list-item > strong { display: block; color: #1e293b; font-size: 12px; line-height: 1.4; }
+.risk-law-list-item > small { display: block; margin-top: 4px; color: #64748b; font-size: 9px; line-height: 1.45; }
+.risk-law-list-counts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.risk-law-list-counts i { padding: 3px 5px; border-radius: 4px; color: #64748b; background: #e2e8f0; font-size: 8px; font-style: normal; }
+.risk-law-detail { min-width: 0; overflow-y: auto; padding: 22px; background: #fff; }
+.risk-law-detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; }
+.risk-law-detail-heading h3 { margin: 0 0 5px; color: #1e293b; font-size: 20px; letter-spacing: -.03em; }
+.risk-law-detail-heading p { margin: 0; color: #64748b; font-size: 9px; }
+.risk-law-detail-heading a, .risk-law-source-pending { flex: 0 0 auto; padding: 8px 11px; border-radius: 7px; color: #fff; background: #1e293b; font-size: 9px; font-weight: 800; text-decoration: none; }
+.risk-law-source-pending { color: #64748b; background: #f1f5f9; }
+.risk-law-update-label { margin-top: 7px; color: #94a3b8; font-size: 8px; text-align: right; }
+.risk-law-timeline-card { margin-top: 18px; padding: 15px; border: 1px solid #dbe3ec; border-radius: 12px; background: #f8fafc; }
+.risk-law-card-heading, .risk-law-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.risk-law-card-heading h4, .risk-law-section-heading h4 { margin: 0; color: #334155; font-size: 12px; }
+.risk-law-card-heading span, .risk-law-section-heading > div > span { color: #64748b; font-size: 8px; }
+.risk-law-timeline { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 18px; }
+.risk-law-timeline-line { position: absolute; top: 13px; right: 7%; left: 7%; height: 3px; background: #e2e8f0; }
+.risk-law-timeline-step { position: relative; z-index: 1; display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.risk-law-timeline-marker { display: grid; place-items: center; width: 27px; height: 27px; border: 2px solid #cbd5e1; border-radius: 50%; color: #94a3b8; background: #fff; font-size: 10px; font-weight: 800; }
+.risk-law-timeline-step.complete .risk-law-timeline-marker, .risk-law-timeline-step.current .risk-law-timeline-marker { border-color: #2563eb; color: #fff; background: #2563eb; }
+.risk-law-timeline-step.current .risk-law-timeline-marker { box-shadow: 0 0 0 4px #dbeafe; }
+.risk-law-timeline-step strong { color: #334155; font-size: 9px; }.risk-law-timeline-step.current strong { color: #2563eb; }.risk-law-timeline-step small { color: #94a3b8; font-size: 7px; }
+.risk-law-changes { position: relative; margin-top: 18px; }
+.risk-law-change-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.risk-law-change-card { position: relative; padding: 14px; border: 1px solid #dbe3ec; border-radius: 11px; background: #f8fafc; }
+.risk-law-change-card.after { border-color: #fecdd3; background: #fff7f7; }
+.risk-law-change-card.after::before { position: absolute; top: 0; bottom: 0; left: 0; width: 4px; border-radius: 11px 0 0 11px; background: #e11d48; content: ''; }
+.risk-law-change-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+.risk-law-change-heading > div { display: flex; align-items: center; gap: 7px; }.risk-law-change-dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }.after .risk-law-change-dot { background: #e11d48; }
+.risk-law-change-heading strong { color: #475569; font-size: 11px; }.after .risk-law-change-heading strong { color: #b91c1c; }.risk-law-change-heading > span { padding: 4px 6px; border-radius: 4px; color: #64748b; background: #fff; font-size: 8px; }
+.after .risk-law-change-heading > span { color: #b91c1c; background: #fee2e2; font-weight: 800; }
+.risk-law-change-card ul { display: grid; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }.risk-law-change-card li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 9px; color: #475569; font-size: 9px; line-height: 1.45; }.risk-law-change-card li b { color: #64748b; }.risk-law-change-card.after li b { color: #dc2626; }.risk-law-change-card li span.red { color: #b91c1c; }.risk-law-change-card li span.blue { color: #1d4ed8; }
+.risk-law-change-badge { display: block; margin-top: 8px; color: #b91c1c; font-size: 8px; font-weight: 800; text-align: right; }
+.risk-law-cases { margin-top: 20px; padding-top: 18px; border-top: 1px solid #e2e8f0; }
+.risk-law-section-heading > div:first-child { display: flex; align-items: baseline; gap: 8px; }.risk-law-section-heading > div:first-child span { color: #94a3b8; font-size: 8px; }
+.risk-law-case-tabs { display: flex; gap: 2px; padding: 3px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f1f5f9; }.risk-law-case-tabs button { padding: 5px 8px; border: 0; border-radius: 4px; color: #64748b; background: transparent; font: inherit; font-size: 8px; cursor: pointer; }.risk-law-case-tabs button.active { color: #2563eb; background: #fff; box-shadow: 0 1px 3px rgba(15, 23, 42, .1); font-weight: 800; }
+.risk-law-case-card { display: grid; gap: 10px; margin-top: 10px; padding: 14px; border: 1px solid #dbe3ec; border-radius: 9px; background: #f8fafc; box-shadow: 0 2px 8px rgba(15, 23, 42, .04); }.risk-law-case-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }.risk-law-case-meta span, .risk-law-case-meta b { padding: 4px 6px; border-radius: 4px; color: #fff; background: #334155; font-size: 8px; }.risk-law-case-meta b { color: #334155; background: transparent; }.risk-law-case-meta em { margin-left: auto; padding: 4px 6px; border: 1px solid #fecdd3; border-radius: 4px; color: #dc2626; background: #fff1f2; font-size: 8px; font-style: normal; font-weight: 800; }.risk-law-case-card h5 { margin: 0; color: #334155; font-size: 11px; }.risk-law-case-summary { display: grid; gap: 5px; padding: 9px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; }.risk-law-case-summary p { margin: 0; color: #475569; font-size: 9px; line-height: 1.5; }.risk-law-case-summary b { margin-right: 6px; color: #334155; }.risk-law-case-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #64748b; font-size: 8px; }.risk-law-case-footer strong { color: #334155; }.risk-law-sample-label { color: #94a3b8; }
+.risk-law-checklist { margin-top: 15px; padding: 13px; border: 1px solid #bfdbfe; border-radius: 8px; background: #eff6ff; }.risk-law-checklist h4 { margin: 0 0 7px; color: #1e3a8a; font-size: 10px; }.risk-law-checklist ul { display: grid; gap: 5px; margin: 0; padding-left: 16px; color: #475569; font-size: 9px; line-height: 1.45; }
+.risk-law-disclaimer { margin: 13px 0 0; color: #94a3b8; font-size: 8px; line-height: 1.5; }.risk-law-empty { margin: 0; padding: 24px; color: #64748b; font-size: 10px; text-align: center; }
+@media (max-width: 920px) { .risk-law-tracking { grid-template-columns: 1fr; }.risk-law-tracking-sidebar { max-height: 420px; border-right: 0; border-bottom: 1px solid #dbe3ec; }.risk-law-detail { min-height: 600px; } }
+@media (max-width: 620px) { .risk-law-detail { padding: 16px; }.risk-law-detail-heading, .risk-law-card-heading, .risk-law-section-heading { align-items: flex-start; flex-direction: column; }.risk-law-update-label { text-align: left; }.risk-law-timeline { gap: 2px; }.risk-law-timeline-line { right: 5%; left: 5%; }.risk-law-timeline-step strong { font-size: 8px; }.risk-law-timeline-step small { min-height: 22px; }.risk-law-change-grid { grid-template-columns: 1fr; }.risk-law-case-meta em { margin-left: 0; }.risk-law-case-footer { align-items: flex-start; flex-direction: column; } }
+
 /* Risk detail refresh: keep the assessment readable while exposing the math on demand. */
 .detail-page .page-header h1 { letter-spacing: -.07em; }
 .detail-page .sh-command-bar { margin-top: -4px; }
@@ -2183,6 +2341,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .detail-assessment-grid .assessment-bar span { height: 8px; background: #e8eef5; }
 .detail-assessment-grid .assessment-bar span i { background: #3b82f6; }
 .detail-assessment-grid .assessment-bar strong { color: #0b2b52; font-size: 18px; }
+ .detail-assessment-grid .assessment-bar strong small { margin-left: 2px; color: #64748b; font-size: 9px; font-weight: 700; }
+ .detail-assessment-grid .assessment-bar strong em { display: block; margin-top: 4px; color: #64748b; font-size: 8px; font-style: normal; font-weight: 600; white-space: nowrap; }
 .detail-assessment-grid .assessment-row > p { color: #64748b; font-size: 10px; line-height: 1.65; }
 .assessment-logic { grid-column: 1 / -1; align-self: start; margin-top: 2px; border-top: 1px dashed #dce3ea; padding-top: 8px; }
 .assessment-logic summary { width: max-content; color: #2563eb; cursor: pointer; font-size: 10px; font-weight: 800; list-style: none; }
@@ -2236,3 +2396,48 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   body.risk-detail-printing .score-logic-disclosure > div,
   body.risk-detail-printing .assessment-logic > p { display: block !important; }
 }
+ .developer-catalog-empty { display: flex; align-items: center; justify-content: center; gap: 18px; min-height: 150px; padding: 24px; border: 1px dashed #b8c9e8; border-radius: 14px; color: #31466e; background: #f7faff; text-align: left; }
+.developer-catalog-empty strong { color: #102a57; font-size: 16px; }
+.developer-catalog-empty p { max-width: 620px; margin: 6px 0 0; color: #64748b; font-size: 12px; line-height: 1.6; }
+.developer-catalog-empty button, .developer-empty-panel button { flex: 0 0 auto; padding: 10px 14px; border: 0; border-radius: 8px; color: #fff; background: #4263d8; font-weight: 700; cursor: pointer; }
+.developer-catalog-empty button:disabled, .developer-empty-panel button:disabled { cursor: wait; opacity: .65; }
+.developer-empty-panel { min-height: 180px; display: grid; place-items: center; border: 1px solid #dce5f3; border-radius: 14px; background: #fbfdff; }
+.developer-empty-panel__body { max-width: 680px; padding: 28px; text-align: center; }
+.developer-empty-panel__step { color: #4263d8; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.developer-empty-panel h3 { margin: 10px 0 6px; color: #102a57; font-size: 18px; }
+.developer-empty-panel p { margin: 0 auto 16px; color: #64748b; font-size: 12px; line-height: 1.6; }
+.assessment-evidence-status { display: inline-flex; width: fit-content; margin-top: 7px; padding: 4px 7px; border-radius: 999px; font-size: 9px; font-weight: 800; }
+.assessment-evidence-status.is-verified { color: #166534; background: #dcfce7; }
+.assessment-evidence-status.is-pending { color: #9a3412; background: #ffedd5; }
+.assessment-reason { display: grid; gap: 5px; }
+.assessment-reason b, .assessment-quotes b { color: #334155; font-size: 10px; }
+.assessment-quotes { grid-column: 1 / -1; display: grid; gap: 6px; padding: 10px 12px; border-left: 3px solid #2f8f68; border-radius: 0 8px 8px 0; background: #f2fbf6; }
+.assessment-quotes q { color: #31535b; font-size: 10px; line-height: 1.55; }
+.assessment-quotes.is-pending { border-left-color: #e49b37; background: #fff8eb; }
+.assessment-quotes.is-pending span { color: #8a5b20; font-size: 10px; line-height: 1.55; }
+.risk-operations-actual-status { display: inline-flex; align-items: center; min-height: 36px; padding: 0 13px; border: 1px solid #cde7d8; border-radius: 8px; color: #27734d; background: #f1fbf5; font-size: 11px; font-weight: 800; }
+.developer-step3-card { display: grid; gap: 12px; padding: 20px; border: 1px solid #dbe5f2; border-radius: 14px; background: #fff; box-shadow: 0 8px 20px rgba(24, 48, 88, .05); }
+.developer-step3-card.is-complete { border-color: #b9ddc8; background: linear-gradient(180deg, #fff 0%, #f6fcf8 100%); }
+.developer-step3-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.developer-step3-card-heading strong, .developer-step3-card-heading small { display: block; }
+.developer-step3-card-heading strong { color: #102a57; font-size: 16px; }
+.developer-step3-card-heading small { margin-top: 4px; color: #71849a; font-size: 10px; }
+.developer-step3-card-heading > span { padding: 5px 8px; border-radius: 999px; color: #8a5b20; background: #fff3df; font-size: 9px; font-weight: 800; white-space: nowrap; }
+.developer-step3-card.is-complete .developer-step3-card-heading > span { color: #27734d; background: #e8f7ee; }
+.developer-step3-result-meta { display: flex; flex-wrap: wrap; gap: 7px; color: #64748b; font-size: 9px; }
+.developer-step3-result-meta span { padding: 4px 7px; border-radius: 5px; color: #4263d8; background: #edf2ff; font-weight: 800; }
+.developer-step3-result-meta time { margin-left: auto; }
+.developer-step3-summary { margin: 0; color: #263d64; font-size: 12px; font-weight: 700; line-height: 1.6; }
+.developer-step3-highlights { display: grid; gap: 5px; margin: 0; padding-left: 17px; color: #64748b; font-size: 10px; line-height: 1.5; }
+.developer-step3-pending { margin: 0; padding: 12px; border-radius: 8px; color: #8a5b20; background: #fff8eb; font-size: 10px; line-height: 1.5; }
+.risk-law-official-detail { margin-top: 18px; padding: 18px; border: 1px solid #cbdcf7; border-radius: 12px; background: #f7faff; }
+.risk-law-official-detail.is-error { border-color: #f2c6c6; background: #fff8f8; }
+.risk-law-official-detail h4 { margin: 0; color: #183563; font-size: 14px; }
+.risk-law-official-detail p { margin: 8px 0 0; color: #5d6e87; font-size: 11px; line-height: 1.55; }
+.risk-law-official-detail .risk-law-card-heading { display: flex; justify-content: space-between; gap: 12px; }
+.risk-law-official-detail .risk-law-card-heading span { color: #4263d8; font-size: 9px; font-weight: 800; }
+.risk-law-official-detail dl { display: grid; gap: 7px; margin: 14px 0 0; }
+.risk-law-official-detail dl > div { display: grid; grid-template-columns: minmax(100px, 160px) 1fr; gap: 12px; padding-bottom: 7px; border-bottom: 1px solid #e2eaf7; }
+.risk-law-official-detail dt { color: #74849d; font-size: 10px; font-weight: 800; }
+.risk-law-official-detail dd { margin: 0; color: #263d64; font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+.risk-law-detail-note { padding-top: 10px; border-top: 1px solid #dbe6f7; }

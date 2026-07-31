@@ -28,7 +28,7 @@ function normalizeExtractedText(value: string) {
     .trim()
 }
 
-async function readPdf(file: File) {
+export async function readPdfFile(file: File) {
   const pdfjs = await import('pdfjs-dist')
   pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
   const document = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise
@@ -81,7 +81,7 @@ async function readImage(file: File) {
 export async function parsePromptFile(file: File): Promise<UploadedPromptFile> {
   const extension = extensionOf(file.name)
   if (!supportedExtensions.has(extension)) throw new Error(`${file.name}: 지원하지 않는 형식입니다.`)
-  const rawText = extension === 'pdf' ? await readPdf(file)
+  const rawText = extension === 'pdf' ? await readPdfFile(file)
     : extension === 'docx' ? await readDocx(file)
       : extension === 'pptx' ? await readPptx(file)
         : extension === 'xlsx' || extension === 'xls' ? await readSpreadsheet(file)
