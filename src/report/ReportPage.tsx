@@ -4,6 +4,7 @@ import type { ReportProxy } from './api/report-proxy'
 import { GeneratedReportList } from './components/GeneratedReportList'
 import { ReportSections } from './components/ReportSections'
 import { createGeneratedReportList, type GeneratedReportListItem } from './services/report-list'
+import { pushPreservingHistoryState, type ReportNavigation } from './services/browser-history'
 import './report.css'
 
 export type ReportPageProps = {
@@ -11,6 +12,7 @@ export type ReportPageProps = {
   fallbackReport: ReportResult
   reportProxy: ReportProxy
   listIntro?: ReactNode
+  navigation?: ReportNavigation
 }
 
 const getRequestedReportId = (): string | null => {
@@ -31,6 +33,7 @@ function ReportPageSession({
   fallbackReport,
   reportProxy,
   listIntro,
+  navigation,
 }: ReportPageProps) {
   const [showDetail, setShowDetail] = useState(() => hasDetailQuery(fallbackReport))
   const reports = useMemo(
@@ -47,7 +50,12 @@ function ReportPageSession({
   const openReport = (selectedReport: GeneratedReportListItem) => {
     const url = new URL(window.location.href)
     url.searchParams.set('reportId', selectedReport.reportId)
-    window.history.pushState({ reportId: selectedReport.reportId }, '', url)
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`
+    if (navigation) {
+      navigation(nextUrl)
+    } else {
+      pushPreservingHistoryState(url, { reportId: selectedReport.reportId })
+    }
     setShowDetail(true)
     window.scrollTo({ top: 0, behavior: 'auto' })
   }
@@ -55,7 +63,12 @@ function ReportPageSession({
   const closeReport = () => {
     const url = new URL(window.location.href)
     url.searchParams.delete('reportId')
-    window.history.pushState({}, '', url)
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`
+    if (navigation) {
+      navigation(nextUrl)
+    } else {
+      pushPreservingHistoryState(url)
+    }
     setShowDetail(false)
     window.scrollTo({ top: 0, behavior: 'auto' })
   }
@@ -77,6 +90,7 @@ function ReportPageSession({
             report={fallbackReport}
             riskData={riskData}
             reportProxy={reportProxy}
+            navigation={navigation}
           />
         </div>
       )}

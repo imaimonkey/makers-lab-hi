@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import type {
   CommercializationCriterion,
   CommercializationCriterionCategory,
@@ -21,6 +21,7 @@ import { ReportModal } from './ReportModal'
 import { PolicyDraftModal } from './ReportAssistPanels'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { createBriefingContent } from '../services/briefing-content'
+import { pushPreservingHistoryState, type ReportNavigation } from '../services/browser-history'
 
 type SummaryCard = {
   id: string
@@ -504,6 +505,7 @@ type InitialReviewCardCopy = {
   result: string
   shortReason: string
   status: string
+  detailsLabel?: string
 }
 
 const INITIAL_REVIEW_CARD_COPY: InitialReviewCardCopy[] = [
@@ -523,10 +525,11 @@ const INITIAL_REVIEW_CARD_COPY: InitialReviewCardCopy[] = [
   },
   {
     id: 'productDirection',
-    label: '상품화 실행 가능성',
-    result: '보완 후 검토 가능',
-    shortReason: '책임 기준, 최대 가능 손해(PML), 손해 데이터 및 보상 기준을 추가 확인해야 합니다.',
-    status: '보완 필요',
+    label: '기존·유사 상품 현황',
+    result: '직접 대응 상품은 미확인',
+    shortReason: '자동차보험·화재보험 등에서 일부 유사한 보장이 확인되지만, 지하주차장 전기차 화재로 인한 다수 차량·시설 손해를 통합적으로 보장하는 상품은 확인되지 않았습니다.',
+    status: '유사 보장 확인',
+    detailsLabel: '비교 근거 보기',
   },
 ]
 
@@ -647,7 +650,7 @@ function AiSummarySection({ report }: { report: ReportView }) {
               <StatusBadge>{card.status}</StatusBadge>
               <strong>{card.result}</strong>
               <p>{card.shortReason}</p>
-              <span className="report-page__details-label">판단 근거 보기</span>
+              <span className="report-page__details-label">{card.detailsLabel ?? '판단 근거 보기'}</span>
             </summary>
             <div className="report-page__details-body">
               <p>{card.detail}</p>
@@ -737,20 +740,6 @@ function AiSummarySection({ report }: { report: ReportView }) {
 
 const COVERAGE_ANALYSIS_PREMISE = '전기차가 지하주차장에서 주차 또는 충전 중 화재를 일으켜 인접 차량과 건물·시설로 손해가 확산된 상황을 기준으로 기존 보험의 적용 가능 범위와 남는 보장 공백을 검토했습니다.'
 
-type CoverageGapType = {
-  key: 'limit' | 'cause' | 'ordering' | 'causation' | 'scope'
-  label: string
-}
-
-function getCoverageGapType(item: NonNullable<ReportView['riskGapSummary']['existingCoverageMap']>[number]): CoverageGapType {
-  const text = `${item.coverageName} ${item.remainingGap ?? ''}`
-  if (/자기부담|한도|보험가액/.test(text)) return { key: 'limit', label: '한도·자기부담' }
-  if (/중복|우선 보상|구상/.test(text)) return { key: 'ordering', label: '보상 순서·중복·구상' }
-  if (/결함|원인 미상|발화 원인/.test(text)) return { key: 'cause', label: '책임 확정·원인' }
-  if (/인과관계|과실|관리상/.test(text)) return { key: 'causation', label: '인과관계' }
-  return { key: 'scope', label: '책임 범위' }
-}
-
 function getCoverageDamageLabel(
   item: NonNullable<ReportView['riskGapSummary']['existingCoverageMap']>[number],
   data: ReportView['riskGapSummary'],
@@ -772,6 +761,53 @@ function getCoverageDamageLabel(
   if (/자동차보험.*대물배상/.test(coverageName)) return damageName('DMG-01', '인접 차량 재산손해')
   return damageTypes[index]?.name ?? '적용 대상 확인 필요'
 }
+
+type CoverageGapBullet = {
+  prefix: string
+  emphasis?: string
+}
+
+const COVERAGE_GAP_BULLETS: Record<string, readonly CoverageGapBullet[]> = {
+  'COV-01': [
+    { prefix: '법률상 배상책임이 인정되지 않으면 ', emphasis: '보상 어려움' },
+    { prefix: '대물배상 한도 초과 손해 ', emphasis: '미보장' },
+  ],
+  'COV-02': [
+    { prefix: '자차 미가입 차량의 손해 ', emphasis: '미보장' },
+    { prefix: '자기부담금·면책조건에 따른 ', emphasis: '차량 소유자 부담 발생' },
+  ],
+  'COV-03': [
+    { prefix: '보험 목적에 포함되지 않은 충전설비 ', emphasis: '미보장' },
+    { prefix: '보험가입금액·보상한도 ', emphasis: '초과 손해 미보장' },
+  ],
+  'COV-04': [
+    { prefix: '배터리 결함과 제조사 책임 확정 전 ', emphasis: '보상 지연' },
+    { prefix: '제조사 책임이 인정되지 않으면 ', emphasis: '보험 적용 어려움' },
+  ],
+  'COV-05': [
+    { prefix: '관리상 과실이 인정되지 않으면 ', emphasis: '배상책임보험 적용 어려움' },
+    { prefix: '화재 확산과 관리 과실의 인과관계가 입증되지 않으면 ', emphasis: '보상 어려움' },
+  ],
+}
+
+function getCoverageGapBullets(item: NonNullable<ReportView['riskGapSummary']['existingCoverageMap']>[number]) {
+  return COVERAGE_GAP_BULLETS[item.id] ?? (item.remainingGap ? [{ prefix: item.remainingGap }] : [])
+}
+
+const COVERAGE_REVIEW_AREAS = [
+  {
+    title: '상품개발 검토',
+    description: '기존 자동차보험·화재보험·배상책임보험으로 보장되는 손해와 새로 보완할 손해의 범위를 구분해야 합니다.',
+  },
+  {
+    title: '보상·법무 검토',
+    description: '발화 원인과 책임주체가 확정되지 않은 경우의 보험금 지급 여부, 기존 보험의 보상 순서와 구상관계를 정해야 합니다.',
+  },
+  {
+    title: '계리·인수 검토',
+    description: '다수 차량과 시설에 손해가 동시에 발생하는 경우를 고려하여 사고당 보상한도, 자기부담금 및 최대가능손해를 검토해야 합니다.',
+  },
+] as const
 
 function RiskGapSection({ report }: { report: ReportView }) {
   const data = report.riskGapSummary
@@ -804,19 +840,23 @@ function RiskGapSection({ report }: { report: ReportView }) {
             <tr>
               <th><span aria-hidden="true">①</span> 발생 가능한 손해</th>
               <th><span aria-hidden="true">②</span> 기존 보험의 보장 가능 범위</th>
-              <th><span aria-hidden="true">③</span> 남는 공백 및 확인사항</th>
+              <th><span aria-hidden="true">③</span> 보장 공백</th>
             </tr>
           </thead>
           <tbody>
             {coverageRows.map((item, index) => {
-              const type = getCoverageGapType(item)
               return (
               <tr key={item.id}>
                 <td><strong>{getCoverageDamageLabel(item, data, index)}</strong></td>
                 <td><strong>{item.coverageName}</strong><p>{item.possibleCoverage}</p></td>
-                <td className={`report-page__gap-cell report-page__gap-cell--${type.key}`}>
-                  <span className={`report-page__gap-type report-page__gap-type--${type.key}`}>{type.label}</span>
-                  <p>{item.remainingGap}</p>
+                <td className="report-page__gap-cell">
+                  <ul className="report-page__gap-bullets">
+                    {getCoverageGapBullets(item).map((bullet) => (
+                      <li key={`${bullet.prefix}-${bullet.emphasis ?? ''}`}>
+                        {bullet.prefix}{bullet.emphasis ? <strong>{bullet.emphasis}</strong> : null}
+                      </li>
+                    ))}
+                  </ul>
                 </td>
               </tr>
               )
@@ -829,7 +869,7 @@ function RiskGapSection({ report }: { report: ReportView }) {
           <div className="report-page__key-gaps-heading">
             <div>
               <p className="report-page__eyebrow">PRODUCTIZATION GAPS</p>
-              <h3 id="key-coverage-gaps-title">상품화를 위해 해결해야 할 핵심 공백</h3>
+              <h3 id="key-coverage-gaps-title">상품 개발 전 확인해야 할 보장 공백</h3>
             </div>
             <span>{keyGaps.length}개 쟁점</span>
           </div>
@@ -842,7 +882,6 @@ function RiskGapSection({ report }: { report: ReportView }) {
                   <h4>{gap.title}</h4>
                   <p>{gap.description}</p>
                 </div>
-                {gap.importance ? <span className="report-page__key-gap-priority">{gap.importance}</span> : null}
               </article>
             ))}
           </div>
@@ -850,10 +889,16 @@ function RiskGapSection({ report }: { report: ReportView }) {
       ) : null}
       <section className="report-page__design-direction" aria-labelledby="coverage-design-direction-title">
         <div className="report-page__design-direction-heading">
-          <h3 id="coverage-design-direction-title">상품 설계 시 검토 방향</h3>
-          <span>초기 검토 방향</span>
+          <h3 id="coverage-design-direction-title">보장 공백 확인 후 다음 검토사항</h3>
         </div>
-        <p>기존 보험을 우선 적용한 후 남는 손해를 보완하고, 책임 확정 전 지급 조건과 보험 간 구상 절차를 함께 설계할 필요가 있습니다.</p>
+        <div className="report-page__design-direction-grid">
+          {COVERAGE_REVIEW_AREAS.map((area) => (
+            <article className="report-page__design-direction-card" key={area.title}>
+              <h4>{area.title}</h4>
+              <p>{area.description}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </section>
   )
@@ -1565,14 +1610,16 @@ function FeasibilitySection({ report, openCriterionId: controlledOpenCriterionId
     setCategoryFilter('all')
     scrollToEvaluationList()
   }
-  const handleInputDirtyChange = (criterionId: string, dirty: boolean) => {
+  const handleInputDirtyChange = useCallback((criterionId: string, dirty: boolean) => {
     setDirtyInputIds((current) => {
+      const isAlreadyDirty = current.has(criterionId)
+      if (isAlreadyDirty === dirty) return current
       const next = new Set(current)
       if (dirty) next.add(criterionId)
       else next.delete(criterionId)
       return next
     })
-  }
+  }, [])
   const focusCriterion = (criterionId: string) => {
     setStatusFilter('all')
     setEvidenceFilter('all')
@@ -3226,10 +3273,12 @@ export function ReportSections({
   report: sourceReport,
   riskData,
   reportProxy,
+  navigation,
 }: {
   report: ReportResult
   riskData: RiskSourceData
   reportProxy: ReportProxy
+  navigation?: ReportNavigation
 }) {
   const normalizedSourceReport = useMemo(() => ensureCommercializationAssessment(sourceReport), [sourceReport])
   const [savedReport, setSavedReport] = useState<ReportResult>(() => cloneReport(normalizedSourceReport))
@@ -3373,7 +3422,11 @@ export function ReportSections({
     setActiveTab(id)
     const nextHash = `#report-tab=${id}`
     if (window.location.hash !== nextHash) {
-      window.history.pushState({ reportTab: id }, '', nextHash)
+      if (navigation) {
+        navigation(`${window.location.pathname}${window.location.search}${nextHash}`)
+      } else {
+        pushPreservingHistoryState(nextHash, { reportTab: id })
+      }
     }
     window.requestAnimationFrame(() => {
       const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'

@@ -2249,6 +2249,37 @@
   margin: 6px 0 0;
 }
 
+.report-page__gap-bullets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.report-page__gap-bullets li {
+  position: relative;
+  padding-left: 15px;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.report-page__gap-bullets li::before {
+  content: '•';
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #c47b2c;
+  font-weight: 900;
+}
+
+.report-page__gap-table td.report-page__gap-cell .report-page__gap-bullets strong {
+  display: inline;
+  margin: 0;
+  color: #b36b20;
+  font-size: inherit;
+  font-weight: 800;
+  line-height: inherit;
+}
+
 .report-page__risk-details {
   margin-top: 14px;
 }
@@ -3918,17 +3949,6 @@
   font-size: 15px;
 }
 
-.report-page__gap-type {
-  display: inline-block;
-  padding: 3px 7px;
-  color: var(--report-navy);
-  border: 1px solid var(--report-border);
-  border-radius: 4px;
-  background: #f8fafc;
-  font-size: 14px;
-  font-weight: 700;
-}
-
 .report-page__draft-actions {
   display: flex;
   flex-wrap: wrap;
@@ -4444,7 +4464,7 @@
 
   .report-page__gap-table td:nth-child(1)::before { content: '발생 손해'; }
   .report-page__gap-table td:nth-child(2)::before { content: '기존 보험 가능 범위'; }
-  .report-page__gap-table td:nth-child(3)::before { content: '남는 보장 공백'; }
+  .report-page__gap-table td:nth-child(3)::before { content: '보장 공백'; }
 
   .report-page__next-task summary {
     grid-template-columns: 1fr;
@@ -7168,6 +7188,21 @@
     table-layout: fixed;
   }
 
+  .report-page__gap-table th:nth-child(1),
+  .report-page__gap-table td:nth-child(1) {
+    width: 25%;
+  }
+
+  .report-page__gap-table th:nth-child(2),
+  .report-page__gap-table td:nth-child(2) {
+    width: 33%;
+  }
+
+  .report-page__gap-table th:nth-child(3),
+  .report-page__gap-table td:nth-child(3) {
+    width: 42%;
+  }
+
   .report-page__gap-table th,
   .report-page__gap-table td {
     border-right: 1px solid #e4eaf0;
@@ -7209,6 +7244,7 @@
 
   .report-page__gap-table th:nth-child(3) {
     background: #fff8ef;
+    font-weight: 900;
   }
 
   .report-page__gap-table td {
@@ -7227,9 +7263,22 @@
   }
 
   .report-page__gap-cell {
-    border-left: 3px solid #eccb9d !important;
+    padding: 20px !important;
+    border-left: 2px solid #e5b36e !important;
     background: #fffaf4 !important;
+  }
 
+  .report-page__gap-bullets {
+    display: grid;
+    gap: 11px;
+    color: #16385b;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  .report-page__gap-bullets li {
+    padding-left: 16px;
   }
 
   .report-page__gap-table td strong {
@@ -7244,44 +7293,6 @@
     color: #526273;
     font-size: 15px;
     line-height: 1.65;
-  }
-
-  .report-page__gap-type {
-    display: inline-flex;
-    min-height: 26px;
-    align-items: center;
-    padding: 4px 9px;
-    border: 1px solid #e4cfae;
-    border-radius: 999px;
-    color: #805b28;
-    background: #fffdf8;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .report-page__gap-type--limit {
-    border-color: #ecd4a9;
-    color: #865d1e;
-    background: #fffaf0;
-  }
-
-  .report-page__gap-type--cause {
-    border-color: #ecc9c9;
-    color: #8c4f55;
-    background: #fff8f8;
-  }
-
-  .report-page__gap-type--ordering {
-    border-color: #cad9e7;
-    color: #3c5b78;
-    background: #f5f8fb;
-  }
-
-  .report-page__gap-type--causation {
-    border-color: #dacde4;
-    color: #685278;
-    background: #faf7fc;
   }
 
   .report-page__key-gaps {
@@ -7308,8 +7319,7 @@
     line-height: 1.4;
   }
 
-  .report-page__key-gaps-heading > span,
-  .report-page__design-direction-heading > span {
+  .report-page__key-gaps-heading > span {
     display: inline-flex;
     min-height: 27px;
     align-items: center;
@@ -7333,9 +7343,10 @@
     min-width: 0;
     padding: 17px 18px;
     display: grid;
-    grid-template-columns: 38px minmax(0, 1fr) auto;
+    grid-template-columns: 38px minmax(0, 1fr);
     align-items: start;
     gap: 14px;
+    min-height: 104px;
     border: 1px solid #dfe6ec;
     border-left: 3px solid #b9c9d8;
     border-radius: 10px;
@@ -7375,18 +7386,6 @@
     line-height: 1.65;
   }
 
-  .report-page__key-gap-priority {
-    align-self: center;
-    padding: 4px 8px;
-    border: 1px solid #ead8bf;
-    border-radius: 999px;
-    color: #805b28;
-    background: #fffaf2;
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
   .report-page__design-direction {
     margin-top: 24px;
     padding: 19px 21px;
@@ -7396,12 +7395,36 @@
     background: #fffdf8;
   }
 
-  .report-page__design-direction p {
-    max-width: 920px;
-    margin: 9px 0 0;
+  .report-page__design-direction-grid {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .report-page__design-direction-card {
+    min-width: 0;
+    padding: 16px 17px 17px;
+    border: 1px solid #dfe6ec;
+    border-top: 3px solid #e9a23b;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .report-page__design-direction-card h4 {
+    margin: 0 0 8px;
+    color: #0b2b52;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .report-page__design-direction-card p {
+    margin: 0;
     color: #526273;
     font-size: 16px;
     line-height: 1.65;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
   }
 }
 
@@ -7419,9 +7442,8 @@
     grid-template-columns: 38px minmax(0, 1fr);
   }
 
-  .report-page__key-gap-priority {
-    grid-column: 2;
-    justify-self: start;
+  .report-page__design-direction-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -7433,7 +7455,7 @@
   .report-page__coverage-premise > div > p:last-child,
   .report-page__gap-table p,
   .report-page__key-gap p,
-  .report-page__design-direction p {
+  .report-page__design-direction-card p {
     font-size: 15px;
   }
 
@@ -7476,17 +7498,17 @@
 
   .report-page__gap-table th:nth-child(1),
   .report-page__gap-table td:nth-child(1) {
-    width: 29%;
+    width: 25%;
   }
 
   .report-page__gap-table th:nth-child(2),
   .report-page__gap-table td:nth-child(2) {
-    width: 34%;
+    width: 33%;
   }
 
   .report-page__gap-table th:nth-child(3),
   .report-page__gap-table td:nth-child(3) {
-    width: 37%;
+    width: 42%;
   }
 
   .report-page__gap-table th > span {
@@ -7498,6 +7520,16 @@
     font-size: 8pt;
   }
 
+  .report-page__gap-table th:nth-child(3) {
+    background: #fff8ef;
+    font-weight: 900;
+  }
+
+  .report-page__gap-cell {
+    border-left: 2px solid #e5b36e;
+    background: #fffaf4;
+  }
+
   .report-page__gap-table td strong {
     font-size: 10pt;
   }
@@ -7507,11 +7539,23 @@
     line-height: 1.5;
   }
 
-  .report-page__gap-type {
-    padding: 2px 5px;
-    color: #162536 !important;
-    background: #fff !important;
-    font-size: 8pt;
+  .report-page__gap-bullets {
+    display: grid;
+    gap: 2mm;
+    color: #162536;
+    font-size: 9pt;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .report-page__gap-bullets li {
+    padding-left: 4mm;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .report-page__gap-bullets li::before {
+    color: #9b672e;
   }
 
   .report-page__key-gaps,
@@ -7526,6 +7570,40 @@
     page-break-inside: avoid;
   }
 
+  .report-page__design-direction {
+    margin-top: 5mm;
+    padding: 4mm;
+    border: 1px solid #b8c7d4;
+    border-left: 2px solid #e9a23b;
+    background: #fff;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .report-page__design-direction-grid {
+    margin-top: 3mm;
+    grid-template-columns: 1fr;
+    gap: 3mm;
+  }
+
+  .report-page__design-direction-card {
+    padding: 3mm;
+    border: 1px solid #dfe6ec;
+    border-top: 2px solid #e9a23b;
+    background: #fff;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__design-direction-card h4 {
+    margin: 0 0 1.5mm;
+    color: #162536;
+    font-size: 11pt;
+    line-height: 1.4;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
   .report-page__key-gap-index {
     color: #162536;
     background: #fff;
@@ -7533,14 +7611,14 @@
   }
 
   .report-page__key-gap p,
-  .report-page__design-direction p {
+  .report-page__design-direction-card p {
     color: #162536;
     font-size: 9.5pt;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
-  .report-page__key-gap-priority,
-  .report-page__key-gaps-heading > span,
-  .report-page__design-direction-heading > span {
+  .report-page__key-gaps-heading > span {
     color: #162536;
     background: #fff;
   }

@@ -88,7 +88,7 @@ type ScreeningSort = 'score' | 'title'
 type SearchParamKey = 'q' | 'category' | 'sort'
 
 const isScreeningCategory = (value: string | null): value is ScreeningCategory => (
-  categoryFilters.some((filter) => filter.key === value)
+  value !== 'legal' && categoryFilters.some((filter) => filter.key === value)
 )
 
 function MetricTooltip({ id, insight }: { id: string; insight: ContextualScreeningInsight }) {
