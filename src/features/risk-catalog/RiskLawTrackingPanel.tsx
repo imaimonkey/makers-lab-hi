@@ -3,6 +3,7 @@ import { getOfficialLawArticle, getOfficialLawDetail, searchOfficialLaw } from '
 import { searchOfficialPrecedents } from '../law/precedentOpenApi'
 import type { ScreeningCategory } from '../../domain/risk/riskScreeningInsights'
 import {
+  lawProductizationPriority,
   type LawTrackingCaseTab,
   type LawTrackingRiskLevel,
   type RiskLawTrackingItem,
@@ -321,6 +322,7 @@ export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperSt
               <span className="risk-law-list-meta"><b>{item.typeLabel}</b><em className={riskClassNames[item.riskLevel]}>{developerMode ? '확인 필요' : riskLabels[item.riskLevel]}</em></span>
               <strong>{item.title}</strong>
               <small>{item.summary}</small>
+              {item.insuranceMandate ? <span className="risk-law-list-priority">보험 가입 의무 · 우선 {lawProductizationPriority(item).toFixed(1)}/5</span> : null}
               <span className="risk-law-list-counts"><i>⚖️ 연관 판례 {item.relatedCaseCount}건</i><i>💥 사고 사례 {item.relatedLossCount}건</i></span>
             </button>
           )) : <p className="risk-law-empty">조건에 맞는 법령·규제가 없습니다.</p>}
@@ -330,6 +332,7 @@ export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperSt
         {selectedWithPrecedents ? <>
           <div className="risk-law-detail-heading"><div><h3 id="risk-law-tracking-title">{selectedWithPrecedents.title}</h3><p>소관: {selectedWithPrecedents.institution} | 상태: {selectedWithPrecedents.status} | 예상 시행일: {selectedWithPrecedents.expectedEffectiveDate}</p></div>{selectedWithPrecedents.sourceUrl ? <a href={selectedWithPrecedents.sourceUrl} target="_blank" rel="noreferrer">원문 확인하기 ↗</a> : <span className="risk-law-source-pending">원문 확인 필요</span>}</div>
           <div className="risk-law-update-label">{developerMode ? 'ACTUAL ARTICLE · STEP 2' : 'SAMPLE · 기존 더미 데이터'} {selectedWithPrecedents.lastUpdated}</div>
+          <div className="risk-law-priority-summary"><strong>{selectedWithPrecedents.insuranceMandate ? '보험 가입 의무 후보' : '법률·규제 신호'}</strong><span>상품화 우선 {lawProductizationPriority(selectedWithPrecedents).toFixed(1)}/5 · 진행 단계와 미이행 제재 강도 반영</span></div>
           <section className="risk-law-timeline-card"><div className="risk-law-card-heading"><h4>📍 입법·개정 진행 단계</h4><span>최근 상태 변경: <strong>{selectedWithPrecedents.lastUpdated}</strong></span></div><TrackingTimeline item={selectedWithPrecedents} /></section>
           <section className="risk-law-changes"><div className="risk-law-change-grid"><ChangeCard title="기존 기준" changes={selectedWithPrecedents.beforeChanges} variant="before" /><ChangeCard title="개정안·현재 기준" changes={selectedWithPrecedents.afterChanges} variant="after" /></div><span className="risk-law-change-badge">{selectedWithPrecedents.changeBadge}</span></section>
           <RelatedCases item={selectedWithPrecedents} officialCases={precedentResults} />

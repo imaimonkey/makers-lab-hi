@@ -240,7 +240,6 @@
 .workspace-seoyeon .screening-reference-heading > span { white-space: nowrap; }
 .workspace-seoyeon .risk-exploration-tabs button { display: inline-flex; align-items: center; gap: 6px; }
 .workspace-seoyeon .risk-exploration-tabs button > span { font-size: 15px; line-height: 1; }
-.workspace-seoyeon .risk-exploration-tabs button:nth-child(4) { display: none; }
 .workspace-seoyeon .screening-filter-group label:nth-child(3) { display: none; }
 .workspace-seoyeon .screening-reference-panel section:hover { border-color: #dbeafe; background: #fff; box-shadow: 0 4px 12px rgba(37,99,235,.08); }
 .workspace-seoyeon .screening-reference-badge { border-radius: 5px; padding: 3px 6px; font-size: 10px; font-weight: 700; }
