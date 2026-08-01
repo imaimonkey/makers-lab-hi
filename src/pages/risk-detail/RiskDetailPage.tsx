@@ -134,7 +134,15 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
       <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? '연결된 원문과 저장된 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? `${liveStale ? ' 마지막 정상 상세 응답을 유지합니다.' : ' 연결된 상세 데이터를 사용합니다.'}${lastLiveAt ? ` 응답 시각 ${new Date(lastLiveAt).toLocaleString('ko-KR')}` : ''}` : `${sampleOnlyNotice}${liveError ? ' 상세 데이터를 불러오지 못했습니다.' : ''}`}</div>
       {liveDetail ? <div className="detail-live-strip" role="status"><strong>{detailSourceLabel}</strong><span>본문 {liveArticle?.contentStatus ?? '상태 미제공'}</span><span>분석 {liveArticle?.analysisStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>검증 {liveArticle?.verificationStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>기준 시각 {liveArticle?.collectedAt ?? liveArticle?.publishedAt ?? '시각 미제공'}</span></div> : null}
 
-      <section className="risk-hero surface-card">
+      <nav className="risk-anchor-tabs" aria-label="위험상세 섹션 이동">
+        <a href="#risk-context">위험 개요</a>
+        <a href="#risk-article-title">본문 AI 리뷰</a>
+        <a href="#assessment-criteria">평가 기준</a>
+        <a href="#ai-judgment-evidence">판단 근거</a>
+        <a href="#judgment-materials">상품화 검토</a>
+      </nav>
+
+      <section id="risk-context" className="risk-hero surface-card">
         <div className="risk-hero-main">
           <div className="sh-detail-breadcrumb" aria-label="현재 위치"><Link to={catalogPath}>위험 후보</Link><span>/</span><span>상세 검토</span><strong>{risk.id}</strong></div>
           <div className="risk-badges"><span>{risk.themeLabel}</span><em>{risk.status}</em></div>
@@ -171,7 +179,16 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
         </div>
       </section>
 
-      <RiskArticleOverview risk={risk} detail={detail} article={liveArticle} analysis={liveAnalysis} sourceLabel={detailSourceLabel} />
+      <RiskArticleOverview
+        risk={risk}
+        detail={detail}
+        article={liveArticle}
+        analysis={liveAnalysis}
+        relatedArticles={liveDetail?.relatedArticles}
+        relatedLaws={liveDetail?.relatedLaws ?? liveAnalysis?.relatedLaws}
+        evidence={detail.evidence}
+        sourceLabel={detailSourceLabel}
+      />
 
       <section className="detail-grid detail-assessment-grid" id="assessment-criteria">
         <article className="assessment-panel surface-card">

@@ -112,12 +112,12 @@ export function RiskDecisionWorkspace({
           </div>
         </article>
 
-        <article className={showEvidence ? 'detail-evidence-panel surface-card is-expanded' : 'detail-evidence-panel surface-card is-collapsed'}>
+        <article id="judgment-materials" className={showEvidence ? 'detail-evidence-panel surface-card is-expanded' : 'detail-evidence-panel surface-card is-collapsed'}>
           <div className="panel-heading">
             <div><p className="eyebrow">EVIDENCE LEDGER</p><button type="button" className="detail-panel-toggle" aria-expanded={showEvidence} aria-controls="judgment-materials" onClick={() => setShowEvidence((current) => !current)}><strong>근거 자료</strong><span>{showEvidence ? '접기' : '펼치기'}</span><i aria-hidden="true">{showEvidence ? '−' : '+'}</i></button></div>
             <span className="status-badge sample">{linkedSourceCount}/{evidenceLedger.length} URL 연결 · 원문 확인 필요</span>
           </div>
-          {showEvidence ? <div id="judgment-materials" className="detail-evidence-content">
+          {showEvidence ? <div className="detail-evidence-content">
             <div className="detail-evidence-tabs" aria-label="근거 자료 유형 필터">
               {evidenceTypes.map((type) => (
                 <button key={type} type="button" className={activeEvidence === type ? 'active' : ''} aria-pressed={activeEvidence === type} onClick={() => setActiveEvidence(type)}>

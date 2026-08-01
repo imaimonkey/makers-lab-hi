@@ -378,7 +378,9 @@ export function deriveArticleDashboard(records: ArticleSourceRecord[]): {
   risks: RadarRiskCandidate[]
 } {
   const news = records.map((record) => {
-    const { text: _text, fileName: _fileName, fileUrl: _fileUrl, sourcePath: _sourcePath, format: _format, contentProfile: _contentProfile, derived: _derived, ...article } = record
+    const article = Object.fromEntries(
+      Object.entries(record).filter(([key]) => !['text', 'fileName', 'fileUrl', 'sourcePath', 'format', 'contentProfile', 'derived'].includes(key)),
+    ) as Omit<ArticleSourceRecord, 'text' | 'fileName' | 'fileUrl' | 'sourcePath' | 'format' | 'contentProfile' | 'derived'>
     return { ...article, analysis: { articleFacts: { facts: record.contentProfile.facts, event: record.contentProfile.event, changeType: record.contentProfile.topic, affectedTargets: record.contentProfile.affectedTargets, damageTypes: record.contentProfile.damageTypes, industries: record.contentProfile.industries, timeAndPlace: record.contentProfile.summary }, riskInterpretation: { riskEnvironment: record.contentProfile.topic, whyNow: record.contentProfile.event, expectedLosses: record.contentProfile.damageTypes, responsibilityCandidates: record.contentProfile.affectedTargets, searchKeywords: record.contentProfile.keywords }, evidence: record.contentProfile.facts.map((quote, index) => ({ sentenceNo: index + 1, quote, reason: '본문 기반 구조화 더미 인용' })), uncertainty: record.contentProfile.reviewActions, confidence: { level: record.contentProfile.evidenceConfidence >= 4 ? '높음' : '보통', reason: 'PDF 본문 길이와 구체 지표를 기준으로 한 더미 신뢰도' }, verificationStatus: '담당자 검증 필요' } }
   })
   const risks = records.map((article) => ({

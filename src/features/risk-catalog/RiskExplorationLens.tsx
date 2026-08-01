@@ -100,6 +100,7 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
         <td className="screening-keyword">
           <strong>{record.title}</strong>
           <small>{record.summary}</small>
+          <em className="screening-keyword-detail">{record.contentInsight?.event ?? `다음 검토: ${record.nextAction}`}</em>
           <span>{record.tags.map((tag) => <i className={`screening-tag ${tagClass(tag)}`} key={tag}>{tag}</i>)}</span>
         </td>
         {screeningColumns.map((key) => {
