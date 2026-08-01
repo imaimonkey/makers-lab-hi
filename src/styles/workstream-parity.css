@@ -1168,3 +1168,23 @@
   .workspace-sh .page-header-meta { align-self: flex-start; text-align: left; }
   .workspace-sh .risk-anchor-tabs { top: 64px; }
 }
+
+/* The evidence ledger replaces the synthetic trend panel and stays useful while collapsed. */
+.workspace-sh .detail-workspace-grid { grid-template-columns: minmax(0, 1fr); }
+.workspace-sh .detail-evidence-panel { min-width: 0; }
+.workspace-sh .detail-evidence-panel.is-collapsed { min-height: 0; }
+.workspace-sh .detail-evidence-preview { display: grid; gap: 0; margin-top: 16px; border-top: 1px solid var(--workspace-line); }
+.workspace-sh .detail-evidence-preview > article { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--workspace-line); }
+.workspace-sh .detail-evidence-preview > article > div { display: grid; gap: 4px; min-width: 0; }
+.workspace-sh .detail-evidence-preview > article span { color: var(--workspace-orange); font-size: 9px; font-weight: 800; }
+.workspace-sh .detail-evidence-preview > article strong { overflow: hidden; color: var(--workspace-blue); font-size: 13px; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-sh .detail-evidence-preview > article small { overflow: hidden; color: var(--workspace-muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-sh .detail-evidence-preview > article p { min-width: 0; margin: 0; overflow: hidden; color: var(--workspace-muted); font-size: 10px; line-height: 1.6; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-sh .detail-evidence-preview > article a,
+.workspace-sh .detail-evidence-preview > article em { flex: 0 0 auto; color: var(--workspace-blue); font-size: 9px; font-style: normal; font-weight: 800; white-space: nowrap; }
+.workspace-sh .detail-evidence-preview > article em { color: #b45309; }
+.workspace-sh .detail-evidence-preview > .table-empty { grid-column: 1 / -1; margin: 0; padding: 15px 0; color: var(--workspace-muted); font-size: 10px; }
+@media (max-width: 720px) {
+  .workspace-sh .detail-evidence-preview > article { grid-template-columns: 1fr; gap: 7px; align-items: start; }
+  .workspace-sh .detail-evidence-preview > article p { white-space: normal; }
+}
