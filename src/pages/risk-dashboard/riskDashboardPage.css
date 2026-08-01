@@ -123,9 +123,67 @@
 .hi-dashboard-page .hi-panel { padding: 22px; }
 .hi-dashboard-page .hi-priority-board { grid-area: priority; }
 .hi-dashboard-page .hi-ai-plan { grid-area: ai; }
-.hi-dashboard-page .hi-ai-plan-blank { min-height: 338px; margin-top: 18px; }
 .hi-dashboard-page .hi-source-health { grid-area: source; }
 .hi-dashboard-page .hi-customer-signal { grid-area: customer; }
+
+.hi-dashboard-page .hi-activity-stream {
+  min-height: 338px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.hi-dashboard-page .hi-activity-item {
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 12px;
+  border: 1px solid #edf1f6;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff, #f8fafc);
+}
+
+.hi-dashboard-page .hi-activity-item > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--hi-navy);
+  background: #eef5ff;
+}
+
+.hi-dashboard-page .hi-activity-item strong {
+  display: block;
+  overflow: hidden;
+  color: var(--hi-navy);
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hi-dashboard-page .hi-activity-item p {
+  display: -webkit-box;
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: #718096;
+  font-size: 10px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.hi-dashboard-page .hi-activity-item time {
+  align-self: start;
+  color: #ff7a00;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
 
 .hi-dashboard-page .hi-priority-list,
 .hi-dashboard-page .hi-source-list { display: grid; gap: 10px; margin-top: 18px; }
@@ -246,4 +304,6 @@
   .hi-dashboard-page .hi-kpi-grid { grid-template-columns: 1fr; }
   .hi-dashboard-page .hi-priority-row { grid-template-columns: 38px minmax(0, 1fr) 22px; }
   .hi-dashboard-page .hi-priority-row em { grid-column: 2 / -1; }
+  .hi-dashboard-page .hi-activity-item { grid-template-columns: 34px minmax(0, 1fr); }
+  .hi-dashboard-page .hi-activity-item time { grid-column: 2; }
 }

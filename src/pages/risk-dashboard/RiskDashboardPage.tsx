@@ -37,6 +37,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
       score: risk.confidence?.level === 'high' ? 82 : risk.confidence?.level === 'medium' ? 64 : 42,
       evidence: risk.facts?.facts?.length ?? (risk.articleId ? 1 : 0),
       stage: risk.eligibleForProductReview ? 'Step 2 후보화 실행' : '근거·법령 보강',
+      status: risk.eligibleForProductReview ? '상세 검토 요청' : '검토 대기',
     }))
     : candidateListViewModels.slice(0, 5).map((risk) => ({
       id: risk.detailRiskId ?? risk.id,
@@ -47,18 +48,52 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
       score: Math.round((risk.screeningScore.value ?? 0) * 20),
       evidence: risk.evidence.count,
       stage: risk.pipelineStatus,
+      status: risk.candidateStatus,
     }))
   const focusRisk = visibleRisks[0]
   const metrics = radarSnapshot.dashboard.metrics
   const signalCount = metrics.totalSignals ?? metrics.news ?? 0
   const candidateCount = visibleRisks.length
   const evidencePending = metrics.evidencePending ?? 0
-  const reviewerPending = metrics.reviewerPending ?? candidateCount
+  const dashboardNotices = [
+    { title: '약관 변경 검토 안내', detail: '전기차 배터리 화재 관련 면책 문구 확인 필요', time: '방금 전' },
+    { title: '법령 업데이트 확인 요청', detail: '산재·고용보험료 징수 기준 변경 영향 검토', time: '12분 전' },
+    { title: '원문 수집 실패 알림', detail: '일부 PDF 원문 확보 지연으로 재시도 대기', time: '28분 전' },
+  ]
+  const noticeCount = dashboardNotices.length
   const sourceHealth = [
     { label: '뉴스 원문', value: radarSnapshot.sourceStatus.news, count: radarSnapshot.news.length },
     { label: '위험 후보', value: radarSnapshot.sourceStatus.risks, count: radarSnapshot.risks.length },
     { label: '대시보드', value: radarSnapshot.sourceStatus.dashboard, count: signalCount },
   ]
+  const recentActivities = radarSnapshot.dashboard.recentActivities?.length
+    ? radarSnapshot.dashboard.recentActivities.slice(0, 5).map((activity, index) => ({
+      title: activity.title,
+      detail: `${activity.status} · ${activity.type}`,
+      time: activity.at ? new Date(activity.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : `${index + 1}분 전`,
+    }))
+    : [
+      {
+        title: `${focusRisk?.title ?? '전기차 배터리 화재'} 상세 검토 요청`,
+        detail: '김효제님이 우선 검토 큐에 등록했습니다',
+        time: '방금 전',
+      },
+      {
+        title: '법령·판례 근거 보강 대기',
+        detail: `${evidencePending}건의 원문 확인 작업이 남아 있습니다`,
+        time: '8분 전',
+      },
+      {
+        title: '고객·현장 신호 집계 갱신',
+        detail: customerSignals.length ? `${customerSignals.length}건의 비식별 신호가 연결됐습니다` : '비식별 신호 수집 채널을 확인했습니다',
+        time: '17분 전',
+      },
+      {
+        title: '상품화 후보 목록 재정렬',
+        detail: `${candidateCount}건을 AI 보조점수 기준으로 정렬했습니다`,
+        time: '31분 전',
+      },
+    ]
 
   return (
     <div className="page dashboard-page hi-dashboard-page">
@@ -101,9 +136,9 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
           <p>법령·판례·원문 확인 필요</p>
         </article>
         <article className="hi-kpi-card navy">
-          <span>담당자 심사</span>
-          <strong>{reviewerPending}<small>건</small></strong>
-          <p>AI 결과 승인 전 보류</p>
+          <span>새로운 공지사항</span>
+          <strong>{noticeCount}<small>건</small></strong>
+          <p>샘플 공지 및 약관 변경 안내</p>
         </article>
       </section>
 
@@ -130,7 +165,22 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
         </article>
 
         <article className="hi-panel hi-ai-plan">
-          <div className="hi-ai-plan-blank" aria-label="AI 및 API 운영 계획 빈 영역" />
+          <div className="panel-heading">
+            <div><p className="eyebrow">ACTIVITY STREAM</p><h2>실시간 처리 내역</h2></div>
+            <span className="updated-label">시연 로그</span>
+          </div>
+          <div className="hi-activity-stream" aria-label="최근 활동 로그">
+            {recentActivities.map((activity) => (
+              <article key={`${activity.title}-${activity.time}`} className="hi-activity-item">
+                <span><AppIcon name="radar" size={15} /></span>
+                <div>
+                  <strong>{activity.title}</strong>
+                  <p>{activity.detail}</p>
+                </div>
+                <time>{activity.time}</time>
+              </article>
+            ))}
+          </div>
         </article>
 
         <article className="hi-panel hi-source-health">

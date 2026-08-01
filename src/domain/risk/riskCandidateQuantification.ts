@@ -83,7 +83,7 @@ export function getRiskCandidateQuantification(record: RiskExplorationRecord): R
       key: 'market',
       label: '시장성',
       value: `${marketGrade} · ${marketScore}점`,
-      sub: '상품화 종합평가 시장성 기준 · SAMPLE',
+      sub: '상품화 종합평가 시장성 기준',
       color: 'orange',
       official: evidenceText(demandEvidence).length ? evidenceText(demandEvidence) : ['기사의 수요·확산 신호'],
       assumption: demandEvidence?.uncertainty?.length ? demandEvidence.uncertainty : ['공개 시장자료 미연결', '운영 판단 전 독립 출처 확인 필요'],
@@ -96,13 +96,13 @@ export function getRiskCandidateQuantification(record: RiskExplorationRecord): R
       uncertainty: demandEvidence?.uncertainty ?? ['독립 출처 확인 필요'],
     },
     fortuity: {
-      key: 'fortuity', label: '우연성', value: fivePointValue(fortuityScore), sub: '상품화 종합평가 우연성 기준 · SAMPLE', color: 'blue',
+      key: 'fortuity', label: '우연성', value: fivePointValue(fortuityScore), sub: '상품화 종합평가 우연성 기준', color: 'blue',
       official: evidenceText(fortuityEvidence).length ? evidenceText(fortuityEvidence) : ['기사의 우연한 사고·통제 가능성 신호'],
       assumption: fortuityEvidence?.uncertainty?.length ? fortuityEvidence.uncertainty : ['고의·사전 발생·통제 가능성은 별도 확인 필요'],
       formula: [fortuityEvidence?.scoreRationale || '우연한 사고 가능성 + 사전 통제 여부 + 고의·예측 가능성 구분'], result: `${fivePointValue(fortuityScore)} · 약관·사고 정의 확인 필요`, numericValue: fortuityScore, unit: '/5', confidence: fortuityScore === null ? '확인 필요' : '기사 기반', evidenceIds: fortuityEvidence?.sourceIds ?? record.evidenceIds ?? [], uncertainty: fortuityEvidence?.uncertainty ?? ['우연성 판단을 위한 독립 근거 확인 필요'],
     },
     legalExposure: {
-      key: 'legalExposure', label: '법률 및 규제 리스크', value: fivePointValue(legalExposureScore), sub: '상품화 종합평가 법률·규제 리스크 기준 · SAMPLE', color: 'purple',
+      key: 'legalExposure', label: '법률 및 규제 리스크', value: fivePointValue(legalExposureScore), sub: '상품화 종합평가 법률·규제 리스크 기준', color: 'purple',
       official: evidenceText(legalExposureEvidence).length ? evidenceText(legalExposureEvidence) : ['관련 법률·규제·책임 범위 확인 필요'],
       assumption: legalExposureEvidence?.uncertainty?.length ? legalExposureEvidence.uncertainty : ['법령 원문·책임 주체·개정 가능성 확인 필요'],
       formula: [legalExposureEvidence?.scoreRationale || '법률·규제 노출 수준 + 책임주체 명확성 + 약관·보장조건 확인 필요성'], result: `${fivePointValue(legalExposureScore)} · 법률·규제 원문 확인 필요`, numericValue: legalExposureScore, unit: '/5', confidence: legalExposureScore === null ? '확인 필요' : '기사 기반', evidenceIds: legalExposureEvidence?.sourceIds ?? record.evidenceIds ?? [], uncertainty: legalExposureEvidence?.uncertainty ?? ['법률·규제 리스크의 공식 근거 확인 필요'],
@@ -115,7 +115,7 @@ export function getRiskCandidateQuantification(record: RiskExplorationRecord): R
       'pml',
       'PML',
       'red',
-      '상품화 종합평가 PML 기준 · SAMPLE',
+      '상품화 종합평가 PML 기준',
       'PML = 단일사고 손해 + 동시다발 누적손해 + 시설·긴급대응 비용',
     ),
   }
