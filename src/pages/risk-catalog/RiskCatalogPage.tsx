@@ -1,4 +1,7 @@
+import { sampleOnlyNotice } from '../../domain/risk/sampleData'
 import { RiskExplorationLens } from '../../features/risk-catalog/RiskExplorationLens'
+import { RiskExplorationOperations } from '../../features/risk-catalog/RiskExplorationOperations'
+import { PageHeader } from '../../shared/components/PageHeader'
 import { useEffect, useState } from 'react'
 import { buildDeveloperRiskCatalogViewData, buildDeveloperStep2Records, type DeveloperRiskCatalogViewData } from '../../features/risk-catalog/developerStep2Adapter'
 import type { RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
@@ -10,6 +13,7 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
   const [developerRecords, setDeveloperRecords] = useState<RiskExplorationRecord[]>([])
   const [developerViewData, setDeveloperViewData] = useState<DeveloperRiskCatalogViewData>()
   const [developerRunning, setDeveloperRunning] = useState(false)
+  const [developerMessage, setDeveloperMessage] = useState('')
   const loadDeveloperData = async () => {
     const [articles, rows] = await Promise.all([loadArticleSourceRecords(), readStep2AnalysisResults()])
     return { viewData: buildDeveloperRiskCatalogViewData(articles, rows), records: buildDeveloperStep2Records(rows, articles) }
@@ -21,15 +25,16 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
       if (cancelled) return
       setDeveloperViewData(viewData)
       setDeveloperRecords(records)
+      setDeveloperMessage('')
     }).catch((error) => {
       if (cancelled) return
-      console.error(error)
+      setDeveloperMessage(error instanceof Error ? `실제 원문 로딩 실패: ${error.message}` : '실제 원문 로딩 실패')
     })
     return () => { cancelled = true }
   }, [mode])
   const runDeveloperStep2 = async () => {
     if (developerRunning) return
-    setDeveloperRunning(true)
+    setDeveloperRunning(true); setDeveloperMessage('Step 2 전체 아티클 분석 중...')
     try {
       const articles = await loadArticleSourceRecords()
       for (const article of articles) {
@@ -52,13 +57,22 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
       const { viewData, records } = await loadDeveloperData()
       setDeveloperViewData(viewData)
       setDeveloperRecords(records)
-    } catch (error) { console.error(error) }
+      setDeveloperMessage('Step 2 결과를 Excel에 저장하고 화면에 반영했습니다.')
+    } catch (error) { setDeveloperMessage(error instanceof Error ? error.message : 'Step 2 분석에 실패했습니다.') }
     finally { setDeveloperRunning(false) }
   }
   return (
     <div className="page catalog-page seoyeon-visual">
+      <PageHeader
+        step="02"
+        eyebrow="RISK CANDIDATE CATALOG"
+        title="위험 탐색"
+        description="새로운 위험 신호를 카테고리와 근거 중심으로 탐색하고 상품화 가능성을 비교합니다."
+      />
+      <div className="sample-notice"><span>{mode === 'developer' ? 'DEVELOPER' : 'SAMPLE'}</span>{mode === 'developer' ? <><span>Step 2 Gemini/Excel 결과를 이 실무자 UI 형식으로 표시하는 개발자 화면입니다.</span><button type="button" onClick={() => void runDeveloperStep2()} disabled={developerRunning}>{developerRunning ? '분석 중...' : 'Step 2 전체 실행 · Excel 저장'}</button>{developerMessage ? <small role="status">{developerMessage}</small> : null}</> : sampleOnlyNotice}</div>
       {mode === 'developer' && developerViewData ? <div className="article-source-sync-strip" role="status"><strong>src/article 자동 반영</strong><span>본문 확보 {developerViewData.counts.bodyReady}건</span><span>구조화 후보 {developerViewData.counts.candidates}건</span><span>실제 Step 2 저장 결과 {developerViewData.counts.analyzed}건</span><small>저장 결과가 없어도 PDF 본문 기반 더미 구조화 결과가 표시됩니다.</small></div> : null}
       <RiskExplorationLens developerMode={mode === 'developer'} developerLaws={mode === 'developer' ? (developerViewData?.laws ?? []) : undefined} sourceRecords={mode === 'developer' ? developerRecords : undefined} developerData={mode === 'developer' ? developerViewData : undefined} onRunDeveloperStep2={mode === 'developer' ? runDeveloperStep2 : undefined} developerRunning={developerRunning} />
+      <RiskExplorationOperations developerMode={mode === 'developer'} sourceRisks={mode === 'developer' ? developerViewData?.risks : undefined} developerData={mode === 'developer' ? developerViewData : undefined} onRunDeveloperStep2={mode === 'developer' ? runDeveloperStep2 : undefined} />
       <section className="integration-contract surface-card">
         <span className="contract-label">TEAM 02 INTEGRATION CONTRACT</span>
         <h2>위험후보는 근거와 함께 관리되는 <em>상품화 후보</em>입니다.</h2>

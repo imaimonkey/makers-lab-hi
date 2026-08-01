@@ -8,7 +8,7 @@ import {
 } from '../../domain/risk/sampleData'
 import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
 import { RiskDecisionWorkspace } from '../../features/risk-detail/RiskDecisionWorkspace'
-import { RiskArticleOverview } from '../../features/risk-detail/RiskArticleOverview'
+import { EvidenceVerificationWorkspace } from '../../features/risk-detail/EvidenceVerificationWorkspace'
 import { buildAiQualitativeSummary, buildAssessmentAiSummary, getAssessmentEvidence } from '../../features/risk-detail/qualitativeAssessment'
 import type { RadarNewsDetail } from '../../domain/risk/riskRadarTypes'
 import { getRadarArticleId } from '../../domain/risk/riskRadarMappings'
@@ -117,7 +117,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
         step="03"
         eyebrow="RISK ASSESSMENT / CANDIDATE DETAIL"
         title="위험상세"
-          description="위험 후보의 맥락과 손해 경로를 기사처럼 읽고, 연결된 근거와 핵심 판단 기준을 확인하는 화면입니다."
+        description="무엇을 먼저 검토할지 정하고, 6개 평가 기준과 원문 근거를 확인하는 화면입니다."
       />
       <nav className="sh-command-bar" aria-label="위험상세 명령 바">
         <div className="sh-command-context">
@@ -171,27 +171,20 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
         </div>
       </section>
 
-      <RiskArticleOverview risk={risk} detail={detail} article={liveArticle} analysis={liveAnalysis} sourceLabel={detailSourceLabel} />
-
       <section className="detail-grid detail-assessment-grid" id="assessment-criteria">
         <article className="assessment-panel surface-card">
-          <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY · AUTHORITY</p><h2>4개 핵심 지표 평가 요약</h2><p className="panel-heading-description">증가성·피해 심각성·확산 가능성·보험 사각지대 가능성을 원점수(0–5), 표시용 점수(0–100), 대표 사유와 원문 인용 상태로 확인합니다.{developerMode && step3Results.length ? ' Step 3 저장 결과가 최신 판단으로 반영되어 있습니다.' : ''}</p></div><span className="updated-label">{detailSourceLabel} · 담당자 검토 필요</span></div>
+          <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY · AUTHORITY</p><h2>{detail.assessments.length}개 지표 평가 요약</h2><p className="panel-heading-description">AI가 저장한 원점수(0–5)와 표시용 점수(0–100), 대표 사유, 원문 인용 검증 상태를 한 화면에서 확인합니다.{developerMode && step3Results.length ? ' Step 3 저장 결과가 최신 판단으로 반영되어 있습니다.' : ''}</p></div><span className="updated-label">{detailSourceLabel} · 담당자 검토 필요</span></div>
           <div className="assessment-list">
-            {detail.assessments.filter((item) => !['신규성', '근거 신뢰도'].includes(item.label)).map((item) => {
+            {detail.assessments.map((item) => {
               const assessmentEvidence = getAssessmentEvidence(item.label, risk.id, detail.evidence)
               return (
               <div className="assessment-row" key={item.label}>
                 <div><strong>{item.label}</strong><small>{item.evidenceStatus === 'verified' ? `${assessmentEvidence.length}건 연결 근거` : developerMode && step3Results.length ? `Step 3 원장 ${detail.evidence.length}건 · 지표별 연결 보류` : `${assessmentEvidence.length}건 연결 근거`} · 신뢰도 {item.confidence}</small><span className={`assessment-evidence-status ${item.evidenceStatus === 'verified' ? 'is-verified' : 'is-pending'}`}>{item.evidenceStatus === 'verified' ? '원문 인용 확인' : '원문 인용 확인 필요'}</span></div>
                 <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}<small>/100</small><em>AI 원점수 {item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)}/5</em></strong></div>
-                 <p className="assessment-reason"><b>왜 이 점수인가</b>{item.note}</p>
-                 {item.evidenceQuotes?.length ? <div className="assessment-quotes"><b>원문 인용</b>{item.evidenceQuotes.map((quote) => <q key={quote}>{quote}</q>)}</div> : <div className="assessment-quotes is-pending"><b>원문 인용</b><span>{developerMode && step3Results.length ? 'Step 3 결과에 이 지표를 직접 가리키는 evidenceRefs·인용 연결이 없어, AI 사유는 표시하되 지표별 근거 확정은 보류했습니다.' : 'Step 2 저장 결과에 정확한 인용 구간이 없어, AI 사유는 표시하되 근거 확정은 보류했습니다.'}</span></div>}
-                <div className="assessment-logic-preview" aria-label={`${item.label} 산출 요약`}>
-                  <div><span>산출 입력</span><strong>{item.inputs ?? '연결된 원자료 확인 필요'}</strong></div>
-                  <div><span>적용 산식</span><strong>{item.formula ?? '원점수 ÷ 5 × 100'}</strong></div>
-                  <div><span>계산 결과</span><strong>{item.calculation ?? `${item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)} ÷ 5 × 100 = ${item.score}`}</strong></div>
-                </div>
+                <p className="assessment-reason"><b>왜 이 점수인가</b>{item.note}</p>
+                {item.evidenceQuotes?.length ? <div className="assessment-quotes"><b>원문 인용</b>{item.evidenceQuotes.map((quote) => <q key={quote}>{quote}</q>)}</div> : <div className="assessment-quotes is-pending"><b>원문 인용</b><span>{developerMode && step3Results.length ? 'Step 3 결과에 이 지표를 직접 가리키는 evidenceRefs·인용 연결이 없어, AI 사유는 표시하되 지표별 근거 확정은 보류했습니다.' : 'Step 2 저장 결과에 정확한 인용 구간이 없어, AI 사유는 표시하되 근거 확정은 보류했습니다.'}</span></div>}
                 <details className="assessment-logic">
-                   <summary>상세 산출 근거 보기</summary>
+                   <summary>계산·자료 보기</summary>
                   <dl className="assessment-logic-grid">
                     <div><dt>입력값</dt><dd>{item.inputs ?? '연결된 원자료 확인 필요'}</dd></div>
                     <div><dt>계산식</dt><dd>{item.formula ?? '연결된 원자료를 확인한 뒤 계산합니다.'}</dd></div>
@@ -217,6 +210,15 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
       </section>
 
       <RiskDecisionWorkspace key={`review-${risk.id}`} risk={risk} detail={detail} developerMode={developerMode} step3Results={step3Results} />
+      <EvidenceVerificationWorkspace
+        key={`verification-${risk.id}`}
+        risk={risk}
+        detail={detail}
+        liveDetail={liveDetail}
+        onDetailRefresh={refreshLiveDetail}
+        developerMode={developerMode}
+        step3Results={step3Results}
+      />
     </div>
   )
 }

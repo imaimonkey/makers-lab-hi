@@ -21027,23 +21027,17 @@
   margin-top: 14px;
 }
 
-.report-page__proposal-section .report-page__proposal-detail-block-grid article {
+.report-page__proposal-section .report-page__proposal-detail-block-grid article,
+.report-page__proposal-section .report-page__proposal-detail-block-grid article * {
   box-sizing: border-box;
+  width: 100%;
   min-width: 0;
-}
-
-.report-page__proposal-section .report-page__proposal-detail-block-grid article h4,
-.report-page__proposal-section .report-page__proposal-detail-block-grid article ul,
-.report-page__proposal-section .report-page__proposal-detail-block-grid article li {
-  box-sizing: border-box;
   white-space: normal;
   word-break: keep-all;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
 }
 
 .report-page__proposal-section .report-page__proposal-detail-block-grid article {
-  align-self: start;
-  height: auto;
   min-height: 0;
   padding: 15px 16px;
   border: 1px solid #dce5ec;
@@ -21062,11 +21056,9 @@
 }
 
 .report-page__proposal-section .report-page__proposal-detail-block-grid article ul {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  align-items: stretch;
+  display: grid;
   gap: 5px;
+  width: auto;
   min-width: 0;
   margin: 0;
   padding: 0 0 0 17px;
@@ -21077,20 +21069,12 @@
 }
 
 .report-page__proposal-section .report-page__proposal-detail-block-grid article li {
-  display: list-item;
-  width: 100%;
-  height: auto;
+  width: auto;
   min-width: 0;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
   color: inherit;
   white-space: normal;
   word-break: keep-all;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
 }
 
 @media screen and (max-width: 680px) {
@@ -25458,7 +25442,7 @@
   align-items: flex-start;
 }
 
-.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullets li > .report-page__ai-summary-card-bullet-icon {
+.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullets li > span {
   color: var(--summary-teal);
   font-size: 11px;
   font-weight: 800;

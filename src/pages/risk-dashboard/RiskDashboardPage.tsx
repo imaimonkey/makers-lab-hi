@@ -1,86 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import './riskDashboardPage.css'
 import { clearCustomerSignals, readCustomerSignals } from '../../domain/risk/customerSignalStorage'
 import type { CustomerSignal } from '../../domain/risk/types'
-import { sampleOnlyNotice } from '../../domain/risk/sampleData'
 import { candidateListViewModels } from '../../domain/risk/candidateViewModel'
-import { RiskSignalPipeline } from '../../features/risk-dashboard/RiskSignalPipeline'
-import { RiskRadarOperationsPanel } from '../../features/risk-dashboard/RiskRadarOperationsPanel'
-import { RiskProductDevelopmentBoard } from '../../features/risk-dashboard/RiskProductDevelopmentBoard'
-import { RiskRadarLiveSnapshotPanel } from '../../features/risk-dashboard/RiskRadarSnapshot'
 import { useRiskRadarSnapshot } from '../../features/risk-dashboard/useRiskRadarSnapshot'
 import { AppIcon } from '../../shared/components/AppIcon'
-import { PageHeader } from '../../shared/components/PageHeader'
-import { buildDeveloperRiskCatalogViewData, type DeveloperRiskCatalogViewData } from '../../features/risk-catalog/developerStep2Adapter'
-import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
-import { readStep2AnalysisResults } from '../../features/llm-util/util-2'
 
-const channelRows = [
-  { name: '뉴스·글로벌 미디어', role: '최초 탐지', count: '248', health: '정상' },
-  { name: '보험연구·산업자료', role: '상품성 검증', count: '34', health: '정상' },
-  { name: '법령·정책·판례', role: '책임·제도 확인', count: '19', health: '확인 필요' },
-  { name: '통계·공시', role: '노출·정량 검증', count: '56', health: '정상' },
-]
+function buildDeveloperPath(path: string, developerMode: boolean) {
+  return developerMode ? `/developer-test${path === '/' ? '' : path}` : path
+}
 
 export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'developer' }) {
+  const developerMode = mode === 'developer'
   const [customerSignals, setCustomerSignals] = useState<CustomerSignal[]>([])
-  const [developerData, setDeveloperData] = useState<DeveloperRiskCatalogViewData>()
-  const { snapshot: radarSnapshot, refresh: refreshRadarSnapshot } = useRiskRadarSnapshot({ preferLocalArticles: mode === 'developer' })
-  const risks = Array.isArray(radarSnapshot.risks) ? radarSnapshot.risks : []
-  const news = Array.isArray(radarSnapshot.news) ? radarSnapshot.news : []
-  const actualMetrics = radarSnapshot.dashboard.metrics
-  const displayRisks = mode === 'developer'
-    ? (developerData?.risks ?? []).map((risk) => ({
-      id: risk.id,
-      articleId: risk.articleId,
-      title: risk.keyword,
-      themeLabel: risk.industry ?? 'src/article',
-      evidenceCount: risk.sourceCount,
-      signalStrength: Math.round(risk.score * 20),
-    }))
-    : risks.map((risk) => ({
-      id: risk.id,
-      articleId: risk.articleId,
-      title: risk.name,
-      themeLabel: risk.source ?? 'src/article',
-      evidenceCount: news.find((article) => article.id === risk.articleId)?.contentQuality?.chars ?? 0,
-      signalStrength: risk.confidence?.level === '높음' ? 70 : 40,
-    }))
-  const actualCounts = developerData?.counts
-  const focusRisk = {
-    id: displayRisks[0]?.id,
-    title: displayRisks[0]?.title ?? (mode === 'developer' ? 'Step 2 저장 후보 없음' : candidateListViewModels[0]?.title ?? '원문 기반 후보 없음'),
-    evidenceCount: displayRisks[0]?.evidenceCount ?? (mode === 'developer' ? 0 : candidateListViewModels[0]?.evidence.count ?? 0),
-    signalStrength: displayRisks[0]?.signalStrength ?? 0,
-  }
-  const focusScore = focusRisk.signalStrength
-  const developerPath = (path: string) => mode === 'developer' ? `/developer-test${path}` : path
-  const priorityRows = mode === 'developer'
-    ? displayRisks.slice(0, 3).map((risk) => ({
-      id: risk.id,
-      title: risk.title,
-      detailPath: developerPath(`/risks/${risk.articleId ? `developer-${risk.articleId}` : risk.id}`),
-      meta: `${risk.themeLabel} · 근거 ${risk.evidenceCount}건`,
-      score: `${risk.signalStrength}`,
-      scoreLabel: '신호',
-    }))
-    : candidateListViewModels.slice(0, 3).map((candidate) => ({
-      id: candidate.id,
-      title: candidate.title,
-      detailPath: candidate.detailRiskId ? `/risks/${candidate.detailRiskId}?from=%2Frisks` : '/risks',
-      meta: `${candidate.pipelineStatus} · ${candidate.candidateStatus} · 근거 ${candidate.evidence.count}건`,
-      score: candidate.screeningScore.value?.toFixed(2) ?? '—',
-      scoreLabel: '후보 점수',
-    }))
-
-  useEffect(() => {
-    if (mode !== 'developer') return
-    let cancelled = false
-    void Promise.all([loadArticleSourceRecords(), readStep2AnalysisResults()]).then(([articles, rows]) => {
-      if (!cancelled) setDeveloperData(buildDeveloperRiskCatalogViewData(articles, rows))
-    })
-    return () => { cancelled = true }
-  }, [mode])
+  const { snapshot: radarSnapshot, refresh: refreshRadarSnapshot } = useRiskRadarSnapshot({ preferLocalArticles: developerMode })
 
   useEffect(() => {
     const refresh = () => setCustomerSignals(readCustomerSignals())
@@ -93,134 +27,135 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
     }
   }, [])
 
+  const visibleRisks = developerMode
+    ? radarSnapshot.risks.map((risk) => ({
+      id: risk.articleId ? `developer-${risk.articleId}` : risk.id,
+      title: risk.name,
+      segment: risk.facts?.affectedTargets?.[0] ?? risk.source ?? 'AI 분류 후보',
+      loss: risk.riskInterpretation?.riskEnvironment ?? risk.facts?.event ?? risk.promotionBlockReason ?? '위험 구조 확인 필요',
+      gap: risk.promotionBlockReason ?? '보장 공백 검토 필요',
+      score: risk.confidence?.level === 'high' ? 82 : risk.confidence?.level === 'medium' ? 64 : 42,
+      evidence: risk.facts?.facts?.length ?? (risk.articleId ? 1 : 0),
+      stage: risk.eligibleForProductReview ? 'Step 2 후보화 실행' : '근거·법령 보강',
+    }))
+    : candidateListViewModels.slice(0, 5).map((risk) => ({
+      id: risk.detailRiskId ?? risk.id,
+      title: risk.title,
+      segment: risk.categories[0] ?? risk.tags[0] ?? '신위험 후보',
+      loss: risk.summary,
+      gap: risk.candidateStatus,
+      score: Math.round((risk.screeningScore.value ?? 0) * 20),
+      evidence: risk.evidence.count,
+      stage: risk.pipelineStatus,
+    }))
+  const focusRisk = visibleRisks[0]
+  const metrics = radarSnapshot.dashboard.metrics
+  const signalCount = metrics.totalSignals ?? metrics.news ?? 0
+  const candidateCount = visibleRisks.length
+  const evidencePending = metrics.evidencePending ?? 0
+  const reviewerPending = metrics.reviewerPending ?? candidateCount
+  const sourceHealth = [
+    { label: '뉴스 원문', value: radarSnapshot.sourceStatus.news, count: radarSnapshot.news.length },
+    { label: '위험 후보', value: radarSnapshot.sourceStatus.risks, count: radarSnapshot.risks.length },
+    { label: '대시보드', value: radarSnapshot.sourceStatus.dashboard, count: signalCount },
+  ]
+
   return (
-    <div className="page dashboard-page hyoje-visual">
-      <PageHeader
-        step="01"
-        eyebrow="EMERGING RISK RADAR"
-        title="위험 레이더"
-        description="산업·기술·사회 변화의 신호를 한 화면에서 비교하고, 검토할 위험 후보를 다음 단계로 넘깁니다."
-        status={mode === 'developer' ? 'DEVELOPER / LOCAL ARTICLES' : 'INTEGRATION FRAME'}
-      />
-
-      <div className="sample-notice"><span>{mode === 'developer' ? 'CONTENT-DERIVED SAMPLE' : 'SAMPLE'}</span>{mode === 'developer' ? 'src/article 원문을 읽어 핵심 사실·지표·보장 공백을 구조화한 더미 표현입니다. 실제 LLM 호출·상품 판단 결과가 아닙니다.' : sampleOnlyNotice}</div>
-
-      <RiskRadarLiveSnapshotPanel state={radarSnapshot} onRefresh={refreshRadarSnapshot} developerMode={mode === 'developer'} />
-
-      <section className="dashboard-overview-grid" aria-label="오늘의 위험 탐지 개요">
-        <article className="dashboard-welcome-card surface-card">
-          <div className="dashboard-welcome-copy">
-            <p className="eyebrow">WORKBENCH OVERVIEW</p>
-            <h2>오늘 주목할 위험 신호를 한눈에</h2>
-            <div className="dashboard-welcome-actions" aria-label="주요 화면 바로가기">
-              <Link to={developerPath('/risks')} className="dashboard-icon-action" aria-label="위험 후보 보기" title="위험 후보 보기"><AppIcon name="scan" size={17} /></Link>
-              <Link to={developerPath('/reports')} className="dashboard-icon-action" aria-label="종합 리포트 보기" title="종합 리포트 보기"><AppIcon name="report" size={17} /></Link>
-            </div>
+    <div className="page dashboard-page hi-dashboard-page">
+      <section className="hi-command-hero" aria-label="보험 리스크 관제 요약">
+        <div className="hi-command-copy">
+          <div className="hi-command-greeting" aria-label="사용자 인사"><span>안녕하세요,</span><strong>000님</strong></div>
+          <div className="hi-command-actions">
+            <Link to={buildDeveloperPath('/risks', developerMode)} className="primary-action"><AppIcon name="scan" size={16} /> 위험 후보 보기</Link>
+            <Link to={buildDeveloperPath('/reports', developerMode)} className="secondary-action"><AppIcon name="report" size={16} /> 리포트 검토</Link>
           </div>
-          <div className="dashboard-welcome-orbit" aria-hidden="true">
-            <span><AppIcon name="radar" size={28} /></span>
-            <i />
-            <b />
-          </div>
-        </article>
-
-        <article className="dashboard-focus-card surface-card">
-          <div className="dashboard-focus-heading">
-            <span className="dashboard-focus-icon"><AppIcon name="scan" size={18} /></span>
-            <div><p className="eyebrow">FOCUS TODAY</p><h2>대표 후보 검토</h2></div>
-            <span className="status-badge ready">{mode === 'developer' ? 'CONTENT-DERIVED' : 'SAMPLE'}</span>
-          </div>
-          <strong>{focusRisk.title}</strong>
-          <p>근거 {focusRisk.evidenceCount}건 · 후보 선별 {mode === 'developer' ? (focusScore / 20).toFixed(2) : candidateListViewModels[0]?.screeningScore.value?.toFixed(2) ?? '—'}/5</p>
-          <div className="dashboard-focus-bar" aria-label="후보 선별점수 0에서 5"><span style={{ width: `${mode === 'developer' ? focusScore : candidateListViewModels[0] ? ((candidateListViewModels[0].screeningScore.value ?? 0) / 5) * 100 : 0}%` }} /></div>
-          <Link to={developerPath(`/risks/${focusRisk.id ?? ''}`)} className="dashboard-focus-link" aria-label={`${focusRisk.title} 상세 보기`} title="대표 후보 상세 보기"><AppIcon name="arrow" size={14} /></Link>
-        </article>
-      </section>
-
-      <section className="metric-grid" aria-label={mode === 'developer' ? '실제 데이터 현황' : '핵심 현황 예시'}>
-        <article className="metric-card">
-          <span>{mode === 'developer' ? '원문 입력' : '감시 채널'}</span><strong>{mode === 'developer' ? actualCounts?.articles ?? actualMetrics.news : 12}<small>건</small></strong><p><i className="positive">{mode === 'developer' ? actualCounts?.bodyReady ?? actualMetrics.contentReady : '+2'}</i> {mode === 'developer' ? '본문 확보' : '이번 달 확장'}</p>
-        </article>
-        <article className="metric-card">
-          <span>신규 위험 후보</span><strong>{mode === 'developer' ? actualCounts?.candidates ?? actualMetrics.riskCandidates : 28}<small>건</small></strong><p><i className="positive">{mode === 'developer' ? Math.max(0, (actualCounts?.articles ?? actualMetrics.news) - (actualCounts?.analyzed ?? actualMetrics.analyzed)) : '+8'}</i> {mode === 'developer' ? '분석 대기' : '최근 30일'}</p>
-        </article>
-        <article className="metric-card emphasis">
-          <span>상품성 검토 필요</span><strong>{mode === 'developer' ? actualMetrics.reviewerPending ?? actualCounts?.candidates ?? 0 : 6}<small>건</small></strong><p><i>{mode === 'developer' ? actualMetrics.evidencePending : '3건'}</i> {mode === 'developer' ? '근거 확인 대기' : '담당자 미지정'}</p>
-        </article>
-        <article className="metric-card customer-metric">
-          <span>고객 인사이트 유입</span><strong>{customerSignals.length}<small>건</small></strong><p><i className="orange">LOCAL</i> {mode === 'developer' ? '검토 큐' : '비식별 샘플'}</p>
-        </article>
-      </section>
-
-      <section className="dashboard-workflow surface-card" aria-labelledby="dashboard-workflow-title">
-        <div className="panel-heading">
-          <div><p className="eyebrow">ONE WORKFLOW / TAB 1→4</p><h2 id="dashboard-workflow-title">신호를 판단 가능한 리포트로 연결</h2></div>
-          <span className="updated-label">{mode === 'developer' ? 'CONTENT-DERIVED · 새로고침 시각' : 'SAMPLE · 기준일 2026.07.23'}</span>
         </div>
-        <div className="dashboard-workflow-steps">
-          <Link to={developerPath('')} className="is-current"><span>01</span><strong>신호 관제</strong><small>변화·최신성·소스 상태 확인</small></Link>
-          <i aria-hidden="true">→</i>
-          <Link to={developerPath('/risks')}><span>02</span><strong>후보 비교</strong><small>8개 지표로 상세 검증 선택</small></Link>
-          <i aria-hidden="true">→</i>
-          <Link to={focusRisk.id ? developerPath(`/risks/${focusRisk.id}?from=%2Frisks`) : developerPath('/risks')}><span>03</span><strong>근거 검증</strong><small>평가·추세·Evidence Ledger</small></Link>
-          <i aria-hidden="true">→</i>
-          <Link to={developerPath('/reports')}><span>04</span><strong>리포트 스냅샷</strong><small>검토 결과·다음 게이트 기록</small></Link>
-        </div>
-        <p className="dashboard-workflow-note"><AppIcon name="shield" size={14} /> 각 단계는 원본 데이터를 자동 확정하지 않습니다. {mode === 'developer' ? '실제 AI 결과와 고객 신호는 사람의 검토·최소 집계 후 다음 단계로 이동합니다.' : '샘플 수치와 고객 신호는 사람의 검토·최소 집계 후 다음 단계로 이동합니다.'}</p>
+        <aside className="hi-focus-insurance-card" aria-label="최우선 보험 검토 후보">
+          <strong>{focusRisk?.title ?? '분석 대기 중'}</strong>
+          <p>{focusRisk?.loss ?? '원문 수집 후 AI 위험 후보 분류를 실행하세요.'}</p>
+          <div className="hi-risk-meter">
+            <span style={{ width: `${Math.max(8, focusRisk?.score ?? 8)}%` }} />
+          </div>
+          <dl>
+            <div><dt>보장 공백</dt><dd>{focusRisk?.gap ?? '검토 대기'}</dd></div>
+            <div><dt>근거</dt><dd>{focusRisk?.evidence ?? 0}건</dd></div>
+            <div><dt>다음 행동</dt><dd>{focusRisk?.stage ?? 'AI 후보 분류'}</dd></div>
+          </dl>
+        </aside>
       </section>
 
-      <RiskSignalPipeline radarSnapshot={radarSnapshot} developerMode={mode === 'developer'} developerData={developerData} />
-      <RiskRadarOperationsPanel radarSnapshot={radarSnapshot} onRefresh={refreshRadarSnapshot} developerMode={mode === 'developer'} developerData={developerData} />
-      <RiskProductDevelopmentBoard radarSnapshot={radarSnapshot} developerMode={mode === 'developer'} developerData={developerData} />
+      <section className="hi-kpi-grid" aria-label="핵심 보험 리스크 지표">
+        <article className="hi-kpi-card orange">
+          <span>수집 신호</span>
+          <strong>{signalCount}<small>건</small></strong>
+          <p>뉴스·산업·현장 입력</p>
+        </article>
+        <article className="hi-kpi-card green">
+          <span>상품화 후보</span>
+          <strong>{candidateCount}<small>건</small></strong>
+          <p>보장 공백 검토 대상</p>
+        </article>
+        <article className="hi-kpi-card blue">
+          <span>근거 보강</span>
+          <strong>{evidencePending}<small>건</small></strong>
+          <p>법령·판례·원문 확인 필요</p>
+        </article>
+        <article className="hi-kpi-card navy">
+          <span>담당자 심사</span>
+          <strong>{reviewerPending}<small>건</small></strong>
+          <p>AI 결과 승인 전 보류</p>
+        </article>
+      </section>
 
-      <section className="dashboard-grid">
-        <article className="priority-panel surface-card">
+      <section className="hi-dashboard-grid">
+        <article className="hi-panel hi-priority-board">
           <div className="panel-heading">
-            <div><p className="eyebrow">PRIORITY QUEUE</p><h2>우선 검토 후보</h2></div>
-            <Link to={developerPath('/risks')} className="panel-icon-link" aria-label="위험 후보 전체 보기" title="위험 후보 전체 보기"><AppIcon name="arrow" size={15} /></Link>
+            <div><p className="eyebrow">PRIORITY INSURANCE QUEUE</p><h2>눈에 먼저 들어와야 하는 보험 이슈</h2></div>
+            <Link to={buildDeveloperPath('/risks', developerMode)} className="panel-icon-link" aria-label="위험 후보 전체 보기" title="위험 후보 전체 보기"><AppIcon name="arrow" size={15} /></Link>
           </div>
-          <div className="priority-list">
-            {priorityRows.map((candidate, index) => (
-              <Link to={candidate.detailPath} className="priority-row" key={candidate.id}>
+          <div className="hi-priority-list">
+            {visibleRisks.slice(0, 4).map((risk, index) => (
+              <Link to={buildDeveloperPath(`/risks/${risk.id}`, developerMode)} className="hi-priority-row" key={risk.id}>
                 <span className="rank">0{index + 1}</span>
-                <div><strong>{candidate.title}</strong><small>{candidate.meta}</small></div>
-                <span className="score">{candidate.score}<small>{candidate.scoreLabel}</small></span>
-                <AppIcon name="arrow" size={17} />
+                <div>
+                  <strong>{risk.title}</strong>
+                  <small>{risk.segment} · 근거 {risk.evidence}건 · AI 보조점수 {risk.score}</small>
+                </div>
+                <em>{risk.gap}</em>
+                <AppIcon name="arrow" size={16} />
               </Link>
             ))}
-            {mode === 'developer' && !priorityRows.length ? <div className="table-empty">원문은 확보되었지만 Step 2 결과가 없어 우선 검토 후보를 만들지 않았습니다.</div> : null}
+            {!visibleRisks.length ? <div className="table-empty">표시할 위험 후보가 없습니다. 원문 수집 후 AI 분류를 실행하세요.</div> : null}
           </div>
         </article>
 
-        <article className="channel-panel surface-card">
+        <article className="hi-panel hi-ai-plan">
+          <div className="hi-ai-plan-blank" aria-label="AI 및 API 운영 계획 빈 영역" />
+        </article>
+
+        <article className="hi-panel hi-source-health">
           <div className="panel-heading">
-            <div><p className="eyebrow">SOURCE HEALTH</p><h2>채널 역할·수집 상태</h2></div>
-            <span className="updated-label">API 연결 상태</span>
+            <div><p className="eyebrow">SOURCE HEALTH</p><h2>API·데이터 연결 상태</h2></div>
+            <button type="button" className="text-button" disabled={radarSnapshot.refreshing} onClick={() => void refreshRadarSnapshot()}>
+              {radarSnapshot.refreshing ? '갱신 중' : '상태 갱신'}
+            </button>
           </div>
-          <div className="channel-table" role="table" aria-label="채널 상태">
-            {(mode === 'developer'
-              ? Object.entries(radarSnapshot.dashboard.channels).map(([name, count]) => ({ name, role: '실제 원문·분석 입력', count: String(count), health: '정상' }))
-              : channelRows
-            ).map((channel) => (
-              <div role="row" className="channel-row" key={channel.name}>
-                <span role="cell" className="channel-icon"><AppIcon name="radar" size={17} /></span>
-                <span role="cell"><strong>{channel.name}</strong><small>{channel.role}</small></span>
-                <span role="cell"><strong>{channel.count}</strong><small>수집</small></span>
-                <span role="cell" className={channel.health === '정상' ? 'health-ok' : 'health-check'}><i />{channel.health}</span>
+          <div className="hi-source-list">
+            {sourceHealth.map((source) => (
+              <div key={source.label}>
+                <span><AppIcon name="radar" size={16} /></span>
+                <strong>{source.label}</strong>
+                <small>{source.value}</small>
+                <b>{source.count}</b>
               </div>
             ))}
-            {mode === 'developer' && !Object.keys(radarSnapshot.dashboard.channels).length ? <div className="table-empty">실제 입력 채널 데이터가 없습니다.</div> : null}
           </div>
         </article>
 
-        <article className="voice-panel surface-card">
+        <article className="hi-panel hi-customer-signal">
           <div className="panel-heading">
-            <div><p className="eyebrow">CUSTOMER VOICE INTAKE</p><h2>고객 인사이트 유입 큐</h2></div>
-            {customerSignals.length ? (
-              <button type="button" className="text-button" onClick={clearCustomerSignals}>{mode === 'developer' ? '검토 큐 비우기' : '데모 큐 비우기'}</button>
-            ) : (
-              <span className="updated-label">별도 고객 채널 연동</span>
-            )}
+            <div><p className="eyebrow">CUSTOMER & FIELD SIGNAL</p><h2>고객·현장 신호</h2></div>
+            {customerSignals.length ? <button type="button" className="text-button" onClick={clearCustomerSignals}>비우기</button> : <span className="updated-label">비식별 입력만</span>}
           </div>
           {customerSignals.length ? (
             <div className="voice-list">
@@ -229,17 +164,15 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
                   <span><AppIcon name="user" size={16} /> 비식별 고객 신호</span>
                   <strong>{signal.title}</strong>
                   <p>{signal.anonymizedSummary}</p>
-                  <div>{signal.keywords.map((keyword) => <i key={keyword}>#{keyword}</i>)}</div>
                 </article>
               ))}
             </div>
           ) : (
             <div className="voice-empty">
-              <span><AppIcon name="spark" size={24} /></span>
-              <div><strong>전달된 고객 신호 없음</strong></div>
+              <span><AppIcon name="lock" size={24} /></span>
+              <div><strong>아직 연결된 고객 신호가 없습니다</strong><p>개인정보 없이 집계된 패턴만 위험 후보와 연결합니다.</p></div>
             </div>
           )}
-          <p className="aggregation-note"><AppIcon name="lock" size={14} /> 집계·검토 전에는 위험 후보로 승격되지 않습니다.</p>
         </article>
       </section>
 

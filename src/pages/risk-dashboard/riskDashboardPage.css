@@ -1,0 +1,249 @@
+.hi-dashboard-page {
+  --hi-navy: #00205b;
+  --hi-orange: #ff9e1b;
+  --hi-orange-strong: #ff7a00;
+  --hi-soft-line: #edf1f6;
+  width: min(1480px, 100%);
+  padding-top: 34px;
+}
+
+.hi-dashboard-page .hi-command-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, .82fr);
+  gap: 22px;
+  margin-bottom: 18px;
+}
+
+.hi-dashboard-page .hi-command-copy {
+  min-height: 286px;
+  padding: clamp(28px, 3vw, 42px);
+  border-radius: 26px;
+  color: #fff;
+  background: linear-gradient(135deg, rgba(0, 32, 91, .96), rgba(0, 20, 61, .92)), var(--hi-navy);
+  box-shadow: 0 28px 54px rgba(0, 32, 91, .22);
+}
+
+.hi-dashboard-page .hi-command-copy .page-kicker { color: #ffcf8b; }
+.hi-dashboard-page .hi-command-copy .page-kicker span { color: #fff; }
+.hi-dashboard-page .hi-command-greeting { display: grid; gap: 2px; margin: 20px 0 14px; }
+.hi-dashboard-page .hi-command-greeting span { color: rgba(255, 255, 255, .78); font-size: 15px; font-weight: 700; }
+.hi-dashboard-page .hi-command-greeting strong { color: #fff; font-size: 22px; letter-spacing: -.03em; }
+.hi-dashboard-page .hi-command-copy h1 {
+  max-width: 830px;
+  margin: 0;
+  font-size: clamp(34px, 4vw, 58px);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+.hi-dashboard-page .hi-command-copy p:last-of-type {
+  max-width: 720px;
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, .74);
+  font-size: 14px;
+  line-height: 1.75;
+}
+.hi-dashboard-page .hi-command-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.hi-dashboard-page .hi-command-actions .primary-action { color: var(--hi-navy); background: #fff; box-shadow: none; }
+.hi-dashboard-page .hi-command-actions .secondary-action {
+  color: #fff;
+  border-color: rgba(255, 255, 255, .28);
+  background: rgba(255, 255, 255, .09);
+}
+
+.hi-dashboard-page .hi-focus-insurance-card,
+.hi-dashboard-page .hi-panel {
+  border: 1px solid var(--hi-soft-line);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(33, 58, 94, .08);
+}
+.hi-dashboard-page .hi-focus-insurance-card {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 26px;
+  background: radial-gradient(circle at 90% 5%, rgba(255, 158, 27, .22), transparent 38%), linear-gradient(180deg, #fff, #fff7ec);
+}
+.hi-dashboard-page .hi-focus-insurance-card > strong { color: var(--hi-navy); font-size: 22px; line-height: 1.35; }
+.hi-dashboard-page .hi-focus-insurance-card > p { margin: 0; color: #64748b; font-size: 12px; line-height: 1.6; }
+.hi-dashboard-page .hi-risk-meter { height: 10px; overflow: hidden; border-radius: 999px; background: #f1e6d7; }
+.hi-dashboard-page .hi-risk-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--hi-orange), var(--hi-navy));
+}
+.hi-dashboard-page .hi-focus-insurance-card dl { display: grid; gap: 8px; margin: 4px 0 0; }
+.hi-dashboard-page .hi-focus-insurance-card dl > div {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .78);
+}
+.hi-dashboard-page .hi-focus-insurance-card dt { color: #8d9bac; font-size: 10px; font-weight: 800; }
+.hi-dashboard-page .hi-focus-insurance-card dd { margin: 0; color: var(--hi-navy); font-size: 11px; font-weight: 800; line-height: 1.45; }
+
+.hi-dashboard-page .hi-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+.hi-dashboard-page .hi-kpi-card {
+  min-height: 148px;
+  position: relative;
+  padding: 20px;
+  overflow: hidden;
+  border-radius: 20px;
+  color: #fff;
+}
+.hi-dashboard-page .hi-kpi-card::after {
+  content: '';
+  position: absolute;
+  width: 135px;
+  height: 135px;
+  right: -38px;
+  bottom: -45px;
+  border: 25px solid rgba(255, 255, 255, .16);
+  border-radius: 50%;
+}
+.hi-dashboard-page .hi-kpi-card.orange { background: linear-gradient(135deg, #ffb45c, #ff8a16); }
+.hi-dashboard-page .hi-kpi-card.green { background: linear-gradient(135deg, #43d3a1, #11a77b); }
+.hi-dashboard-page .hi-kpi-card.blue { background: linear-gradient(135deg, #59c2ea, #2c91d2); }
+.hi-dashboard-page .hi-kpi-card.navy { background: linear-gradient(135deg, #173b79, #001f5b); }
+.hi-dashboard-page .hi-kpi-card span { display: block; font-size: 11px; font-weight: 800; opacity: .88; }
+.hi-dashboard-page .hi-kpi-card strong { display: block; margin-top: 16px; font-size: 35px; line-height: 1; }
+.hi-dashboard-page .hi-kpi-card small { margin-left: 4px; font-size: 12px; }
+.hi-dashboard-page .hi-kpi-card p { margin: 11px 0 0; font-size: 11px; opacity: .8; }
+
+.hi-dashboard-page .hi-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(340px, .78fr);
+  grid-template-areas: 'priority ai' 'source customer';
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.hi-dashboard-page .hi-panel { padding: 22px; }
+.hi-dashboard-page .hi-priority-board { grid-area: priority; }
+.hi-dashboard-page .hi-ai-plan { grid-area: ai; }
+.hi-dashboard-page .hi-ai-plan-blank { min-height: 338px; margin-top: 18px; }
+.hi-dashboard-page .hi-source-health { grid-area: source; }
+.hi-dashboard-page .hi-customer-signal { grid-area: customer; }
+
+.hi-dashboard-page .hi-priority-list,
+.hi-dashboard-page .hi-source-list { display: grid; gap: 10px; margin-top: 18px; }
+.hi-dashboard-page .hi-priority-row {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) minmax(120px, .34fr) 24px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  color: inherit;
+  background: #fff8ef;
+}
+.hi-dashboard-page .hi-priority-row:nth-child(even) { background: #f4f9ff; }
+.hi-dashboard-page .hi-priority-row .rank {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  color: #fff;
+  background: var(--hi-navy);
+  font: 800 11px/1 'DM Sans', sans-serif;
+}
+.hi-dashboard-page .hi-priority-row strong {
+  display: block;
+  color: var(--hi-navy);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hi-dashboard-page .hi-priority-row small {
+  display: block;
+  margin-top: 5px;
+  color: #78889a;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hi-dashboard-page .hi-priority-row em {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #9a5b00;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.hi-dashboard-page .hi-focus-insurance-card dd,
+.hi-dashboard-page .hi-focus-insurance-card > p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.hi-dashboard-page .hi-source-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.hi-dashboard-page .hi-source-list > div { min-height: 94px; padding: 14px; border-radius: 14px; background: #f5f8fc; }
+.hi-dashboard-page .hi-source-list span {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--hi-navy);
+  background: #eaf3ff;
+}
+.hi-dashboard-page .hi-source-list strong,
+.hi-dashboard-page .hi-source-list small,
+.hi-dashboard-page .hi-source-list b { display: block; }
+.hi-dashboard-page .hi-source-list strong { margin-top: 12px; color: var(--hi-navy); font-size: 12px; }
+.hi-dashboard-page .hi-source-list small { margin-top: 4px; color: #7a8aa0; font-size: 9px; text-transform: uppercase; }
+.hi-dashboard-page .hi-source-list b { margin-top: 7px; color: var(--hi-orange-strong); font-size: 18px; }
+.hi-dashboard-page .hi-customer-signal .voice-empty {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+.hi-dashboard-page .hi-customer-signal .voice-empty span {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--hi-navy);
+  background: #eef5ff;
+}
+.hi-dashboard-page .hi-customer-signal .voice-empty strong { color: var(--hi-navy); }
+.hi-dashboard-page .hi-customer-signal .voice-empty p { margin: 6px 0 0; color: #718096; font-size: 11px; line-height: 1.5; }
+
+@media (max-width: 1180px) {
+  .hi-dashboard-page .hi-command-hero,
+  .hi-dashboard-page .hi-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .hi-dashboard-page .hi-dashboard-grid { grid-template-areas: 'priority' 'ai' 'source' 'customer'; }
+  .hi-dashboard-page .hi-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 920px) {
+  .hi-dashboard-page .hi-command-hero { grid-template-columns: 1fr; }
+  .hi-dashboard-page .hi-source-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .hi-dashboard-page { padding-inline: 16px; }
+  .hi-dashboard-page .hi-command-copy h1 { font-size: 31px; }
+  .hi-dashboard-page .hi-kpi-grid { grid-template-columns: 1fr; }
+  .hi-dashboard-page .hi-priority-row { grid-template-columns: 38px minmax(0, 1fr) 22px; }
+  .hi-dashboard-page .hi-priority-row em { grid-column: 2 / -1; }
+}
