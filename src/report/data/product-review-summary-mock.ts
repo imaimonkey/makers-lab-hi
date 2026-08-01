@@ -19,12 +19,14 @@ export const PRODUCT_REVIEW_SUMMARY_COPY = {
       status: '핵심 요건 충족',
       result: '보험 설계 가능성 확인',
       description: '피보험이익, 우연성, 사행성 배제 등 보험으로 성립하기 위한 주요 필수 요건을 충족합니다.',
+      summaryBullets: ['우연성·피보험이익·실손보상 요건 충족', '고의·불법 개조는 면책·인수조건으로 통제 가능'],
     },
     marketability: {
       title: '보장 공백·시장성',
       status: '검토 가치 있음',
       result: '보장 공백 및 잠재 수요 확인',
       description: '기존 자동차보험과 화재보험 적용 후에도 남을 수 있는 초과손해와 기업·기관의 잠재 보장 수요가 확인됩니다.',
+      summaryBullets: ['책임 확정 전 보상 지연·초과손해 공백 가능', '기업·개인의 추가 보장 수요 확인'],
     },
     existingInsurance: {
       title: '기존 보험과의 관계',

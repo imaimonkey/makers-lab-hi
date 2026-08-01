@@ -419,6 +419,10 @@ export function createDeveloperReportData(article: Article, results: Partial<Rec
       outOfScopeCandidates: stringList(proposalData.outOfScopeCandidates),
       recommendationReason: textValue(proposalData.recommendationReason),
       unresolvedItems: stringList(proposalData.unresolvedItems),
+      // Actual insurer/product rows are supplied through the Step 4
+      // productProposal.noveltyAnalysis payload; this adapter does not invent
+      // comparison subjects when the source payload is pending.
+      noveltyAnalysis: proposalData.noveltyAnalysis,
       evidenceIds: evidenceIdList(proposalData.evidenceIds),
     },
     wordingFeasibility: {

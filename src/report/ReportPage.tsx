@@ -10,6 +10,7 @@ import './report.css'
 export type ReportPageProps = {
   riskData: RiskSourceData
   fallbackReport: ReportResult
+  reportEntries?: Array<{ riskData: RiskSourceData; report: ReportResult }>
   reportProxy: ReportProxy
   listIntro?: ReactNode
   navigation?: ReportNavigation
@@ -29,25 +30,45 @@ const hasDetailQuery = (report: ReportResult): boolean => {
   return requestedId === getReportId(report) || requestedId === report.meta.sourceRiskId
 }
 
+const getRequestedReportEntry = (
+  entries: Array<{ riskData: RiskSourceData; report: ReportResult }>,
+): { riskData: RiskSourceData; report: ReportResult } | undefined => {
+  const requestedId = getRequestedReportId()
+  if (!requestedId) return undefined
+  return entries.find(({ report, riskData }) => requestedId === getReportId(report) || requestedId === report.meta.sourceRiskId || requestedId === riskData.meta.riskId)
+}
+
 function ReportPageSession({
   riskData,
   fallbackReport,
+  reportEntries,
   reportProxy,
   listIntro,
   navigation,
   includeLayoutMocks = true,
 }: ReportPageProps) {
-  const [showDetail, setShowDetail] = useState(() => hasDetailQuery(fallbackReport))
+  const entries = useMemo(
+    () => reportEntries?.length ? reportEntries : [{ riskData, report: fallbackReport }],
+    [fallbackReport, reportEntries, riskData],
+  )
+  const [showDetail, setShowDetail] = useState(() => Boolean(getRequestedReportEntry(entries) ?? (hasDetailQuery(fallbackReport) ? { riskData, report: fallbackReport } : undefined)))
+  const [selectedEntry, setSelectedEntry] = useState(() => getRequestedReportEntry(entries) ?? entries[0])
   const reports = useMemo(
-    () => createGeneratedReportList(riskData, fallbackReport, { includeLayoutMocks }),
-    [fallbackReport, includeLayoutMocks, riskData],
+    () => reportEntries?.length
+      ? entries.flatMap((entry) => createGeneratedReportList(entry.riskData, entry.report, { includeLayoutMocks: false }))
+      : createGeneratedReportList(riskData, fallbackReport, { includeLayoutMocks }),
+    [entries, fallbackReport, includeLayoutMocks, reportEntries, riskData],
   )
 
   useEffect(() => {
-    const syncView = () => setShowDetail(hasDetailQuery(fallbackReport))
+    const syncView = () => {
+      const nextEntry = getRequestedReportEntry(entries)
+      setSelectedEntry(nextEntry ?? entries[0])
+      setShowDetail(Boolean(nextEntry) || hasDetailQuery(fallbackReport))
+    }
     window.addEventListener('popstate', syncView)
     return () => window.removeEventListener('popstate', syncView)
-  }, [fallbackReport])
+  }, [entries, fallbackReport])
 
   const openReport = (selectedReport: GeneratedReportListItem) => {
     const url = new URL(window.location.href)
@@ -59,6 +80,8 @@ function ReportPageSession({
       pushPreservingHistoryState(url, { reportId: selectedReport.reportId })
     }
     setShowDetail(true)
+    const nextEntry = entries.find((entry) => selectedReport.reportId === getReportId(entry.report) || selectedReport.riskId === entry.report.meta.sourceRiskId)
+    if (nextEntry) setSelectedEntry(nextEntry)
     window.scrollTo({ top: 0, behavior: 'auto' })
   }
 
@@ -88,9 +111,9 @@ function ReportPageSession({
             </button>
           </div>
           <ReportSections
-            key={`${fallbackReport.meta.sourceRiskId}:${fallbackReport.meta.generatedAt ?? ''}`}
-            report={fallbackReport}
-            riskData={riskData}
+            key={`${selectedEntry.report.meta.sourceRiskId}:${selectedEntry.report.meta.generatedAt ?? ''}`}
+            report={selectedEntry.report}
+            riskData={selectedEntry.riskData}
             reportProxy={reportProxy}
             navigation={navigation}
           />

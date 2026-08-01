@@ -4976,6 +4976,14 @@
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 5px 18px rgba(11, 43, 82, 0.08);
   backdrop-filter: blur(12px);
+  transition: transform 220ms ease, opacity 180ms ease;
+  will-change: transform;
+}
+
+.report-page__tabs:has(.report-page__tabs-list.is-collapsed) {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(calc(-100% - 8px));
 }
 
 .report-page__tabs-list {
@@ -24817,10 +24825,6 @@
   font-weight: 800;
 }
 
-.report-page__decision-briefing-conclusion-points li:last-child > span {
-  color: var(--decision-amber);
-}
-
 .report-page__briefing--decision .report-page__decision-briefing-state-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 9px;
@@ -24866,6 +24870,11 @@
   gap: 12px;
 }
 
+.report-page__decision-briefing-core-card-head {
+  display: block;
+  min-height: 20px;
+}
+
 .report-page__decision-briefing-core-card-head h4,
 .report-page__decision-briefing-work-column h4 {
   margin: 0;
@@ -24874,26 +24883,23 @@
   font-weight: 800;
 }
 
-.report-page__decision-briefing-core-card-head > span {
-  flex: 0 0 auto;
-  color: var(--decision-muted);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.report-page__decision-briefing-core-card--confirmed .report-page__decision-briefing-core-card-head > span {
-  color: var(--decision-teal);
-}
-
-.report-page__decision-briefing-core-card--attention .report-page__decision-briefing-core-card-head > span,
-.report-page__decision-briefing-core-card--pending .report-page__decision-briefing-core-card-head > span {
+.report-page__decision-briefing-core-card-result {
+  display: block;
+  width: fit-content;
+  min-height: 27px;
+  margin-top: 7px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--decision-amber);
   color: var(--decision-amber);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 .report-page__decision-briefing-core-card ul {
   display: grid;
   gap: 5px;
-  margin: 12px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -24968,13 +24974,6 @@
   color: var(--decision-muted);
   font-size: 10px;
   font-style: normal;
-}
-
-.report-page__decision-briefing-finance-note {
-  margin: 11px 0 0;
-  color: var(--decision-muted);
-  font-size: 11px;
-  line-height: 1.45;
 }
 
 .report-page__decision-briefing-product-head {
@@ -25273,7 +25272,6 @@
 
   .report-page__briefing--decision .report-page__decision-briefing-finance-card small,
   .report-page__briefing--decision .report-page__decision-briefing-finance-card em,
-  .report-page__briefing--decision .report-page__decision-briefing-finance-note,
   .report-page__briefing--decision .report-page__decision-briefing-product-facts dd,
   .report-page__briefing--decision .report-page__decision-briefing-wording-preview p,
   .report-page__briefing--decision .report-page__decision-briefing-decision-checklist p,
@@ -25426,6 +25424,31 @@
   line-height: 1.6;
 }
 
+.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullets {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 auto;
+  padding: 0;
+  color: var(--summary-charcoal);
+  font-size: 12px;
+  line-height: 1.5;
+  list-style: none;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullets li {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullets li > span {
+  color: var(--summary-teal);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
 .report-page__ai-summary-section--compact .report-page__ai-summary-core-card .report-page__ai-summary-inline-result {
   margin-top: auto;
   padding-top: 11px;
@@ -25447,6 +25470,147 @@
 
 .report-page__ai-summary-section--compact .report-page__ai-summary-core-card .report-page__ai-summary-link:hover {
   text-decoration: underline;
+}
+
+.report-page__ai-summary-similar-comparison {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid #e3e8ee;
+  border-top: 3px solid #e4a25c;
+  background: #ffffff;
+  scroll-margin-top: 96px;
+}
+
+.report-page__ai-summary-similar-comparison-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.report-page__ai-summary-similar-comparison-head h3 {
+  margin: 3px 0 0;
+  color: var(--summary-navy);
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.report-page__ai-summary-similar-comparison-head p:last-child {
+  margin: 6px 0 0;
+  color: var(--summary-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.report-page__ai-summary-similar-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #edf1f5;
+  background: #fbfcfd;
+  color: var(--summary-charcoal);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.report-page__ai-summary-similar-meta span {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.report-page__ai-summary-similar-meta strong {
+  color: var(--summary-muted);
+  font-weight: 750;
+}
+
+.report-page__ai-summary-similar-table-wrap {
+  margin-top: 14px;
+  overflow-x: auto;
+}
+
+.report-page__ai-summary-similar-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.report-page__ai-summary-similar-table th,
+.report-page__ai-summary-similar-table td {
+  padding: 10px;
+  border-bottom: 1px solid #e8edf2;
+  color: var(--summary-charcoal);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: left;
+  vertical-align: top;
+}
+
+.report-page__ai-summary-similar-table th {
+  color: var(--summary-muted);
+  background: #f8fafc;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.report-page__ai-summary-similar-table th:nth-child(1) { width: 10%; }
+.report-page__ai-summary-similar-table th:nth-child(2) { width: 14%; }
+.report-page__ai-summary-similar-table th:nth-child(3) { width: 10%; }
+.report-page__ai-summary-similar-table th:nth-child(4) { width: 16%; }
+.report-page__ai-summary-similar-table th:nth-child(5) { width: 14%; }
+.report-page__ai-summary-similar-table th:nth-child(6) { width: 14%; }
+.report-page__ai-summary-similar-table th:nth-child(7) { width: 10%; }
+.report-page__ai-summary-similar-table th:nth-child(8) { width: 12%; }
+
+.report-page__ai-summary-similar-table td strong,
+.report-page__ai-summary-similar-table td small {
+  display: block;
+}
+
+.report-page__ai-summary-similar-table td small {
+  margin-top: 4px;
+  color: var(--summary-muted);
+  font-size: 10px;
+}
+
+.report-page__ai-summary-similar-table a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.report-page__ai-summary-similar-judgment {
+  display: inline-block;
+  color: var(--summary-navy);
+  font-weight: 750;
+}
+
+.report-page__ai-summary-similar-empty {
+  padding: 24px 12px !important;
+  color: var(--summary-muted) !important;
+  text-align: center !important;
+}
+
+@media screen and (max-width: 720px) {
+  .report-page__ai-summary-similar-comparison {
+    padding: 14px;
+  }
+
+  .report-page__ai-summary-similar-comparison-head {
+    display: block;
+  }
+
+  .report-page__ai-summary-similar-comparison-head .report-page__text-button {
+    margin-top: 10px;
+  }
+
+  .report-page__ai-summary-similar-meta {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 
 .report-page__ai-summary-evaluation-summary {
@@ -25698,10 +25862,6 @@
   color: #c75a00;
 }
 
-.report-page__briefing--decision .report-page__decision-briefing-finance-note {
-  color: #64748b;
-}
-
 @media print {
   .report-page__briefing--decision .report-page__decision-briefing-finance {
     border-color: #d7e3da;
@@ -25727,10 +25887,10 @@
 .report-page__ai-summary-section--compact .report-page__ai-summary-core-card--marketability,
 .report-page__ai-summary-section--compact .report-page__ai-summary-core-card--insurability,
 .report-page__ai-summary-section--compact .report-page__ai-summary-core-card--existing-insurance {
-  border: 1px solid #f3d8bd;
-  border-top: 1px solid #f3d8bd;
-  background: linear-gradient(135deg, #ffffff 0%, #fffaf5 55%, #fff3e8 100%);
-  box-shadow: 0 2px 8px rgba(191, 108, 36, 0.04);
+  border: 1px solid #e3e8ee;
+  border-top: 3px solid #e4a25c;
+  background: #ffffff;
+  box-shadow: none;
 }
 
 @media (hover: hover) {
@@ -25738,8 +25898,460 @@
   .report-page__ai-summary-section--compact .report-page__ai-summary-core-card--marketability:hover,
   .report-page__ai-summary-section--compact .report-page__ai-summary-core-card--insurability:hover,
   .report-page__ai-summary-section--compact .report-page__ai-summary-core-card--existing-insurance:hover {
-    background: linear-gradient(135deg, #ffffff 0%, #fffaf5 58%, #fff5ec 100%);
+    background: #ffffff;
   }
+}
+
+/* 국내 출시 현황·신규성 검토: summary와 종합평가가 공유하는 데이터 표면 */
+.report-page__feasibility-redesign .report-page__novelty-analysis {
+  display: grid;
+  gap: 18px;
+  border-top: 3px solid var(--report-orange);
+  background: #fff;
+  scroll-margin-top: 96px;
+}
+
+.report-page__novelty-analysis-heading {
+  margin-bottom: 0;
+}
+
+.report-page__novelty-analysis-heading .report-page__eyebrow {
+  color: var(--report-orange);
+  letter-spacing: .08em;
+}
+
+.report-page__novelty-summary-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr);
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid var(--feasibility-final-line);
+  background: #fbfcfd;
+}
+
+.report-page__novelty-summary-judgment,
+.report-page__novelty-counts {
+  min-width: 0;
+}
+
+.report-page__novelty-summary-label,
+.report-page__novelty-counts span,
+.report-page__novelty-sources li > span {
+  color: var(--feasibility-final-muted);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.report-page__novelty-summary-judgment > strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--report-orange);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.report-page__novelty-summary-judgment h4 {
+  margin: 6px 0 0;
+  color: var(--report-orange);
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.report-page__novelty-summary-judgment p {
+  margin: 7px 0 0;
+  color: var(--feasibility-final-body);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.report-page__novelty-counts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-content: center;
+  gap: 8px;
+}
+
+.report-page__novelty-counts > div {
+  min-width: 0;
+  padding: 10px;
+  border-left: 2px solid #d5dee5;
+}
+
+.report-page__novelty-counts strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--feasibility-final-teal);
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.report-page__novelty-counts > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--feasibility-final-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.report-page__novelty-accordions {
+  display: grid;
+  gap: 8px;
+}
+
+.report-page__novelty-accordion {
+  overflow: hidden;
+  border: 1px solid var(--feasibility-final-line);
+  background: #ffffff;
+}
+
+.report-page__novelty-accordion.is-open {
+  border-color: #cbd8e0;
+}
+
+.report-page__novelty-accordion-heading {
+  margin: 0;
+}
+
+.report-page__novelty-accordion-heading button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 15px;
+  border: 0;
+  background: #ffffff;
+  color: var(--feasibility-final-charcoal);
+  text-align: left;
+  cursor: pointer;
+}
+
+.report-page__novelty-accordion-heading button:hover {
+  background: #fbfcfd;
+}
+
+.report-page__novelty-accordion-heading button > span:first-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.report-page__novelty-accordion-heading strong {
+  color: var(--feasibility-final-charcoal);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.report-page__novelty-accordion-heading small {
+  color: var(--feasibility-final-muted);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.report-page__novelty-accordion-toggle {
+  flex: 0 0 auto;
+  color: var(--feasibility-final-blue);
+  font-size: 10.5px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.report-page__novelty-accordion-body {
+  padding: 0 15px 15px;
+  border-top: 1px solid #eef1f3;
+}
+
+.report-page__novelty-source-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--feasibility-final-line);
+}
+
+.report-page__novelty-source-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: var(--feasibility-final-body);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.report-page__novelty-source-table th,
+.report-page__novelty-source-table td {
+  padding: 9px;
+  border-bottom: 1px solid var(--feasibility-final-line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.report-page__novelty-source-table th {
+  color: var(--feasibility-final-card-title);
+  background: #f7f9fa;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.report-page__novelty-source-table th:nth-child(1) { width: 20%; }
+.report-page__novelty-source-table th:nth-child(2) { width: 29%; }
+.report-page__novelty-source-table th:nth-child(3) { width: 35%; }
+.report-page__novelty-source-table th:nth-child(4) { width: 16%; }
+
+.report-page__novelty-source-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.report-page__novelty-source-table a {
+  color: var(--feasibility-final-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.report-page__novelty-source-note,
+.report-page__novelty-source-disclaimer {
+  margin: 10px 0 0;
+  color: var(--feasibility-final-muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.report-page__novelty-source-disclaimer {
+  margin-top: 4px;
+}
+
+.report-page__novelty-subheading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.report-page__novelty-subheading h4 {
+  margin: 0;
+  color: var(--feasibility-final-charcoal);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.report-page__novelty-subheading p {
+  margin: 4px 0 0;
+  color: var(--feasibility-final-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.report-page__novelty-empty-state {
+  padding: 20px;
+  border: 1px dashed #cfd9e0;
+  background: #fbfcfd;
+}
+
+.report-page__novelty-empty-state h5 {
+  margin: 0;
+  color: var(--feasibility-final-charcoal);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.report-page__novelty-empty-state p {
+  max-width: 72ch;
+  margin: 7px 0 0;
+  color: var(--feasibility-final-body);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.report-page__novelty-empty-state small {
+  display: block;
+  margin-top: 12px;
+  color: var(--feasibility-final-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.report-page__novelty-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--feasibility-final-line);
+}
+
+.report-page__novelty-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: var(--feasibility-final-body);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.report-page__novelty-table th,
+.report-page__novelty-table td {
+  padding: 10px 9px;
+  border-bottom: 1px solid var(--feasibility-final-line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.report-page__novelty-table th {
+  color: var(--feasibility-final-card-title);
+  background: #f7f9fa;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.report-page__novelty-table th:nth-child(1) { width: 12%; }
+.report-page__novelty-table th:nth-child(2) { width: 20%; }
+.report-page__novelty-table th:nth-child(3) { width: 23%; }
+.report-page__novelty-table th:nth-child(4) { width: 23%; }
+.report-page__novelty-table th:nth-child(5) { width: 10%; }
+.report-page__novelty-table th:nth-child(6) { width: 12%; }
+
+.report-page__novelty-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.report-page__novelty-table a,
+.report-page__novelty-sources a {
+  color: var(--feasibility-final-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.report-page__novelty-table small,
+.report-page__novelty-sources small {
+  display: block;
+  margin-top: 4px;
+  color: var(--feasibility-final-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.report-page__novelty-judgment {
+  color: var(--feasibility-final-charcoal);
+  font-weight: 750;
+}
+
+.report-page__novelty-empty-table {
+  padding: 22px !important;
+  color: var(--feasibility-final-muted) !important;
+  text-align: center !important;
+}
+
+.report-page__novelty-reasons > ul,
+.report-page__novelty-limitations ul,
+.report-page__novelty-sources ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.report-page__novelty-reasons > ul > li {
+  display: flex;
+  gap: 8px;
+  color: var(--feasibility-final-body);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.report-page__novelty-reasons > ul > li > span {
+  flex: 0 0 auto;
+  color: var(--feasibility-final-teal);
+  font-weight: 900;
+}
+
+.report-page__novelty-limitations {
+  margin-top: 13px;
+  padding-top: 11px;
+  border-top: 1px solid var(--feasibility-final-line);
+}
+
+.report-page__novelty-limitations strong {
+  color: var(--feasibility-final-charcoal);
+  font-size: 11px;
+}
+
+.report-page__novelty-limitations li {
+  color: var(--feasibility-final-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.report-page__novelty-sources {
+  padding-top: 14px;
+  border-top: 1px solid var(--feasibility-final-line);
+}
+
+.report-page__novelty-sources li {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #eef1f3;
+}
+
+.report-page__novelty-sources li > div {
+  min-width: 0;
+  color: var(--feasibility-final-body);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media screen and (max-width: 760px) {
+  .report-page__novelty-summary-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .report-page__novelty-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-page__novelty-sources li {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}
+
+@media print {
+  .report-page__feasibility-redesign .report-page__novelty-analysis {
+    margin-bottom: 5mm;
+    padding: 3mm;
+    border-radius: 0;
+    box-shadow: none;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .report-page__novelty-summary-panel {
+    grid-template-columns: minmax(0, 1.2fr) minmax(65mm, .8fr);
+    padding: 3mm;
+  }
+
+  .report-page__novelty-summary-judgment h4 { font-size: 12pt; }
+  .report-page__novelty-summary-judgment p,
+  .report-page__novelty-reasons > ul > li,
+  .report-page__novelty-table,
+  .report-page__novelty-empty-state p { font-size: 8pt; }
+  .report-page__novelty-counts strong { font-size: 11pt; }
+  .report-page__novelty-table tr { break-inside: avoid; page-break-inside: avoid; }
+  .report-page__novelty-table-wrap { overflow: visible; }
+  .report-page__novelty-table { min-width: 0; font-size: 7pt; }
+  .report-page__novelty-table th,
+  .report-page__novelty-table td { padding: 2mm 1.5mm; }
+  .report-page__novelty-table small,
+  .report-page__novelty-sources small,
+  .report-page__novelty-limitations li { font-size: 7pt; }
+  .report-page__novelty-analysis-heading,
+  .report-page__novelty-comparison,
+  .report-page__novelty-reasons,
+  .report-page__novelty-sources { break-inside: avoid; page-break-inside: avoid; }
 }
 
 @media print {
@@ -25748,7 +26360,8 @@
   .report-page__ai-summary-section--compact .report-page__ai-summary-core-card--insurability,
   .report-page__ai-summary-section--compact .report-page__ai-summary-core-card--existing-insurance {
     border-color: #e7d9ce;
-    background: #fffaf6;
+    border-top-color: #e4a25c;
+    background: #ffffff;
     box-shadow: none;
   }
 }
@@ -25765,14 +26378,6 @@
   color: #dc2626;
 }
 
-.report-page__briefing--decision .report-page__decision-briefing-conclusion-points li:last-child {
-  color: #b42318;
-}
-
-.report-page__briefing--decision .report-page__decision-briefing-conclusion-points li:last-child > span {
-  color: #dc2626;
-}
-
 @media print {
   .report-page__briefing--decision .report-page__decision-briefing-status {
     border-color: #cfc4e7;
@@ -25781,9 +26386,362 @@
   }
 
   .report-page__briefing--decision .report-page__decision-briefing-state--attention strong,
-  .report-page__briefing--decision .report-page__decision-briefing-state--pending strong,
-  .report-page__briefing--decision .report-page__decision-briefing-conclusion-points li:last-child,
-  .report-page__briefing--decision .report-page__decision-briefing-conclusion-points li:last-child > span {
+  .report-page__briefing--decision .report-page__decision-briefing-state--pending strong {
     color: #b42318;
+  }
+}
+
+/* 핵심 판단 카드: 세 카드의 정보 밀도와 하단 링크 위치를 동일하게 유지합니다. */
+.report-page__ai-summary-section--compact .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+  height: auto;
+  min-height: 236px;
+  box-sizing: border-box;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-core-grid--three .report-page__ai-summary-decision-title {
+  color: var(--summary-orange);
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-core-grid--three .report-page__ai-summary-metric-value {
+  color: var(--summary-teal);
+}
+
+@media print {
+  .report-page__ai-summary-section--compact .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* 종합 브리핑 위험 맥락: 기존 카드 체계를 유지한 얇은 가로형 요약입니다. */
+.report-page__briefing--decision .report-page__decision-briefing-risk-context {
+  padding: 18px 22px;
+  border-left: 3px solid var(--decision-navy);
+  background: #fbfdff;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) minmax(0, 1.45fr);
+  gap: 0;
+  margin: 14px 0 0;
+  border-top: 1px solid var(--decision-line);
+  border-bottom: 1px solid var(--decision-line);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context-list > div {
+  min-width: 0;
+  padding: 11px 14px;
+  border-right: 1px solid var(--decision-line);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context-list > div:last-child {
+  border-right: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context-list dt {
+  color: var(--decision-muted);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context-list dd {
+  margin: 5px 0 0;
+  color: var(--decision-ink);
+  font-size: 12px;
+  line-height: 1.55;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance {
+  padding-bottom: 18px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-work-role {
+  margin: 4px 0 0;
+  color: var(--decision-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-work-column-head > div {
+  min-width: 0;
+}
+
+@media screen and (max-width: 680px) {
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context {
+    padding: 16px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context-list {
+    grid-template-columns: 1fr;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context-list > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--decision-line);
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context-list > div:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media print {
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context {
+    padding: 4mm;
+    background: #fff;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context-list {
+    grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) minmax(0, 1.45fr);
+    margin-top: 3mm;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context-list > div {
+    padding: 2.5mm 3mm;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context-list dd,
+  .report-page__briefing--decision .report-page__decision-briefing-work-role {
+    font-size: 8pt;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-finance {
+    padding-bottom: 4mm;
+  }
+}
+
+/* 신규성 검토 요약판: 기존 보고서의 네이비·주황·청록 체계와 2×2 지표 구조를 사용합니다. */
+.report-page__feasibility-redesign .report-page__novelty-analysis {
+  border-top-color: var(--report-orange);
+}
+
+.report-page__feasibility-redesign .report-page__novelty-analysis-heading {
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-analysis-heading > div,
+.report-page__feasibility-redesign .report-page__novelty-analysis-heading > span {
+  min-width: 0;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-analysis-heading > span {
+  color: var(--report-muted);
+  line-height: 1.45;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-summary-panel {
+  grid-template-columns: minmax(0, 1.18fr) minmax(320px, .82fr);
+  align-items: stretch;
+  gap: 24px;
+  padding: 18px 20px;
+  border: 1px solid var(--report-border);
+  border-left: 3px solid var(--report-orange);
+  background: var(--report-card);
+}
+
+.report-page__feasibility-redesign .report-page__novelty-summary-judgment {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-summary-label,
+.report-page__feasibility-redesign .report-page__novelty-counts span {
+  color: var(--report-muted);
+  line-height: 1.4;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-summary-judgment > strong,
+.report-page__feasibility-redesign .report-page__novelty-summary-judgment h4 {
+  color: var(--report-orange);
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-summary-judgment h4 {
+  max-width: 32ch;
+  line-height: 1.4;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-summary-judgment p {
+  max-width: 68ch;
+  color: var(--report-muted);
+  line-height: 1.65;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: stretch;
+  gap: 0;
+  border: 1px solid var(--report-border);
+  background: #ffffff;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-counts > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 14px;
+  border: 0;
+  border-top: 1px solid var(--report-border);
+}
+
+.report-page__feasibility-redesign .report-page__novelty-counts > div:nth-child(-n + 2) {
+  border-top: 0;
+}
+
+.report-page__feasibility-redesign .report-page__novelty-counts > div:nth-child(even) {
+  border-left: 1px solid var(--report-border);
+}
+
+.report-page__feasibility-redesign .report-page__novelty-counts strong {
+  margin-top: 6px;
+  color: #0f766e;
+  font-size: 16px;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+@media screen and (max-width: 760px) {
+  .report-page__feasibility-redesign .report-page__novelty-analysis-heading {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .report-page__feasibility-redesign .report-page__novelty-summary-panel {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .report-page__feasibility-redesign .report-page__novelty-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media print {
+  .report-page__feasibility-redesign .report-page__novelty-summary-panel {
+    grid-template-columns: minmax(0, 1.2fr) minmax(65mm, .8fr);
+    padding: 3mm;
+  }
+
+  .report-page__feasibility-redesign .report-page__novelty-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media print {
+  .report-page__novelty-accordion-body[hidden] {
+    display: block !important;
+  }
+
+  .report-page__novelty-accordion-toggle {
+    display: none;
+  }
+
+  .report-page__novelty-accordion,
+  .report-page__novelty-accordion-body,
+  .report-page__novelty-source-table-wrap {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__novelty-source-table {
+    min-width: 0;
+    font-size: 7pt;
+  }
+
+  .report-page__novelty-source-table th,
+  .report-page__novelty-source-table td {
+    padding: 2mm 1.5mm;
+  }
+}
+
+/* Summary core cards: wrapped text stays in normal flow and pushes the next element down. */
+.report-page__ai-summary-section--compact .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+  height: auto;
+  min-height: 236px;
+  box-sizing: border-box;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-core-grid--three .report-page__ai-summary-decision-title {
+  margin: 8px 0 0;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-core-card .report-page__ai-summary-metric-value {
+  margin: 8px 0 0;
+  line-height: 1.45;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0 auto;
+  padding: 0;
+  color: var(--summary-navy);
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullets li {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.55;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullet-icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--summary-teal);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.report-page__ai-summary-section--compact .report-page__ai-summary-card-bullet-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--summary-navy);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+@media print {
+  .report-page__ai-summary-section--compact .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+    height: auto;
+    min-height: 0;
   }
 }

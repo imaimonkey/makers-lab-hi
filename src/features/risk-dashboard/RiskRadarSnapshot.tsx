@@ -68,7 +68,7 @@ export function RiskRadarLiveSnapshotPanel({
       ) : allLive ? (
         <div className="sample-notice"><span>LIVE</span>대시보드·뉴스·위험 후보를 운영 API 응답으로 표시합니다.</div>
       ) : hasLocal && !hasSample ? (
-        <div className="sample-notice"><span>LOCAL ARTICLE</span>src/article PDF에서 추출한 실제 원문을 화면에 표시합니다. AI 분석·법령 확인 결과는 각 단계에서 별도로 저장됩니다.</div>
+        <div className="sample-notice"><span>CONTENT-DERIVED SAMPLE</span>src/article PDF 본문을 읽어 핵심 사실·지표·보장 공백을 구조화한 더미 결과를 화면에 표시합니다. 실제 AI 분석·법령 확인 결과는 아닙니다.</div>
       ) : developerMode ? (
         <div className="sample-notice"><span>{hasEmpty ? 'NO DATA' : 'PARTIAL'}</span>{hasEmpty ? '실패한 실제 데이터 소스는 샘플로 대체하지 않고 빈 상태로 표시합니다. 아래 오류와 재조회 결과를 확인하세요.' : '실제 원문·분석 저장소의 일부만 연결되어 있습니다. 비어 있는 영역은 아직 저장된 결과가 없는 상태입니다.'}</div>
       ) : (

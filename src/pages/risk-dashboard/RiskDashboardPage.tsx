@@ -103,7 +103,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
         status={mode === 'developer' ? 'DEVELOPER / LOCAL ARTICLES' : 'INTEGRATION FRAME'}
       />
 
-      <div className="sample-notice"><span>{mode === 'developer' ? 'DEVELOPER' : 'SAMPLE'}</span>{mode === 'developer' ? 'src/article PDF에서 추출한 실제 테스트 데이터입니다. 결과는 검증 전 도출값입니다.' : sampleOnlyNotice}</div>
+      <div className="sample-notice"><span>{mode === 'developer' ? 'CONTENT-DERIVED SAMPLE' : 'SAMPLE'}</span>{mode === 'developer' ? 'src/article 원문을 읽어 핵심 사실·지표·보장 공백을 구조화한 더미 표현입니다. 실제 LLM 호출·상품 판단 결과가 아닙니다.' : sampleOnlyNotice}</div>
 
       <RiskRadarLiveSnapshotPanel state={radarSnapshot} onRefresh={refreshRadarSnapshot} developerMode={mode === 'developer'} />
 
@@ -128,7 +128,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
           <div className="dashboard-focus-heading">
             <span className="dashboard-focus-icon"><AppIcon name="scan" size={18} /></span>
             <div><p className="eyebrow">FOCUS TODAY</p><h2>대표 후보 검토</h2></div>
-            <span className="status-badge ready">{mode === 'developer' ? 'ACTUAL ARTICLE' : 'SAMPLE'}</span>
+            <span className="status-badge ready">{mode === 'developer' ? 'CONTENT-DERIVED' : 'SAMPLE'}</span>
           </div>
           <strong>{focusRisk.title}</strong>
           <p>근거 {focusRisk.evidenceCount}건 · 후보 선별 {mode === 'developer' ? (focusScore / 20).toFixed(2) : candidateListViewModels[0]?.screeningScore.value?.toFixed(2) ?? '—'}/5</p>
@@ -155,7 +155,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
       <section className="dashboard-workflow surface-card" aria-labelledby="dashboard-workflow-title">
         <div className="panel-heading">
           <div><p className="eyebrow">ONE WORKFLOW / TAB 1→4</p><h2 id="dashboard-workflow-title">신호를 판단 가능한 리포트로 연결</h2></div>
-          <span className="updated-label">{mode === 'developer' ? 'ACTUAL ARTICLE · 새로고침 시각' : 'SAMPLE · 기준일 2026.07.23'}</span>
+          <span className="updated-label">{mode === 'developer' ? 'CONTENT-DERIVED · 새로고침 시각' : 'SAMPLE · 기준일 2026.07.23'}</span>
         </div>
         <div className="dashboard-workflow-steps">
           <Link to={developerPath('')} className="is-current"><span>01</span><strong>신호 관제</strong><small>변화·최신성·소스 상태 확인</small></Link>

@@ -36,6 +36,38 @@ export type ArticleContentProfile = {
   }
 }
 
+export type ArticleMetric = {
+  label: string
+  value: string
+  sourceHint?: string
+}
+
+export type ArticleDerivedAnalysis = {
+  title: string
+  clusterKey: string
+  category: string
+  summary: string
+  event: string
+  changeType: string
+  affectedTargets: string[]
+  damageTypes: string[]
+  industries: string[]
+  facts: string[]
+  metrics: ArticleMetric[]
+  keywords: string[]
+  evidenceQuotes: string[]
+  coverageGap: string
+  nextAction: string
+  uncertainty: string[]
+  counterEvidence: string[]
+  confidence: { level: 'high' | 'medium' | 'low'; reason: string }
+  metricScores: Record<'demand' | 'fortuity' | 'accumulation' | 'measurability' | 'adverseSelection' | 'moralHazard' | 'dataConfidence' | 'legalExposure', number>
+  trend: number[]
+  publishedAt?: string
+  isRegulatory?: boolean
+  recommendation: 'review' | 'observe' | 'hold'
+}
+
 export type ArticleSourceRecord = RadarNewsArticle & {
   text: string
   fileName: string
@@ -43,6 +75,7 @@ export type ArticleSourceRecord = RadarNewsArticle & {
   fileUrl: string
   format: 'pdf' | 'hwp'
   contentProfile: ArticleContentProfile
+  derived: ArticleDerivedAnalysis
 }
 
 const sourcePdfModules = import.meta.glob('/src/article/*.pdf', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
@@ -239,6 +272,57 @@ function buildContentProfile(text: string, name: string, title: string): Article
   }
 }
 
+function scoreToPercent(score: number) {
+  return Math.round(score * 20)
+}
+
+function createDerivedAnalysis(title: string, profile: ArticleContentProfile, collectedAt: string): ArticleDerivedAnalysis {
+  const scores = profile.scores
+  const metricScores: ArticleDerivedAnalysis['metricScores'] = {
+    demand: scores.growth,
+    fortuity: scores.severity,
+    accumulation: scores.spread,
+    measurability: scores.evidenceConfidence,
+    adverseSelection: scores.coverageGap,
+    moralHazard: scores.novelty,
+    dataConfidence: scores.evidenceConfidence,
+    legalExposure: profile.topic === '법률·사회보험' ? 4.8 : scores.coverageGap,
+  }
+  const evidenceLevel = profile.evidenceConfidence >= 4.4 ? 'high' : profile.evidenceConfidence >= 3.4 ? 'medium' : 'low'
+  const recommendation = profile.scores.coverageGap >= 4.1 || profile.scores.severity >= 4.5 ? 'review' : profile.topic === '보험시장·자본력' || profile.topic === '법률·사회보험' ? 'observe' : 'hold'
+  const signalTrend = profile.signals
+    .map((signal) => Number((signal.value.match(/\d+(?:\.\d+)?/) ?? [''])[0]))
+    .filter((value) => Number.isFinite(value))
+    .map((value) => Math.min(100, Math.max(0, Math.round(value <= 5 ? value * 20 : value))))
+  const trend = signalTrend.length >= 2 ? signalTrend : [scoreToPercent(scores.novelty), scoreToPercent(scores.growth), scoreToPercent(scores.severity)]
+
+  return {
+    title,
+    clusterKey: `article-${title}`,
+    category: profile.topic,
+    summary: profile.summary,
+    event: profile.event,
+    changeType: profile.topic,
+    affectedTargets: profile.affectedTargets,
+    damageTypes: profile.damageTypes,
+    industries: profile.industries,
+    facts: profile.facts,
+    metrics: profile.signals.map((signal) => ({ label: signal.label, value: signal.value, sourceHint: signal.basis })),
+    keywords: profile.keywords,
+    evidenceQuotes: profile.facts,
+    coverageGap: profile.reviewActions[0] ?? '기존 보장과 독립 출처의 추가 확인이 필요합니다.',
+    nextAction: profile.reviewActions[0] ?? '원문 인용과 독립 출처를 확인합니다.',
+    uncertainty: profile.reviewActions,
+    counterEvidence: ['본문 기반 구조화 결과이며 국내 손해자료·약관·가입 가능 여부는 별도 확인이 필요합니다.'],
+    confidence: { level: evidenceLevel, reason: '본문에서 확인한 사실·지표·출처 단서를 구조화한 표시용 결과입니다.' },
+    metricScores,
+    trend,
+    publishedAt: collectedAt,
+    isRegulatory: profile.topic === '법률·사회보험',
+    recommendation,
+  }
+}
+
 function listBundledFiles(): BundledArticleFile[] {
   const sourceFiles = [
     ...Object.entries(sourcePdfModules).map(([path, url]) => ({ fileName: fileName(path), url, format: 'pdf' as const })),
@@ -262,13 +346,14 @@ export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]>
     const title = titleFromFile(sourceFile.fileName)
     const contentProfile = buildContentProfile(text, sourceFile.fileName, title)
     const paragraphs = text.split(/\n{2,}/).filter(Boolean).length
+    const collectedAt = new Date().toISOString()
     const article: ArticleSourceRecord = {
       id: stableArticleId(sourceFile.fileName),
       title,
       summary: contentProfile.summary,
       content: text,
       source: sourceNameFor(sourceFile.fileName),
-      collectedAt: new Date().toISOString(),
+      collectedAt,
       contentStatus: sourceFile.format === 'pdf' ? '원문 PDF 추출 완료' : 'HWP 원문 · 본문 추출 대기',
       contentSource: 'src/article',
       contentQuality: { chars: text.length, paragraphs, titleMatched: contentProfile.keywords.length, titleTokens: contentProfile.keywords.length },
@@ -280,6 +365,7 @@ export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]>
       fileUrl: sourceFile.url,
       format: sourceFile.format,
       contentProfile,
+      derived: createDerivedAnalysis(title, contentProfile, collectedAt),
     }
     return article
   }))
@@ -292,7 +378,7 @@ export function deriveArticleDashboard(records: ArticleSourceRecord[]): {
   risks: RadarRiskCandidate[]
 } {
   const news = records.map((record) => {
-    const { text: _text, fileName: _fileName, fileUrl: _fileUrl, sourcePath: _sourcePath, format: _format, contentProfile: _contentProfile, ...article } = record
+    const { text: _text, fileName: _fileName, fileUrl: _fileUrl, sourcePath: _sourcePath, format: _format, contentProfile: _contentProfile, derived: _derived, ...article } = record
     return { ...article, analysis: { articleFacts: { facts: record.contentProfile.facts, event: record.contentProfile.event, changeType: record.contentProfile.topic, affectedTargets: record.contentProfile.affectedTargets, damageTypes: record.contentProfile.damageTypes, industries: record.contentProfile.industries, timeAndPlace: record.contentProfile.summary }, riskInterpretation: { riskEnvironment: record.contentProfile.topic, whyNow: record.contentProfile.event, expectedLosses: record.contentProfile.damageTypes, responsibilityCandidates: record.contentProfile.affectedTargets, searchKeywords: record.contentProfile.keywords }, evidence: record.contentProfile.facts.map((quote, index) => ({ sentenceNo: index + 1, quote, reason: '본문 기반 구조화 더미 인용' })), uncertainty: record.contentProfile.reviewActions, confidence: { level: record.contentProfile.evidenceConfidence >= 4 ? '높음' : '보통', reason: 'PDF 본문 길이와 구체 지표를 기준으로 한 더미 신뢰도' }, verificationStatus: '담당자 검증 필요' } }
   })
   const risks = records.map((article) => ({

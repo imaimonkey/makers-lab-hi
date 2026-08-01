@@ -99,7 +99,7 @@ export function RiskRadarOperationsPanel({
     const articles = await loadArticleSourceRecords()
     const bodyReady = articles.filter((article) => article.text.trim().length > 0).length
     if (!bodyReady) throw new Error('본문을 확보할 원문 데이터가 없습니다.')
-    setNotice(`개발자 모드 본문 확보 완료: src/article 실제 원문 ${bodyReady}건을 분석 입력으로 사용할 수 있습니다.`)
+    setNotice(`개발자 모드 본문 확보 완료: src/article 원문 ${bodyReady}건을 구조화 더미 입력으로 사용할 수 있습니다.`)
   }
 
   async function analyzeDeveloperQueue() {
@@ -182,7 +182,7 @@ export function RiskRadarOperationsPanel({
         <div>
           <p className="eyebrow">PRODUCT DEVELOPMENT WORK QUEUE · HYOJE</p>
           <h2>신호를 상품화 검토 단계로 연결</h2>
-          <p>수집·본문 확보·분석·검증은 독립 단계로 남기고, 담당자 확인 전에는 위험 후보를 확정하지 않습니다. 현재 대시보드 소스는 {developerMode ? 'src/article 실제 원문' : radarSnapshot.sourceStatus.dashboard === 'live' ? 'LIVE API' : '공식 데이터 연결 필요'}입니다.</p>
+          <p>수집·본문 확보·분석·검증은 독립 단계로 남기고, 담당자 확인 전에는 위험 후보를 확정하지 않습니다. 현재 대시보드 소스는 {developerMode ? 'src/article 본문 기반 구조화 더미' : radarSnapshot.sourceStatus.dashboard === 'live' ? 'LIVE API' : '공식 데이터 연결 필요'}입니다.</p>
         </div>
         <div className="radar-operation-actions" aria-label="레이더 작업 액션">
           <button type="button" disabled={Boolean(busy)} onClick={() => void runAction('자료 수집', developerMode ? collectDeveloperNews : riskRadarApi.collect)}><AppIcon name="trend" size={14} /> {busy === '자료 수집' ? '수집 중…' : '자료 수집'}</button>
@@ -196,7 +196,7 @@ export function RiskRadarOperationsPanel({
         <article className="radar-issue-focus surface-card">
           <div className="panel-heading">
             <div><p className="eyebrow">ISSUE REGISTER</p><h2>상품개발 이슈 큐</h2></div>
-            <span className="status-badge sample">{developerMode ? 'ACTUAL ARTICLE' : 'SAMPLE'}</span>
+            <span className="status-badge sample">{developerMode ? 'CONTENT-DERIVED SAMPLE' : 'SAMPLE'}</span>
           </div>
           <div className="radar-issue-controls">
             <div className="radar-audience-tabs" aria-label="이슈 유입 채널 필터">
@@ -253,7 +253,7 @@ export function RiskRadarOperationsPanel({
         </article>
 
         <article className="radar-process-panel surface-card">
-          <div className="panel-heading"><div><p className="eyebrow">PROCESS GATES</p><h2>검증 파이프라인</h2></div><span className="updated-label">{developerMode ? 'ACTUAL ARTICLE' : 'SAMPLE'}</span></div>
+          <div className="panel-heading"><div><p className="eyebrow">PROCESS GATES</p><h2>검증 파이프라인</h2></div><span className="updated-label">{developerMode ? 'CONTENT-DERIVED SAMPLE' : 'SAMPLE'}</span></div>
           <ol className="radar-process-list">
             <li><span>01</span><div><strong>수집</strong><small>뉴스·현장 신호</small></div><b>{developerMode ? radarSnapshot.news.length : demoDashboardMetrics.unresolved}</b></li>
             <li><span>02</span><div><strong>후보화</strong><small>클러스터·반복성</small></div><b>{developerMode ? radarSnapshot.risks.length : demoDashboardMetrics.candidates}</b></li>

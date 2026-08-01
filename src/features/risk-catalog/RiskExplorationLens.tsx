@@ -193,7 +193,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
           <h2 id="risk-exploration-title">주요 법률 및 규제 업데이트</h2>
           <p>주요 법률·규제 변화와 상품화 종합평가 기준에 따른 위험 후보 수치화를 함께 확인합니다.</p>
         </div>
-        <span className="status-badge sample">{developerMode ? `ACTUAL ARTICLE · STEP 2 · 근거 ${sourceRecords?.reduce((count, record) => count + (record.evidenceIds?.length ?? 0), 0) ?? 0}건` : 'SAMPLE · 검증용'}</span>
+        <span className="status-badge sample">{developerMode ? `CONTENT-DERIVED SAMPLE · 본문 구조화 · 근거 ${sourceRecords?.reduce((count, record) => count + (record.evidenceIds?.length ?? 0), 0) ?? 0}건` : 'SAMPLE · 검증용'}</span>
       </div>
 
       <div className="screening-control-bar">
@@ -228,7 +228,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
         <div className="risk-candidate-grid">
           {records.map((record, index) => <RiskCandidateCard key={record.id} record={record} index={index} developerMode={developerMode} />)}
         </div>
-      ) : <div className="risk-candidate-empty">{developerMode ? <><strong>아직 비교할 Step 2 결과가 없습니다.</strong><br />현재 {developerData?.counts.articles ?? 0}건의 원문이 준비되어 있습니다.{onRunDeveloperStep2 ? <button type="button" onClick={onRunDeveloperStep2} disabled={developerRunning}>{developerRunning ? 'Step 2 분석 중…' : 'Step 2 전체 실행'}</button> : null}</> : '조건에 맞는 위험 후보가 없습니다.'}</div>}
+      ) : <div className="risk-candidate-empty">{developerMode ? <><strong>선택 조건에 맞는 원문 기반 후보가 없습니다.</strong><br />현재 {developerData?.counts.articles ?? 0}건의 원문은 본문 구조화 더미 결과로 준비되어 있습니다.{onRunDeveloperStep2 ? <button type="button" onClick={onRunDeveloperStep2} disabled={developerRunning}>{developerRunning ? 'Step 2 분석 중…' : '실제 Step 2 전체 실행'}</button> : null}</> : '조건에 맞는 위험 후보가 없습니다.'}</div>}
 
       <p className="risk-exploration-disclaimer">SAMPLE · 카드의 점수·시장성·우연성·법률 및 규제 리스크는 기사 기반 예비 검토값입니다. PML처럼 입력 근거가 없는 항목은 추정하지 않으며, 공식 출처·독립 통계·반증은 상세 검증에서 확인해야 합니다.</p>
     </section>
