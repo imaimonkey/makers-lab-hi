@@ -1,5 +1,6 @@
 import type { RadarNewsAnalysis, RadarNewsArticle } from '../../domain/risk/riskRadarTypes'
 import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
+import { getSafeSourceUrl } from './qualitativeAssessment'
 
 function formatDate(value?: string) {
   if (!value) return '발행일 확인 필요'
@@ -30,9 +31,11 @@ export function RiskArticleOverview({
   const damageTypes = firstOrFallback(interpretation?.expectedLosses, [detail.primaryLoss])
   const affectedTargets = firstOrFallback(interpretation?.responsibilityCandidates, [detail.exposedParty])
   const industries = firstOrFallback(facts?.industries, [risk.themeLabel])
+  const uncertainties = firstOrFallback(analysis?.uncertainty, ['공식 원문·독립 출처·국내 적용 여부를 추가 확인해야 합니다.'])
   const headline = article?.summary ?? detail.riskStatement
   const event = facts?.event ?? detail.riskStatement
   const whyNow = interpretation?.whyNow ?? '현재 관측된 변화가 기존 위험 분류와 보장 범위를 다시 확인할 이유를 만들고 있습니다.'
+  const sourceUrl = getSafeSourceUrl(article?.originalUrl ?? null)
 
   return (
     <section className="risk-article-overview" aria-labelledby="risk-article-title">
@@ -44,6 +47,7 @@ export function RiskArticleOverview({
           <span>{article?.source ?? '위험 후보 분석'}</span>
           <span>{formatDate(article?.publishedAt ?? article?.collectedAt ?? risk.updatedAt)}</span>
           <span>{sourceLabel}</span>
+          {sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer noopener">원문 열기 ↗</a> : null}
         </div>
       </header>
 
@@ -84,6 +88,11 @@ export function RiskArticleOverview({
           <h3>관련 산업·키워드</h3>
           <ul className="risk-article-chip-list">{industries.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
+      </div>
+
+      <div className="risk-article-verification-bar" aria-label="사실과 확인 필요 사항">
+        <article><span>현재 확인된 사실</span><p>{keyFacts[0]}</p></article>
+        <article><span>아직 확인할 내용</span><p>{uncertainties[0]}</p></article>
       </div>
 
       <details className="risk-article-source-context">

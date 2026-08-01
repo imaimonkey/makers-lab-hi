@@ -611,6 +611,13 @@
 .workspace-sh .risk-article-analysis article + article { border-left: 1px solid #dce3ea; }
 .workspace-sh .risk-article-chip-list { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; padding: 0; list-style: none; }
 .workspace-sh .risk-article-chip-list li { padding: 6px 8px; border: 1px solid #dce3ea; border-radius: 5px; color: #526b72; background: #f8fafc; font-size: 10px; line-height: 1.35; }
+.workspace-sh .risk-article-verification-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 1px solid #dce3ea; background: #f8fafc; }
+.workspace-sh .risk-article-verification-bar article { min-width: 0; padding: 18px 28px; }
+.workspace-sh .risk-article-verification-bar article + article { border-left: 1px solid #dce3ea; }
+.workspace-sh .risk-article-verification-bar span { color: #64748b; font-size: 9px; font-weight: 800; }
+.workspace-sh .risk-article-verification-bar article:first-child span { color: #27734d; }
+.workspace-sh .risk-article-verification-bar article:last-child span { color: #b45309; }
+.workspace-sh .risk-article-verification-bar p { margin: 6px 0 0; color: #334155; font-size: 10px; line-height: 1.55; }
 .workspace-sh .risk-article-source-context { padding: 0 28px; }
 .workspace-sh .risk-article-source-context summary { width: fit-content; padding: 16px 0; color: #2563eb; cursor: pointer; font-size: 10px; font-weight: 800; list-style: none; }
 .workspace-sh .risk-article-source-context summary::-webkit-details-marker { display: none; }
@@ -629,6 +636,9 @@
   .workspace-sh .risk-article-why { border-top: 1px solid #dce3ea; border-left: 0; }
   .workspace-sh .risk-article-analysis article { min-height: 0; padding: 22px 20px; }
   .workspace-sh .risk-article-analysis article + article { border-top: 1px solid #dce3ea; border-left: 0; }
+  .workspace-sh .risk-article-verification-bar { grid-template-columns: 1fr; }
+  .workspace-sh .risk-article-verification-bar article { padding: 16px 20px; }
+  .workspace-sh .risk-article-verification-bar article + article { border-top: 1px solid #dce3ea; border-left: 0; }
   .workspace-sh .risk-article-source-context { padding: 0 20px; }
   .workspace-sh .risk-article-source-context > div { grid-template-columns: 1fr; padding-left: 16px; }
 }
