@@ -64,7 +64,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
     <div className="page dashboard-page hi-dashboard-page">
       <section className="hi-command-hero" aria-label="보험 리스크 관제 요약">
         <div className="hi-command-copy">
-          <div className="hi-command-greeting" aria-label="사용자 인사"><span>안녕하세요,</span><strong>000님</strong></div>
+          <div className="hi-command-greeting" aria-label="사용자 인사"><span>안녕하세요,</span><strong>김효제님</strong></div>
           <div className="hi-command-actions">
             <Link to={buildDeveloperPath('/risks', developerMode)} className="primary-action"><AppIcon name="scan" size={16} /> 위험 후보 보기</Link>
             <Link to={buildDeveloperPath('/reports', developerMode)} className="secondary-action"><AppIcon name="report" size={16} /> 리포트 검토</Link>
