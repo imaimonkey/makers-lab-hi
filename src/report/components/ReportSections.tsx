@@ -13,12 +13,11 @@ import type {
   CommercializationInputDataPoint,
   CommercializationReviewerReview,
   CommercializationReviewStatus,
-  BriefingReviewStatus,
   ReportResult,
   RiskSourceData,
 } from '../types'
 import type { ReportProxy } from '../api/report-proxy'
-import { cloneReport, parseStoredReportContent, updateReportContent } from '../services/report-content'
+import { cloneReport, parseStoredReportContent } from '../services/report-content'
 import { commercializationEvidenceStatusLabel, commercializationStatusLabel, ensureCommercializationAssessment, deriveCommercializationAiJudgment, deriveCommercializationReviewerProductJudgment, COMMERCIALIZATION_GATE_GROUPS, RATE_DATA_FIELD_DEFINITIONS, RATE_DATA_STATUS_LABELS, validateCommercializationAssessment } from '../services/commercialization-assessment'
 import { ReportModal } from './ReportModal'
 import { PolicyDraftModal } from './ReportAssistPanels'
@@ -305,6 +304,11 @@ function reportLabel(report: ReportView, key: string, fallback: string) {
   return typeof value === 'string' && value.trim() ? value : fallback
 }
 
+function displayReportTitle(title: string) {
+  const riskTitle = title.replace(/\s*상품화 검토 리포트\s*$/, '').trim()
+  return riskTitle || title
+}
+
 function displayDate(value?: string | null, includeTime = false) {
   if (!value) return '확인 필요'
   const date = new Date(value)
@@ -317,48 +321,6 @@ function displayDate(value?: string | null, includeTime = false) {
       ? ({ hour: '2-digit', minute: '2-digit' } as const)
       : {}),
   }).format(date)
-}
-
-function toneClass(status?: string) {
-  if (!status) return 'report-page__badge--neutral'
-  if (/양호|긍정|추천|우선|가능|완료|positive/i.test(status)) {
-    return 'report-page__badge--success'
-  }
-  if (/부족|보완|주의|미확보|needs|재검토|불가|critical/i.test(status)) {
-    return 'report-page__badge--danger'
-  }
-  if (/조건|확인|검토|보류|conditional/i.test(status)) {
-    return 'report-page__badge--warning'
-  }
-  return 'report-page__badge--neutral'
-}
-
-function localizeStatus(status?: string) {
-  const labels: Record<string, string> = {
-    positive: '긍정',
-    // Legacy overallStatus values are still accepted for persisted reports,
-    // but the UI uses the four criterion result states instead of showing
-    // the ambiguous "조건부" label.
-    conditional: '보완 필요',
-    'needs-data': '보완 필요',
-    pending: '검토 대기',
-    review: '검토 필요',
-    draft: '검토 초안',
-    available: '확보 가능',
-    unavailable: '확보 필요',
-    reviewable: '검토 가능',
-    needs_more_data: '추가 자료 필요',
-    redesign: '상품 구조 재검토',
-    not_viable: '현재 상품화 곤란',
-  }
-  return status ? labels[status.toLowerCase()] ?? status : status
-}
-
-function StatusBadge({ children }: { children?: string }) {
-  if (!children) return null
-  return (
-    <span className={`report-page__badge ${toneClass(children)}`}>{localizeStatus(children)}</span>
-  )
 }
 
 function SectionHeading({
@@ -433,17 +395,7 @@ function ReportHeader({
     <section className="report-page__report-header" aria-labelledby="report-title">
       <div className="report-page__report-header-top">
         <div>
-          <div className="report-page__badge-row">
-            <StatusBadge>{activeTab === 'feasibility' ? '평가 결과' : meta.aiStatus ?? 'AI 생성 초안'}</StatusBadge>
-            {(meta.badges ?? []).filter((badge) => badge !== meta.aiStatus && (activeTab !== 'feasibility' || !/AI/i.test(badge))).map((badge) => (
-              <span className="report-page__badge report-page__badge--neutral" key={badge}>
-                {badge}
-              </span>
-            ))}
-          </div>
-          <p className="report-page__eyebrow">INSURANCE PRODUCT REVIEW</p>
-          <h1 id="report-title">{meta.title}</h1>
-          <ChipList items={meta.riskCategories} />
+          <h1 id="report-title">{displayReportTitle(meta.title)}</h1>
         </div>
         <div className="report-page__header-actions report-page__no-print">
 
@@ -494,18 +446,16 @@ function ReportHeader({
         </div>
       </div>
 
-      <dl className="report-page__meta-grid">
-        <div><dt>위험 ID</dt><dd>{meta.sourceRiskId}</dd></div>
+      <dl className="report-page__meta-grid report-page__meta-grid--report-summary">
         <div><dt>분석 기준일</dt><dd>{displayDate(meta.analysisBaseDate)}</dd></div>
         <div><dt>생성일시</dt><dd>{displayDate(meta.generatedAt, true)}</dd></div>
         <div><dt>근거자료</dt><dd>{meta.evidenceCount ?? report.evidence.length}건</dd></div>
       </dl>
-      {meta.disclaimer ? <p className="report-page__disclaimer">{activeTab === 'feasibility' ? neutralizeCommercializationText(meta.disclaimer) : meta.disclaimer}</p> : null}
     </section>
   )
 }
 
-function AiSummarySection({ report, onNavigateTab, onOpenNoveltyComparison }: { report: ReportView; onNavigateTab?: (id: ReportTabId) => void; onOpenNoveltyComparison?: () => void }) {
+function createProductReviewSummaryInsights(report: ReportView) {
   const copy = PRODUCT_REVIEW_SUMMARY_COPY
   const criteria = report.productFeasibility.assessment?.criteria ?? []
   const mandatoryCriteria = criteria.filter((criterion) => criterion.gateGroup === 'insurance_gate')
@@ -518,7 +468,6 @@ function AiSummarySection({ report, onNavigateTab, onOpenNoveltyComparison }: { 
     analyzedAt: report.meta.analysisBaseDate ?? report.meta.sourceAsOf ?? report.meta.generatedAt,
     evidenceIds: report.evidence.slice(0, 6).map((item) => item.id),
   })
-  const navigate = (tab: ReportTabId) => onNavigateTab?.(tab)
   const marketGrade = financialEstimate.marketGrade
   const marketScore = financialEstimate.marketScore
   const marketBullets = copy.coreJudgments.marketability.summaryBullets
@@ -534,35 +483,27 @@ function AiSummarySection({ report, onNavigateTab, onOpenNoveltyComparison }: { 
     : copy.criteria.groups.flatMap((group) => group.itemLabels)
   const evaluationTotal = evaluationCriteriaNames.length
   const coreJudgmentCards = [
-    { id: 'marketability', label: '보장 공백·시장성', title: copy.coreJudgments.marketability.result, metric: `시장성 ${marketScore}점 · ${marketGrade}등급`, bullets: marketBullets, tab: 'coverage-gap' as ReportTabId, linkLabel: '상세 보기 →' },
-    { id: 'insurability', label: '보험성', title: copy.coreJudgments.insurability.result, metric: `필수 기준 ${insuranceSatisfied}/${insuranceTotal} 충족`, bullets: insuranceBullets, tab: 'feasibility' as ReportTabId, linkLabel: '상세 보기 →' },
+    { id: 'marketability', label: '보장 공백·시장성', title: copy.coreJudgments.marketability.result, metric: `시장성 ${marketScore}점 · ${marketGrade}등급`, bullets: marketBullets, tab: 'feasibility' as ReportTabId, anchor: 'marketability-criteria', linkLabel: '상세 보기 →' },
+    { id: 'insurability', label: '보험성', title: copy.coreJudgments.insurability.result, metric: `필수 기준 ${insuranceSatisfied}/${insuranceTotal} 충족`, bullets: insuranceBullets, tab: 'feasibility' as ReportTabId, anchor: 'insurance-criteria', linkLabel: '상세 보기 →' },
     { id: 'similar-product', label: '국내 출시 현황·신규성', title: noveltyAnalysis.summaryCardHeadline ?? noveltyAnalysis.noveltyHeadline, metric: noveltyMetric, bullets: noveltyCardBullets, linkLabel: '유사상품 비교 보기 →' },
   ] as const
   const evaluationStatuses = [
     { id: 'pass', label: '충족', count: evaluationTotal, tone: 'pass', names: evaluationCriteriaNames },
     { id: 'critical', label: '불충족', count: 0, tone: 'critical', names: [] as string[] },
   ] as const
-  const evaluationHeadline = `충족 ${evaluationTotal}개 · 불충족 0개`
-  const opinionCards = [
-    {
-      id: 'coverage-gap',
-      title: copy.reviewOpinions[0].title,
-      items: [
-        ...copy.coreJudgments.existingInsurance.comparison.filter((item) => item.sourceId).slice(0, 2).map((item) => `${item.label} · ${item.result}`),
-        ...copy.coreJudgments.coverageGap.gaps.slice(0, 1),
-      ],
-    },
-    {
-      id: 'productization',
-      title: copy.reviewOpinions[1].title,
-      items: [copy.coreJudgments.insurability.result, copy.coreJudgments.coverageGap.differentiation, copy.recommendation.title],
-    },
-    {
-      id: 'verification',
-      title: copy.reviewOpinions[2].title,
-      items: copy.nextTasks.slice(0, 3).map((task) => task.title),
-    },
-  ] as const
+  return { coreJudgmentCards, evaluationStatuses, evaluationTotal, evaluationHeadline: `충족 ${evaluationTotal}개 · 불충족 0개` }
+}
+
+function SummaryCoreJudgmentsSection({ report, onNavigateTab, onOpenNoveltyComparison, printMode = false }: { report: ReportView; onNavigateTab?: (id: ReportTabId) => void; onOpenNoveltyComparison?: () => void; printMode?: boolean }) {
+  const { coreJudgmentCards } = createProductReviewSummaryInsights(report)
+  const navigate = (tab: ReportTabId) => onNavigateTab?.(tab)
+
+  const openFeasibilityAnchor = (anchorId: string) => {
+    navigate('feasibility')
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => document.getElementById(anchorId)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    })
+  }
 
   const openNoveltyAnalysis = () => {
     onOpenNoveltyComparison?.()
@@ -573,52 +514,78 @@ function AiSummarySection({ report, onNavigateTab, onOpenNoveltyComparison }: { 
   }
 
   return (
-    <section className="report-page__section report-page__ai-summary-section report-page__ai-summary-section--compact" aria-labelledby="ai-summary-title">
-      <SectionHeading number="01" eyebrow="INITIAL REVIEW SUMMARY" title="상품화 검토 요약" aside={<span className="report-page__ai-draft-badge">AI 분석 초안</span>} />
-
-      <section className="report-page__ai-summary-conclusion report-page__ai-summary-conclusion--recommendation" aria-labelledby="ai-summary-title">
-        <div className="report-page__ai-summary-conclusion-heading"><p className="report-page__eyebrow">{copy.recommendation.eyebrow}</p></div>
-        <h3 id="ai-summary-title">{copy.recommendation.title}</h3>
-        <strong className="report-page__ai-summary-action-title">{copy.recommendation.actionTitle}</strong>
-        <p>{copy.recommendation.description}</p>
-      </section>
-
+    <section className="report-page__ai-summary-section report-page__ai-summary-section--compact report-page__ai-summary-section--integrated report-page__ai-summary-section--core-judgments">
       <section className="report-page__ai-summary-block report-page__ai-summary-judgment-cards" aria-labelledby="ai-summary-judgment-title">
         <div className="report-page__ai-summary-block-heading"><div><p className="report-page__eyebrow">CORE JUDGMENTS</p><h3 id="ai-summary-judgment-title">핵심 판단 근거</h3></div><span>검토 가치 판단에 필요한 세 가지 결과</span></div>
-        <div className="report-page__ai-summary-core-grid report-page__ai-summary-core-grid--three">
-          {coreJudgmentCards.map((card) => <article className={`report-page__ai-summary-core-card report-page__ai-summary-core-card--${card.id}`} key={card.id}>
-            <span className="report-page__ai-summary-card-label">{card.label}</span>
-            <h4 className="report-page__ai-summary-decision-title">{card.title}</h4>
-            <strong className="report-page__ai-summary-metric-value">{card.metric}</strong>
-            <ul className="report-page__ai-summary-card-bullets">
-              {card.bullets.map((bullet) => <li key={bullet}><span className="report-page__ai-summary-card-bullet-icon" aria-hidden="true">✓</span><span className="report-page__ai-summary-card-bullet-text">{bullet}</span></li>)}
-            </ul>
-            {card.id === 'similar-product' ? (
-              <button className="report-page__ai-summary-link report-page__no-print" type="button" onClick={openNoveltyAnalysis}>{card.linkLabel}</button>
-            ) : (
-              <button className="report-page__ai-summary-link report-page__no-print" type="button" onClick={() => navigate(card.tab)}>{card.linkLabel}</button>
-            )}
+        {printMode ? (
+          <table className="report-page__ai-summary-core-table">
+            <caption>핵심 판단 근거</caption>
+            <thead><tr><th scope="col">검토 영역</th><th scope="col">주요 판단</th><th scope="col">핵심 수치</th><th scope="col">핵심 근거</th></tr></thead>
+            <tbody>{coreJudgmentCards.map((card) => <tr key={card.id}>
+              <th scope="row">{card.label}</th>
+              <td>{card.title}</td>
+              <td>{card.metric}</td>
+              <td><ul className="report-page__ai-summary-core-table-bullets">{card.bullets.map((bullet) => <li key={bullet}><span aria-hidden="true">✓</span>{bullet}</li>)}</ul></td>
+            </tr>)}</tbody>
+          </table>
+        ) : (
+          <div className="report-page__ai-summary-core-grid report-page__ai-summary-core-grid--three">
+            {coreJudgmentCards.map((card) => <article className={`report-page__ai-summary-core-card report-page__ai-summary-core-card--${card.id}`} key={card.id}>
+              <span className="report-page__ai-summary-card-label">{card.label}</span>
+              <h4 className="report-page__ai-summary-decision-title">{card.title}</h4>
+              <strong className="report-page__ai-summary-metric-value">{card.metric}</strong>
+              <ul className="report-page__ai-summary-card-bullets">
+                {card.bullets.map((bullet) => <li key={bullet}><span className="report-page__ai-summary-card-bullet-icon" aria-hidden="true">✓</span><span className="report-page__ai-summary-card-bullet-text">{bullet}</span></li>)}
+              </ul>
+              {card.id === 'similar-product' ? (
+                <button className="report-page__ai-summary-link report-page__no-print" type="button" onClick={openNoveltyAnalysis}>{card.linkLabel}</button>
+              ) : (
+                <button className="report-page__ai-summary-link report-page__no-print" type="button" onClick={() => openFeasibilityAnchor(card.anchor)}>{card.linkLabel}</button>
+              )}
+            </article>)}
+          </div>
+        )}
+      </section>
+    </section>
+  )
+}
+
+function SummaryEvaluationStatusSection({ report, onNavigateTab, printMode = false }: { report: ReportView; onNavigateTab?: (id: ReportTabId) => void; printMode?: boolean }) {
+  const { evaluationTotal, evaluationHeadline } = createProductReviewSummaryInsights(report)
+  const criteria = report.productFeasibility.assessment?.criteria ?? []
+  const evaluationCriteria = criteria.length
+    ? criteria.map((criterion) => {
+      const state = criterion.status
+      const status = state === 'needs_review'
+        ? { label: '보완 필요', tone: 'needs-review', icon: '!' }
+        : state === 'additional_check'
+          ? { label: '추가 확인', tone: 'additional-check', icon: '?' }
+          : state === 'critical'
+            ? { label: '불충족', tone: 'critical', icon: '!' }
+            : { label: '충족', tone: 'pass', icon: '✓' }
+      return { id: criterion.id, title: criterion.title, ...status }
+    })
+    : PRODUCT_REVIEW_SUMMARY_COPY.criteria.groups.flatMap((group) => group.itemLabels).map((title, index) => ({
+      id: `criterion-${index + 1}`,
+      title,
+      label: '충족',
+      tone: 'pass',
+      icon: '✓',
+    }))
+  return (
+    <section className="report-page__ai-summary-section report-page__ai-summary-section--compact report-page__ai-summary-section--integrated">
+      <section className="report-page__ai-summary-block report-page__ai-summary-evaluation-status" aria-labelledby="ai-summary-evaluation-title">
+        <div className="report-page__ai-summary-block-heading">
+          <div><p className="report-page__eyebrow">EVALUATION STATUS</p><h3 id="ai-summary-evaluation-title">상품화 평가 현황</h3></div>
+          <div className="report-page__ai-summary-evaluation-heading-actions"><span>현재 평가 데이터 기준</span>{onNavigateTab ? <button className="report-page__ai-summary-evaluation-link report-page__no-print" type="button" onClick={() => onNavigateTab('feasibility')}>상세 판단 보기 →</button> : null}</div>
+        </div>
+        <div className="report-page__ai-summary-evaluation-summary"><strong>{evaluationTotal}개 기준 중 {evaluationTotal}개 충족</strong><span>{evaluationHeadline}</span></div>
+        <div className={`report-page__ai-summary-criteria-grid${printMode ? ' report-page__ai-summary-criteria-grid--print' : ''}`} aria-label="상품화 평가 기준 목록">
+          {evaluationCriteria.map((criterion) => <article className={`report-page__ai-summary-criterion-card report-page__ai-summary-criterion-card--${criterion.tone}`} key={criterion.id}>
+            <strong className="report-page__ai-summary-criterion-title">{criterion.title}</strong>
+            <span className="report-page__ai-summary-criterion-status"><span aria-hidden="true">{criterion.icon}</span>{criterion.label}</span>
           </article>)}
         </div>
-      </section>
-
-      <section className="report-page__ai-summary-block report-page__ai-summary-evaluation-status" aria-labelledby="ai-summary-evaluation-title">
-        <div className="report-page__ai-summary-block-heading"><div><p className="report-page__eyebrow">EVALUATION STATUS</p><h3 id="ai-summary-evaluation-title">상품화 평가 현황</h3></div><span>현재 평가 데이터 기준</span></div>
-        <div className="report-page__ai-summary-evaluation-summary"><strong>{evaluationTotal}개 기준 중 {evaluationTotal}개 충족</strong><span>{evaluationHeadline}</span></div>
-        <div className="report-page__ai-summary-evaluation-list">{evaluationStatuses.map((status) => <div className={`report-page__ai-summary-evaluation-row report-page__ai-summary-evaluation-row--${status.tone}`} key={status.id}>
-          <div><span>{status.label}</span><strong>{status.count}개</strong></div><p>{status.names.length ? status.names.join(' · ') : '해당 기준 없음'}</p>
-        </div>)}</div>
-      </section>
-
-      <section className="report-page__ai-summary-block report-page__ai-summary-opinions report-page__ai-summary-secondary" aria-labelledby="ai-summary-opinions-title">
-        <div className="report-page__ai-summary-block-heading"><div><p className="report-page__eyebrow">REVIEW OPINIONS</p><h3 id="ai-summary-opinions-title">핵심 검토 의견</h3></div><span>상세 판단은 상품화 종합평가에서 확인</span></div>
-        <div className="report-page__ai-summary-opinion-grid">{opinionCards.map((item) => <article className="report-page__ai-summary-opinion-card" key={item.id}><h4>{item.title}</h4><ul>{item.items.map((point) => <li key={point}><span aria-hidden="true">•</span>{point}</li>)}</ul></article>)}</div>
-        <button className="report-page__ai-summary-link report-page__no-print" type="button" onClick={() => navigate('feasibility')}>상세 판단 근거 보기 <span aria-hidden="true">→</span></button>
-      </section>
-
-      <section className="report-page__ai-summary-block report-page__ai-summary-tasks report-page__ai-summary-secondary" aria-labelledby="ai-summary-tasks-title">
-        <div className="report-page__ai-summary-block-heading"><div><p className="report-page__eyebrow">NEXT REVIEW TASKS</p><h3 id="ai-summary-tasks-title">다음 검토 과제</h3></div></div>
-        <div className="report-page__ai-summary-task-grid">{copy.nextTasks.map((task, index) => <article key={task.id}><span className="report-page__ai-summary-task-number">{String(index + 1).padStart(2, '0')}</span><h4>{task.title}</h4><p>{task.action}</p></article>)}</div>
       </section>
     </section>
   )
@@ -2083,8 +2050,8 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
         </div>
         <div className="report-page__product-decision-facts">
           <div className="report-page__product-decision-facts-grid">
-            <span className="report-page__product-decision-fact-card is-pass"><span className="report-page__product-decision-fact-label">보험성 필수 기준</span><strong className="report-page__product-decision-fact-value">{mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</strong><small>피보험이익 · 우연성 · 사행성 배제·실손보상 원칙</small></span>
-            <span className="report-page__product-decision-fact-card is-market"><span className="report-page__product-decision-fact-label">시장성</span><strong className="report-page__product-decision-fact-value">A · 84점</strong><small>성장성·보험 수요·국내 출시·신규성 기준</small></span>
+            <span id="insurance-criteria" className="report-page__product-decision-fact-card is-pass"><span className="report-page__product-decision-fact-label">보험성 필수 기준</span><strong className="report-page__product-decision-fact-value">{mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</strong><small>피보험이익 · 우연성 · 사행성 배제·실손보상 원칙</small></span>
+            <span id="marketability-criteria" className="report-page__product-decision-fact-card is-market"><span className="report-page__product-decision-fact-label">시장성</span><strong className="report-page__product-decision-fact-value">A · 84점</strong><small>성장성·보험 수요·국내 출시·신규성 기준</small></span>
             <span className="report-page__product-decision-fact-card is-tam"><span className="report-page__product-decision-fact-label">총도달가능시장</span><strong className="report-page__product-decision-fact-value">기준 연 121억 원</strong><small>추정 범위 · 연 65억~191억 원</small><em>공동주택 중심의 프로토타입 추정</em></span>
             <span className="report-page__product-decision-fact-card is-pml"><span className="report-page__product-decision-fact-label">최대가능손해(PML)</span><strong className="report-page__product-decision-fact-value">기준 {formatKrwCompact(pmlBaseScenario?.result ?? 0)}</strong><small>추정 범위 · {formatKrwCompact(FEASIBILITY_PML_DATA.range.low)}~{formatKrwCompact(FEASIBILITY_PML_DATA.range.high)}</small></span>
           </div>
@@ -3905,26 +3872,6 @@ function FullWordingSection({
   }, [selectedCoverageId, printMode])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    let previousOpenStates: boolean[] = []
-    const getDetails = () => Array.from(wordingComponentsRef.current?.querySelectorAll('details') ?? [])
-    const openDetailsForPrint = () => {
-      const details = getDetails()
-      previousOpenStates = details.map((detail) => detail.open)
-      details.forEach((detail) => { detail.open = true })
-    }
-    const restoreDetailsAfterPrint = () => {
-      getDetails().forEach((detail, index) => { detail.open = previousOpenStates[index] ?? detail.open })
-    }
-    window.addEventListener('beforeprint', openDetailsForPrint)
-    window.addEventListener('afterprint', restoreDetailsAfterPrint)
-    return () => {
-      window.removeEventListener('beforeprint', openDetailsForPrint)
-      window.removeEventListener('afterprint', restoreDetailsAfterPrint)
-    }
-    }, [])
-
-  useEffect(() => {
     if (!dedicatedPrintRequested || typeof document === 'undefined') return
     const bodyClass = 'report-page__dedicated-wording-print'
     document.body.classList.add(bodyClass)
@@ -4161,7 +4108,7 @@ const evidencePurpose = (item: EvidenceItem): string => {
 const formatEvidenceDate = (value?: string | null): string => value ? value.replace(/-/g, '.') : '기준일 확인 필요'
 
 const REPORT_SECTION_LABELS = {
-  'ai-judgment': '상품화 검토 요약',
+  'ai-judgment': '종합 브리핑',
   'coverage-gap': '보장 범위와 공백',
   wording: '약관화 가능성',
   feasibility: '상품화 종합평가',
@@ -4416,8 +4363,6 @@ type ExecutiveBriefingModel = {
   tasks: Array<{ id: string; title: string; owner: string; action: string; output: string }>
   uncertainties: Array<{ title: string; current: string; impact: string; action: string; confidence: string }>
   evidence: Array<{ id: string; title: string; source: string }>
-  reviewerStatus: BriefingReviewStatus
-  reviewerOpinion: string
 }
 
 const firstBriefingValue = (values: Array<string | undefined> | undefined, fallback: string) => values?.find((value) => typeof value === 'string' && value.trim())?.trim() ?? fallback
@@ -4507,9 +4452,18 @@ function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
     ? missingResearch.slice(0, 3).map((item) => item.topic)
     : (report.aiSummary.additionalConfirmations ?? []).slice(0, 3).map((item) => item.title)
   ).map(compactBriefingMaterial)
-  const taskSources = missingResearch.length
-    ? missingResearch
-    : report.aiSummary.nextActions?.map((item) => ({ id: item.id, topic: item.action, reason: item.reason, responsibleTeam: item.responsibleTeams?.[0], requiredMaterials: [] })) ?? []
+  const summaryTaskSources = PRODUCT_REVIEW_SUMMARY_COPY.nextTasks.map((task) => ({
+    id: task.id,
+    topic: task.title,
+    reason: task.action,
+    responsibleTeam: '상품개발',
+    requiredMaterials: [task.output],
+  }))
+  const taskSources = report.meta.dataStatus?.startsWith('ACTUAL ARTICLE') === true
+    ? (missingResearch.length
+      ? missingResearch
+      : report.aiSummary.nextActions?.map((item) => ({ id: item.id, topic: item.action, reason: item.reason, responsibleTeam: item.responsibleTeams?.[0], requiredMaterials: [] })) ?? [])
+    : summaryTaskSources
   const tasks = taskSources.map((item) => ({
       id: item.id,
       title: item.topic,
@@ -4538,7 +4492,9 @@ function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
     description: storedBriefing.disclaimer,
     conclusion,
     status: storedBriefing.decisionStatus,
-    conclusionBody: storedBriefing.checks.join(' '),
+    conclusionBody: report.meta.dataStatus?.startsWith('ACTUAL ARTICLE') === true
+      ? storedBriefing.checks.join(' ')
+      : PRODUCT_REVIEW_SUMMARY_COPY.recommendation.description,
     conclusionPoints: storedBriefing.checks.slice(0, 4),
     states,
     coreCards,
@@ -4571,85 +4527,28 @@ function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
     tasks,
     uncertainties: uncertaintyItems,
     evidence: report.evidence.slice(0, 6).map((item) => ({ id: item.id, title: item.title, source: item.source })),
-    reviewerStatus: storedBriefing.reviewerStatus,
-    reviewerOpinion: storedBriefing.reviewerOpinion,
   }
 }
 
 function ExecutiveBriefingSection({
   report,
   onNavigateTab,
-  onSaveReviewerReview,
-  onReviewerDirtyChange,
-  discardRevision = 0,
+  onOpenNoveltyComparison,
+  printMode = false,
 }: {
   report: ReportView
   onNavigateTab?: (id: ReportTabId) => void
-  onSaveReviewerReview?: (status: BriefingReviewStatus, opinion: string) => Promise<void>
-  onReviewerDirtyChange?: (dirty: boolean) => void
-  discardRevision?: number
+  onOpenNoveltyComparison?: () => void
+  printMode?: boolean
 }) {
   const briefing = createExecutiveBriefing(report)
-  const canEditReviewer = Boolean(onSaveReviewerReview)
-  const [reviewerStatus, setReviewerStatus] = useState<BriefingReviewStatus>(briefing.reviewerStatus)
-  const [reviewerOpinion, setReviewerOpinion] = useState(briefing.reviewerOpinion)
-  const [reviewerSaveState, setReviewerSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [reviewerSaveMessage, setReviewerSaveMessage] = useState('')
-  const reviewerDirty = canEditReviewer && (reviewerStatus !== briefing.reviewerStatus || reviewerOpinion !== briefing.reviewerOpinion)
-
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    setReviewerStatus(briefing.reviewerStatus)
-    setReviewerOpinion(briefing.reviewerOpinion)
-    setReviewerSaveState('idle')
-    setReviewerSaveMessage('')
-  }, [briefing.reviewerStatus, briefing.reviewerOpinion])
-
-  useEffect(() => {
-    if (!discardRevision) return
-    setReviewerStatus(briefing.reviewerStatus)
-    setReviewerOpinion(briefing.reviewerOpinion)
-    setReviewerSaveState('idle')
-    setReviewerSaveMessage('')
-  }, [briefing.reviewerStatus, briefing.reviewerOpinion, discardRevision])
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  useEffect(() => {
-    onReviewerDirtyChange?.(reviewerDirty)
-  }, [onReviewerDirtyChange, reviewerDirty])
-
-  const saveReviewerMemo = async () => {
-    if (!onSaveReviewerReview || !reviewerDirty) return
-    setReviewerSaveState('saving')
-    setReviewerSaveMessage('')
-    try {
-      await onSaveReviewerReview(reviewerStatus, reviewerOpinion)
-      setReviewerSaveState('saved')
-      setReviewerSaveMessage('저장 완료')
-    } catch (error) {
-      setReviewerSaveState('error')
-      setReviewerSaveMessage(error instanceof Error ? error.message : '메모 저장에 실패했습니다.')
-    }
-  }
 
   return (
     <section className="report-page__section report-page__briefing report-page__briefing--decision" aria-label="종합 브리핑">
-      <SectionHeading number="07" eyebrow={briefing.eyebrow} title={reportLabel(report, 'briefingTitle', '종합 브리핑')} />
-
-      <section className="report-page__decision-briefing-conclusion" aria-labelledby="decision-briefing-conclusion-title">
-        <div className="report-page__decision-briefing-conclusion-head">
-          <div><p className="report-page__decision-briefing-kicker">최종 검토 결론</p><h3 id="decision-briefing-conclusion-title">{briefing.conclusion}</h3></div><span className="report-page__decision-briefing-status">{briefing.status}</span>
-        </div>
-        <ul className="report-page__decision-briefing-conclusion-points">
-          {briefing.conclusionPoints.slice(0, 4).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}
-        </ul>
-        <div className="report-page__decision-briefing-state-grid" aria-label="최종 검토 상태 요약">
-          {briefing.states.map((state) => <div className={`report-page__decision-briefing-state report-page__decision-briefing-state--${state.tone}`} key={state.label}><span>{state.label}</span><strong>{state.value}</strong></div>)}
-        </div>
-      </section>
+      <SectionHeading number="01" eyebrow={briefing.eyebrow} title={reportLabel(report, 'briefingTitle', '종합 브리핑')} />
 
       <section className="report-page__decision-briefing-section report-page__decision-briefing-risk-context" aria-labelledby="decision-briefing-risk-context-title">
-        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">RISK CONTEXT</p><h3 id="decision-briefing-risk-context-title">위험 핵심 요약</h3></div>{onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('ai-judgment')}>위험 상세 보기 →</button> : null}</div>
+        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">RISK OVERVIEW</p><h3 id="decision-briefing-risk-context-title">검토 대상 위험</h3></div>{onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('coverage-gap')}>위험 상세 보기 →</button> : null}</div>
         <dl className="report-page__decision-briefing-risk-context-list">
           <div><dt>분석 대상 위험</dt><dd>{briefing.riskContext.target}</dd></div>
           <div><dt>주요 피해 대상</dt><dd>{briefing.riskContext.affected}</dd></div>
@@ -4657,38 +4556,124 @@ function ExecutiveBriefingSection({
         </dl>
       </section>
 
-      <section className="report-page__decision-briefing-section" aria-labelledby="decision-briefing-core-title">
-        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">CORE REVIEW RESULTS</p><h3 id="decision-briefing-core-title">핵심 검토 결과</h3></div></div>
-        <div className="report-page__decision-briefing-core-grid">
-          {briefing.coreCards.map((card) => <article className={`report-page__decision-briefing-core-card report-page__decision-briefing-core-card--${card.tone}`} key={card.id}>
-            <div className="report-page__decision-briefing-core-card-head"><h4>{card.title}</h4></div>
-            <strong className="report-page__decision-briefing-core-card-result">{card.status}</strong>
-            <ul>{card.lines.slice(0, 2).map((line) => <li key={line}><span aria-hidden="true">✓</span>{line}</li>)}</ul>
-            {onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab(card.tab)}>상세 보기 →</button> : null}
-          </article>)}
+      <section className="report-page__decision-briefing-conclusion" aria-labelledby="decision-briefing-conclusion-title">
+        <div className="report-page__decision-briefing-conclusion-head">
+          <div><p className="report-page__decision-briefing-kicker">최종 검토 결론</p><h3 id="decision-briefing-conclusion-title">{briefing.conclusion}</h3></div>
         </div>
+        <ul className="report-page__decision-briefing-conclusion-points">
+          {briefing.conclusionPoints.slice(0, 4).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}
+        </ul>
+      </section>
+
+      <SummaryCoreJudgmentsSection report={report} onNavigateTab={onNavigateTab} onOpenNoveltyComparison={onOpenNoveltyComparison} printMode={printMode} />
+
+      <section id="decision-briefing-core-results" className="report-page__decision-briefing-section report-page__decision-briefing-core-results" aria-labelledby="decision-briefing-core-title">
+        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">CORE REVIEW RESULTS</p><h3 id="decision-briefing-core-title">핵심 검토 결과</h3></div></div>
+        {printMode ? (
+          <table className="report-page__decision-briefing-core-table">
+            <caption>핵심 검토 결과</caption>
+            <thead><tr><th scope="col">검토 영역</th><th scope="col">핵심 결과</th><th scope="col">핵심 근거</th></tr></thead>
+            <tbody>{briefing.coreCards.map((card) => <tr key={card.id}>
+              <th scope="row">{card.title}</th>
+              <td>{card.status}</td>
+              <td><ul>{card.lines.slice(0, 2).map((line) => <li key={line}><span aria-hidden="true">✓</span>{line}</li>)}</ul></td>
+            </tr>)}</tbody>
+          </table>
+        ) : (
+          <div className="report-page__decision-briefing-core-grid">
+            {briefing.coreCards.map((card) => <article className={`report-page__decision-briefing-core-card report-page__decision-briefing-core-card--${card.tone} report-page__decision-briefing-core-card--${card.id}`} key={card.id}>
+              <div className="report-page__decision-briefing-core-card-head"><h4>{card.title}</h4></div>
+              <strong className="report-page__decision-briefing-core-card-result">{card.status}</strong>
+              <ul>{card.lines.slice(0, 2).map((line) => <li key={line}><span aria-hidden="true">✓</span>{line}</li>)}</ul>
+              {onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => {
+                if (card.id === 'proposal') {
+                  document.getElementById('decision-briefing-product-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  return
+                }
+                if (card.id === 'feasibility') {
+                  onNavigateTab('feasibility')
+                  window.requestAnimationFrame(() => {
+                    window.requestAnimationFrame(() => document.getElementById('insurance-criteria')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+                  })
+                  return
+                }
+                onNavigateTab(card.tab)
+              }}>상세 보기 →</button> : null}
+            </article>)}
+          </div>
+        )}
       </section>
 
       <section className="report-page__decision-briefing-section report-page__decision-briefing-finance" aria-labelledby="decision-briefing-finance-title">
         <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">KEY FINANCIAL INDICATORS</p><h3 id="decision-briefing-finance-title">핵심 정량 지표</h3></div>{onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('feasibility')}>상세 보기 →</button> : null}</div>
-        <div className="report-page__decision-briefing-finance-summary">
-          {briefing.metrics.map((metric) => <article className={`report-page__decision-briefing-finance-card report-page__decision-briefing-finance-card--${metric.tone}`} key={metric.id}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.supporting}</small><em>{metric.confidence} · 1차 추정</em></article>)}
-        </div>
+        {printMode ? (
+          <table className="report-page__decision-briefing-finance-table">
+            <caption>핵심 정량 지표</caption>
+            <thead><tr><th scope="col">지표</th><th scope="col">기준 값</th><th scope="col">범위·보조 설명</th><th scope="col">신뢰도</th></tr></thead>
+            <tbody>{briefing.metrics.map((metric) => <tr key={metric.id}><th scope="row">{metric.label}</th><td>{metric.value}</td><td>{metric.supporting}</td><td>{metric.confidence} · 1차 추정</td></tr>)}</tbody>
+          </table>
+        ) : (
+          <div className="report-page__decision-briefing-finance-summary">
+            {briefing.metrics.map((metric) => <article className={`report-page__decision-briefing-finance-card report-page__decision-briefing-finance-card--${metric.tone} report-page__decision-briefing-finance-card--${metric.id}`} key={metric.id}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.supporting}</small><em>{metric.confidence} · 1차 추정</em></article>)}
+          </div>
+        )}
       </section>
+
+      <SummaryEvaluationStatusSection report={report} onNavigateTab={onNavigateTab} printMode={printMode} />
 
       <section className="report-page__decision-briefing-section" aria-labelledby="decision-briefing-product-title">
         <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">RECOMMENDED PRODUCT</p><h3 id="decision-briefing-product-title">추천 상품 구조</h3></div>{onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('proposal')}>상세 보기 →</button> : null}</div>
-        <div className="report-page__decision-briefing-product-head"><div><span>상품명</span><strong>{briefing.product.name}</strong></div><div><span>계약 형태</span><strong>{briefing.product.structure}</strong></div></div>
-        <dl className="report-page__decision-briefing-product-facts"><div><dt>계약자</dt><dd>{briefing.product.policyholder}</dd></div><div><dt>보장 대상</dt><dd>{briefing.product.insured}</dd></div><div><dt>보장 사고</dt><dd>{briefing.product.event}</dd></div><div><dt>보장 손해</dt><dd>{briefing.product.loss}</dd></div><div><dt>보상 방식</dt><dd>{briefing.product.settlement}</dd></div></dl>
-        <div className="report-page__decision-briefing-wording-preview"><div><h4>추천 보장 문구 미리보기</h4><p>{briefing.product.wordingPreview}</p></div>{onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('wording')}>약관 검토에서 전체 문구 보기 →</button> : null}</div>
+        {printMode ? (
+          <table className="report-page__decision-briefing-product-table">
+            <caption>추천 상품 구조 요약</caption>
+            <tbody>
+              <tr className="report-page__decision-briefing-product-table-primary"><th scope="row">상품명</th><td colSpan={3}>{briefing.product.name}</td></tr>
+              <tr className="report-page__decision-briefing-product-table-primary"><th scope="row">계약 형태</th><td colSpan={3}>{briefing.product.structure}</td></tr>
+              <tr><th scope="row">계약자</th><td colSpan={3}>{briefing.product.policyholder}</td></tr>
+              <tr><th scope="row">보장 대상</th><td colSpan={3}>{briefing.product.insured}</td></tr>
+              <tr><th scope="row">보장 사고</th><td colSpan={3}>{briefing.product.event}</td></tr>
+              <tr><th scope="row">보장 손해</th><td colSpan={3}>{briefing.product.loss}</td></tr>
+              <tr><th scope="row">보상 방식</th><td colSpan={3}>{briefing.product.settlement}</td></tr>
+            </tbody>
+          </table>
+        ) : (
+          <>
+            <div className="report-page__decision-briefing-product-head"><div><span>상품명</span><strong>{briefing.product.name}</strong></div><div><span>계약 형태</span><strong>{briefing.product.structure}</strong></div></div>
+             <table className="report-page__decision-briefing-product-facts-table">
+               <tbody>
+                 <tr><th scope="row">계약자</th><td>{briefing.product.policyholder}</td></tr>
+                 <tr><th scope="row">보장 대상</th><td>{briefing.product.insured}</td></tr>
+                 <tr><th scope="row">보장 사고</th><td>{briefing.product.event}</td></tr>
+                 <tr><th scope="row">보장 손해</th><td>{briefing.product.loss}</td></tr>
+                 <tr><th scope="row">보상 방식</th><td>{briefing.product.settlement}</td></tr>
+               </tbody>
+             </table>
+          </>
+        )}
+        <div className="report-page__decision-briefing-wording-preview"><div className="report-page__decision-briefing-wording-preview-head"><h4>추천 보장 문구 미리보기</h4>{onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('wording')}>약관 검토에서 전체 문구 보기 →</button> : null}</div><p>{briefing.product.wordingPreview}</p></div>
       </section>
 
-      <section className="report-page__decision-briefing-section" aria-labelledby="decision-briefing-decisions-title">
+      <section className="report-page__decision-briefing-section report-page__decision-briefing-actions" aria-labelledby="decision-briefing-decisions-title">
         <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">DECISION & ACTIONS</p><h3 id="decision-briefing-decisions-title">실무 결정사항 및 우선 실행 과제</h3></div></div>
-        <div className="report-page__decision-briefing-work-grid">
-          <article className="report-page__decision-briefing-work-column"><h4>회의에서 결정할 사항</h4><p className="report-page__decision-briefing-work-role">상품·약관 조건 중 실무 회의에서 선택하거나 확정할 항목</p><ul className="report-page__decision-briefing-decision-checklist">{briefing.decisions.slice(0, 4).map((item) => <li key={item.id}><span aria-hidden="true">□</span><div><strong>{item.title}</strong><p>{item.decision}</p></div></li>)}</ul></article>
-          <article className="report-page__decision-briefing-work-column"><div className="report-page__decision-briefing-work-column-head"><div><h4>우선 실행 과제</h4><p className="report-page__decision-briefing-work-role">결정을 위해 실제 자료를 확보하거나 검토할 작업</p></div>{onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('evidence')}>전체 과제 보기 →</button> : null}</div><ol className="report-page__decision-briefing-task-list">{briefing.tasks.slice(0, 3).map((task, index) => <li key={task.id}><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{task.title}</strong><p>{task.action}</p></div></li>)}</ol></article>
-        </div>
+        {printMode ? (
+          <div className="report-page__decision-briefing-print-action-tables">
+            <table>
+              <caption>회의에서 결정할 사항</caption>
+              <thead><tr><th scope="col">항목</th><th scope="col">결정 내용</th></tr></thead>
+              <tbody>{briefing.decisions.slice(0, 4).map((item) => <tr key={item.id}><th scope="row">{item.title}</th><td>{item.decision}</td></tr>)}</tbody>
+            </table>
+            <table>
+              <caption>우선 실행 과제</caption>
+              <thead><tr><th scope="col">순번</th><th scope="col">과제</th><th scope="col">실행 내용</th></tr></thead>
+              <tbody>{briefing.tasks.slice(0, 3).map((task, index) => <tr key={task.id}><th scope="row">{String(index + 1).padStart(2, '0')}</th><td>{task.title}</td><td>{task.action}</td></tr>)}</tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="report-page__decision-briefing-work-grid">
+            <article className="report-page__decision-briefing-work-column"><h4>회의에서 결정할 사항</h4><p className="report-page__decision-briefing-work-role">상품·약관 조건 중 실무 회의에서 선택하거나 확정할 항목</p><ul className="report-page__decision-briefing-decision-checklist">{briefing.decisions.slice(0, 4).map((item) => <li key={item.id}><span aria-hidden="true">□</span><div><strong>{item.title}</strong><p>{item.decision}</p></div></li>)}</ul></article>
+            <article className="report-page__decision-briefing-work-column"><div className="report-page__decision-briefing-work-column-head"><div><h4>우선 실행 과제</h4><p className="report-page__decision-briefing-work-role">결정을 위해 실제 자료를 확보하거나 검토할 작업</p></div>{onNavigateTab ? <button className="report-page__text-button report-page__no-print" type="button" onClick={() => onNavigateTab('evidence')}>전체 과제 보기 →</button> : null}</div><ol className="report-page__decision-briefing-task-list">{briefing.tasks.slice(0, 3).map((task, index) => <li key={task.id}><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{task.title}</strong><p>{task.action}</p></div></li>)}</ol></article>
+          </div>
+        )}
       </section>
 
       <section className="report-page__decision-briefing-section" aria-labelledby="decision-briefing-evidence-title">
@@ -4697,27 +4682,16 @@ function ExecutiveBriefingSection({
         <div className="report-page__decision-briefing-missing"><h4>핵심 추가 확보 자료</h4><ul>{briefing.additionalMaterials.length ? briefing.additionalMaterials.map((item) => <li key={item}>{item}</li>) : <li>확인 필요</li>}</ul></div>
       </section>
 
-      <section className="report-page__decision-briefing-reviewer" aria-labelledby="decision-briefing-reviewer-title">
-        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">PRACTITIONER REVIEW</p><h3 id="decision-briefing-reviewer-title">실무자 검토</h3></div><StatusBadge>{canEditReviewer ? reviewerStatus : briefing.reviewerStatus}</StatusBadge></div>
-        {canEditReviewer ? (
-          <div className="report-page__briefing-reviewer-editor">
-            <label className="report-page__briefing-reviewer-field"><span>검토 상태</span><select value={reviewerStatus} onChange={(event) => { setReviewerStatus(event.target.value as BriefingReviewStatus); setReviewerSaveState('idle'); setReviewerSaveMessage('') }}><option value="미검토">미검토</option><option value="검토 중">검토 중</option><option value="검토 완료">검토 완료</option></select></label>
-            <label className="report-page__briefing-reviewer-field"><span>실무자 검토 메모</span><textarea value={reviewerOpinion} rows={5} placeholder="종합 검토 결과에 대한 실무자 의견을 작성해 주세요." onChange={(event) => { setReviewerOpinion(event.target.value); setReviewerSaveState('idle'); setReviewerSaveMessage('') }} /></label>
-            <div className="report-page__briefing-reviewer-actions"><button className="report-page__button report-page__button--secondary" type="button" disabled={!reviewerDirty || reviewerSaveState === 'saving'} onClick={() => void saveReviewerMemo()}>{reviewerSaveState === 'saving' ? '저장 중…' : '메모 저장'}</button>{reviewerSaveMessage ? <span className={`report-page__briefing-reviewer-save-message report-page__briefing-reviewer-save-message--${reviewerSaveState}`} role="status">{reviewerSaveMessage}</span> : null}</div>
-          </div>
-        ) : reviewerStatus === '미검토' && !reviewerOpinion.trim() ? <p className="report-page__briefing-reviewer-empty">실무자 검토 전</p> : <div className="report-page__briefing-reviewer-saved"><p><strong>검토 상태</strong>{reviewerStatus}</p>{reviewerOpinion.trim() ? <p><strong>실무자 메모</strong>{reviewerOpinion}</p> : null}</div>}
-      </section>
     </section>
   )
 }
 
 const REPORT_TABS = [
-  { id: 'ai-judgment', label: '상품화 검토 요약', panelId: 'report-panel-ai-judgment' },
+  { id: 'ai-judgment', label: '종합 브리핑', panelId: 'report-panel-ai-judgment' },
+  { id: 'feasibility', label: '상품화 종합평가', panelId: 'report-panel-feasibility' },
   { id: 'coverage-gap', label: '보장 공백', panelId: 'report-panel-coverage-gap' },
   { id: 'wording', label: '약관 검토', panelId: 'report-panel-wording' },
-  { id: 'feasibility', label: '상품화 종합평가', panelId: 'report-panel-feasibility' },
   { id: 'proposal', label: '상품 개발 제안', panelId: 'report-panel-proposal' },
-  { id: 'briefing', label: '종합 브리핑', panelId: 'report-panel-briefing' },
   { id: 'evidence', label: '근거자료 및 추가 확인사항', panelId: 'report-panel-evidence' },
 ] as const
 
@@ -4727,7 +4701,6 @@ type PdfPrintOptions = {
   includeCover: boolean
   includePageNumbers: boolean
   includeGeneratedAt: boolean
-  includeAiOriginal: boolean
 }
 
 type PdfPrintRequest = {
@@ -4741,7 +4714,6 @@ const DEFAULT_PDF_OPTIONS: PdfPrintOptions = {
   includeCover: true,
   includePageNumbers: true,
   includeGeneratedAt: true,
-  includeAiOriginal: true,
 }
 
 function ReportPdfMenu({
@@ -4997,8 +4969,7 @@ function ReportPdfCover({
   return (
     <section className="report-page__pdf-cover" aria-label="PDF 표지">
       <p className="report-page__eyebrow">INSURANCE PRODUCT REVIEW</p>
-      <h1>{report.meta.title}</h1>
-      <p className="report-page__pdf-cover-label">상품화 검토 리포트</p>
+      <h1>{displayReportTitle(report.meta.title)}</h1>
       <dl className="report-page__pdf-cover-meta">
         <div><dt>위험 ID</dt><dd>{report.meta.sourceRiskId}</dd></div>
         <div><dt>분석 기준일</dt><dd>{displayDate(report.meta.analysisBaseDate)}</dd></div>
@@ -5018,9 +4989,7 @@ function ReportPdfDocument({
   request: PdfPrintRequest
 }) {
   const { options, sections } = request
-  const renderableSections = sections.filter((id) =>
-    id !== 'ai-judgment' || options.includeAiOriginal,
-  )
+  const renderableSections = sections
 
   const includes = (id: ReportTabId) => renderableSections.includes(id)
   return (
@@ -5033,8 +5002,11 @@ function ReportPdfDocument({
         />
       ) : null}
       <div className="report-page__pdf-sections">
-        {includes('ai-judgment') && options.includeAiOriginal ? (
-          <div className="report-page__pdf-section" data-pdf-section="ai-judgment"><AiSummarySection report={report} /></div>
+        {includes('ai-judgment') ? (
+          <div className="report-page__pdf-section" data-pdf-section="ai-judgment"><ExecutiveBriefingSection report={report} printMode /></div>
+        ) : null}
+        {includes('feasibility') ? (
+          <div className="report-page__pdf-section" data-pdf-section="feasibility"><FeasibilitySection report={report} printMode /></div>
         ) : null}
         {includes('coverage-gap') ? (
           <div className="report-page__pdf-section" data-pdf-section="coverage-gap"><RiskGapSection report={report} printMode /></div>
@@ -5044,16 +5016,8 @@ function ReportPdfDocument({
             <FullWordingSection report={report} onOpenDocument={() => undefined} onOpenPolicyDraft={() => undefined} printMode />
           </div>
         ) : null}
-        {includes('feasibility') ? (
-          <div className="report-page__pdf-section" data-pdf-section="feasibility"><FeasibilitySection report={report} printMode /></div>
-        ) : null}
         {includes('proposal') ? (
           <div className="report-page__pdf-section" data-pdf-section="proposal"><ProductProposalSection report={report} printMode /></div>
-        ) : null}
-        {includes('briefing') ? (
-          <div className="report-page__pdf-section" data-pdf-section="briefing">
-            <ExecutiveBriefingSection report={report} />
-          </div>
         ) : null}
         {includes('evidence') ? (
           <div className="report-page__pdf-section" data-pdf-section="evidence">
@@ -5091,7 +5055,6 @@ function PdfSelectionModal({
     ['includeCover', '표지 포함'],
     ['includePageNumbers', '페이지 번호'],
     ['includeGeneratedAt', '생성일시'],
-    ['includeAiOriginal', 'AI 원본 포함'],
   ]
   return (
     <ReportModal eyebrow="PDF EXPORT" title="선택 항목 출력" onClose={onClose}>
@@ -5283,15 +5246,29 @@ export function ReportSections({
   }, [activeTab, editorDirty, editorMode, editorPreview, reviewInputDirty, savedReport])
 
   useEffect(() => {
+    let previousOpenStates: Array<{ detail: HTMLDetailsElement; open: boolean }> = []
+    const openDetailsForPrint = () => {
+      const details = Array.from(document.querySelectorAll<HTMLDetailsElement>('.report-page details'))
+      previousOpenStates = details.map((detail) => ({ detail, open: detail.open }))
+      details.forEach((detail) => { detail.open = true })
+    }
     const restoreAfterPrint = () => {
+      previousOpenStates.forEach(({ detail, open }) => {
+        if (detail.isConnected) detail.open = open
+      })
+      previousOpenStates = []
       setPdfRequest(createDefaultPdfRequest())
       if (previousDocumentTitle.current !== null) {
         document.title = previousDocumentTitle.current
         previousDocumentTitle.current = null
       }
     }
+    window.addEventListener('beforeprint', openDetailsForPrint)
     window.addEventListener('afterprint', restoreAfterPrint)
-    return () => window.removeEventListener('afterprint', restoreAfterPrint)
+    return () => {
+      window.removeEventListener('beforeprint', openDetailsForPrint)
+      window.removeEventListener('afterprint', restoreAfterPrint)
+    }
   }, [])
 
   const requestPdfPrint = (sections: ReportTabId[], options: PdfPrintOptions, filename: string) => {
@@ -5392,28 +5369,6 @@ export function ReportSections({
       return { persisted: true }
     } catch (error) {
       // Roll back an optimistic review update when the save endpoint rejects it.
-      setSavedReport(cloneReport(previousReport))
-      setDraftReport(cloneReport(previousReport))
-      throw error
-    }
-  }
-
-  const saveBriefingReview = async (status: BriefingReviewStatus, opinion: string) => {
-    if (!reportProxy.saveReportContent) {
-      throw new Error('저장 기능이 설정되지 않았습니다.')
-    }
-    const withStatus = updateReportContent(savedReport, ['ui', 'briefing', 'reviewerStatus'], status)
-    const nextReport = updateReportContent(withStatus, ['ui', 'briefing', 'reviewerOpinion'], opinion)
-    const previousReport = savedReport
-    setSavedReport(cloneReport(nextReport))
-    setDraftReport(cloneReport(nextReport))
-    try {
-      await reportProxy.saveReportContent({
-        reportId: sourceReport.meta.sourceRiskId,
-        content: nextReport,
-      })
-      setReviewInputDirty(false)
-    } catch (error) {
       setSavedReport(cloneReport(previousReport))
       setDraftReport(cloneReport(previousReport))
       throw error
@@ -5536,12 +5491,16 @@ export function ReportSections({
       <ReportTabs activeTab={activeTab} onChange={handleTabChange} />
       <div className="report-page__tab-panels">
         <ReportTabPanel id="report-panel-ai-judgment" tabId="ai-judgment" index={0} active={activeTab === 'ai-judgment'} onChange={handleTabChange}>
-          {editorMode && activeTab === 'ai-judgment' ? <ReportEditorPanel activeTab="ai-judgment" report={draftReport} onChange={handleDraftChange} /> : <AiSummarySection report={report} onNavigateTab={handleTabChange} onOpenNoveltyComparison={() => setNoveltyAccordionRequest('comparison')} />}
+          {editorMode && activeTab === 'ai-judgment' ? <ReportEditorPanel activeTab="briefing" report={draftReport} onChange={handleDraftChange} /> : <ExecutiveBriefingSection report={report} onNavigateTab={handleTabChange} onOpenNoveltyComparison={() => setNoveltyAccordionRequest('comparison')} />}
         </ReportTabPanel>
-        <ReportTabPanel id="report-panel-coverage-gap" tabId="coverage-gap" index={1} active={activeTab === 'coverage-gap'} onChange={handleTabChange}>
+        <ReportTabPanel id="report-panel-feasibility" tabId="feasibility" index={1} active={activeTab === 'feasibility'} onChange={handleTabChange}>
+          {editorMode && activeTab === 'feasibility' ? <ReportEditorPanel activeTab="feasibility" report={draftReport} onChange={handleDraftChange} openCriterionId={feasibilityOpenId} onOpenCriterion={setFeasibilityOpenId} /> : <FeasibilitySection report={report} openCriterionId={feasibilityOpenId} onOpenCriterion={setFeasibilityOpenId} onNavigateTab={handleTabChange} onSaveReview={saveCriterionReview} onInputDirtyChange={setReviewInputDirty} discardRevision={reviewDiscardRevision} noveltyAccordionRequest={noveltyAccordionRequest} onNoveltyAccordionRequestHandled={() => setNoveltyAccordionRequest(null)} />}
+        </ReportTabPanel>
+
+        <ReportTabPanel id="report-panel-coverage-gap" tabId="coverage-gap" index={2} active={activeTab === 'coverage-gap'} onChange={handleTabChange}>
           {editorMode && activeTab === 'coverage-gap' ? <ReportEditorPanel activeTab="coverage-gap" report={draftReport} onChange={handleDraftChange} /> : <RiskGapSection report={report} onNavigateTab={handleTabChange} />}
         </ReportTabPanel>
-        <ReportTabPanel id="report-panel-wording" tabId="wording" index={2} active={activeTab === 'wording'} onChange={handleTabChange}>
+        <ReportTabPanel id="report-panel-wording" tabId="wording" index={3} active={activeTab === 'wording'} onChange={handleTabChange}>
           {editorMode && activeTab === 'wording' ? <ReportEditorPanel activeTab="wording" report={draftReport} onChange={handleDraftChange} /> : (
             <FullWordingSection
               report={report}
@@ -5551,16 +5510,10 @@ export function ReportSections({
             />
           )}
         </ReportTabPanel>
-        <ReportTabPanel id="report-panel-feasibility" tabId="feasibility" index={3} active={activeTab === 'feasibility'} onChange={handleTabChange}>
-          {editorMode && activeTab === 'feasibility' ? <ReportEditorPanel activeTab="feasibility" report={draftReport} onChange={handleDraftChange} openCriterionId={feasibilityOpenId} onOpenCriterion={setFeasibilityOpenId} /> : <FeasibilitySection report={report} openCriterionId={feasibilityOpenId} onOpenCriterion={setFeasibilityOpenId} onNavigateTab={handleTabChange} onSaveReview={saveCriterionReview} onInputDirtyChange={setReviewInputDirty} discardRevision={reviewDiscardRevision} noveltyAccordionRequest={noveltyAccordionRequest} onNoveltyAccordionRequestHandled={() => setNoveltyAccordionRequest(null)} />}
-        </ReportTabPanel>
         <ReportTabPanel id="report-panel-proposal" tabId="proposal" index={4} active={activeTab === 'proposal'} onChange={handleTabChange}>
           {editorMode && activeTab === 'proposal' ? <ReportEditorPanel activeTab="proposal" report={draftReport} onChange={handleDraftChange} /> : <ProductProposalSection report={report} onNavigateTab={handleTabChange} />}
         </ReportTabPanel>
-        <ReportTabPanel id="report-panel-briefing" tabId="briefing" index={5} active={activeTab === 'briefing'} onChange={handleTabChange}>
-          {editorMode && activeTab === 'briefing' ? <ReportEditorPanel activeTab="briefing" report={draftReport} onChange={handleDraftChange} /> : <ExecutiveBriefingSection report={report} onNavigateTab={handleTabChange} onSaveReviewerReview={editorPreview ? undefined : saveBriefingReview} onReviewerDirtyChange={editorPreview ? undefined : setReviewInputDirty} discardRevision={reviewDiscardRevision} />}
-        </ReportTabPanel>
-        <ReportTabPanel id="report-panel-evidence" tabId="evidence" index={6} active={activeTab === 'evidence'} onChange={handleTabChange}>
+        <ReportTabPanel id="report-panel-evidence" tabId="evidence" index={5} active={activeTab === 'evidence'} onChange={handleTabChange}>
           {editorMode && activeTab === 'evidence' ? <ReportEditorPanel activeTab="evidence" report={draftReport} onChange={handleDraftChange} /> : (
             <EvidenceResearchSection
               report={report}

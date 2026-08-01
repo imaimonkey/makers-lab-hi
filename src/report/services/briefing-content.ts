@@ -59,7 +59,7 @@ const createDefaults = (report: ReportResult): BriefingContent => {
       lines: [
         actualArticle
           ? firstValue(coverageRows.map((item) => asText(item.remainingGap, '')), unknown)
-          : (gapCount ? '기존 자동차·화재보험 적용 후에도 책임 확정 전 보상 지연과 보상한도 공백이 남을 수 있음' : '기존 보험의 보상 범위와 보상 후 남는 공백을 확인함'),
+          : (gapCount ? '기존 자동차보험·화재보험 적용 후에도 책임 확정 전 보상 지연과 보상한도 공백이 남을 수 있음' : '기존 보험의 보상 범위와 보상 후 남는 공백을 확인함'),
         actualArticle ? firstValue(keyGaps.map((item) => asText(item.description ?? item.title, '')), unknown) : '보험별 우선 보상 순서와 구상관계 확인이 필요함',
       ],
     },
@@ -69,7 +69,7 @@ const createDefaults = (report: ReportResult): BriefingContent => {
       status: aiJudgment === 'review_worthy' ? '검토 후보' : '추가 확인',
       lines: [
         actualArticle ? firstValue([feasibility.overallAssessment?.conclusion], unknown) : '보험성 필수 요건을 충족하여 상품화 후보로 검토할 수 있음',
-        firstValue(feasibility.overallAssessment?.improvements ?? [], actualArticle ? unknown : '실제 계약 수요와 손해 규모 관련 자료 보완이 필요함'),
+        firstValue(feasibility.overallAssessment?.improvements ?? [], actualArticle ? unknown : '책임주체와 보험금 지급 요건 등 일부 실무 기준의 구체화가 필요함'),
       ],
     },
     {
@@ -78,7 +78,7 @@ const createDefaults = (report: ReportResult): BriefingContent => {
       status: report.productProposal.recommendedForm ? '우선 제안' : '작성 필요',
       lines: actualArticle
         ? [`${proposalForm}`, firstValue([report.productProposal.coveredLoss, report.productProposal.existingInsuranceRelationship], unknown)]
-        : [`${proposalForm} 기반의 기존 보험 보완형 구조를 우선 제안함`, '기존 보험에서 보상한 금액을 제외한 잔여 손해를 보완하는 방식임'],
+        : ['기업·기관 단체계약 또는 정책연계형 보완보험 구조를 우선 제안함', '기존 보험에서 보상한 금액을 제외한 잔여 손해를 보완하는 방식임'],
     },
     {
       id: 'wording',
