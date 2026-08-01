@@ -9,6 +9,7 @@ import {
 import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
 import { RiskDecisionWorkspace } from '../../features/risk-detail/RiskDecisionWorkspace'
 import { EvidenceVerificationWorkspace } from '../../features/risk-detail/EvidenceVerificationWorkspace'
+import { RiskArticleOverview } from '../../features/risk-detail/RiskArticleOverview'
 import { buildAiQualitativeSummary, buildAssessmentAiSummary, getAssessmentEvidence } from '../../features/risk-detail/qualitativeAssessment'
 import type { RadarNewsDetail } from '../../domain/risk/riskRadarTypes'
 import { getRadarArticleId } from '../../domain/risk/riskRadarMappings'
@@ -117,7 +118,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
         step="03"
         eyebrow="RISK ASSESSMENT / CANDIDATE DETAIL"
         title="위험상세"
-        description="무엇을 먼저 검토할지 정하고, 6개 평가 기준과 원문 근거를 확인하는 화면입니다."
+          description="위험 후보의 맥락과 손해 경로를 기사처럼 읽고, 연결된 근거와 평가 기준을 확인하는 화면입니다."
       />
       <nav className="sh-command-bar" aria-label="위험상세 명령 바">
         <div className="sh-command-context">
@@ -170,6 +171,8 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           </details>
         </div>
       </section>
+
+      <RiskArticleOverview risk={risk} detail={detail} article={liveArticle} analysis={liveAnalysis} sourceLabel={detailSourceLabel} />
 
       <section className="detail-grid detail-assessment-grid" id="assessment-criteria">
         <article className="assessment-panel surface-card">
