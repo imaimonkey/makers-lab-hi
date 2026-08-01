@@ -98,14 +98,12 @@ function metricValueIsUnconfirmed(value: string) {
   return value.includes('확인 필요')
 }
 
-const CATEGORY_TABS_COLLAPSE_DISTANCE = 72
 const CATEGORY_TABS_REVEAL_DISTANCE = 4
 
 function useRiskCategoryTabsVisibility() {
   const [isVisible, setIsVisible] = useState(true)
   const visibilityRef = useRef(true)
   const previousScrollYRef = useRef(0)
-  const downwardScrollDistanceRef = useRef(0)
 
   useEffect(() => {
     const setVisibility = (nextVisibility: boolean) => {
@@ -120,20 +118,14 @@ function useRiskCategoryTabsVisibility() {
       const scrollDelta = currentScrollY - previousScrollYRef.current
       previousScrollYRef.current = currentScrollY
 
-      if (currentScrollY <= 16) {
-        downwardScrollDistanceRef.current = 0
-        setVisibility(true)
-        return
-      }
-
       if (scrollDelta > 0) {
-        downwardScrollDistanceRef.current += scrollDelta
-        if (downwardScrollDistanceRef.current >= CATEGORY_TABS_COLLAPSE_DISTANCE) setVisibility(false)
+        // Hide on the first downward scroll event. The previous distance
+        // threshold made the tab appear stuck until the page was touched.
+        setVisibility(false)
         return
       }
 
       if (scrollDelta <= -CATEGORY_TABS_REVEAL_DISTANCE) {
-        downwardScrollDistanceRef.current = 0
         setVisibility(true)
       }
     }
@@ -172,7 +164,7 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
           <div className="risk-screening-score-wrap">
             {score === null ? <span className="risk-metric-badge warning">[추가 검토]</span> : <strong>{formatScreeningScore(score)}</strong>}
             {score !== null && score !== undefined ? <i aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(0, score / 5 * 100))}%` }} /></i> : null}
-            <small>{legalPriority ? `법률 우선 ${legalPriority.toFixed(1)} · 시행·제재 반영` : developerMode ? '0-5 · 실제 Step 2 결과' : '0-5 · 예비 평가'}</small>
+            {legalPriority ? <small>법률 우선 {legalPriority.toFixed(1)} · 시행·제재 반영</small> : developerMode ? <small>0-5 · 실제 Step 2 결과</small> : null}
             <em>{screeningStatusLabel(record, score)}</em>
           </div>
         </td>
@@ -423,13 +415,18 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
             </div>
             {totalPages > 1 ? (
               <nav className="risk-screening-pagination" aria-label="상품화 우선 검토 후보 페이지">
-                <span className="risk-screening-pagination-label">페이지 이동</span>
                 <div className="risk-screening-pagination-buttons">
+                  <button type="button" className="risk-screening-pagination-arrow" disabled={currentPage === 1} onClick={() => { setScreeningPage(currentPage - 1); setSelectedRecordId(undefined) }}>
+                    ‹ 이전
+                  </button>
                   {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
                     <button key={pageNumber} type="button" className={pageNumber === currentPage ? 'active' : ''} aria-current={pageNumber === currentPage ? 'page' : undefined} onClick={() => { setScreeningPage(pageNumber); setSelectedRecordId(undefined) }}>
-                      {pageNumber}페이지
+                      {pageNumber}
                     </button>
                   ))}
+                  <button type="button" className="risk-screening-pagination-arrow" disabled={currentPage === totalPages} onClick={() => { setScreeningPage(currentPage + 1); setSelectedRecordId(undefined) }}>
+                    다음 ›
+                  </button>
                 </div>
               </nav>
             ) : null}
