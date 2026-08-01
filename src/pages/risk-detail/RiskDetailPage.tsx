@@ -181,10 +181,15 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
               <div className="assessment-row" key={item.label}>
                 <div><strong>{item.label}</strong><small>{item.evidenceStatus === 'verified' ? `${assessmentEvidence.length}건 연결 근거` : developerMode && step3Results.length ? `Step 3 원장 ${detail.evidence.length}건 · 지표별 연결 보류` : `${assessmentEvidence.length}건 연결 근거`} · 신뢰도 {item.confidence}</small><span className={`assessment-evidence-status ${item.evidenceStatus === 'verified' ? 'is-verified' : 'is-pending'}`}>{item.evidenceStatus === 'verified' ? '원문 인용 확인' : '원문 인용 확인 필요'}</span></div>
                 <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}<small>/100</small><em>AI 원점수 {item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)}/5</em></strong></div>
-                <p className="assessment-reason"><b>왜 이 점수인가</b>{item.note}</p>
-                {item.evidenceQuotes?.length ? <div className="assessment-quotes"><b>원문 인용</b>{item.evidenceQuotes.map((quote) => <q key={quote}>{quote}</q>)}</div> : <div className="assessment-quotes is-pending"><b>원문 인용</b><span>{developerMode && step3Results.length ? 'Step 3 결과에 이 지표를 직접 가리키는 evidenceRefs·인용 연결이 없어, AI 사유는 표시하되 지표별 근거 확정은 보류했습니다.' : 'Step 2 저장 결과에 정확한 인용 구간이 없어, AI 사유는 표시하되 근거 확정은 보류했습니다.'}</span></div>}
+                 <p className="assessment-reason"><b>왜 이 점수인가</b>{item.note}</p>
+                 {item.evidenceQuotes?.length ? <div className="assessment-quotes"><b>원문 인용</b>{item.evidenceQuotes.map((quote) => <q key={quote}>{quote}</q>)}</div> : <div className="assessment-quotes is-pending"><b>원문 인용</b><span>{developerMode && step3Results.length ? 'Step 3 결과에 이 지표를 직접 가리키는 evidenceRefs·인용 연결이 없어, AI 사유는 표시하되 지표별 근거 확정은 보류했습니다.' : 'Step 2 저장 결과에 정확한 인용 구간이 없어, AI 사유는 표시하되 근거 확정은 보류했습니다.'}</span></div>}
+                <div className="assessment-logic-preview" aria-label={`${item.label} 산출 요약`}>
+                  <div><span>산출 입력</span><strong>{item.inputs ?? '연결된 원자료 확인 필요'}</strong></div>
+                  <div><span>적용 산식</span><strong>{item.formula ?? '원점수 ÷ 5 × 100'}</strong></div>
+                  <div><span>계산 결과</span><strong>{item.calculation ?? `${item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)} ÷ 5 × 100 = ${item.score}`}</strong></div>
+                </div>
                 <details className="assessment-logic">
-                   <summary>계산·자료 보기</summary>
+                   <summary>상세 산출 근거 보기</summary>
                   <dl className="assessment-logic-grid">
                     <div><dt>입력값</dt><dd>{item.inputs ?? '연결된 원자료 확인 필요'}</dd></div>
                     <div><dt>계산식</dt><dd>{item.formula ?? '연결된 원자료를 확인한 뒤 계산합니다.'}</dd></div>

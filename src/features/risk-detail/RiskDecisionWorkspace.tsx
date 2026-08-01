@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { SampleRiskCandidate, SampleRiskDetail, SampleRiskEvidence } from '../../domain/risk/sampleData'
 import { toEvidenceLedger, type EvidenceLedgerItem } from '../../domain/risk/evidenceLedger'
 import { AppIcon } from '../../shared/components/AppIcon'
@@ -58,25 +58,6 @@ export function RiskDecisionWorkspace({
   const [showTable, setShowTable] = useState(false)
   const [showEvidence, setShowEvidence] = useState(false)
   const [showJudgmentDetail, setShowJudgmentDetail] = useState(true)
-  const [checksSavedAt, setChecksSavedAt] = useState<string | null>(null)
-  const [checkedNextSteps, setCheckedNextSteps] = useState<string[]>(() => {
-    try {
-      const saved = window.localStorage.getItem(`risk-next-checks:${risk.id}`)
-      const parsed = saved ? JSON.parse(saved) as unknown : []
-      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : []
-    } catch {
-      return []
-    }
-  })
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(`risk-next-checks:${risk.id}`, JSON.stringify(checkedNextSteps))
-    } catch {
-      // Local SAMPLE progress is optional when browser storage is unavailable.
-    }
-  }, [checkedNextSteps, risk.id])
-
   const evidenceLedger = useMemo(() => toEvidenceLedger(detail.evidence), [detail.evidence])
   const evidenceTypes = useMemo(
     () => ['전체', ...new Set(evidenceLedger.map((item) => item.type))],
@@ -102,47 +83,15 @@ export function RiskDecisionWorkspace({
     ? Math.round(savedChangeRate)
     : actualTrend || developerMode ? 0 : Math.round(((risk.signalStrength - minTrend) / Math.max(minTrend, 1)) * 100)
   const hasTrendRate = actualTrend ? Number.isFinite(savedChangeRate) : !developerMode
-  const driverScores = [
-    { label: '증가성', assessmentId: 'assessment:trend', score: detail.assessments[1]?.score ?? risk.signalStrength, reason: detail.assessments[1]?.note ?? '추가 확인 필요' },
-    { label: '피해 심각성', assessmentId: 'assessment:severity', score: detail.assessments[2]?.score ?? risk.signalStrength, reason: detail.assessments[2]?.note ?? detail.primaryLoss },
-    { label: '보험 사각지대', assessmentId: 'assessment:coverage-gap', score: detail.assessments[4]?.score ?? 50, reason: detail.assessments[4]?.note ?? '보장 공백 확인 필요' },
-  ]
   const linkedSourceCount = evidenceLedger.filter((item) => getSafeSourceUrl(item.sourceUrl ?? null)).length
-  const nextSteps = detail.decisionChecks.slice(0, 3).map((label, index) => ({
-    label,
-    kind: index === 0 ? '우선 확인' : index === 1 ? '보장·책임 확인' : '재검토 조건',
-  }))
   const aiQualitativeSummary = developerMode
     ? step3Text(step3Decision.logicComment, step3Text(step3Decision.summary, buildAiQualitativeSummary(risk, detail)))
     : buildAiQualitativeSummary(risk, detail)
   const decisionSummary = detail.decisionTitle.replace(/\s+/g, ' ')
   const judgmentSignals = buildJudgmentSignalDetails(risk, detail)
 
-  function toggleNextStep(label: string) {
-    setChecksSavedAt(new Date().toISOString())
-    setCheckedNextSteps((current) => current.includes(label)
-      ? current.filter((item) => item !== label)
-      : [...current, label])
-  }
-
   return (
     <section className="detail-workspace" aria-label="위험상세 평가 워크스페이스">
-      <article className="detail-driver-panel surface-card">
-        <div><p className="eyebrow">주요 평가 요인</p><h2>우선 검토 지수를 설명하는 요인</h2><p>6개 평가 중 현재 먼저 확인할 이유가 큰 항목을 보여줍니다.</p>{driverScores.map((driver) => <div className="detail-driver-row" key={driver.label}><span>{driver.label}</span><div><i style={{ width: `${driver.score}%` }} /></div><strong>{(driver.score / 20).toFixed(1)}/5</strong><small>{driver.reason}</small></div>)}</div>
-      </article>
-
-      <section className="detail-next-checks surface-card" aria-labelledby="next-checks-title">
-        <div className="detail-next-checks-heading"><div><p className="eyebrow">NEXT REVIEW ACTIONS</p><h2 id="next-checks-title">판단 전 확인할 항목</h2><p>결론 확정 전에 근거를 확인하는 작업 목록입니다. 체크 상태는 이 브라우저에만 저장됩니다.{checksSavedAt ? ` 마지막 저장 ${new Date(checksSavedAt).toLocaleString('ko-KR')}` : ''}</p></div><strong>{checkedNextSteps.length}<small>/{nextSteps.length} 완료</small></strong></div>
-        <div className="detail-next-check-list">
-          {nextSteps.map((step, index) => (
-            <label className={checkedNextSteps.includes(step.label) ? 'is-checked' : ''} key={step.label}>
-              <input type="checkbox" checked={checkedNextSteps.includes(step.label)} onChange={() => toggleNextStep(step.label)} />
-              <span><small>0{index + 1} · {step.kind}</small><strong>{step.label}</strong></span>
-            </label>
-          ))}
-        </div>
-      </section>
-
       <div className="detail-workspace-grid" id="assessment-signal">
         <article className="detail-trend-panel surface-card">
            <div className="panel-heading">
