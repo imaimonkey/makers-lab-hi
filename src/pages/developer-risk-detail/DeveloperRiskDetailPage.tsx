@@ -32,7 +32,6 @@ export function DeveloperRiskDetailPage() {
       ])
       const article = articles.find((item) => item.id === articleId)
       if (!article) throw new Error('연결된 src/article PDF를 찾을 수 없습니다.')
-      if (!saved.rows.length) throw new Error('페이지 2에서 Step 2 전체 실행을 먼저 진행해 주세요.')
       setArticleRecord({ id: article.id, title: article.title, source: article.source ?? 'src/article', collectedAt: article.collectedAt ?? new Date().toISOString(), text: article.text })
       const actualStep3Rows = step3.filter((row) => row.riskId === `developer-${articleId}` && row.articleId === articleId && row.mode !== 'mock')
       setStep3Rows(actualStep3Rows)
@@ -53,7 +52,7 @@ export function DeveloperRiskDetailPage() {
   }, [reload])
 
   if (loading) {
-    return <div className="page detail-page sh-visual"><p>실제 아티클과 Step 2 결과를 불러오는 중입니다.</p></div>
+    return <div className="page detail-page sh-visual"><p>src/article 원문과 구조화 결과를 불러오는 중입니다.</p></div>
   }
 
   if (!detailData || error) {

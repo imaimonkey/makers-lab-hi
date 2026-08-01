@@ -1,3 +1,5 @@
+import type { NoveltyAnalysis } from '../domain/product/similarProduct';
+
 export type JsonPrimitive = string | number | boolean | null;
 
 export type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
@@ -389,6 +391,7 @@ export interface ProductProposal extends JsonObject {
   outOfScopeCandidates: string[];
   recommendationReason: string;
   unresolvedItems: string[];
+  noveltyAnalysis?: NoveltyAnalysis;
 }
 
 export interface BriefingSectionTitles extends JsonObject {

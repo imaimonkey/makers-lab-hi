@@ -17,6 +17,7 @@ import type {
   TargetSuitabilityOption,
   WordingFeasibility,
 } from "../types";
+import { normalizeNoveltyAnalysis } from "../services/similar-product-research";
 
 const SUMMARY_CARDS: Array<[string, string]> = [
   ["target", "보험 대상"],
@@ -357,6 +358,7 @@ const normalizeProductProposal = (value: unknown): ProductProposal => {
     outOfScopeCandidates: asStringArray(source.outOfScopeCandidates),
     recommendationReason: asString(source.recommendationReason),
     unresolvedItems: asStringArray(source.unresolvedItems),
+    noveltyAnalysis: normalizeNoveltyAnalysis(source.noveltyAnalysis),
   };
 };
 

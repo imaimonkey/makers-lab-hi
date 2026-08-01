@@ -62,16 +62,20 @@ function ProductBlueprint({ issue, developerMode = false }: { issue: ProductIssu
   return (
     <section className="product-blueprint surface-card" aria-label="선택 이슈 상품 설계 브리프">
       <div className="product-board-heading">
-        <div><p className="eyebrow">PRODUCT BRIEF · {developerMode ? 'ACTUAL ARTICLE' : 'SAMPLE'}</p><h2>보험상품 설계 브리프</h2></div>
+        <div><p className="eyebrow">PRODUCT BRIEF · {developerMode ? 'CONTENT-DERIVED SAMPLE' : 'SAMPLE'}</p><h2>보험상품 설계 브리프</h2></div>
         <span className={`product-board-badge ${statusTone(issue.productRoute)}`}>{issue.productRoute}</span>
       </div>
       <div className="product-blueprint-title"><h3>{issue.title}</h3><span>{issue.audience} · {issue.stage} 단계</span></div>
-      <div className="product-blueprint-facts">
+  <div className="product-blueprint-facts">
         <div><small>누가 가입·보장받나</small><strong>{issue.target}</strong></div>
         <div><small>어떤 위험 사건인가</small><strong>{issue.riskEvent}</strong></div>
         <div><small>어떤 손해가 예상되나</small><strong>{issue.expectedLoss}</strong></div>
         <div><small>기존 보장의 공백</small><strong>{issue.coverageGap}</strong></div>
       </div>
+      {issue.metrics?.length ? <div className="product-blueprint-source-metrics" aria-label="원문 기반 핵심 지표">
+        <div className="product-board-heading"><div><p className="eyebrow">SOURCE METRICS · CONTENT-DERIVED SAMPLE</p><h3>원문에서 읽은 핵심 지표</h3></div><span>{issue.metrics.length}개</span></div>
+        <div>{issue.metrics.slice(0, 6).map((metric) => <article key={metric.label}><small>{metric.label}</small><strong>{metric.value}</strong>{metric.sourceHint ? <em>{metric.sourceHint}</em> : null}</article>)}</div>
+      </div> : null}
       <div className="product-blueprint-flow"><span>위험 발생</span><i>→</i><span>손해 확인</span><i>→</i><span>{issue.productRoute}</span></div>
       <div className="product-blueprint-checks">
         {designChecks.map((check, index) => <article key={check.label}><span>0{index + 1}</span><div><strong>{check.label}</strong><small>{check.value}</small></div><em>{check.state}</em></article>)}
@@ -87,9 +91,10 @@ function ProductBlueprint({ issue, developerMode = false }: { issue: ProductIssu
 export function RiskProductDevelopmentBoard({ radarSnapshot, developerMode = false, developerData }: { radarSnapshot: RiskRadarSnapshotState; developerMode?: boolean; developerData?: DeveloperRiskCatalogViewData }) {
   const activeIssues: ProductIssue[] = developerMode
     ? (developerData?.risks ?? []).map((risk) => ({
-      id: risk.id, title: risk.keyword, audience: '기업 니즈', target: risk.target, riskEvent: risk.loss,
-      expectedLoss: risk.impact, coverageGap: risk.coverageGap, productRoute: '신규 담보', market: risk.market,
+      id: risk.id, title: risk.keyword, audience: '기업 니즈', target: risk.target, riskEvent: risk.riskEvent ?? risk.loss,
+      expectedLoss: risk.expectedLoss ?? risk.loss, coverageGap: risk.coverageGap, productRoute: '신규 담보', market: risk.market,
       data: risk.data, law: risk.law, stage: '검토', next: risk.next, severity: risk.severity === '심각' ? '심각' : risk.severity === '높음' ? '높음' : '중간', owner: '개발자 분석', due: '확인 필요', type: '실제 분석 결과', progress: Math.round(risk.score * 20), sourceCount: risk.sourceCount,
+      metrics: risk.metrics,
     } as unknown as ProductIssue))
     : demoIssues
   const activeRisks = developerMode ? (developerData?.risks ?? []) : demoRisks
@@ -114,12 +119,12 @@ export function RiskProductDevelopmentBoard({ radarSnapshot, developerMode = fal
   return (
     <section className="product-development-board" aria-label="hyoje 상품개발 통합 현황판">
       <div className="product-board-intro surface-card">
-        <div><p className="eyebrow">ISSUE DASHBOARD / PRODUCT DECISION · HYOJE</p><h2>수요에서 상품화 경로까지 한 화면에서 판단</h2><p>수요 → 위험 사건 → 예상 손해 → 보장 공백 → 상품화 경로를 동일 이슈 ID로 연결합니다. 실제 후보 {activeRisks.length}건 · {developerMode ? 'ACTUAL ARTICLE' : radarSnapshot.sourceStatus.risks === 'live' ? 'LIVE' : '공식 데이터 연결 필요'}.</p></div>
+        <div><p className="eyebrow">ISSUE DASHBOARD / PRODUCT DECISION · HYOJE</p><h2>수요에서 상품화 경로까지 한 화면에서 판단</h2><p>수요 → 위험 사건 → 예상 손해 → 보장 공백 → 상품화 경로를 동일 이슈 ID로 연결합니다. 실제 후보 {activeRisks.length}건 · {developerMode ? 'CONTENT-DERIVED SAMPLE' : radarSnapshot.sourceStatus.risks === 'live' ? 'LIVE' : '공식 데이터 연결 필요'}.</p></div>
         <Link to={developerMode ? '/developer-test/risks' : '/risks'}>신규 위험 탐색 →</Link>
       </div>
 
       <section className="product-board-matrix surface-card">
-        <div className="product-board-heading"><div><p className="eyebrow">ISSUE MATRIX · {developerMode ? 'ACTUAL ARTICLE' : 'SAMPLE'}</p><h2>보험상품 개발 이슈 매트릭스</h2></div><label><span className="sr-only">이슈 검색</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="이슈·대상·위험·보장 공백 검색" /></label></div>
+        <div className="product-board-heading"><div><p className="eyebrow">ISSUE MATRIX · {developerMode ? 'CONTENT-DERIVED SAMPLE' : 'SAMPLE'}</p><h2>보험상품 개발 이슈 매트릭스</h2></div><label><span className="sr-only">이슈 검색</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="이슈·대상·위험·보장 공백 검색" /></label></div>
         <div className="product-board-tabs" aria-label="수요 채널 필터">{audiences.map((item) => <button type="button" key={item} className={audience === item ? 'active' : ''} aria-pressed={audience === item} onClick={() => setAudience(item)}>{item}<small>{item === '전체' ? activeIssues.length : activeIssues.filter((issue) => issue.audience === item).length}</small></button>)}</div>
         <div className="product-board-table-wrap">
           <table className="product-board-table">
@@ -138,13 +143,13 @@ export function RiskProductDevelopmentBoard({ radarSnapshot, developerMode = fal
       {selectedIssue ? <ProductBlueprint issue={selectedIssue} developerMode={developerMode} /> : null}
 
       <div className="product-board-market-grid">
-        <section className="surface-card product-board-keywords"><div className="product-board-heading"><div><p className="eyebrow">EMERGING KEYWORDS</p><h2>시장조사 키워드</h2></div><span>{developerMode ? 'ACTUAL ARTICLE · STEP 2' : 'SAMPLE'}</span></div><div>{keywords.map((keyword, index) => <button type="button" className={`weight-${index % 4}`} key={keyword} onClick={() => setQuery(keyword)}>{keyword}</button>)}</div><small>{developerMode ? 'Step 2 결과에 포함된 실제 키워드입니다.' : '언론량·수요·사고·보장 공백을 합친 시연용 가중치'}</small></section>
+        <section className="surface-card product-board-keywords"><div className="product-board-heading"><div><p className="eyebrow">EMERGING KEYWORDS</p><h2>시장조사 키워드</h2></div><span>{developerMode ? 'CONTENT-DERIVED · 본문 키워드' : 'SAMPLE'}</span></div><div>{keywords.map((keyword, index) => <button type="button" className={`weight-${index % 4}`} key={keyword} onClick={() => setQuery(keyword)}>{keyword}</button>)}</div><small>{developerMode ? 'src/article 본문에서 읽어낸 키워드의 표현용 목록입니다.' : '언론량·수요·사고·보장 공백을 합친 시연용 가중치'}</small></section>
         <section className="surface-card product-board-trend-panel"><div className="product-board-heading"><div><p className="eyebrow">RISK AREA TREND</p><h2>위험 분야별 증가 추이</h2></div><span>{developerMode ? 'Step 2 signalTrend 결과' : '최근 7일 · SAMPLE'}</span></div>{trendSeries.length ? <TrendLines series={trendSeries} /> : <div className="table-empty">실제 Step 2 추세 결과가 없습니다.</div>}</section>
         <section className="surface-card product-board-laws"><div className="product-board-heading"><div><p className="eyebrow">LAW & REGULATION</p><h2>규제·법률 업데이트</h2></div><span>{developerMode ? 'Step 2 결과' : '원문 확인 대기'}</span></div>{developerMode ? developerData?.laws.length ? developerData.laws.map((law) => <article key={law.id}><span>{law.institution}</span><div><strong>{law.title}</strong><small>{law.description} · {law.verificationStatus}</small></div><time>{law.date}</time></article>) : <div className="table-empty">저장된 법령 결과가 없습니다.</div> : demoLaws.map((law) => <article key={law.title}><span>{law.institution}</span><div><strong>{law.title}</strong><small>{law.risk} · {law.impact}</small></div><time>{law.when}</time></article>)}</section>
       </div>
 
       <section className="surface-card product-board-comparison">
-        <div className="product-board-heading"><div><p className="eyebrow">TOP 5 / PRODUCT DEVELOPMENT COMPARISON</p><h2>신규 위험 TOP-5 비교 분석</h2></div><span>{developerMode ? 'ACTUAL ARTICLE · 담당자 검토용' : 'SAMPLE · 담당자 검토용'}</span></div>
+        <div className="product-board-heading"><div><p className="eyebrow">TOP 5 / PRODUCT DEVELOPMENT COMPARISON</p><h2>신규 위험 TOP-5 비교 분석</h2></div><span>{developerMode ? 'CONTENT-DERIVED · 담당자 검토용' : 'SAMPLE · 담당자 검토용'}</span></div>
         <div className="product-board-table-wrap"><table><thead><tr><th>위험 키워드</th><th>대상 고객</th><th>손해·공백</th><th>시장성</th><th>위험</th><th>데이터</th><th>법률</th><th>기존 상품</th><th>특약</th><th>신규 주계약</th><th>AI 보조점수</th><th /></tr></thead><tbody>{activeRisks.map((risk, index) => <tr key={risk.id}><td><span className="product-board-rank">0{index + 1}</span><strong>{risk.keyword}</strong><small>{risk.industry} · 출처 {risk.sourceCount}곳</small></td><td>{risk.target}</td><td><strong>{risk.loss}</strong><small>{risk.coverageGap}</small></td><td>{risk.market}</td><td>{risk.severity}</td><td>{risk.data}</td><td>{risk.law}</td><td>{risk.existing}</td><td>{risk.rider}</td><td>{risk.mainCoverage}</td><td><strong>{risk.score.toFixed(2)}</strong></td><td><RelatedRiskLink risk={risk} developerMode={developerMode}>상세 →</RelatedRiskLink></td></tr>)}</tbody></table>{developerMode && !activeRisks.length ? <div className="table-empty">Step 2 결과가 없어 비교 후보를 표시하지 않습니다.</div> : null}</div>
         <div className="product-board-route-summary">{Object.entries(routeCounts).map(([route, count]) => <span key={route}>{route}<strong>{count}</strong></span>)}</div>
         <p>실제 상품명·보장 여부는 표시하지 않습니다. 공식 상품 문서와 약관 확인 전에는 연결 가능성만 검토합니다.</p>

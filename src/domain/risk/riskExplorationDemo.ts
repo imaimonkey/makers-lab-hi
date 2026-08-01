@@ -66,6 +66,8 @@ export type RiskExplorationRecord = {
   articleId?: string
   sourceName?: string
   collectedAt?: string
+  facts?: string[]
+  metrics?: Array<{ label: string; value: string; sourceHint?: string }>
   display: RiskExplorationDisplay
   gap: string
   nextAction: string

@@ -2,6 +2,7 @@ import "../../../report-reference/mock-risk-data.js";
 import "../../../report-reference/mock-report-result.js";
 
 import type { ReportResult, RiskSourceData } from "../types";
+import { NOVELTY_ANALYSIS_MOCK } from "./novelty-analysis-mock";
 
 const clone = <T>(value: T): T => {
   const serialized = JSON.stringify(value);
@@ -44,8 +45,16 @@ const removeLegacyReviewer = (report: ReportResult): ReportResult => {
 export const getMockRiskData = (): RiskSourceData =>
   clone(assertRiskData(getBrowserWindow().mockRiskData));
 
-export const getMockReportResult = (): ReportResult =>
-  removeLegacyReviewer(clone(assertReportResult(getBrowserWindow().mockReportResult)));
+export const getMockReportResult = (): ReportResult => {
+  const report = clone(assertReportResult(getBrowserWindow().mockReportResult));
+  return removeLegacyReviewer({
+    ...report,
+    productProposal: {
+      ...report.productProposal,
+      noveltyAnalysis: clone(NOVELTY_ANALYSIS_MOCK),
+    },
+  });
+};
 
 export const getMockReportData = (): {
   riskData: RiskSourceData;

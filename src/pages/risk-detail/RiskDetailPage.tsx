@@ -64,7 +64,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
   const liveAnalysis = liveDetail?.analysis
   const displayTitle = liveArticle?.title ?? risk?.title
   const detailSourceLabel = developerMode
-    ? 'ACTUAL ARTICLE'
+    ? 'CONTENT-DERIVED SAMPLE'
     : liveLoading
       ? 'LOADING'
       : liveDetail && liveStale
@@ -131,7 +131,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           <button type="button" onClick={printRiskDetail}>PDF 출력</button>
         </div>
       </nav>
-      <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? 'src/article PDF와 Step 2 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? `${liveStale ? ' 마지막 정상 상세 응답을 유지합니다.' : ' API detail 응답을 사용합니다.'}${lastLiveAt ? ` 응답 시각 ${new Date(lastLiveAt).toLocaleString('ko-KR')}` : ''}` : `${sampleOnlyNotice}${liveError ? ` API detail 실패: ${liveError}` : ''}`}</div>
+      <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? 'src/article 본문을 읽어 구조화 결과 형태로 표현한 더미 데이터입니다. 실제 LLM 호출·상품 판단·법률 자문 결과가 아닙니다.' : liveDetail ? `${liveStale ? ' 마지막 정상 상세 응답을 유지합니다.' : ' API detail 응답을 사용합니다.'}${lastLiveAt ? ` 응답 시각 ${new Date(lastLiveAt).toLocaleString('ko-KR')}` : ''}` : `${sampleOnlyNotice}${liveError ? ` API detail 실패: ${liveError}` : ''}`}</div>
       {liveDetail ? <div className="detail-live-strip" role="status"><strong>{detailSourceLabel}</strong><span>본문 {liveArticle?.contentStatus ?? '상태 미제공'}</span><span>분석 {liveArticle?.analysisStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>검증 {liveArticle?.verificationStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>기준 시각 {liveArticle?.collectedAt ?? liveArticle?.publishedAt ?? '시각 미제공'}</span></div> : null}
 
       <section className="risk-hero surface-card">

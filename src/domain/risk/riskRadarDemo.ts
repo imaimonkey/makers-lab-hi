@@ -20,6 +20,7 @@ export type ProductIssue = {
   type: string;
   progress: number;
   sourceCount: number;
+  metrics?: Array<{ label: string; value: string; sourceHint?: string }>;
 };
 
 export type ProductRisk = {
@@ -45,6 +46,12 @@ export type ProductRisk = {
   impact: string;
   next: string;
   articleId: string;
+  riskEvent?: string;
+  expectedLoss?: string;
+  facts?: string[];
+  metrics?: Array<{ label: string; value: string; sourceHint?: string }>;
+  confidence?: string;
+  recommendation?: string;
 };
 
 export const demoIssues: ProductIssue[] = [
