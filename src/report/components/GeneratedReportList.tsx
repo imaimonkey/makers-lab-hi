@@ -185,36 +185,7 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
   }
 
   return (
-    <section className="report-page__report-list" aria-labelledby="generated-report-list-title">
-      <header className="report-page__report-home-header">
-        <div>
-          <p className="report-page__eyebrow">04 / REPORT</p>
-          <h1 id="generated-report-list-title">신규 위험 상품화 검토 리포트</h1>
-          <p className="report-page__report-list-description">생성된 AI 상품화 검토 리포트를 확인하고 실무 검토를 이어서 진행합니다.</p>
-        </div>
-        <div className="report-page__report-home-action">
-          {/* TODO: 위험 탐색 라우트가 확정되면 onRequestCreate를 연결합니다. */}
-          <button className="report-page__button report-page__button--primary" type="button" disabled={!onRequestCreate} onClick={onRequestCreate} title={!onRequestCreate ? '위험 탐색 기능 연결 후 사용할 수 있습니다.' : undefined}>
-            + 새 리포트 생성
-          </button>
-          {!onRequestCreate ? <p>위험 탐색 기능 연결 후 사용할 수 있습니다.</p> : null}
-        </div>
-      </header>
-
-      <section className="report-page__report-overview" aria-label="리포트 현황 요약">
-        {[
-          { label: '전체 리포트', count: summary.total, detail: '현재 목록 기준', icon: '▤' },
-          { label: '검토 필요', count: summary.reviewNeeded, detail: '확인 또는 착수 필요', icon: '!' },
-          { label: '검토 진행 중', count: summary.inProgress, detail: '실무 검토 진행', icon: '↗' },
-          { label: '검토 완료', count: summary.completed, detail: '검토 마침', icon: '✓' },
-        ].map((item) => (
-          <article key={item.label} className="report-page__report-overview-card">
-            <span aria-hidden="true">{item.icon}</span>
-            <div><p>{item.label}</p><strong>{item.count}</strong><small>{item.detail}</small></div>
-          </article>
-        ))}
-      </section>
-
+    <section className="report-page__report-list" aria-label="생성된 리포트 목록">
       <section className="report-page__report-list-section" aria-labelledby="report-library-title">
         <div className="report-page__report-list-section-heading">
           <div>

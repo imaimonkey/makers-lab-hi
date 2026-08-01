@@ -2222,9 +2222,18 @@
 
 .report-page__report-header h1 {
   max-width: 810px;
-  margin: 10px 0 18px;
+  margin: 0;
   font-size: clamp(30px, 3.6vw, 48px);
   line-height: 1.15;
+}
+
+/* The report header now starts directly with the report title. */
+.report-page__report-header {
+  padding-bottom: clamp(30px, 3.5vw, 44px);
+}
+
+.report-page__meta-grid--report-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .report-page__header-actions {
@@ -23110,6 +23119,41 @@
   text-align: right;
 }
 
+.report-page__ai-summary-evaluation-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+  color: var(--summary-muted);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.report-page__ai-summary-evaluation-link {
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  color: var(--summary-blue);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.report-page__ai-summary-evaluation-link:hover {
+  text-decoration: underline;
+}
+
+@media screen and (max-width: 720px) {
+  .report-page__ai-summary-evaluation-heading-actions {
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
 .report-page__ai-summary-core-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -24842,7 +24886,7 @@
 }
 
 .report-page__briefing--decision .report-page__decision-briefing-state-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
 }
 
@@ -25270,7 +25314,7 @@
 
   .report-page__briefing--decision .report-page__decision-briefing-state-grid,
   .report-page__briefing--decision .report-page__decision-briefing-finance-summary {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .report-page__briefing--decision .report-page__decision-briefing-state,
@@ -26429,6 +26473,269 @@
   }
 }
 
+/* The reports home opens directly on the library after its introductory cover was removed. */
+.reports-page .report-page__report-list {
+  padding-top: 8px;
+}
+
+.reports-page .report-page__report-list-section {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .reports-page .report-page__report-list {
+    padding-top: 8px;
+  }
+
+  .reports-page .report-page__report-list-section {
+    margin-top: 0;
+  }
+}
+
+/* Integrated executive briefing: one restrained navy/orange/teal report system. */
+.report-page__briefing--decision {
+  --decision-navy: var(--report-navy);
+  --decision-ink: var(--report-ink);
+  --decision-muted: var(--report-muted);
+  --decision-line: var(--report-border);
+  --decision-soft: #f7f9fc;
+  --decision-teal: #0f766e;
+  --decision-amber: var(--report-orange);
+  --decision-blue: #2563eb;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion,
+.report-page__briefing--decision .report-page__decision-briefing-section,
+.report-page__briefing--decision .report-page__decision-briefing-reviewer {
+  border-color: var(--decision-line);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: var(--report-shadow);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion {
+  border-left: 4px solid var(--report-orange);
+  background: linear-gradient(110deg, #fff9f4 0%, #ffffff 68%);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-head h3,
+.report-page__briefing--decision .report-page__decision-briefing-section-head h3 {
+  color: var(--decision-navy);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-status {
+  border-color: #f6c08d;
+  background: var(--report-orange-soft);
+  color: var(--report-orange-ink);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-state strong,
+.report-page__briefing--decision .report-page__decision-briefing-state--attention strong,
+.report-page__briefing--decision .report-page__decision-briefing-state--pending strong {
+  color: var(--decision-teal);
+}
+
+/* The absorbed summary blocks use the same container rhythm as the briefing sections. */
+.report-page__briefing--decision .report-page__ai-summary-section--integrated {
+  --summary-navy: var(--decision-navy);
+  --summary-charcoal: var(--decision-ink);
+  --summary-muted: var(--decision-muted);
+  --summary-border: var(--decision-line);
+  --summary-orange: var(--report-orange);
+  --summary-orange-soft: var(--report-orange-soft);
+  --summary-teal: var(--decision-teal);
+  --summary-teal-soft: #edf9f6;
+  --summary-blue: var(--decision-blue);
+  margin-top: 18px;
+  color: var(--decision-ink);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated > .report-page__ai-summary-block {
+  margin-top: 0;
+  padding: 20px 22px;
+  border-color: var(--decision-line);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: var(--report-shadow);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-block-heading {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-block-heading h3 {
+  color: var(--decision-navy);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+  min-height: 236px;
+  border: 1px solid var(--decision-line);
+  border-top: 3px solid var(--report-orange);
+  border-radius: 10px;
+  background: var(--decision-soft);
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-card-label {
+  color: var(--decision-muted);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-decision-title {
+  color: var(--report-orange);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-core-card .report-page__ai-summary-metric-value {
+  color: var(--decision-teal);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-card-bullets,
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-card-bullet-text {
+  color: var(--decision-navy);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-card-bullet-icon {
+  color: var(--decision-teal);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-link,
+.report-page__briefing--decision .report-page__ai-summary-evaluation-link {
+  color: var(--decision-blue);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-evaluation-summary > strong {
+  color: var(--decision-navy);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-evaluation-row {
+  border-bottom-color: #edf1f5;
+  color: var(--decision-ink);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-evaluation-row > p {
+  color: var(--decision-ink);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-evaluation-row--pass > div > strong {
+  color: var(--decision-teal);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-evaluation-row--critical > div > strong {
+  color: var(--decision-muted);
+}
+
+/* Product direction and lower briefing sections share the same quiet card surface. */
+.report-page__briefing--decision .report-page__decision-briefing-core-card,
+.report-page__briefing--decision .report-page__decision-briefing-work-column,
+.report-page__briefing--decision .report-page__decision-briefing-finance-card {
+  border-color: var(--decision-line);
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-core-card-result {
+  border-bottom-color: #f6c08d;
+  color: var(--report-orange);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-core-card li,
+.report-page__briefing--decision .report-page__decision-briefing-core-card li > span,
+.report-page__briefing--decision .report-page__decision-briefing-core-card .report-page__text-button {
+  color: var(--decision-ink);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-core-card li > span {
+  color: var(--decision-teal);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-core-card .report-page__text-button,
+.report-page__briefing--decision .report-page__decision-briefing-section-head .report-page__text-button,
+.report-page__briefing--decision .report-page__decision-briefing-wording-preview .report-page__text-button {
+  color: var(--decision-blue);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance {
+  border-left: 3px solid var(--decision-teal);
+  background: #ffffff;
+  box-shadow: var(--report-shadow);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance-card {
+  border-top: 2px solid #cbd8e5;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance-card--confirmed {
+  border-top-color: #75bdb1;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance-card--attention {
+  border-top-color: #f2b36d;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance-card strong {
+  color: var(--report-orange);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance-card--confirmed strong {
+  color: var(--decision-teal);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-product-head,
+.report-page__briefing--decision .report-page__decision-briefing-wording-preview {
+  border-color: var(--decision-line);
+  background: var(--decision-soft);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-wording-preview {
+  border-left: 3px solid var(--report-orange);
+}
+
+@media screen and (max-width: 680px) {
+  .report-page__briefing--decision .report-page__ai-summary-section--integrated > .report-page__ai-summary-block,
+  .report-page__briefing--decision .report-page__decision-briefing-section,
+  .report-page__briefing--decision .report-page__decision-briefing-reviewer,
+  .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    padding: 16px;
+    border-radius: 10px;
+  }
+}
+
+@media print {
+  .report-page__briefing--decision .report-page__decision-briefing-conclusion,
+  .report-page__briefing--decision .report-page__decision-briefing-section,
+  .report-page__briefing--decision .report-page__decision-briefing-reviewer,
+  .report-page__briefing--decision .report-page__ai-summary-section--integrated > .report-page__ai-summary-block {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .report-page__briefing--decision .report-page__ai-summary-section--integrated {
+    margin-top: 3mm;
+  }
+
+  .report-page__briefing--decision .report-page__ai-summary-section--integrated > .report-page__ai-summary-block,
+  .report-page__briefing--decision .report-page__decision-briefing-section,
+  .report-page__briefing--decision .report-page__decision-briefing-reviewer {
+    padding: 4mm;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    background: #ffffff;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-finance {
+    border-left-color: var(--decision-teal);
+    background: #ffffff;
+  }
+
+  .report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+    min-height: 0;
+    background: #ffffff;
+  }
+}
+
 /* 종합 브리핑 위험 맥락: 기존 카드 체계를 유지한 얇은 가로형 요약입니다. */
 .report-page__briefing--decision .report-page__decision-briefing-risk-context {
   padding: 18px 22px;
@@ -26759,5 +27066,922 @@
   .report-page__ai-summary-section--compact .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
     height: auto;
     min-height: 0;
+  }
+}
+
+/* Final briefing refinement overrides after the shared report rules. */
+.report-page__briefing--decision .report-page__decision-briefing-conclusion {
+  padding: 22px 24px 20px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+  margin-bottom: 0;
+}
+
+/* Keep the key financial section prominent with a calm blue surface instead of a standalone teal accent. */
+.report-page__briefing--decision .report-page__decision-briefing-finance {
+  border-left: 2px solid #c5dced;
+  background: linear-gradient(110deg, #f2f8fd 0%, #ffffff 78%);
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--integrated .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+.report-page__briefing--decision .report-page__decision-briefing-core-card,
+.report-page__briefing--decision .report-page__decision-briefing-finance-card,
+.report-page__briefing--decision .report-page__decision-briefing-work-column,
+.report-page__briefing--decision .report-page__decision-briefing-product-head,
+.report-page__briefing--decision .report-page__decision-briefing-wording-preview {
+  background: #ffffff;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context {
+  border-left: 1px solid var(--decision-line);
+  background: #ffffff;
+  box-shadow: none;
+}
+
+/* Keep the three core review blocks visually grouped without adding a wrapper. */
+@media screen {
+  .report-page__briefing--decision .report-page__ai-summary-section--core-judgments {
+    margin-top: 14px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-core-results,
+  .report-page__briefing--decision .report-page__decision-briefing-core-results + .report-page__decision-briefing-section.report-page__decision-briefing-finance {
+    margin-top: 12px;
+  }
+}
+
+.report-page__briefing--decision #insurance-criteria,
+.report-page__briefing--decision #marketability-criteria {
+  scroll-margin-top: 24px;
+}
+
+@media screen and (max-width: 680px) {
+  .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    padding: 16px;
+  }
+}
+
+@media print {
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-section--core-judgments,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-results,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-results + .report-page__decision-briefing-section.report-page__decision-briefing-finance {
+    margin-top: 3mm;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    padding: 5mm;
+  }
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance-card--tam {
+  border-top-color: var(--report-orange);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-finance-card--tam strong {
+  color: var(--report-orange);
+}
+
+/* Keep the briefing conclusion aligned with the light-blue opening surfaces used by other tabs. */
+.report-page__briefing--decision .report-page__decision-briefing-conclusion {
+  border-left: 2px solid #c5dced;
+  background: linear-gradient(110deg, #eef6fd 0%, #ffffff 72%);
+}
+
+/* Keep the financial section white and reserve the subtle tint for its metric cards. */
+@media screen {
+  .report-page__briefing--decision .report-page__decision-briefing-finance {
+    background: #ffffff;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-finance-card {
+    background: #f8fbfe;
+  }
+}
+
+@media print {
+  .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    background: #ffffff;
+  }
+}
+
+/* Company-report PDF treatment: restrained surfaces, readable tables, and stable page breaks. */
+@media print {
+  .report-page__pdf-document .report-page__briefing--decision {
+    color: #24364b;
+    font-size: 9pt;
+    line-height: 1.5;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__section-heading {
+    margin-bottom: 4mm;
+    padding-bottom: 3mm;
+    border-bottom: 1px solid #b9c8d6;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__section-heading h2 {
+    color: #123f73;
+    font-size: 18pt;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-conclusion,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-section,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-reviewer,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-section--integrated > .report-page__ai-summary-block {
+    margin-top: 4mm;
+    padding: 4mm;
+    border: 1px solid #cbd5e1;
+    border-radius: 0;
+    background: #ffffff !important;
+    box-shadow: none;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    margin-top: 0;
+    border-left: 2px solid #c5dced;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-conclusion-head h3,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-section-head h3,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-block-heading h3 {
+    color: #123f73;
+    font-size: 12pt;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5mm 6mm;
+    margin: 3mm 0 0;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-conclusion-points li,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-card-bullet-text,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-card li {
+    color: #24364b;
+    font-size: 8.5pt;
+    line-height: 1.45;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-section--integrated {
+    margin-top: 4mm;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-section--integrated > .report-page__ai-summary-block {
+    margin-top: 0;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-grid--three,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3mm;
+    margin-top: 3mm;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-card {
+    min-height: 0;
+    padding: 3mm;
+    border: 1px solid #cbd5e1;
+    border-top: 2px solid #f47a20;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-bullets {
+    gap: 1.5mm;
+    margin-top: 2mm;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance {
+    border-left: 2px solid #c5dced;
+    background: #ffffff;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables table {
+    width: 100%;
+    margin-top: 3mm;
+    border-collapse: collapse;
+    table-layout: fixed;
+    color: #24364b;
+    font-size: 8.5pt;
+    line-height: 1.45;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table caption,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table caption,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table caption,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table caption,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables caption {
+    margin-bottom: 2mm;
+    color: #123f73;
+    font-size: 9pt;
+    font-weight: 800;
+    text-align: left;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table td,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table td,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table td,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table td,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables td {
+    padding: 2.5mm 2.5mm;
+    border: 1px solid #cbd5e1;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table thead th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table thead th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table thead th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables thead th {
+    background: #f3f6f9;
+    color: #123f73;
+    font-weight: 800;
+    text-align: left;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table tbody th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table tbody th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table tbody th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table tbody th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables tbody th {
+    background: #f8fafc;
+    color: #123f73;
+    font-weight: 750;
+    text-align: left;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table th:nth-child(1) { width: 20%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table th:nth-child(2) { width: 23%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table th:nth-child(3) { width: 37%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table th:nth-child(4) { width: 20%; }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table th:nth-child(1) { width: 18%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table th:nth-child(2) { width: 25%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table th:nth-child(3) { width: 20%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table th:nth-child(4) { width: 37%; }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table th:nth-child(1) { width: 24%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table th:nth-child(2) { width: 20%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table th:nth-child(3) { width: 56%; }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table th { width: 18%; }
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table td { width: 32%; }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables {
+    display: grid;
+    gap: 4mm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-actions,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table tr,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table tr,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table tr,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table tr,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table-bullets,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table ul {
+    display: grid;
+    gap: 1mm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table-bullets li,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5mm;
+    color: #24364b;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table-bullets li > span,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table li > span {
+    flex: 0 0 auto;
+    color: #0f766e;
+    font-weight: 800;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-finance-table thead,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-core-table thead,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-core-table thead,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table thead,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-print-action-tables thead {
+    display: table-header-group;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-head,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-facts,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-work-grid {
+    display: none;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-wording-preview {
+    margin-top: 3mm;
+    padding: 3mm;
+    border: 1px solid #cbd5e1;
+    border-left: 3px solid #f47a20;
+    border-radius: 0;
+    background: #ffffff !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-risk-context-list,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-evidence-meta {
+    border-color: #cbd5e1;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-risk-context-list > div,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-evidence-meta > div {
+    padding: 2.5mm 3mm;
+    border-color: #cbd5e1;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-reviewer,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-risk-context {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* Top briefing hierarchy: quiet context bar, compact conclusion, and card-led judgment block. */
+.report-page__briefing--decision .report-page__decision-briefing-risk-context {
+  margin-top: 14px;
+  padding: 12px 20px 10px;
+  border: 0;
+  border-top: 1px solid #eef2f6;
+  border-bottom: 1px solid #dfe7ee;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context .report-page__decision-briefing-kicker {
+  margin-bottom: 5px;
+  font-size: 9px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context .report-page__decision-briefing-section-head h3 {
+  font-size: 17px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context-list {
+  margin-top: 8px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-risk-context-list > div {
+  padding: 8px 12px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion {
+  margin-top: 22px;
+  padding: 16px 20px 14px;
+  border: 1px solid #e1e9f0;
+  border-left: 2px solid var(--decision-navy);
+  border-radius: 10px;
+  background: linear-gradient(110deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+  gap: 5px 18px;
+  margin: 12px 0 0;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--core-judgments > .report-page__ai-summary-block {
+  padding: 18px 20px 16px;
+  border-color: #e5ecf2;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--core-judgments .report-page__ai-summary-block-heading h3 {
+  font-size: 19px;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-section--core-judgments .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+  border-top-width: 2px;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+@media screen and (max-width: 680px) {
+  .report-page__briefing--decision .report-page__decision-briefing-risk-context {
+    padding: 10px 16px 9px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    margin-top: 18px;
+    padding: 14px 16px 12px;
+  }
+
+  .report-page__briefing--decision .report-page__ai-summary-section--core-judgments > .report-page__ai-summary-block {
+    padding: 16px;
+  }
+}
+
+@media print {
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-risk-context {
+    margin-top: 3mm;
+    padding: 3mm 4mm;
+    border: 0;
+    border-bottom: 1px solid #cbd5e1;
+    border-radius: 0;
+    background: #ffffff;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    margin-top: 4mm;
+    padding: 4mm;
+    border: 1px solid #d7e1eb;
+    border-left: 2px solid #123f73;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+    gap: 1mm 5mm;
+    margin-top: 2mm;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-section--core-judgments > .report-page__ai-summary-block {
+    padding: 3mm 4mm;
+    border: 1px solid #dfe7ee;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+  }
+}
+
+/* Evaluation status: expose every criterion as a compact, reusable status card. */
+.report-page__briefing--decision .report-page__ai-summary-criteria-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card {
+  display: flex;
+  min-width: 0;
+  min-height: 72px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 10px 9px;
+  border: 1px solid #dfe7ee;
+  border-left: 3px solid #a9bfd2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-title {
+  display: block;
+  min-width: 0;
+  color: var(--summary-navy);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.35;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-status {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  color: #52667b;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-status > span {
+  display: inline-grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--pass {
+  border-left-color: #5fae9c;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--pass .report-page__ai-summary-criterion-status {
+  color: #0f766e;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--pass .report-page__ai-summary-criterion-status > span {
+  background: #e8f7f3;
+  color: #0f766e;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--needs-review {
+  border-left-color: #d6a14d;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--needs-review .report-page__ai-summary-criterion-status {
+  color: #9a641c;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--needs-review .report-page__ai-summary-criterion-status > span {
+  background: #fff4dd;
+  color: #9a641c;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--additional-check {
+  border-left-color: #9588ce;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--additional-check .report-page__ai-summary-criterion-status {
+  color: #6658a8;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--additional-check .report-page__ai-summary-criterion-status > span {
+  background: #f1efff;
+  color: #6658a8;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--critical {
+  border-left-color: #d88b86;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--critical .report-page__ai-summary-criterion-status {
+  color: #b42318;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-criterion-card--critical .report-page__ai-summary-criterion-status > span {
+  background: #fff0ef;
+  color: #b42318;
+}
+
+@media screen and (max-width: 1080px) {
+  .report-page__briefing--decision .report-page__ai-summary-criteria-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 680px) {
+  .report-page__briefing--decision .report-page__ai-summary-criteria-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .report-page__briefing--decision .report-page__ai-summary-criterion-card {
+    min-height: 68px;
+    padding: 9px 9px 8px;
+  }
+}
+
+@media print {
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-criteria-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 2mm;
+    margin-top: 3mm;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-criterion-card {
+    min-height: 17mm;
+    padding: 2mm;
+    border: 1px solid #cbd5e1;
+    border-left-width: 2px;
+    border-radius: 0;
+    background: #ffffff;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-criterion-title {
+    font-size: 7pt;
+    line-height: 1.3;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-criterion-status {
+    gap: 1.2mm;
+    font-size: 7pt;
+    line-height: 1.3;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__ai-summary-criterion-status > span {
+    width: 3.5mm;
+    height: 3.5mm;
+    font-size: 6.5pt;
+  }
+}
+
+/* Financial indicator cards use a restrained ivory-orange tint; the panel itself stays white. */
+@media screen {
+  .report-page__briefing--decision .report-page__decision-briefing-finance-card {
+    background: linear-gradient(135deg, #fffdf9 0%, #fff9f1 55%, #fff4e8 100%);
+  }
+}
+
+/* Recommended product: separate the two headline facts, detail facts, and wording preview. */
+@media screen {
+  .report-page__briefing--decision .report-page__decision-briefing-product-head {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-head > div {
+    display: flex;
+    min-width: 0;
+    min-height: 84px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 14px 16px;
+    border: 1px solid #dfe7ee;
+    border-top: 2px solid var(--report-orange);
+    border-radius: 9px;
+    background: #ffffff;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-head span,
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts dt {
+    color: #7b8b9b;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.35;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-head strong {
+    margin-top: 6px;
+    color: var(--decision-navy);
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+    border: 0;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts > div,
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts > div:nth-child(3n),
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts > div:nth-child(n + 4) {
+    display: flex;
+    min-width: 0;
+    min-height: 76px;
+    flex-direction: column;
+    justify-content: center;
+    padding: 12px 14px;
+    border: 1px solid #e1e8ef;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts > div {
+    grid-column: span 2;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts > div:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts dd {
+    min-width: 0;
+    margin-top: 6px;
+    color: var(--decision-ink);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-wording-preview {
+    display: block;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border: 1px solid #f0d8c4;
+    border-left: 3px solid var(--report-orange);
+    border-radius: 8px;
+    background: linear-gradient(135deg, #fffdf9 0%, #fff8ef 100%);
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-wording-preview-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-wording-preview h4 {
+    margin: 0;
+    color: var(--decision-navy);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-wording-preview p {
+    max-width: none;
+    margin-top: 8px;
+    color: #475569;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-wording-preview .report-page__text-button {
+    margin-top: 0;
+    white-space: nowrap;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-section[aria-labelledby="decision-briefing-product-title"] > .report-page__decision-briefing-section-head {
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-section[aria-labelledby="decision-briefing-product-title"] > .report-page__decision-briefing-section-head > .report-page__text-button {
+    flex: 0 0 auto;
+    margin-bottom: 2px;
+    padding: 2px 0;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+}
+
+@media screen and (max-width: 720px) {
+  .report-page__briefing--decision .report-page__decision-briefing-product-head {
+    grid-template-columns: 1fr;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts > div,
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts > div:nth-child(n + 4) {
+    grid-column: span 1;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-wording-preview {
+    display: block;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-wording-preview-head {
+    display: block;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-wording-preview .report-page__text-button {
+    display: inline-block;
+    margin-top: 9px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-section[aria-labelledby="decision-briefing-product-title"] > .report-page__decision-briefing-section-head {
+    display: block;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-section[aria-labelledby="decision-briefing-product-title"] > .report-page__decision-briefing-section-head > .report-page__text-button {
+    display: inline-block;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table-primary th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table-primary td {
+    background: #fff9f1;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table-primary td {
+    color: #123f73;
+    font-size: 10pt;
+    font-weight: 800;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-wording-preview {
+    margin-top: 3mm;
+    padding: 3mm;
+    border: 1px solid #f0d8c4;
+    border-left: 2px solid #f47a20;
+    border-radius: 0;
+    background: #fff9f1 !important;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-wording-preview p {
+    max-width: none;
+    line-height: 1.6;
+  }
+}
+
+/* Product detail facts use a single report-style label/value table on screen and in print. */
+@media screen {
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts-table {
+    width: 100%;
+    margin-top: 12px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border-top: 1px solid #dfe7ee;
+    border-bottom: 1px solid #dfe7ee;
+    color: var(--decision-ink);
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts-table th,
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #e6edf2;
+    vertical-align: top;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts-table tr:last-child th,
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts-table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts-table th {
+    width: 18%;
+    background: #fbfcfd;
+    color: #52667b;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-product-facts-table td {
+    color: var(--decision-ink);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.65;
+  }
+}
+
+@media print {
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table th,
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table td {
+    padding-top: 2.5mm;
+    padding-bottom: 2.5mm;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table tbody tr:not(.report-page__decision-briefing-product-table-primary) th {
+    width: 18%;
+    background: #fbfcfd;
+    color: #52667b;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .report-page__pdf-document .report-page__briefing--decision .report-page__decision-briefing-product-table tbody tr:not(.report-page__decision-briefing-product-table-primary) td {
+    color: #24364b;
+    font-weight: 600;
+    line-height: 1.6;
   }
 }

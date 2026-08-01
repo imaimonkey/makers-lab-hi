@@ -2608,16 +2608,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .risk-screening-review-opinion > small { display: block; margin-top: 8px; color: #64748b; font-size: 8px; line-height: 1.45; }
 .risk-screening-judgment-evidence > strong { margin-bottom: 12px; }
 .risk-screening-evidence-group + .risk-screening-evidence-group { margin-top: 17px; padding-top: 13px; border-top: 1px solid #e7edf5; }
-.risk-screening-evidence-group h5 { margin: 0 0 9px; color: #334155; font-size: 9px; font-weight: 800; }
+.risk-screening-evidence-group h5 { margin: 0 0 9px; color: #334155; font-size: 11px; font-weight: 800; }
 .risk-screening-evidence-group ol { margin-top: 0; gap: 10px; }
 .risk-screening-evidence-group li { grid-template-columns: 29px minmax(0, 1fr); gap: 7px; }
-.risk-screening-evidence-group li > b { color: #2563eb; font-size: 10px; }
-.risk-screening-evidence-group li strong { color: #14213d; font-size: 9px; }
-.risk-screening-evidence-group li p { margin-top: 3px; color: #64748b; font-size: 9px; line-height: 1.5; }
+.risk-screening-evidence-group li > b { color: #2563eb; font-size: 11px; }
+.risk-screening-evidence-group li strong { color: #14213d; font-size: 11px; }
+.risk-screening-evidence-group li p { margin-top: 3px; color: #64748b; font-size: 11px; line-height: 1.6; }
 .risk-screening-productization-points { margin-top: 17px; padding-top: 14px; }
 .risk-screening-productization-points > strong { color: #14213d; font-size: 11px; }
 .risk-screening-productization-points ol { display: grid; gap: 9px; margin: 10px 0 0; padding: 0; list-style: none; }
-.risk-screening-productization-points li { display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 7px; padding: 0; color: #52657d; font-size: 9px; line-height: 1.5; }
+.risk-screening-productization-points li { display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 7px; padding: 0; color: #52657d; font-size: 11px; line-height: 1.6; }
 .risk-screening-productization-points li::before { display: none; }
 .risk-screening-productization-points li b { color: #2563eb; font: 800 9px/1.5 'DM Sans', 'Pretendard', sans-serif; }
 .risk-screening-productization-points li span { min-width: 0; }
@@ -2635,4 +2635,146 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (max-width: 900px) {
   .risk-screening-board { grid-template-columns: 1fr; }
   .risk-screening-detail-panel { position: relative; top: auto; }
+}
+
+/* Match the risk category filter to the report section tab treatment. */
+.risk-exploration-filter-row { align-items: flex-end; }
+.risk-category-shell { flex: 1 1 auto; width: auto; max-width: none; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.risk-category-tabs { width: 100%; gap: 0; border-bottom: 1px solid #dce3ea; }
+.risk-category-button { min-height: 60px; padding: 0 18px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; color: #34445c; background: #fff; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.risk-category-button:hover, .risk-category-button:focus-visible { border-bottom-color: #f6c4a5; color: #0b2b52; background: #f8fafc; }
+.risk-category-button.active { border-color: transparent; border-bottom-color: #f47a20; color: #0b2b52; background: #fff6ef; box-shadow: none; font-weight: 700; }
+.risk-category-button.active:hover, .risk-category-button.active:focus-visible { border-bottom-color: #f47a20; background: #fff6ef; }
+@media (max-width: 1100px) and (min-width: 721px) {
+  .risk-category-shell { min-width: 0; }
+  .risk-category-button { padding-inline: 13px; font-size: 13px; }
+}
+@media (max-width: 720px) {
+  .risk-exploration-filter-row { align-items: stretch; }
+  .risk-category-button { min-height: 52px; padding-inline: 15px; font-size: 14px; }
+}
+
+/* Keep the category GNB attached below the workspace GNB, like report tabs. */
+.risk-category-shell { position: sticky; top: 70px; z-index: 15; margin-inline: -22px; padding-inline: 22px; background: rgba(255, 255, 255, .96); box-shadow: 0 5px 18px rgba(11, 43, 82, .08); backdrop-filter: blur(12px); transition: transform 220ms ease, opacity 180ms ease; will-change: transform; }
+.risk-category-shell.is-collapsed { opacity: 0; pointer-events: none; transform: translateY(calc(-100% - 8px)); }
+.risk-category-shell:focus-within { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+/* Risk exploration starts with the category GNB directly below the workspace topbar. */
+.workspace-seoyeon .catalog-page { padding-top: 0; }
+.workspace-seoyeon .catalog-page .risk-exploration-lens { margin-top: 0; padding-top: 0; }
+.workspace-seoyeon .catalog-page .risk-exploration-filter-row { margin-top: 0; }
+.workspace-seoyeon .catalog-page .risk-category-shell { top: 64px; margin-inline: -28px; padding-inline: 28px; }
+@media (max-width: 720px) {
+  .risk-category-shell { top: 60px; margin-inline: -18px; padding-inline: 18px; }
+  .workspace-seoyeon .catalog-page .risk-category-shell { top: 60px; margin-inline: -18px; padding-inline: 18px; }
+}
+
+/* Match the report GNB exactly: full workspace rail, centered tabs, identical motion. */
+.workspace-seoyeon .catalog-page .risk-exploration-filter-row {
+  align-items: flex-end;
+  padding-top: 64px;
+}
+.workspace-seoyeon .catalog-page .risk-category-shell {
+  position: fixed;
+  top: 64px;
+  right: 0;
+  left: var(--sidebar-width);
+  z-index: 16;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid #dce3ea;
+  border-radius: 0;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: none;
+  backdrop-filter: blur(12px);
+}
+.workspace-seoyeon .catalog-page .risk-category-tabs {
+  width: min(1320px, calc(100% - 44px));
+  height: 64px;
+  min-height: 64px;
+  margin-inline: auto;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0;
+  border-bottom: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.workspace-seoyeon .catalog-page .risk-category-button {
+  min-height: 64px;
+  padding-inline: 22px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.workspace-seoyeon .catalog-page .risk-screening-toolbar {
+  margin-top: 16px;
+}
+
+@media (max-width: 720px) {
+  .workspace-seoyeon .catalog-page .risk-exploration-filter-row { padding-top: 52px; }
+  .workspace-seoyeon .catalog-page .risk-category-shell { top: 60px; left: 0; }
+  .workspace-seoyeon .catalog-page .risk-category-tabs {
+    width: 100%;
+    height: 52px;
+    min-height: 52px;
+    justify-content: flex-start;
+  }
+  .workspace-seoyeon .catalog-page .risk-category-button { min-height: 52px; padding-inline: 15px; font-size: 14px; }
+}
+
+.workspace-seoyeon .catalog-page .screening-table-heading-side {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  min-width: 0;
+}
+.workspace-seoyeon .catalog-page .screening-table-heading-side .risk-screening-toolbar {
+  margin-top: 0;
+}
+.workspace-seoyeon .catalog-page .screening-table-heading-side > span {
+  color: var(--muted);
+  font-size: 9px;
+  text-align: right;
+}
+@media (max-width: 720px) {
+  .workspace-seoyeon .catalog-page .screening-table-heading-side {
+    justify-items: stretch;
+  }
+  .workspace-seoyeon .catalog-page .screening-table-heading-side > span { text-align: left; }
+}
+
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions {
+  grid-template-columns: minmax(0, 1.35fr) minmax(112px, .8fr);
+  gap: 8px;
+}
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions a {
+  min-height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions a:first-child {
+  border-color: #2563eb;
+  color: #fff;
+  background: #2563eb;
+}
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions a:first-child:hover,
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions a:first-child:focus-visible {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions a:last-child {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: #fff;
+}
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions a:last-child:hover,
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions a:last-child:focus-visible {
+  border-color: #1d4ed8;
+  color: #1d4ed8;
+  background: #eff6ff;
 }
