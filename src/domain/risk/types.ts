@@ -41,7 +41,7 @@ export type RiskEvidenceContract = {
   confidence: 'high' | 'medium' | 'low'
   uncertainty: string
   counterpoint: string
-  verificationStatus: 'source-pending' | 'link-provided-unverified'
+  verificationStatus: 'source-pending' | 'link-provided-unverified' | 'verified'
   dataStatus: 'sample-only' | 'actual-article'
 }
 

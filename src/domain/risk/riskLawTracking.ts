@@ -51,9 +51,117 @@ export type RiskLawTrackingItem = {
   relatedLossCases: LawTrackingCase[]
   checklist: string[]
   evidenceIds: string[]
+  /** 보험 가입 의무 조항이 확인된 법령·개정안인지 여부 */
+  insuranceMandate?: boolean
+  /** 입법·개정 진행률 예비값. 1에 가까울수록 시행 단계에 가까움 */
+  implementationProgress?: number
+  /** 미이행 시 제재 강도 예비값. 공식 제재 조문 확인 전에는 추정으로 표시 */
+  sanctionSeverity?: number
+  /** 법률 신호가 우선순위에 영향을 주는 후보 ID */
+  candidateIds?: string[]
+}
+
+export function lawProductizationPriority(item: RiskLawTrackingItem) {
+  const completeSteps = item.timeline.filter((step) => step.stage === 'complete').length
+  const currentSteps = item.timeline.filter((step) => step.stage === 'current').length
+  const progress = item.implementationProgress ?? Math.min(1, (completeSteps + currentSteps * 0.5) / Math.max(item.timeline.length, 1))
+  const mandateScore = item.insuranceMandate ? 2 : 0
+  const progressScore = Math.min(2, Math.max(0, progress * 2))
+  const sanctionScore = Math.min(1, Math.max(0, (item.sanctionSeverity ?? 0) / 5))
+  return mandateScore + progressScore + sanctionScore
 }
 
 export const riskLawTrackingItems: RiskLawTrackingItem[] = [
+  {
+    id: 'law-medical-liability-insurance',
+    sourceType: 'assembly',
+    typeLabel: '국회 / 공포',
+    institution: '보건복지부·국회',
+    title: '의료사고 피해구제법 책임보험 가입 의무 신설',
+    summary: '보건의료기관개설자의 책임보험 또는 책임공제 가입 의무를 신설한 2026년 일부개정법률',
+    status: '공포 · 시행 예정',
+    expectedEffectiveDate: '2027.05.27',
+    lastUpdated: '2026.05.26',
+    riskLevel: 'high',
+    categories: ['corporate', 'legal', 'department'],
+    sourceUrl: 'https://law.go.kr/LSW/lsInfoP.do?lsiSeq=286221&viewCls=lsRvsDocInfoR',
+    relatedCaseCount: 0,
+    relatedLossCount: 0,
+    timeline: [
+      { label: '개정안 의결', stage: 'complete', date: '2026.05.26' },
+      { label: '법률 공포', stage: 'complete', date: '2026.05.26' },
+      { label: '책임보험 조항 신설', stage: 'complete', date: '제47조 신설' },
+      { label: '하위법령·배상한도', stage: 'current', date: '세부 기준 확인 중' },
+      { label: '공포·시행', stage: 'pending', date: '2027.05.27' },
+    ],
+    beforeChanges: [
+      { label: '보험 가입', value: '기관별 책임보험 가입 의무 확인 필요' },
+      { label: '배상한도', value: '대통령령으로 정하는 연간 배상한도액 확인 필요' },
+      { label: '제재', value: '미가입 제재는 하위법령·원문 추가 확인 필요' },
+    ],
+    afterChanges: [
+      { label: '보험 가입', value: '일정한 보건의료기관개설자는 책임보험 또는 책임공제에 가입하여야 함', emphasis: 'red' },
+      { label: '운영 기준', value: '약관·손해평가·지급 기준을 보건복지부가 관리·감독할 수 있음', emphasis: 'red' },
+      { label: '시행일', value: '2027년 5월 27일 시행 예정', emphasis: 'blue' },
+    ],
+    changeBadge: '보험 가입 의무 신설 · 우선 검토',
+    relatedCases: [],
+    relatedLossCases: [],
+    checklist: [
+      '국가법령정보센터 제47조 원문과 시행령 배상한도 확인',
+      '대상 의료기관 범위·미가입 제재·보험료 산정 기준 확인',
+    ],
+    evidenceIds: ['LAW-MEDICAL-LIABILITY-20260526'],
+    insuranceMandate: true,
+    implementationProgress: 0.8,
+    sanctionSeverity: 3.5,
+    candidateIds: ['medical-liability-insurance'],
+  },
+  {
+    id: 'law-disaster-mandatory-insurance-standard',
+    sourceType: 'administrative',
+    typeLabel: '행정안전부 / 고시',
+    institution: '행정안전부',
+    title: '재난안전의무보험 관리·운용 기준 개정',
+    summary: '법률에 따라 가입을 강제하는 재난안전의무보험의 사전협의·관리 기준을 개정한 고시',
+    status: '시행 · 운영 기준 개정',
+    expectedEffectiveDate: '2026.01.27',
+    lastUpdated: '2026.01.27',
+    riskLevel: 'high',
+    categories: ['corporate', 'legal', 'department'],
+    sourceUrl: 'https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000273718',
+    relatedCaseCount: 0,
+    relatedLossCount: 0,
+    timeline: [
+      { label: '기준 개정', stage: 'complete', date: '2026.01.27' },
+      { label: '고시 시행', stage: 'complete', date: '2026.01.27' },
+      { label: '의무보험 사전협의', stage: 'complete', date: '신설·개정 시 협의' },
+      { label: '운영기관 적용', stage: 'current', date: '적용 현황 확인 중' },
+      { label: '보험 가입 관리', stage: 'pending', date: '기관별 확인 필요' },
+    ],
+    beforeChanges: [
+      { label: '대상 기준', value: '재난안전의무보험별 개별 관리 기준' },
+      { label: '사전협의', value: '신설·개정 법령의 보험제도 협의 범위 확인 필요' },
+      { label: '미가입', value: '과태료 등 개별 법령상 제재 확인 필요' },
+    ],
+    afterChanges: [
+      { label: '의무보험 정의', value: '일정한 자에게 가입을 강제하는 보험 또는 공제로 정의', emphasis: 'red' },
+      { label: '신설·개정 협의', value: '의무보험 제도 신설·개정 시 행정안전부장관과 사전협의', emphasis: 'red' },
+      { label: '운영 기준', value: '미가입 집단에는 영업정지·강제징수 등 제재 방안 검토 가능', emphasis: 'blue' },
+    ],
+    changeBadge: '의무보험 제도화·제재 연계',
+    relatedCases: [],
+    relatedLossCases: [],
+    checklist: [
+      '재난안전의무보험 대상 법령과 별표의 실제 보험종목 확인',
+      '미가입 과태료·영업정지·강제징수 적용 여부와 보상한도 확인',
+    ],
+    evidenceIds: ['LAW-DISASTER-MANDATORY-20260127'],
+    insuranceMandate: true,
+    implementationProgress: 0.9,
+    sanctionSeverity: 4.5,
+    candidateIds: ['urban-flooding'],
+  },
   {
     id: 'law-ev-fire',
     sourceType: 'assembly',

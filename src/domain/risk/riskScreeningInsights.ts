@@ -494,7 +494,7 @@ export function getContextualScreeningInsight(
   }
 }
 
-/** seoyeon 브랜치 TOP-10 셀별 설명을 현재 도메인 계약으로 옮긴 SAMPLE 데이터입니다. */
+/** seoyeon 브랜치 TOP-18 셀별 설명을 현재 도메인 계약으로 옮긴 SAMPLE 데이터입니다. */
 export const screeningInsights: Record<string, Record<ScreeningMetricKey, ScreeningInsight>> = {
   'ev-battery-fire': {
     demand: insight('92%', ['건물주 및 입주민 보험 문의 증가', '지하주차장 화재 사고 후 관심 증가'], ['검색량 API · SAMPLE', '고객센터 비식별 집계 · SAMPLE'], '시장 전환 가능성을 우선 검토할 항목입니다.', 'positive'),

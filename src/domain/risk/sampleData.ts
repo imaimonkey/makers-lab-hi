@@ -125,6 +125,54 @@ const riskContextById: Record<string, RiskContext> = {
     exposedParty: '배달·대리·퀵서비스 종사자',
     primaryLoss: '교통상해·치료비·휴업 소득손실',
   },
+  'ai-transparency-obligation': {
+    theme: 'ai-digital',
+    themeLabel: 'AI·디지털',
+    exposedParty: 'AI 서비스 사업자·콘텐츠 이용자·권리자',
+    primaryLoss: '규제 준수비용·분쟁 방어비용·영업중단',
+  },
+  'mydata-portability-demand': {
+    theme: 'ai-digital',
+    themeLabel: '데이터·개인정보',
+    exposedParty: '정보주체·마이데이터 사업자·데이터 수신기관',
+    primaryLoss: '개인정보 유출·전송 오류·분쟁 비용',
+  },
+  'heatwave-workplace-duty': {
+    theme: 'health-lifestyle',
+    themeLabel: '건강·기후',
+    exposedParty: '옥외근로자·소규모 사업장·현장 관리자',
+    primaryLoss: '온열질환 치료비·휴업 손실·사업주 배상',
+  },
+  'kuam-urban-pilot': {
+    theme: 'mobility',
+    themeLabel: '모빌리티·항공',
+    exposedParty: 'UAM 운항자·승객·지상 제3자·버티포트 운영자',
+    primaryLoss: '대인·대물 손해·운항중단·시설 복구비',
+  },
+  'ai-voice-investigation': {
+    theme: 'ai-digital',
+    themeLabel: 'AI·금융범죄',
+    exposedParty: '금융 이용자·소상공인·금융기관',
+    primaryLoss: '사기 금전손실·인증 분쟁·복구 비용',
+  },
+  'medical-liability-insurance': {
+    theme: 'health-lifestyle',
+    themeLabel: '의료·법률',
+    exposedParty: '보건의료기관개설자·의료인·환자',
+    primaryLoss: '의료사고 배상책임·분쟁비용·보험료 부담',
+  },
+  'sns-impersonation-commerce': {
+    theme: 'smart-living',
+    themeLabel: '소비자·전자상거래',
+    exposedParty: '온라인 소비자·결제사업자·플랫폼 사업자',
+    primaryLoss: '미배송·가품 금전손실·환불 분쟁',
+  },
+  'ota-delivery-consumer-disputes': {
+    theme: 'smart-living',
+    themeLabel: '소비자·여행·물류',
+    exposedParty: '여행객·온라인 여행사·항공·택배 이용자',
+    primaryLoss: '취소·지연·오배송 손해·환불 분쟁',
+  },
 }
 
 const fallbackContext: RiskContext = {
@@ -215,6 +263,34 @@ function linkedEvidence(
   }
 }
 
+function verifiedOfficialEvidence(record: RiskExplorationRecord): SampleRiskEvidence | null {
+  const sourceId = record.evidenceIds?.[0]
+  if (!sourceId || !record.sourceName || !record.sourceUrl) return null
+  const sourceType: RiskEvidenceContract['sourceType'] = record.categories.includes('customer')
+    ? 'statistics'
+    : record.categories.includes('legal')
+      ? 'regulation'
+      : 'report'
+  const quote = record.metricEvidence?.demand?.quotes?.[0] ?? record.summary
+  return {
+    id: `${record.id}-official-source`,
+    type: '공식 공개자료',
+    sourceType,
+    sourceName: record.sourceName,
+    title: `${record.title} · 공식 근거`,
+    sourceUrl: record.sourceUrl,
+    publishedAt: record.collectedAt ?? null,
+    date: record.collectedAt?.slice(0, 10) ?? '공식 원문',
+    excerpt: quote,
+    supports: [`risk:${record.id}`, `evidence:${sourceId}`],
+    confidence: 'high',
+    uncertainty: '공식 자료의 사실관계는 확인되었지만 후보 점수·보험 손해액·보장 가능성은 별도 검증이 필요합니다.',
+    counterpoint: '정책·소비자 피해 신호가 곧바로 사고 빈도나 보험금 지급 가능성을 의미하지는 않습니다.',
+    verificationStatus: 'verified',
+    dataStatus: 'actual-article',
+  }
+}
+
 const linkedEvidenceByRiskId: Record<string, SampleRiskEvidence[]> = {
   'generative-ai-copyright': [
     linkedEvidence(
@@ -263,6 +339,7 @@ const linkedEvidenceByRiskId: Record<string, SampleRiskEvidence[]> = {
 }
 
 function buildEvidence(record: RiskExplorationRecord): SampleRiskEvidence[] {
+  const officialEvidence = verifiedOfficialEvidence(record)
   return [
     pendingEvidence(
       record,
@@ -291,6 +368,7 @@ function buildEvidence(record: RiskExplorationRecord): SampleRiskEvidence[] {
       [`risk:${record.detailRiskId}`, 'decision:next-action'],
       '후속 조사 결과에 따라 우선순위와 상품화 판단은 변경될 수 있습니다.',
     ),
+    ...(officialEvidence ? [officialEvidence] : []),
     ...(linkedEvidenceByRiskId[record.detailRiskId] ?? []),
   ]
 }
