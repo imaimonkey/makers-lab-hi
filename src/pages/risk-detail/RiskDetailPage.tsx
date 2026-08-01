@@ -8,7 +8,6 @@ import {
 } from '../../domain/risk/sampleData'
 import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
 import { RiskDecisionWorkspace } from '../../features/risk-detail/RiskDecisionWorkspace'
-import { EvidenceVerificationWorkspace } from '../../features/risk-detail/EvidenceVerificationWorkspace'
 import { RiskArticleOverview } from '../../features/risk-detail/RiskArticleOverview'
 import { buildAiQualitativeSummary, buildAssessmentAiSummary, getAssessmentEvidence } from '../../features/risk-detail/qualitativeAssessment'
 import type { RadarNewsDetail } from '../../domain/risk/riskRadarTypes'
@@ -118,7 +117,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
         step="03"
         eyebrow="RISK ASSESSMENT / CANDIDATE DETAIL"
         title="위험상세"
-          description="위험 후보의 맥락과 손해 경로를 기사처럼 읽고, 연결된 근거와 평가 기준을 확인하는 화면입니다."
+          description="위험 후보의 맥락과 손해 경로를 기사처럼 읽고, 연결된 근거와 핵심 판단 기준을 확인하는 화면입니다."
       />
       <nav className="sh-command-bar" aria-label="위험상세 명령 바">
         <div className="sh-command-context">
@@ -176,9 +175,9 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
 
       <section className="detail-grid detail-assessment-grid" id="assessment-criteria">
         <article className="assessment-panel surface-card">
-          <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY · AUTHORITY</p><h2>{detail.assessments.length}개 지표 평가 요약</h2><p className="panel-heading-description">AI가 저장한 원점수(0–5)와 표시용 점수(0–100), 대표 사유, 원문 인용 검증 상태를 한 화면에서 확인합니다.{developerMode && step3Results.length ? ' Step 3 저장 결과가 최신 판단으로 반영되어 있습니다.' : ''}</p></div><span className="updated-label">{detailSourceLabel} · 담당자 검토 필요</span></div>
+          <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY · AUTHORITY</p><h2>4개 핵심 지표 평가 요약</h2><p className="panel-heading-description">증가성·피해 심각성·확산 가능성·보험 사각지대 가능성을 원점수(0–5), 표시용 점수(0–100), 대표 사유와 원문 인용 상태로 확인합니다.{developerMode && step3Results.length ? ' Step 3 저장 결과가 최신 판단으로 반영되어 있습니다.' : ''}</p></div><span className="updated-label">{detailSourceLabel} · 담당자 검토 필요</span></div>
           <div className="assessment-list">
-            {detail.assessments.map((item) => {
+            {detail.assessments.filter((item) => !['신규성', '근거 신뢰도'].includes(item.label)).map((item) => {
               const assessmentEvidence = getAssessmentEvidence(item.label, risk.id, detail.evidence)
               return (
               <div className="assessment-row" key={item.label}>
@@ -218,15 +217,6 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
       </section>
 
       <RiskDecisionWorkspace key={`review-${risk.id}`} risk={risk} detail={detail} developerMode={developerMode} step3Results={step3Results} />
-      <EvidenceVerificationWorkspace
-        key={`verification-${risk.id}`}
-        risk={risk}
-        detail={detail}
-        liveDetail={liveDetail}
-        onDetailRefresh={refreshLiveDetail}
-        developerMode={developerMode}
-        step3Results={step3Results}
-      />
     </div>
   )
 }

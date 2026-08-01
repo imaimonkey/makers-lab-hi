@@ -88,7 +88,7 @@ export function RiskDecisionWorkspace({
     ? step3Text(step3Decision.logicComment, step3Text(step3Decision.summary, buildAiQualitativeSummary(risk, detail)))
     : buildAiQualitativeSummary(risk, detail)
   const decisionSummary = detail.decisionTitle.replace(/\s+/g, ' ')
-  const judgmentSignals = buildJudgmentSignalDetails(risk, detail)
+  const judgmentSignals = buildJudgmentSignalDetails(risk, detail).filter((signal) => signal.label !== '근거 신뢰도')
 
   return (
     <section className="detail-workspace" aria-label="위험상세 평가 워크스페이스">
