@@ -171,7 +171,7 @@ function pendingEvidence(
     id: `${record.detailRiskId}-evidence-${suffix}`,
     type,
     sourceType: 'internal-sample',
-    sourceName: 'TOP-10 위험 후보 비교 렌즈 · SAMPLE',
+    sourceName: '위험 후보 비교 자료',
     title,
     sourceUrl: null,
     publishedAt: null,
@@ -179,7 +179,7 @@ function pendingEvidence(
     excerpt,
     supports,
     confidence: 'low',
-    uncertainty: '공식 통계·원문·발행 시각이 아직 연결되지 않은 검토용 SAMPLE 항목입니다.',
+    uncertainty: '공식 통계·원문·발행 시각이 아직 연결되지 않은 검토용 항목입니다.',
     counterpoint,
     verificationStatus: 'source-pending',
     dataStatus: 'sample-only',
@@ -205,7 +205,7 @@ function linkedEvidence(
     sourceUrl,
     publishedAt: null,
     date: '발행일 확인 대기',
-    excerpt: 'sh 원본에서 제공된 URL을 원문 후보로 연결한 SAMPLE 항목입니다. 링크 대상의 구체적 주장과 수치는 아직 검증하지 않았습니다.',
+    excerpt: '원문 후보 URL을 연결한 항목입니다. 링크 대상의 구체적 주장과 수치는 아직 검증하지 않았습니다.',
     supports,
     confidence: 'low',
     uncertainty,
@@ -308,7 +308,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
       rawScore: novelty,
       score: toPercent(novelty),
       confidence,
-      note: '기존 위험과 다른 원인·노출 형태가 등장했는지 확인하는 SAMPLE 대리 지수입니다.',
+      note: '기존 위험과 다른 원인·노출 형태가 등장했는지 확인하는 대리 지수입니다.',
       formula: `신규성 = (수요 신호 ${record.metricScores.demand.toFixed(1)} + 행태 변화 ${record.metricScores.moralHazard.toFixed(1)}) ÷ 2`,
       inputs: `수요 신호 ${record.metricScores.demand.toFixed(1)}, 행태 변화 ${record.metricScores.moralHazard.toFixed(1)}`,
       calculation: `${novelty.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(novelty)}`,
@@ -319,7 +319,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
       rawScore: record.metricScores.demand,
       score: toPercent(record.metricScores.demand),
       confidence,
-      note: `${record.demand} · TOP-10 비교용 SAMPLE이며 실제 가입 수요가 아닙니다.`,
+      note: `${record.demand} · TOP-10 비교용이며 실제 가입 수요가 아닙니다.`,
       formula: `증가성 = 수요 신호 ${record.metricScores.demand.toFixed(1)} (원자료 ${record.demand})`,
       inputs: `수요 신호 ${record.metricScores.demand.toFixed(1)} (원자료 ${record.demand})`,
       calculation: `${record.metricScores.demand.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(record.metricScores.demand)}`,
@@ -363,7 +363,7 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
       rawScore: record.metricScores.dataConfidence,
       score: toPercent(record.metricScores.dataConfidence),
       confidence,
-      note: `${record.dataConfidence} · 원문·표본·최신 시각 확인 전 SAMPLE입니다.`,
+      note: `${record.dataConfidence} · 원문·표본·최신 시각 확인 전입니다.`,
       formula: `근거 신뢰도 = 데이터 신뢰도 ${record.metricScores.dataConfidence.toFixed(1)} (원자료 ${record.dataConfidence})`,
       inputs: `데이터 신뢰도 ${record.metricScores.dataConfidence.toFixed(1)} (원자료 ${record.dataConfidence})`,
       calculation: `${record.metricScores.dataConfidence.toFixed(1)} ÷ 5 × 100 = ${scoreDetails(record.metricScores.dataConfidence)}`,
@@ -376,7 +376,7 @@ function buildDecision(record: RiskExplorationRecord) {
   const status = getCandidateStatus(record)
   if (status === '검토 중') {
     return {
-      decisionStatus: '우선 검토 · SAMPLE',
+      decisionStatus: '우선 검토',
       decisionBadge: 'REVIEW · 근거 보강',
       decisionTitle: '신호는 높지만\n공식 원문 검증이 필요합니다.',
       decisionTone: 'hold' as const,
@@ -384,14 +384,14 @@ function buildDecision(record: RiskExplorationRecord) {
   }
   if (status === '신규') {
     return {
-      decisionStatus: '콘셉트 검토 · SAMPLE',
+      decisionStatus: '콘셉트 검토',
       decisionBadge: 'ADVANCE · 검토 착수',
       decisionTitle: '비교 점수는 유효하지만\n손해·책임 자료가 필요합니다.',
       decisionTone: 'advance' as const,
     }
   }
   return {
-    decisionStatus: '관찰 지속 · SAMPLE',
+    decisionStatus: '관찰 지속',
     decisionBadge: 'OBSERVE · 데이터 축적',
     decisionTitle: '가설은 유지하되\n공식 근거를 더 축적합니다.',
     decisionTone: 'observe' as const,
@@ -401,7 +401,7 @@ function buildDecision(record: RiskExplorationRecord) {
 function buildDetail(record: RiskExplorationRecord): SampleRiskDetail {
   const context = riskContextById[record.detailRiskId] ?? fallbackContext
   return {
-    riskStatement: `${record.summary} 가능성을 검토하는 SAMPLE 위험 가설입니다. 실제 손해 발생과 보험 적용 여부는 공식 자료로 확인해야 합니다.`,
+    riskStatement: `${record.summary} 가능성을 검토하는 위험 가설입니다. 실제 손해 발생과 보험 적용 여부는 공식 자료로 확인해야 합니다.`,
     exposedParty: context.exposedParty,
     primaryLoss: context.primaryLoss,
     ...buildDecision(record),
@@ -437,7 +437,7 @@ export const sampleRiskCandidates: SampleRiskCandidate[] = riskExplorationRecord
     productFit,
     evidenceCount: sampleRiskDetails[record.detailRiskId].evidence.length,
     status: getCandidateStatus(record),
-    trend: `수요 신호 ${signalStrength}% · SAMPLE`,
+    trend: `수요 신호 ${signalStrength}%`,
     updatedAt: SAMPLE_AS_OF,
   }
 })

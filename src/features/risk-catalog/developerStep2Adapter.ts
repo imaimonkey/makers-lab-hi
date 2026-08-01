@@ -1,9 +1,9 @@
 import { readStep2AnalysisResults, type SavedStep2AnalysisRow } from '../llm-util/util-2'
 import { type RiskExplorationMetricKey, type RiskExplorationMetricEvidence, type RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
 import type { ProductRisk } from '../../domain/risk/riskRadarDemo'
-import type { SampleRiskCandidate, SampleRiskDetail, SampleRiskEvidence } from '../../domain/risk/sampleData'
+import type { SampleRiskAssessment, SampleRiskCandidate, SampleRiskDetail, SampleRiskEvidence } from '../../domain/risk/sampleData'
 import type { RiskTheme } from '../../domain/risk/types'
-import type { ArticleSourceRecord } from '../risk-dashboard/articleSourceData'
+import type { ArticleContentProfile, ArticleSourceRecord } from '../risk-dashboard/articleSourceData'
 import type { SavedStep3AnalysisRow } from '../llm-util/util-3'
 import { step3Nested, step3Root, step3Text } from '../risk-detail/step3ResultAdapter'
 
@@ -42,6 +42,12 @@ function confidenceFrom(score: number): SampleRiskEvidence['confidence'] {
   if (score >= 4) return 'high'
   if (score >= 2.5) return 'medium'
   return 'low'
+}
+
+function assessmentConfidenceFrom(score: number): SampleRiskAssessment['confidence'] {
+  if (score >= 4) return '높음'
+  if (score >= 2.5) return '보통'
+  return '낮음'
 }
 
 function candidateStatus(raw: string): SampleRiskCandidate['status'] {
@@ -115,7 +121,65 @@ export type DeveloperRiskDetailData = {
   articleId: string
 }
 
+function buildContentDerivedDetailData(article: ArticleSourceRecord): DeveloperRiskDetailData {
+  const profile = article.contentProfile
+  const assessmentRows = [
+    ['신규성', profile.scores.novelty],
+    ['증가성', profile.scores.growth],
+    ['피해 심각성', profile.scores.severity],
+    ['확산 가능성', profile.scores.spread],
+    ['보험 사각지대 가능성', profile.scores.coverageGap],
+    ['근거 신뢰도', profile.scores.evidenceConfidence],
+  ] as const
+  const assessments = assessmentRows.map(([label, rawScore]) => ({
+    label,
+    rawScore,
+    score: Math.round(rawScore * 20),
+    confidence: assessmentConfidenceFrom(rawScore),
+    note: profile.signals[0]?.basis ?? profile.summary,
+    formula: `${label} = ${rawScore.toFixed(1)} / 5 × 20`,
+    inputs: profile.facts.slice(0, 2).join(' · '),
+    calculation: `${rawScore.toFixed(1)} × 20 = ${Math.round(rawScore * 20)}점`,
+    interpretation: profile.event,
+    evidenceStatus: 'pending' as const,
+    evidenceQuotes: profile.facts.slice(0, 2),
+    uncertainty: ['본문 기반 구조화 더미이며 공식 인용 구간 검증 전'],
+    counterEvidence: ['독립 출처와 반증 자료 확인 필요'],
+  }))
+  const average = assessments.reduce((sum, item) => sum + item.score, 0) / assessments.length
+  const evidence = makeActualEvidence(article, `developer-${article.id}`, profile.reviewActions, ['본문 기반 구조화 더미'], profile.evidenceConfidence)
+  return {
+    articleId: article.id,
+    risk: {
+      id: `developer-${article.id}`,
+      title: article.title,
+      theme: themeFrom({ theme: profile.topic }),
+      themeLabel: profile.topic,
+      signalStrength: Math.round(profile.scores.growth * 20),
+      productFit: Math.round(average),
+      evidenceCount: 1,
+      status: candidateStatus('review'),
+      trend: '본문 기반 구조화 더미',
+      updatedAt: article.collectedAt ?? new Date().toISOString(),
+      articleId: article.id,
+    },
+    detail: {
+      riskStatement: profile.summary,
+      exposedParty: profile.affectedTargets.join(' · '),
+      primaryLoss: profile.damageTypes.join(' · '),
+      decisionStatus: '본문 기반 구조화 결과 · 담당자 검증 필요',
+      decisionBadge: 'CONTENT DERIVED · MOCK',
+      decisionTitle: profile.reviewActions[0] ?? '원문 핵심 주장과 인용 구간 확인',
+      decisionTone: 'hold',
+      decisionChecks: profile.reviewActions.slice(0, 4),
+      assessments,
+      evidence: [evidence],
+    },
+  }
+}
+
 export function buildDeveloperRiskDetailData(article: ArticleSourceRecord, rows: SavedStep2AnalysisRow[]): DeveloperRiskDetailData {
+  if (!rows.length) return buildContentDerivedDetailData(article)
   const candidate = getStep2Root(rows.find((row) => row.step === 'candidate') ?? rows[0])
   const metrics = getStep2Root(rows.find((row) => row.step === 'metrics') ?? rows[0])
   const review = getStep2Root(rows.find((row) => row.step === 'candidateReview') ?? rows[0])
@@ -207,7 +271,7 @@ function step3SourceType(value: unknown): SampleRiskEvidence['sourceType'] {
   return allowed.includes(text) ? text as SampleRiskEvidence['sourceType'] : 'article'
 }
 
-function step3EvidenceToSample(value: unknown, article: ArticleSourceRecord, riskId: string): SampleRiskEvidence[] {
+function step3EvidenceToSample(value: unknown, article: Pick<ArticleSourceRecord, 'id' | 'title' | 'source' | 'collectedAt'> & { fileName?: string; text?: string }, riskId: string): SampleRiskEvidence[] {
   if (!Array.isArray(value)) return []
   return value.flatMap((entry, index) => {
     const item = asRecord(entry)
@@ -339,10 +403,81 @@ export function getStep2Root(row?: SavedStep2AnalysisRow): Record<string, unknow
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : data
 }
 
+function buildContentDerivedRecord(article: ArticleSourceRecord, index: number): RiskExplorationRecord {
+  const profile: ArticleContentProfile = article.contentProfile
+  const scores = {
+    demand: profile.scores.growth,
+    fortuity: profile.scores.severity,
+    accumulation: profile.scores.spread,
+    measurability: profile.scores.evidenceConfidence,
+    adverseSelection: profile.scores.coverageGap,
+    moralHazard: profile.scores.novelty,
+    dataConfidence: profile.scores.evidenceConfidence,
+    legalExposure: profile.scores.coverageGap,
+  }
+  const metricKeys = Object.keys(scores) as RiskExplorationMetricKey[]
+  const displayScore = (key: RiskExplorationMetricKey) => `${scores[key].toFixed(1)}/5`
+  const metricEvidence = Object.fromEntries(metricKeys.map((key, metricIndex) => {
+    const signal = profile.signals[metricIndex % Math.max(profile.signals.length, 1)]
+    return [key, {
+      reasons: [signal?.value ?? profile.summary],
+      sourceIds: [article.id],
+      quotes: [signal?.basis ?? profile.facts[0] ?? profile.summary],
+      judgment: signal?.label ?? profile.topic,
+      scoreRationale: '본문 기반 구조화 더미 결과 · 공식 검증 전 참고값',
+      confidence: profile.evidenceConfidence >= 4 ? 'medium' : 'low',
+      evidenceStatus: 'pending' as const,
+      counterEvidence: ['독립 출처와 원문 인용 구간 확인 필요'],
+      uncertainty: ['AI·Step 2 실제 분석 결과가 아닌 본문 기반 더미 구조화'],
+    }]
+  })) as Partial<Record<RiskExplorationMetricKey, RiskExplorationMetricEvidence>>
+  const display = {
+    demandVal: displayScore('demand'), fortVal: displayScore('fortuity'), fortuityDots: Math.round(scores.fortuity),
+    accumVal: displayScore('accumulation'), accumulationDots: Math.round(scores.accumulation),
+    measVal: displayScore('measurability'), measurabilityDots: Math.round(scores.measurability),
+    adverseVal: displayScore('adverseSelection'), moralVal: displayScore('moralHazard'),
+    dataVal: `${Math.round(scores.dataConfidence * 20)}%`, dataConfidencePercent: Math.round(scores.dataConfidence * 20),
+    riskLabel: displayScore('legalExposure'), riskSub: profile.topic, legalRiskSub: profile.reviewActions[0] ?? '검토 필요',
+  }
+  const categories: RiskExplorationRecord['categories'] = profile.topic === '법률·사회보험' ? ['legal', 'corporate'] : ['corporate']
+  return {
+    id: `developer-${article.id}`,
+    detailRiskId: `developer-${article.id}`,
+    title: article.title,
+    summary: profile.summary,
+    tags: profile.keywords.slice(0, 4),
+    categories: [...categories],
+    demand: display.demandVal,
+    fortuity: display.fortVal,
+    accumulation: display.accumVal,
+    measurability: display.measVal,
+    adverseSelection: display.adverseVal,
+    moralHazard: display.moralVal,
+    dataConfidence: display.dataVal,
+    legalExposure: display.riskLabel,
+    metricScores: scores,
+    metricEvidence,
+    evidenceIds: [article.id],
+    articleId: article.id,
+    sourceName: article.source,
+    collectedAt: article.collectedAt,
+    contentInsight: {
+      topic: profile.topic,
+      event: profile.event,
+      facts: profile.facts.slice(0, 3),
+      signals: profile.signals,
+      reviewActions: profile.reviewActions.slice(0, 3),
+    },
+    display,
+    gap: profile.damageTypes.slice(0, 2).join(' · ') || '보장 공백 확인 필요',
+    nextAction: profile.reviewActions.slice(0, 2).join(' · ') || `원문 ${index + 1}차 검토 필요`,
+  }
+}
+
 export function buildDeveloperStep2Records(rows: SavedStep2AnalysisRow[], articles: ArticleSourceRecord[] = []): RiskExplorationRecord[] {
   const grouped = new Map<string, SavedStep2AnalysisRow[]>()
   rows.filter((row) => row.mode !== 'mock').forEach((row) => grouped.set(row.articleId, [...(grouped.get(row.articleId) ?? []), row]))
-  return [...grouped.entries()].map(([articleId, articleRows], index) => {
+  const storedRecords: RiskExplorationRecord[] = [...grouped.entries()].map(([articleId, articleRows], index) => {
     const article = articles.find((item) => item.id === articleId)
     const candidate = getStep2Root(articleRows.find((row) => row.step === 'candidate') ?? articleRows[0])
     const metrics = getStep2Root(articleRows.find((row) => row.step === 'metrics') ?? articleRows[0])
@@ -420,6 +555,10 @@ export function buildDeveloperStep2Records(rows: SavedStep2AnalysisRow[], articl
       display, gap: textValue(candidate.gap), nextAction: textValue(candidate.nextAction),
     }
   })
+  const contentDerivedRecords = articles
+    .filter((article) => !grouped.has(article.id))
+    .map((article, index) => buildContentDerivedRecord(article, index))
+  return [...storedRecords, ...contentDerivedRecords]
 }
 
 export async function loadDeveloperStep2Records() {

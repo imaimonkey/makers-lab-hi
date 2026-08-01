@@ -45,6 +45,14 @@ export type RiskExplorationDisplay = {
   legalRiskSub: string
 }
 
+export type RiskExplorationContentInsight = {
+  topic: string
+  event: string
+  facts: string[]
+  signals: Array<{ label: string; value: string; basis: string; tone: string }>
+  reviewActions: string[]
+}
+
 export type RiskExplorationRecord = {
   id: string
   detailRiskId: string
@@ -66,6 +74,7 @@ export type RiskExplorationRecord = {
   articleId?: string
   sourceName?: string
   collectedAt?: string
+  contentInsight?: RiskExplorationContentInsight
   display: RiskExplorationDisplay
   gap: string
   nextAction: string

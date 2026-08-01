@@ -682,6 +682,31 @@
   .workspace-seoyeon .seoyeon-filter-right select { width: 100%; }
 }
 
+/* Content-derived article preview for the practical review catalog. */
+.workspace-seoyeon .risk-candidate-content-insight { margin: 14px 0; border: 1px solid #dbe5f2; border-radius: 10px; background: #f8fbff; overflow: hidden; }
+.workspace-seoyeon .risk-candidate-content-insight summary { padding: 10px 12px; color: #1d4ed8; font-size: 10px; font-weight: 800; cursor: pointer; }
+.workspace-seoyeon .risk-candidate-content-insight[open] summary { border-bottom: 1px solid #dbe5f2; background: #eff6ff; }
+.workspace-seoyeon .risk-candidate-content-topic { display: grid; gap: 5px; padding: 12px; }
+.workspace-seoyeon .risk-candidate-content-topic > span { width: fit-content; padding: 4px 7px; border-radius: 999px; color: #1d4ed8; background: #dbeafe; font-size: 9px; font-weight: 800; }
+.workspace-seoyeon .risk-candidate-content-topic p { margin: 0; color: #334155; font-size: 10px; line-height: 1.55; }
+.workspace-seoyeon .risk-candidate-content-signals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; padding: 0 12px 10px; }
+.workspace-seoyeon .risk-candidate-content-signals > div { display: grid; gap: 3px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 7px; background: #fff; }
+.workspace-seoyeon .risk-candidate-content-signals small { color: #64748b; font-size: 8px; }
+.workspace-seoyeon .risk-candidate-content-signals strong { color: #0f172a; font-size: 13px; }
+.workspace-seoyeon .risk-candidate-content-signals span { color: #94a3b8; font-size: 8px; line-height: 1.35; }
+.workspace-seoyeon .risk-candidate-content-facts { display: grid; gap: 5px; margin: 0; padding: 0 24px 10px 28px; color: #475569; font-size: 9px; line-height: 1.45; }
+.workspace-seoyeon .risk-candidate-content-actions { display: grid; gap: 5px; padding: 10px 12px 12px; border-top: 1px solid #e2e8f0; }
+.workspace-seoyeon .risk-candidate-content-actions b { color: #92400e; font-size: 9px; }
+.workspace-seoyeon .risk-candidate-content-actions span { color: #64748b; font-size: 9px; line-height: 1.4; }
+.workspace-seoyeon .article-source-sync-strip { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 14px 0 0; padding: 11px 14px; border: 1px solid #cfe0f5; border-radius: 9px; color: #475569; background: #f8fbff; font-size: 10px; }
+.workspace-seoyeon .article-source-sync-strip strong { color: #1d4ed8; }
+.workspace-seoyeon .article-source-sync-strip span { padding-left: 10px; border-left: 1px solid #dbe5f2; }
+.workspace-seoyeon .article-source-sync-strip small { margin-left: auto; color: #94a3b8; font-size: 9px; }
+@media (max-width: 720px) {
+  .workspace-seoyeon .risk-candidate-content-signals { grid-template-columns: 1fr; }
+  .workspace-seoyeon .article-source-sync-strip small { width: 100%; margin-left: 0; }
+}
+
 /* Risk detail uses the same cool, quiet canvas as the candidate catalog. */
 .workspace-sh {
   --workspace-paper: #f8fafc;
@@ -926,3 +951,6 @@
 .workspace-sh .detail-judgment-sources li em { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: #2f6672; font-size: 8px; font-style: normal; font-weight: 800; white-space: nowrap; }
 .workspace-sh .detail-judgment-sources li a:hover { color: #ff6b35; }
 .workspace-sh .detail-judgment-sources > p { margin: 6px 0 0; color: #8a9a9e; font-size: 8px; line-height: 1.45; }
+
+/* Risk detail keeps one authoritative score and avoids internal labels in the user view. */
+.workspace-sh .detail-driver-panel { grid-template-columns: minmax(0, 1fr); }

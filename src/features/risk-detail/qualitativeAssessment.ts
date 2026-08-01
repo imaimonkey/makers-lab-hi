@@ -57,9 +57,9 @@ export function buildJudgmentSignalDetails(
 
   return [
     {
-      label: '신호 강도',
+      label: '관측 신호 수준',
       score: risk.signalStrength,
-      note: '비교용 수요 신호의 현재값',
+      note: '뉴스·시장 관측 신호의 현재값. 사고 빈도나 손해액을 뜻하지 않습니다.',
       basis: increase?.inputs ?? `수요 신호 ${(risk.signalStrength / 20).toFixed(1)} / 5 · 비교 레코드 ${risk.signalStrength}점`,
       calculation: increase?.calculation ?? scoreCalculation(risk.signalStrength),
       aiComment: increase ? buildAssessmentAiSummary(increase) : '비교 레코드의 수요 신호가 현재 수준으로 관찰됩니다. 실제 가입 수요나 사고 증가로 단정하지 않고 원자료를 확인해야 합니다.',
@@ -80,7 +80,7 @@ export function buildJudgmentSignalDetails(
       note: '공식 원문·독립 출처 확인 수준',
       basis: confidence?.inputs ?? '공식 원문·독립 출처·표본·최신 시각 확인 대기',
       calculation: confidence?.calculation ?? scoreCalculation(confidence?.score ?? 50),
-      aiComment: confidence ? buildAssessmentAiSummary(confidence) : '출처 검증이 끝나기 전까지는 SAMPLE 판단으로 남깁니다. 원문, 표본, 발행일을 확인한 뒤 신뢰도를 갱신해야 합니다.',
+      aiComment: confidence ? buildAssessmentAiSummary(confidence) : '출처 검증이 끝나기 전까지는 검토용 판단으로 남깁니다. 원문, 표본, 발행일을 확인한 뒤 신뢰도를 갱신해야 합니다.',
       evidence: getAssessmentEvidence('근거 신뢰도', risk.id, detail.evidence),
     },
   ]
@@ -106,7 +106,7 @@ export function buildAiQualitativeSummary(risk: SampleRiskCandidate, detail: Sam
     ? '기존 상품과 책임 범위 사이의 공백 가능성도 함께 검토할 만합니다.'
     : '기존 상품·약관과의 차이는 원문을 대조해 확인해야 합니다.'
   const evidenceRead = confidence >= 70
-    ? '다만 이 문장은 SAMPLE 해석이므로 공식 원문과 실제 손실 데이터 확인 전에는 가설로 봅니다.'
+    ? '다만 공식 원문과 실제 손실 데이터를 확인하기 전에는 가설로 봅니다.'
     : '근거 신뢰도가 아직 충분하지 않아 공식 원문·독립 출처·최신 시각 확인 전에는 판단을 보류합니다.'
 
   return `‘${risk.title}’ 후보는 ${signalRead} 우선 확인할 가치가 있습니다. ${lossRead} ${gapRead} ${evidenceRead}`
@@ -125,7 +125,7 @@ export function buildAssessmentAiSummary(item: SampleRiskAssessment): string {
     case '보험 사각지대 가능성':
       return '현재 상품·약관만으로 책임과 보장 범위를 설명하기 어려운 구간이 있을 수 있습니다. 원문 확인 전에는 보장 공백으로 확정하지 않습니다.'
     case '근거 신뢰도':
-      return '공식 원문·독립 출처·표본·최신 시각이 얼마나 갖춰졌는지를 보여줍니다. 출처 검증이 끝나기 전까지는 SAMPLE 판단으로 남깁니다.'
+      return '공식 원문·독립 출처·표본·최신 시각이 얼마나 갖춰졌는지를 보여줍니다. 출처 검증 전에는 확정 판단으로 사용하지 않습니다.'
     default:
       return item.interpretation ?? item.note
   }
@@ -137,5 +137,5 @@ export function buildTrendAiSummary(risk: SampleRiskCandidate, trendRise: number
     : trendRise >= 15
       ? '최근 관측에서 완만한 상승 흐름이 보입니다.'
       : '최근 관측의 변화 폭은 아직 제한적입니다.'
-  return `AI 해석 보조 · SAMPLE: ‘${risk.title}’ 신호는 ${trendRead} 다만 추세 지수는 수요·관측 변화의 비교값이며, 실제 사고 빈도나 손해액을 의미하지 않습니다.`
+  return `‘${risk.title}’의 관측 신호는 ${trendRead} 다만 추세 지수는 수요·관측 변화의 비교값이며, 실제 사고 빈도나 손해액을 의미하지 않습니다.`
 }

@@ -112,7 +112,7 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
   const [officialLawLoading, setOfficialLawLoading] = useState(false)
   const [officialLawError, setOfficialLawError] = useState('')
   const [notice, setNotice] = useState(
-    developerMode ? '실제 PDF와 저장된 Step 2·Step 3 결과를 사용합니다. 아래 확인 버튼은 개발자 화면의 상태만 갱신합니다.' : articleId ? '' : '연결 기사 없음 · SAMPLE/원문 확인 대기. 다른 위험의 기사나 수치를 대신 사용하지 않습니다.',
+    developerMode ? '실제 PDF와 저장된 분석 결과를 사용합니다. 아래 확인 버튼은 현재 검토 상태만 갱신합니다.' : articleId ? '' : '연결 기사 없음 · 원문 확인 대기. 다른 위험의 기사나 수치를 대신 사용하지 않습니다.',
   )
 
   const sourceCount = developerMode ? new Set(detail.evidence.map((item) => item.sourceName)).size : productRisk?.sourceCount ?? 0
@@ -172,7 +172,7 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
   async function runAction(key: ActionKey) {
     if (!articleId) {
       if (key === 'candidate') setCandidateRequestState('pending-mapping')
-      setNotice('연결 기사 없음 · SAMPLE/원문 확인 대기. API 요청을 보내지 않았습니다.')
+       setNotice('연결 기사 없음 · 원문 확인 대기. 요청을 보내지 않았습니다.')
       return
     }
     if (key === 'candidate' && completed.includes('candidate')) {
@@ -244,7 +244,7 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
 
       <div className="verification-two-column">
         <article className="surface-card verification-article-panel" id="article-body">
-          <div className="verification-panel-heading"><div><p className="eyebrow">ORIGINAL ARTICLE / STEP 1</p><h3>기사 본문</h3></div><span>{developerMode ? '본문 추출 완료 · ACTUAL ARTICLE' : articleId ? '본문 추출 완료 · SAMPLE' : '연결 기사 없음 · SAMPLE'}</span></div>
+          <div className="verification-panel-heading"><div><p className="eyebrow">ORIGINAL ARTICLE</p><h3>기사 본문</h3></div><span>{developerMode ? '본문 추출 완료' : articleId ? '본문 추출 완료' : '연결 기사 없음'}</span></div>
           {developerMode && articleId ? (
             <>
               <h4>{risk.title}</h4>
@@ -258,34 +258,34 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
               <h4>{productRisk.keyword} 관련 보험상품 개발 이슈</h4>
               <p>{productRisk.target}에서 {productRisk.keyword}와 관련한 새로운 손해 가능성이 관찰되고 있습니다.</p>
               <p>주요 예상 손해는 {productRisk.loss}이며, 현재 확인할 보장 공백은 {productRisk.coverageGap}입니다.</p>
-              <p>실제 운영에서는 확보한 기사 원문과 공식 출처 URL을 표시하며, 이 문장은 기능 검증을 위한 샘플입니다.</p>
+              <p>확보한 기사 원문과 공식 출처 URL을 연결해 확인합니다.</p>
               <div className="verification-quality"><span>확보 방식 <strong>demo</strong></span><span>문단 <strong>3개</strong></span><span>출처 후보 <strong>{sourceCount}개</strong></span><span>기사 ID <strong>{articleId}</strong></span></div>
             </>
           ) : (
             <>
-              <h4>연결 기사 없음 · SAMPLE/원문 확인 대기</h4>
+              <h4>연결 기사 없음 · 원문 확인 대기</h4>
               <p>{risk.title} 후보는 현재 hyoje canonical 기사 매핑 대상이 아닙니다.</p>
-              <p>후보 자체의 SAMPLE 상세는 유지하되, 다른 위험의 기사 본문과 수치를 대신 표시하지 않습니다.</p>
+              <p>현재 후보의 상세만 유지하며, 다른 위험의 기사 본문과 수치를 대신 표시하지 않습니다.</p>
               <div className="verification-quality"><span>확보 방식 <strong>미연결</strong></span><span>문단 <strong>0개</strong></span><span>출처 후보 <strong>0개</strong></span><span>API 요청 <strong>차단</strong></span></div>
             </>
           )}
         </article>
         <article className="surface-card verification-analysis-panel">
-          <div className="verification-panel-heading"><div><p className="eyebrow">FACTS VS INTERPRETATION / STEP 2</p><h3>사실과 위험 해석</h3></div><span>{developerMode ? `${step3Results.length}개 Step 3 결과 연결` : articleId ? '담당자 확인 전' : '기사 분석 없음'}</span></div>
+          <div className="verification-panel-heading"><div><p className="eyebrow">FACTS VS INTERPRETATION</p><h3>사실과 위험 해석</h3></div><span>{developerMode ? `${step3Results.length}개 분석 결과 연결` : articleId ? '담당자 확인 전' : '기사 분석 없음'}</span></div>
           {developerMode && articleId ? (
             <div className="verification-fact-grid">
               <div><span>본문에서 확인된 사실</span><ul>{(Array.isArray(articleFacts.facts) ? articleFacts.facts : []).slice(0, 3).map((value, index) => { const fact = value && typeof value === 'object' ? value as Record<string, unknown> : {}; return <li key={index}>{step3Text(fact.fact, '원문 사실 확인 필요')}</li> })}</ul></div>
-              <div><span>Step 3 위험 해석</span><p>{step3Text(riskInterpretation.lossEvent, detail.primaryLoss)}</p><dl><dt>왜 지금인가</dt><dd>{step3Text(riskInterpretation.whyNow, 'Step 3 결과 확인 필요')}</dd><dt>노출 대상</dt><dd>{step3TextList(riskInterpretation.responsibilityCandidates).join(' · ') || detail.exposedParty}</dd><dt>기존 판단</dt><dd>{step3Text(step3Decision.recommendedStatus, detail.decisionStatus)}</dd></dl></div>
+              <div><span>위험 해석</span><p>{step3Text(riskInterpretation.lossEvent, detail.primaryLoss)}</p><dl><dt>왜 지금인가</dt><dd>{step3Text(riskInterpretation.whyNow, '확인 필요')}</dd><dt>노출 대상</dt><dd>{step3TextList(riskInterpretation.responsibilityCandidates).join(' · ') || detail.exposedParty}</dd><dt>기존 판단</dt><dd>{step3Text(step3Decision.recommendedStatus, detail.decisionStatus)}</dd></dl></div>
             </div>
           ) : productRisk && articleId ? (
             <div className="verification-fact-grid">
               <div><span>본문에서 확인된 사실</span><ul><li>{productRisk.target}에서 관련 손해 가능성이 언급됨</li><li>예상 손해가 {productRisk.loss}로 분류됨</li></ul></div>
-              <div><span>보험 위험 해석</span><p>{productRisk.impact}</p><dl><dt>왜 지금인가</dt><dd>언급량과 수요 신호가 함께 증가하는 SAMPLE 가정</dd><dt>책임 후보</dt><dd>{productRisk.target}</dd><dt>기존 판단</dt><dd>{detail.decisionStatus}</dd></dl></div>
+              <div><span>보험 위험 해석</span><p>{productRisk.impact}</p><dl><dt>왜 지금인가</dt><dd>언급량과 수요 신호의 변화를 확인합니다.</dd><dt>책임 후보</dt><dd>{productRisk.target}</dd><dt>기존 판단</dt><dd>{detail.decisionStatus}</dd></dl></div>
             </div>
           ) : (
             <div className="verification-fact-grid">
               <div><span>기사에서 확인된 사실</span><p>연결된 원문 기사가 없어 확인된 기사 사실이 없습니다.</p></div>
-              <div><span>후보 가설 · SAMPLE</span><p>{detail.riskStatement}</p><dl><dt>현재 상태</dt><dd>원문 확인 대기</dd><dt>API 동작</dt><dd>비활성화</dd></dl></div>
+              <div><span>후보 가설</span><p>{detail.riskStatement}</p><dl><dt>현재 상태</dt><dd>원문 확인 대기</dd><dt>연결 상태</dt><dd>연결 대기</dd></dl></div>
             </div>
           )}
           <p className="verification-caution">위험 해석은 상품화 확정이 아닙니다. 반증 자료와 담당자 검토를 함께 남겨야 합니다.</p>
@@ -303,15 +303,15 @@ export function EvidenceVerificationWorkspace({ risk, detail, liveDetail, onDeta
         ) : liveEvidenceLedger.length ? (
           <div className="verification-evidence-grid">
             {liveEvidenceLedger.slice(0, 2).map((item) => (
-              <blockquote key={item.id}><span>{item.id} · {item.verificationStatus}</span><q>{item.excerpt ?? item.title}</q><small>{item.sourceName} · {item.dataStatus}</small></blockquote>
+              <blockquote key={item.id}><span>{item.id} · {completedStatus(item.verificationStatus) ? '검증 완료' : '확인 필요'}</span><q>{item.excerpt ?? item.title}</q><small>{item.sourceName} · 원문 확인 필요</small></blockquote>
             ))}
           </div>
         ) : productRisk && articleId ? (
-          <div className="verification-evidence-grid"><blockquote><span>근거 01 · 문장 1</span><q>{productRisk.target}에서 {productRisk.keyword} 관련 손해 가능성이 관찰되고 있습니다.</q><small>위험 대상과 사건을 직접 확인하는 SAMPLE 문장</small></blockquote><blockquote><span>근거 02 · 문장 2</span><q>주요 예상 손해는 {productRisk.loss}이며, 보장 공백은 {productRisk.coverageGap}입니다.</q><small>상품개발 판단에 필요한 손해·공백 SAMPLE 문장</small></blockquote></div>
+          <div className="verification-evidence-grid"><blockquote><span>근거 01 · 문장 1</span><q>{productRisk.target}에서 {productRisk.keyword} 관련 손해 가능성이 관찰되고 있습니다.</q><small>위험 대상과 사건을 확인할 근거 문장</small></blockquote><blockquote><span>근거 02 · 문장 2</span><q>주요 예상 손해는 {productRisk.loss}이며, 보장 공백은 {productRisk.coverageGap}입니다.</q><small>손해와 보장 공백을 확인할 근거 문장</small></blockquote></div>
         ) : (
           <div className="verification-evidence-grid">
             {detail.evidence.slice(0, 2).map((evidence) => (
-              <blockquote key={evidence.id}><span>{evidence.id}</span><q>{evidence.title}</q><small>후보 상세의 SAMPLE 근거이며 기사 원문 인용이 아닙니다.</small></blockquote>
+              <blockquote key={evidence.id}><span>{evidence.id}</span><q>{evidence.title}</q><small>후보 상세의 예시 근거이며 기사 원문 인용이 아닙니다.</small></blockquote>
             ))}
           </div>
         )}

@@ -64,18 +64,18 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
   const liveAnalysis = liveDetail?.analysis
   const displayTitle = liveArticle?.title ?? risk?.title
   const detailSourceLabel = developerMode
-    ? 'ACTUAL ARTICLE'
+    ? '실제 원문'
     : liveLoading
       ? 'LOADING'
       : liveDetail && liveStale
-        ? 'STALE · 마지막 응답 유지'
+        ? '최근 정상 응답'
         : liveDetail
-          ? 'LIVE API'
+          ? '연결 데이터'
           : liveError
-            ? 'SAMPLE fallback'
+            ? '예시 데이터'
             : articleId
-              ? 'SAMPLE · detail pending'
-              : 'MAPPING PENDING'
+              ? '검토 데이터'
+              : '연결 대기'
   const catalogPath = developerMode ? '/developer-test/risks' : '/risks'
 
   const printRiskDetail = useCallback(() => {
@@ -117,7 +117,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
         step="03"
         eyebrow="RISK ASSESSMENT / CANDIDATE DETAIL"
         title="위험상세"
-        description="핵심 상태, 평가 결과, 판단 자료와 다음 확인 항목을 검토합니다."
+        description="무엇을 먼저 검토할지 정하고, 6개 평가 기준과 원문 근거를 확인하는 화면입니다."
       />
       <nav className="sh-command-bar" aria-label="위험상세 명령 바">
         <div className="sh-command-context">
@@ -127,11 +127,11 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           <span aria-label={`위험 ID ${risk.id}`}>{risk.id}</span>
         </div>
         <div className="sh-command-actions">
-          <a href="#assessment-criteria">평가 요약으로 이동</a>
+           <a href="#ai-judgment-evidence">AI 판단 근거로 이동</a>
           <button type="button" onClick={printRiskDetail}>PDF 출력</button>
         </div>
       </nav>
-      <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? 'src/article PDF와 Step 2 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? `${liveStale ? ' 마지막 정상 상세 응답을 유지합니다.' : ' API detail 응답을 사용합니다.'}${lastLiveAt ? ` 응답 시각 ${new Date(lastLiveAt).toLocaleString('ko-KR')}` : ''}` : `${sampleOnlyNotice}${liveError ? ` API detail 실패: ${liveError}` : ''}`}</div>
+      <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? '연결된 원문과 저장된 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? `${liveStale ? ' 마지막 정상 상세 응답을 유지합니다.' : ' 연결된 상세 데이터를 사용합니다.'}${lastLiveAt ? ` 응답 시각 ${new Date(lastLiveAt).toLocaleString('ko-KR')}` : ''}` : `${sampleOnlyNotice}${liveError ? ' 상세 데이터를 불러오지 못했습니다.' : ''}`}</div>
       {liveDetail ? <div className="detail-live-strip" role="status"><strong>{detailSourceLabel}</strong><span>본문 {liveArticle?.contentStatus ?? '상태 미제공'}</span><span>분석 {liveArticle?.analysisStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>검증 {liveArticle?.verificationStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>기준 시각 {liveArticle?.collectedAt ?? liveArticle?.publishedAt ?? '시각 미제공'}</span></div> : null}
 
       <section className="risk-hero surface-card">
@@ -143,27 +143,27 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           <div className="risk-facts">
             <span><small>노출 주체</small>{detail.exposedParty}</span>
             <span><small>주요 손해</small>{detail.primaryLoss}</span>
-           <span><small>다음 확인</small>{detail.decisionChecks[0] ?? '확인 항목 없음'}</span>
+            <span><small>검토 초점</small>{detail.decisionChecks[0] ?? '확인 항목 없음'}</span>
           </div>
         </div>
         <div className="risk-score-card">
-           <span>현재 우선순위 · priorityIndex</span>
+           <span>우선 검토 지수</span>
           <strong>{risk.signalStrength}</strong>
           <div><i style={{ width: `${risk.signalStrength}%` }} /></div>
           <div className="sh-score-meta">
             <span>점수 범위</span><strong>0–100</strong>
-            <span>신뢰도</span><strong>{detailSourceLabel === 'LIVE API' ? 'API 응답' : '확인 대기'}</strong>
+             <span>데이터 상태</span><strong>{liveDetail ? '연결됨' : '확인 대기'}</strong>
           </div>
-           <p>0–100 · {developerMode ? (step3Results.length ? 'Step 3 저장 평가 기반 보조 우선순위' : 'Step 2 저장 점수 기반 우선순위') : 'signalStrength 기반 우선순위 SAMPLE'} · 사고확률·손해액 아님</p>
+             <p>0–100 · {developerMode ? (step3Results.length ? '저장 평가 기반 보조 지수' : '저장 점수 기반 보조 지수') : '후보 관측 신호 기반'} · 위험 규모·사고확률·손해액 아님</p>
           <details className="hero-score-logic">
             <summary>산출 근거</summary>
             <div className="logic-step-list">
-              <p><b>01</b><span>입력값</span><code>후보 수요 신호 = {risk.signalStrength}%</code></p>
+               <p><b>01</b><span>입력값</span><code>후보 관측 신호 = {risk.signalStrength}%</code></p>
               <p><b>02</b><span>정규화</span><code>{risk.signalStrength}% → {risk.signalStrength}점 / 100</code></p>
               <p><b>03</b><span>판정</span><code>{risk.signalStrength >= 80 ? '80 이상 → CRITICAL' : risk.signalStrength >= 65 ? '65–79 → HIGH' : '64 이하 → REVIEW'}</code></p>
               <p className="logic-step-note">이 지수는 손해액이나 사고 확률이 아닙니다. 현재 후보를 어떤 순서로 먼저 확인할지 정하는 우선순위 기준입니다.</p>
               <div className="ai-qualitative-assessment">
-                <span>AI 정성 해석 · {developerMode ? (step3Results.length ? 'Step 3 결과' : 'Step 2 결과') : 'SAMPLE'}</span>
+                 <span>AI 정성 해석</span>
                 <p>{aiQualitativeSummary}</p>
               </div>
             </div>
@@ -197,7 +197,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
                     </dd></div>
                   </dl>
                   <div className="ai-qualitative-assessment">
-                  <span>AI 정성 해석 · {developerMode ? (step3Results.length ? 'Step 3 결과' : 'Step 2 결과') : 'SAMPLE'}</span>
+                   <span>AI 정성 해석</span>
                     <p>{developerMode && step3Results.length ? item.interpretation ?? item.note : buildAssessmentAiSummary(item)}</p>
                   </div>
                   <small>모든 원점수는 1–5 척도이며, 최종 표시값은 원점수 × 20으로 환산합니다.</small>

@@ -95,6 +95,18 @@ function RiskCandidateCard({ record, index, developerMode }: { record: RiskExplo
       <h4>{record.title}</h4>
       <p className="risk-candidate-summary">{record.summary}</p>
 
+      {record.contentInsight ? (
+        <details className="risk-candidate-content-insight">
+          <summary>본문 기반 구조화 결과</summary>
+          <div className="risk-candidate-content-topic"><span>{record.contentInsight.topic}</span><p>{record.contentInsight.event}</p></div>
+          <div className="risk-candidate-content-signals">
+            {record.contentInsight.signals.slice(0, 4).map((signal) => <div key={`${signal.label}-${signal.value}`}><small>{signal.label}</small><strong>{signal.value}</strong><span>{signal.basis}</span></div>)}
+          </div>
+          <ul className="risk-candidate-content-facts">{record.contentInsight.facts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
+          <div className="risk-candidate-content-actions"><b>다음 검토</b>{record.contentInsight.reviewActions.map((action) => <span key={action}>{action}</span>)}</div>
+        </details>
+      ) : null}
+
       <div className="risk-candidate-score">
         <div><span>기존 AI 종합점수</span><strong>{(developerMode ? actualScore(record) : candidate?.screeningScore.value)?.toFixed(2) ?? '확인 필요'}</strong></div>
         <small>{developerMode ? '0–5 · 실제 Step 2 결과 · 근거 검증 필요' : '0–5 · 후보 선별 보조값 · SAMPLE'}</small>
