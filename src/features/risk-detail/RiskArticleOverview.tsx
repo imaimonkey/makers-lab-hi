@@ -79,7 +79,7 @@ export function RiskArticleOverview({
           <span>{article?.source ?? '위험 후보 분석'}</span>
           <span>{formatDate(article?.publishedAt ?? article?.collectedAt ?? risk.updatedAt)}</span>
           <span>{sourceLabel}</span>
-          {sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer noopener">원문 열기 ↗</a> : null}
+          {sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer noopener">원문 열기 ↗</a> : <em>원문 링크 확인 필요</em>}
         </div>
       </header>
 
