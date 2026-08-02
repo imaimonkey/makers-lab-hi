@@ -67,7 +67,7 @@ export function RiskDecisionWorkspace({
       <div className="detail-workspace-grid" id="assessment-signal">
         <article id="judgment-materials" className={showEvidence ? 'detail-evidence-panel surface-card is-expanded' : 'detail-evidence-panel surface-card is-collapsed'}>
           <div className="panel-heading">
-            <div><p className="eyebrow">EVIDENCE LEDGER</p><button type="button" className="detail-panel-toggle" aria-expanded={showEvidence} aria-controls="judgment-materials" onClick={() => setShowEvidence((current) => !current)}><strong>근거 자료</strong><span>{showEvidence ? '접기' : '펼치기'}</span><i aria-hidden="true">{showEvidence ? '−' : '+'}</i></button></div>
+            <div><p className="eyebrow">EVIDENCE LEDGER</p><button type="button" className="detail-panel-toggle" aria-expanded={showEvidence} aria-controls="judgment-materials" onClick={() => setShowEvidence((current) => !current)}><strong>근거 자료</strong><span>{showEvidence ? '접기' : '펼치기'}</span><i aria-hidden="true">{showEvidence ? '−' : '+'}</i></button><p className="detail-evidence-caption">원문·뉴스·기관 자료를 근거 ID와 검증 상태로 관리합니다.</p></div>
             <span className="status-badge sample">{linkedSourceCount}/{evidenceLedger.length} URL 연결 · 원문 확인 필요</span>
           </div>
           {showEvidence ? <div className="detail-evidence-content">
@@ -79,18 +79,21 @@ export function RiskDecisionWorkspace({
               ))}
             </div>
             <div className="detail-evidence-list">
-              {filteredEvidence.map((evidence) => (
+              {filteredEvidence.map((evidence, index) => (
                 <article key={evidence.id}>
-                  <span>{evidence.type}</span>
+                  <span>{String(index + 1).padStart(2, '0')} · {evidence.type}</span>
                   <strong>{evidence.title}</strong>
                   <small>{evidence.sourceName} · {getEvidenceDate(evidence)} · 신뢰도 {confidenceLabel[evidence.confidence]}</small>
                   <p>{evidence.excerpt}</p>
-                  <dl>
-                    <div><dt>근거 ID</dt><dd>{evidence.id}</dd></div>
-                    <div><dt>연결 판단</dt><dd>{evidence.supports.join(', ')}</dd></div>
-                    <div><dt>불확실성</dt><dd>{evidence.uncertainty}</dd></div>
-                    <div><dt>반증·주의</dt><dd>{evidence.counterpoint}</dd></div>
-                  </dl>
+                  <details className="detail-evidence-item-details">
+                    <summary>검증 메모 보기</summary>
+                    <dl>
+                      <div><dt>근거 ID</dt><dd>{evidence.id}</dd></div>
+                      <div><dt>연결 판단</dt><dd>{evidence.supports.join(', ')}</dd></div>
+                      <div><dt>불확실성</dt><dd>{evidence.uncertainty}</dd></div>
+                      <div><dt>반증·주의</dt><dd>{evidence.counterpoint}</dd></div>
+                    </dl>
+                  </details>
                   <div className="detail-evidence-source-action">
                     {getSafeSourceUrl(evidence.sourceUrl ?? null)
                       ? <a href={getSafeSourceUrl(evidence.sourceUrl ?? null) ?? undefined} target="_blank" rel="noreferrer noopener">원문 후보 열기 ↗</a>
@@ -130,7 +133,7 @@ export function RiskDecisionWorkspace({
                 </div>
                 <div className="detail-judgment-metric-bar"><i style={{ width: `${signal.score}%` }} /></div>
                 <p className="detail-judgment-metric-note">{signal.note}</p>
-                <details className="detail-judgment-metric-details" open>
+                <details className="detail-judgment-metric-details">
                   <summary>근거·계산·AI 논리</summary>
                   <dl>
                     <div><dt>수치 근거</dt><dd>{signal.basis}</dd></div>
