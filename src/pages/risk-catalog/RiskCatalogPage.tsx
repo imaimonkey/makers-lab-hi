@@ -59,15 +59,14 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
     <div className="page catalog-page seoyeon-visual">
       {mode === 'developer' && developerViewData ? <div className="article-source-sync-strip" role="status"><strong>src/article 자동 반영</strong><span>본문 확보 {developerViewData.counts.bodyReady}건</span><span>구조화 후보 {developerViewData.counts.candidates}건</span><span>실제 Step 2 저장 결과 {developerViewData.counts.analyzed}건</span><small>저장 결과가 없어도 PDF 본문 기반 더미 구조화 결과가 표시됩니다.</small></div> : null}
       <RiskExplorationLens developerMode={mode === 'developer'} developerLaws={mode === 'developer' ? (developerViewData?.laws ?? []) : undefined} sourceRecords={mode === 'developer' ? developerRecords : undefined} developerData={mode === 'developer' ? developerViewData : undefined} onRunDeveloperStep2={mode === 'developer' ? runDeveloperStep2 : undefined} developerRunning={developerRunning} />
-      <section className="integration-contract surface-card">
-        <span className="contract-label">TEAM 02 INTEGRATION CONTRACT</span>
+      {/* <section className="integration-contract surface-card">
         <h2>위험후보는 근거와 함께 관리되는 <em>상품화 후보</em>입니다.</h2>
         <div>
           <p><strong>필수 입력</strong>RiskCandidate, evidenceCount, signalStrength, status</p>
           <p><strong>필수 출력</strong>선택한 riskId를 `/risks/:riskId`로 전달</p>
           <p><strong>금지</strong>근거 없는 AI 점수, 플랫폼 외부 링크만 제공</p>
         </div>
-      </section>
+      </section> */}
     </div>
   )
 }
