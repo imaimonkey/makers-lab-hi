@@ -2962,3 +2962,85 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   color: #1d4ed8;
   background: #eff6ff;
 }
+
+.workspace-seoyeon .catalog-page .risk-screening-detail-actions a:first-child {
+  font-size: 13px;
+}
+
+.workspace-seoyeon .catalog-page .risk-screening-flow-metric {
+  grid-template-columns: minmax(90px, .85fr) minmax(0, 2.15fr);
+}
+
+/* Right detail flow layout */
+.risk-screening-detail-divider { height: 1px; margin-top: 16px; background: #dce5f1; }
+.risk-screening-overall-review { margin-top: 16px; padding: 12px 13px; border-left: 3px solid #2563eb; border-top: 1px solid #cfe0f5; border-right: 1px solid #cfe0f5; border-bottom: 1px solid #cfe0f5; border-radius: 9px; background: #f4f8ff; }
+.risk-screening-overall-review-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.risk-screening-overall-review-heading strong { color: #14213d; font-size: 11px; }
+.risk-screening-overall-review-heading em { padding: 6px 10px; border-radius: 9px; color: #2563eb; background: #e5efff; font-size: 8px; font-style: normal; font-weight: 800; }
+.risk-screening-overall-review p { margin: 8px 0 0; color: #52657d; font-size: 9px; line-height: 1.55; }
+.risk-screening-flow { margin-top: 12px; }
+.risk-screening-flow-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; align-items: baseline; margin-bottom: 9px; }
+.risk-screening-flow-heading strong { color: #0b2e68; font-size: 14px; font-weight: 850; letter-spacing: -.03em; }
+.risk-screening-flow-heading span { color: #64748b; font-size: 8px; }
+.risk-screening-flow-heading small { grid-column: 1 / -1; color: #94a3b8; font-size: 8px; }
+.risk-screening-flow-group { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 9px; padding: 11px; border: 1px solid #dce5f1; border-radius: 11px; background: #fff; }
+.risk-screening-flow-number { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; color: #fff; background: #2563eb; font: 800 10px/1 'DM Sans', 'Pretendard', sans-serif; }
+.risk-screening-flow-content { min-width: 0; }
+.risk-screening-flow-content > strong { display: block; color: #14213d; font-size: 11px; }
+.risk-screening-flow-content > small { display: block; margin-top: 3px; color: #94a3b8; font-size: 8px; line-height: 1.4; }
+.risk-screening-flow-metrics { display: grid; gap: 6px; margin-top: 9px; }
+.risk-screening-flow-metric { display: grid; grid-template-columns: minmax(90px, 1fr) 52px minmax(0, 2.1fr); align-items: center; gap: 8px; min-height: 33px; padding: 7px 9px; border-radius: 8px; background: #f7f9fc; }
+.risk-screening-flow-metric > strong { color: #334155; font-size: 8px; }
+.risk-screening-flow-metric > em { justify-self: center; min-width: 42px; padding: 5px 6px; border-radius: 999px; color: #a16207; background: #fff2d7; font-size: 7px; font-style: normal; font-weight: 800; text-align: center; }
+.risk-screening-flow-metric > em.high { color: #047857; background: #e6f7ef; }
+.risk-screening-flow-metric > em.review { color: #b45309; background: #fff2d7; }
+.risk-screening-flow-metric > span { min-width: 0; color: #64748b; font-size: 7px; line-height: 1.4; }
+.risk-screening-product-direction { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; align-items: start; margin-top: 10px; padding: 10px; border: 1px solid #cfe0f5; border-radius: 9px; background: #f4f8ff; }
+.risk-screening-product-direction > span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; color: #2563eb; background: #e5efff; font: 800 9px/1 'DM Sans', 'Pretendard', sans-serif; }
+.risk-screening-product-direction strong { display: block; color: #2563eb; font-size: 9px; }
+.risk-screening-product-direction p { margin: 3px 0 0; color: #52657d; font-size: 8px; line-height: 1.45; }
+.risk-screening-detail-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 10px; }
+.risk-screening-detail-summary-grid section { padding: 10px; border: 1px solid #ccecdf; border-radius: 10px; background: #f1fbf6; }
+.risk-screening-detail-summary-grid section:last-child { border-color: #f3dfb7; background: #fff9ed; }
+.risk-screening-detail-summary-grid strong { display: block; color: #047857; font-size: 9px; }
+.risk-screening-detail-summary-grid section:last-child strong { color: #a16207; }
+.risk-screening-detail-summary-grid ul { display: grid; gap: 4px; margin: 7px 0 0; padding-left: 14px; color: #52657d; font-size: 8px; line-height: 1.45; }
+.risk-screening-source-footer { display: grid; gap: 4px; margin-top: 10px; padding: 10px; border: 1px solid #e2eaf3; border-radius: 9px; background: #f8fafc; }
+.risk-screening-source-footer strong { color: #334155; font-size: 9px; }
+.risk-screening-source-footer span { color: #64748b; font-size: 8px; line-height: 1.45; }
+.risk-screening-source-footer a { color: #2563eb; font-size: 8px; font-weight: 800; text-decoration: none; }
+.risk-screening-flow-heading strong { font-size: 12px; }
+.risk-screening-flow-heading span { font-size: 10px; }
+.risk-screening-flow-group { padding: 14px; }
+.risk-screening-flow-content > strong { font-size: 11px; }
+.risk-screening-flow-content > small { display: inline; margin: 0 0 0 8px; font-size: 9px; vertical-align: baseline; }
+.risk-screening-flow-content > small { font-size: 10px; }
+.risk-screening-flow-metrics { gap: 8px; margin-top: 11px; }
+.risk-screening-flow-metric { min-height: 43px; padding: 9px 11px; }
+.risk-screening-flow-metric > strong { font-size: 12px; }
+.risk-screening-flow-metric > em { justify-self: start; min-width: 48px; padding: 6px 7px; font-size: 9px; }
+.risk-screening-flow-metric > span { font-size: 10px; line-height: 1.5; }
+.risk-screening-product-direction strong { font-size: 12px; }
+.risk-screening-product-direction p { font-size: 10px; line-height: 1.55; }
+.risk-screening-detail-summary-grid strong { font-size: 12px; }
+.risk-screening-detail-summary-grid ul { font-size: 10px; line-height: 1.55; }
+.risk-screening-source-footer span { font-size: 9px; }
+@media (max-width: 540px) {
+  .risk-screening-flow-metric { grid-template-columns: minmax(80px, 1fr) 48px minmax(0, 1.8fr); gap: 5px; padding-inline: 7px; }
+  .risk-screening-detail-summary-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 540px) {
+  .workspace-seoyeon .catalog-page .risk-screening-flow-metric {
+    grid-template-columns: minmax(80px, .9fr) minmax(0, 1.8fr);
+  }
+}
+.risk-screening-table th:nth-child(2) { text-align: center; }
+.risk-screening-table .screening-keyword > strong { font-size: 14px; line-height: 1.35; }
+.risk-screening-table .screening-keyword > small { margin-top: 6px; font-size: 11px; line-height: 1.5; }
+.risk-screening-table .screening-keyword > span { margin-top: 8px; gap: 4px; }
+.risk-screening-table .screening-keyword i { padding: 5px 8px; font-size: 9px; }
+.risk-screening-table .screening-metric-cell strong { font-size: 12px; }
+.risk-screening-table .screening-metric-cell small { font-size: 9px; }
+.risk-screening-table .risk-screening-score-wrap > strong { font-size: 20px; }
+.workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > strong { font-size: 14px !important; line-height: 1.35; }
+.workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > small { margin-top: 6px; font-size: 11px !important; line-height: 1.5; }

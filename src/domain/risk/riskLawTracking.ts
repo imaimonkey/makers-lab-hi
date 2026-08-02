@@ -1,4 +1,5 @@
 import type { ScreeningCategory } from './riskScreeningInsights'
+import { verifiedRiskLawTrackingOverrides } from './riskLawTrackingActualEvidence'
 
 export type LawTrackingSourceType = 'assembly' | 'administrative'
 export type LawTrackingRiskLevel = 'high' | 'medium' | 'low'
@@ -71,7 +72,7 @@ export function lawProductizationPriority(item: RiskLawTrackingItem) {
   return mandateScore + progressScore + sanctionScore
 }
 
-export const riskLawTrackingItems: RiskLawTrackingItem[] = [
+const riskLawTrackingSeed: RiskLawTrackingItem[] = [
   {
     id: 'law-medical-liability-insurance',
     sourceType: 'assembly',
@@ -284,3 +285,8 @@ export const riskLawTrackingItems: RiskLawTrackingItem[] = [
     evidenceIds: ['LAW-SAMPLE-AI-001'],
   },
 ]
+
+export const riskLawTrackingItems: RiskLawTrackingItem[] = riskLawTrackingSeed.map((item) => ({
+  ...item,
+  ...verifiedRiskLawTrackingOverrides[item.id],
+}))

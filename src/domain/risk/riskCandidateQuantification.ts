@@ -108,7 +108,7 @@ export function getRiskCandidateQuantification(record: RiskExplorationRecord): R
       formula: [legalExposureEvidence?.scoreRationale || '법률·규제 노출 수준 + 책임주체 명확성 + 약관·보장조건 확인 필요성'], result: `${fivePointValue(legalExposureScore)} · 법률·규제 원문 확인 필요`, numericValue: legalExposureScore, unit: '/5', confidence: legalExposureScore === null ? '확인 필요' : '기사 기반', evidenceIds: legalExposureEvidence?.sourceIds ?? record.evidenceIds ?? [], uncertainty: legalExposureEvidence?.uncertainty ?? ['법률·규제 리스크의 공식 근거 확인 필요'],
     },
     pml: hasPrototypeReference ? {
-      key: 'pml', label: 'PML', value: reference?.pml ?? '확인 필요', sub: '기준 gross loss · 상품화 종합평가', color: 'red',
+      key: 'pml', label: 'PML', value: reference?.pml ?? '확인 필요', sub: 'PML 기준 · 상품화 종합평가', color: 'red',
       official: ['후보별 공개 사고사례·손해 범위'], assumption: ['단일사고·누적·시설/긴급대응 손해는 첨부 프로토타입 가정'],
       formula: ['단일사고 손해 + 동시다발 누적손해 + 시설·긴급대응 비용'], result: `${reference?.pml ?? '확인 필요'} · 보수·기준·확대 시나리오 확인 필요`, numericValue: Number(reference?.pml.replace(/[^0-9.]/g, '') ?? 0), unit: '억원', confidence: '기사 기반', evidenceIds: record.evidenceIds ?? [], uncertainty: ['실제 손해액·누적 범위 확인 필요'],
     } : confirmationMetric(

@@ -65,9 +65,19 @@ function metricSubLabel(sub: string) {
     .trim()
 }
 
+function removeDetailMetricLabel(text: string) {
+  return text
+    .replace(/^(?:\uC57D\s*[\d,]+(?:\.\d+)?\s*\uC5B5\s*\uC6D0|(?:\uB9E4\uC6B0\s*)?(?:\uB192\uC74C|\uBCF4\uD1B5|\uB0AE\uC74C))(?:\s*[·.,]?\s*\d+(?:\.\d+)?\s*\/\s*5)?(?:\s*[·.,]\s*)?/u, '')
+    .trim()
+}
+
 function legalPriorityForRecord(record: RiskExplorationRecord) {
   const linkedLaws = riskLawTrackingItems.filter((item) => item.candidateIds?.includes(record.id))
   return linkedLaws.length ? Math.max(...linkedLaws.map(lawProductizationPriority)) : null
+}
+
+function isLawUpdateRelatedRecord(record: RiskExplorationRecord) {
+  return riskLawTrackingItems.some((item) => item.candidateIds?.includes(record.id))
 }
 
 const screeningColumns: RiskCandidateQuantificationKey[] = ['market', 'fortuity', 'pml']
@@ -148,7 +158,6 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
         <td className="screening-keyword">
           <strong>{record.title}</strong>
           <small>{record.summary}</small>
-          <em className="screening-keyword-detail">{record.contentInsight?.event ?? `다음 검토: ${record.nextAction}`}</em>
           <span>{record.tags.map((tag) => <i className={`screening-tag ${tagClass(tag)}`} key={tag}>{tag}</i>)}</span>
         </td>
         {screeningColumns.map((key) => {
@@ -179,11 +188,9 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
   const detailPath = `${developerMode ? '/developer-test' : ''}/risks/${candidate?.detailRiskId ?? record.detailRiskId}`
   const isOtaCandidate = record.id === 'ota-delivery-consumer-disputes'
   const evidenceSnapshot = riskCandidateEvidenceSnapshots[record.id]
-  const evidenceFacts = evidenceSnapshot?.facts ?? record.contentInsight?.facts ?? [record.metricEvidence?.demand?.quotes?.[0] ?? record.summary]
   const evidenceSourceName = evidenceSnapshot?.sourceName ?? record.sourceName ?? '공식 원문 확인 필요'
   const evidenceSourceUrl = evidenceSnapshot?.sourceUrl ?? record.sourceUrl
   const evidenceSourceDate = evidenceSnapshot?.sourceDate ?? (record.collectedAt ? new Date(record.collectedAt).toLocaleDateString('ko-KR') : '발행일 확인 필요')
-  const evidenceScope = evidenceSnapshot?.scope ?? (record.sourceUrl ? '공개 원문에서 확인한 사실이며, 보험화 판단과 손해액은 별도 검증이 필요합니다.' : '현재 후보 설명만 연결되어 있어 공식 원문과 발행일 확인이 필요합니다.')
   const evidenceNextChecks = evidenceSnapshot?.nextChecks ?? [record.gap, record.nextAction]
   const judgmentEvidence = isOtaCandidate
     ? [
@@ -213,10 +220,13 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
         record.nextAction,
         `${record.tags.join('·')} 대상의 제휴형 또는 특화 담보 구조 검토`,
       ]
-  const judgmentGroups = [
-    { title: '보험화 가능성', items: judgmentEvidence.slice(0, 3) },
-    { title: '통제·설계 가능성', items: judgmentEvidence.slice(3) },
+  const flowGroups = [
+    { number: '01', title: '수요와 손해 파악', question: '보험을 필요로 하는 시장이 있고 손해를 계산할 수 있는가?', items: judgmentEvidence.slice(0, 2) },
+    { number: '02', title: '보험 성립 가능성', question: '사고를 명확히 정의하고 책임과 보상 범위를 정할 수 있는가?', items: judgmentEvidence.slice(2, 4) },
+    { number: '03', title: '상품 설계 가능성', question: '위험을 통제하고 예상되는 손실을 감당할 수 있는가?', items: judgmentEvidence.slice(4, 6) },
   ]
+  const additionalReviewPoints = Array.from(new Set([...evidenceNextChecks, record.gap, record.nextAction])).filter(Boolean).slice(0, 4)
+  const productDesignDirection = record.nextAction
 
   return (
     <aside className="risk-screening-detail-panel" aria-label={`${record.title} 상세 평가`}>
@@ -226,38 +236,26 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
       </div>
       <h4>{record.title}</h4>
       <p className="risk-screening-detail-description">{record.summary}</p>
-      <section className="risk-screening-source-evidence">
-        <div className="risk-screening-source-heading"><strong>근거 데이터</strong><span>{evidenceSourceDate}</span></div>
-        <ul>{evidenceFacts.slice(0, 3).map((fact) => <li key={fact}>{fact}</li>)}</ul>
-        <p>{evidenceScope}</p>
-        <div className="risk-screening-source-link"><span>출처</span>{evidenceSourceUrl ? <a href={evidenceSourceUrl} target="_blank" rel="noreferrer">{evidenceSourceName} ↗</a> : <b>공식 원문 확인 필요</b>}</div>
-        <div className="risk-screening-source-next"><strong>추가 확인</strong>{evidenceNextChecks.slice(0, 2).map((item) => <span key={item}>{item}</span>)}</div>
-      </section>
-      {record.contentInsight ? (
-        <details className="risk-candidate-content-insight">
-          <summary>본문 기반 구조화 결과</summary>
-          <div className="risk-candidate-content-topic"><span>{record.contentInsight.topic}</span><p>{record.contentInsight.event}</p></div>
-          <div className="risk-candidate-content-signals">
-            {record.contentInsight.signals.slice(0, 4).map((signal) => <div key={`${signal.label}-${signal.value}`}><small>{signal.label}</small><strong>{signal.value}</strong><span>{signal.basis}</span></div>)}
-          </div>
-          <ul className="risk-candidate-content-facts">{record.contentInsight.facts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
-          <div className="risk-candidate-content-actions"><b>다음 검토</b>{record.contentInsight.reviewActions.map((action) => <span key={action}>{action}</span>)}</div>
-        </details>
-      ) : null}
-      <div className="risk-screening-judgment">
-        <section className="risk-screening-judgment-evidence">
-          {judgmentGroups.map((group) => (
-            <div className="risk-screening-evidence-group" key={group.title}>
-              <h5>{group.title}</h5>
-              <ol>{group.items.map((item) => <li key={item.number}><b>{item.number}</b><div><strong>{item.label}</strong><p>{item.text}</p></div></li>)}</ol>
+      <div className="risk-screening-detail-divider" aria-hidden="true" />
+      <section className="risk-screening-flow">
+        {flowGroups.map((group) => (
+          <section className="risk-screening-flow-group" key={group.number}>
+            <div className="risk-screening-flow-content">
+              <div className="risk-screening-flow-metrics">
+                {group.items.map((item) => {
+                  return <div className="risk-screening-flow-metric" key={item.number}><strong>{item.label}</strong><span>{removeDetailMetricLabel(item.text)}</span></div>
+                })}
+              </div>
             </div>
-          ))}
-        </section>
-        <section className="risk-screening-productization-points">
-          <strong>상품화 포인트</strong>
-          <ol>{productizationPoints.map((point, index) => <li key={point}><b>{String(index + 1).padStart(2, '0')}</b><span>{point}</span></li>)}</ol>
-        </section>
+          </section>
+        ))}
+      </section>
+      <section className="risk-screening-product-direction"><span>S</span><div><strong>최종 상품 설계 포인트</strong><p>{productDesignDirection}</p></div></section>
+      <div className="risk-screening-detail-summary-grid">
+        <section className="risk-screening-strengths"><strong>상품화 강점</strong><ul>{productizationPoints.slice(0, 2).map((point) => <li key={point}>{point}</li>)}</ul></section>
+        <section className="risk-screening-additional-review"><strong>주요 보완 사항</strong><ul>{additionalReviewPoints.slice(0, 4).map((point) => <li key={point}>{point}</li>)}</ul></section>
       </div>
+      <footer className="risk-screening-source-footer"><strong>주요 출처</strong><span>{evidenceSourceName} · {evidenceSourceDate}</span>{evidenceSourceUrl ? <a href={evidenceSourceUrl} target="_blank" rel="noreferrer">원문 확인 ↗</a> : null}</footer>
       <div className="risk-screening-detail-actions">
         <Link to={detailPath}>위험 상세</Link>
         <Link to={`${developerMode ? '/developer-test' : ''}/reports?sourceRiskId=${encodeURIComponent(candidate?.detailRiskId ?? record.detailRiskId)}`}>종합 리포트</Link>
@@ -300,9 +298,10 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
     const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
     const filtered = (developerMode ? (sourceRecords ?? []) : (sourceRecords ?? riskExplorationRecords)).filter((record) => {
       const matchesCategory = category === 'all'
+        || (category === 'legal' && isLawUpdateRelatedRecord(record))
         || (category === 'department' && record.signalOrigin === 'department-intake')
         || (category === 'customer' && record.signalOrigin === 'customer-intake')
-        || (category !== 'department' && category !== 'customer' && record.categories.includes(category as ExplorationCategory))
+        || (category !== 'legal' && category !== 'department' && category !== 'customer' && record.categories.includes(category as ExplorationCategory))
       const haystack = `${record.title} ${record.summary} ${record.tags.join(' ')}`.toLocaleLowerCase('ko-KR')
       const matchesSource = sourceFilter === 'all' || record.sourceName === sourceFilter
       const collectedAt = record.collectedAt ? new Date(record.collectedAt).getTime() : Number.NaN
@@ -312,13 +311,9 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
     return [...filtered].sort((first, second) => {
       if (sort === 'title') return first.title.localeCompare(second.title, 'ko-KR')
       if (sort === 'score') {
-        const baseline = (record: RiskExplorationRecord) => developerMode ? actualScore(record) : getCandidateViewModelById(record.id)?.screeningScore.value ?? 0
-        const priority = (record: RiskExplorationRecord) => category === 'legal' && !developerMode ? legalPriorityForRecord(record) : null
-        const scoreWithLegalPriority = (record: RiskExplorationRecord) => {
-          const lawPriority = priority(record)
-          return lawPriority ? 10 + lawPriority : baseline(record)
-        }
-        return scoreWithLegalPriority(second) - scoreWithLegalPriority(first)
+        // The visible AI composite score is the only sort key so rank and score never diverge.
+        const scoreValue = (record: RiskExplorationRecord) => screeningScoreFor(record, developerMode) ?? Number.NEGATIVE_INFINITY
+        return scoreValue(second) - scoreValue(first)
       }
       const secondValue = metricSortValue(second, sort)
       const firstValue = metricSortValue(first, sort)
@@ -356,7 +351,6 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
         <div>
           <p className="eyebrow">LAW & REGULATION EVALUATION</p>
           <h2 id="risk-exploration-title">주요 법률 및 규제 평가</h2>
-          <p>신설·개정 법률 중 보험 가입 의무, 시행 단계, 미이행 제재를 확인하고 상품화 우선순위에 반영합니다.</p>
         </div>
       </div> : null}
 
@@ -390,7 +384,6 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
               <option value="score">후보 선별점수 순</option><option value="market">시장성 순</option><option value="fortuity">우연성 순</option><option value="legalExposure">법률 및 규제 리스크 순</option><option value="pml">PML 순</option><option value="title">후보명 순</option>
             </select></label>
           </div>
-          <span>시장성·우연성·법률 및 규제 리스크·PML을 후보별 가로 비교로 확인합니다.</span>
         </div>
       </div>
       {sortedRecords.length ? (
@@ -435,7 +428,6 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
         </div>
       ) : <div className="risk-candidate-empty">{developerMode ? <><strong>선택 조건에 맞는 원문 기반 후보가 없습니다.</strong><br />현재 {developerData?.counts.articles ?? 0}건의 원문은 본문 구조화 더미 결과로 준비되어 있습니다.{onRunDeveloperStep2 ? <button type="button" onClick={onRunDeveloperStep2} disabled={developerRunning}>{developerRunning ? 'Step 2 분석 중…' : '실제 Step 2 전체 실행'}</button> : null}</> : '조건에 맞는 위험 후보가 없습니다.'}</div>}
 
-      <p className="risk-exploration-disclaimer">카드의 점수·시장성·우연성·법률 및 규제 리스크는 기사 기반 예비 검토값입니다. AI는 판단 근거와 검토 우선순위를 지원하며 최종 판단은 실무자 검토가 필요합니다. PML처럼 입력 근거가 없는 항목은 추정하지 않으며, 공식 출처·독립 통계·반증은 상세 검증에서 확인해야 합니다.</p>
     </section>
   )
 }
