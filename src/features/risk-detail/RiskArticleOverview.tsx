@@ -72,7 +72,7 @@ export function RiskArticleOverview({
   return (
     <section className="risk-article-overview" aria-labelledby="risk-article-title">
       <header className="risk-article-header">
-        <div className="risk-article-kicker"><span>RISK BRIEF</span><i aria-hidden="true" /> <span>{risk.themeLabel}</span></div>
+        <div className="risk-article-kicker"><span>위험 브리핑</span><i aria-hidden="true" /> <span>{risk.themeLabel}</span></div>
         <h2 id="risk-article-title">{article?.title ?? risk.title}</h2>
         <p className="risk-article-dek">{headline}</p>
         <div className="risk-article-meta" aria-label="기사 메타데이터">
@@ -85,7 +85,7 @@ export function RiskArticleOverview({
 
       <div className="risk-article-lead-grid">
         <article className="risk-article-story">
-          <p className="risk-article-section-label">WHAT HAPPENED</p>
+          <p className="risk-article-section-label">사건 요약</p>
           <h3>무슨 일이 일어났나</h3>
           <p className="risk-article-event">{event}</p>
           <ul className="risk-article-facts">
@@ -94,7 +94,7 @@ export function RiskArticleOverview({
         </article>
 
         <aside className="risk-article-why">
-          <p className="risk-article-section-label">WHY IT MATTERS</p>
+          <p className="risk-article-section-label">왜 검토 대상인가</p>
           <h3>왜 위험으로 보는가</h3>
           <p>{whyNow}</p>
           <dl>
@@ -106,17 +106,17 @@ export function RiskArticleOverview({
 
       <div className="risk-article-analysis" aria-label="위험 내용 분석">
         <article>
-          <p className="risk-article-section-label">RISK PATH</p>
+          <p className="risk-article-section-label">손해 경로</p>
           <h3>어떤 손해로 이어지나</h3>
           <ul className="risk-article-chip-list">{damageTypes.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
         <article>
-          <p className="risk-article-section-label">EXPOSURE</p>
+          <p className="risk-article-section-label">영향 대상</p>
           <h3>누가 영향을 받나</h3>
           <ul className="risk-article-chip-list">{affectedTargets.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
         <article>
-          <p className="risk-article-section-label">SCOPE</p>
+          <p className="risk-article-section-label">관련 범위</p>
           <h3>관련 산업·키워드</h3>
           <ul className="risk-article-chip-list">{industries.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
@@ -129,9 +129,9 @@ export function RiskArticleOverview({
 
       <div className="risk-article-review-grid">
         <article className="risk-article-ai-review">
-          <p className="risk-article-section-label">AI REVIEW / ARTICLE READING</p>
+          <p className="risk-article-section-label">본문 해석</p>
           <h3>본문에서 읽은 위험 설명</h3>
-          <p className="risk-article-review-lead">기사의 사실을 그대로 옮긴 요약이 아니라, 사실이 어떤 위험 경로와 실무 검토로 이어지는지 연결한 1차 리뷰입니다.</p>
+          <p className="risk-article-review-lead">본문에서 확인된 사건·피해·책임 단서를 바탕으로, 실무자가 다음 검토를 시작할 수 있도록 위험의 맥락을 정리했습니다.</p>
           <dl className="risk-article-review-points">
             <div><dt>핵심 판단</dt><dd>{reviewEnvironment}</dd></div>
             <div><dt>왜 지금 확인하나</dt><dd>{whyNow}</dd></div>
@@ -140,14 +140,14 @@ export function RiskArticleOverview({
         </article>
 
         <article className="risk-article-quotes">
-          <p className="risk-article-section-label">LINKED QUOTES</p>
+          <p className="risk-article-section-label">판단에 사용한 인용</p>
           <h3>판단에 연결된 인용</h3>
           {quoteEvidence.length ? (
             <div className="risk-article-quote-list">
               {quoteEvidence.map((item) => (
                 <blockquote key={item.key}>
                   <p>“{item.quote}”</p>
-                  <footer><span>{item.source}</span>{item.url ? <a href={item.url} target="_blank" rel="noreferrer noopener">원문 열기 ↗</a> : <em>URL 연결 대기</em>}</footer>
+                  <footer><span>{item.source}</span>{item.url ? <a href={item.url} target="_blank" rel="noreferrer noopener">원문 열기 ↗</a> : <em>원문 링크 확인 필요</em>}</footer>
                 </blockquote>
               ))}
             </div>
@@ -157,14 +157,14 @@ export function RiskArticleOverview({
 
       <div className="risk-article-materials-grid">
         <article className="risk-article-materials">
-          <p className="risk-article-section-label">SOURCE MATERIALS</p>
+          <p className="risk-article-section-label">원문과 연결 자료</p>
           <h3>원문과 연결 자료</h3>
-          <p className="risk-article-section-note">AI 리뷰가 참고한 원문·관련 기사·법령을 구분해 확인합니다. URL이 없는 자료는 링크를 만들지 않고 연결 대기로 표시합니다.</p>
+          <p className="risk-article-section-note">본문 해석에 연결된 원문·관련 기사·법령을 구분해 확인합니다. 아직 링크가 확인되지 않은 자료는 별도로 표시합니다.</p>
           <ul className="risk-article-material-list">
             {sourceItems.length ? sourceItems.map((item) => (
               <li key={item.key}>
                 <div><span>{item.kind}</span><strong>{item.title}</strong><small>{item.source}</small></div>
-                {item.url ? <a href={item.url} target="_blank" rel="noreferrer noopener">자료 열기 ↗</a> : <em>URL 연결 대기</em>}
+                {item.url ? <a href={item.url} target="_blank" rel="noreferrer noopener">자료 열기 ↗</a> : <em>원문 링크 확인 필요</em>}
               </li>
             )) : <li className="is-empty">연결된 자료가 없습니다. 후보 원문과 독립 자료를 추가로 확인해야 합니다.</li>}
           </ul>
@@ -172,10 +172,10 @@ export function RiskArticleOverview({
         </article>
 
         <article className="risk-article-productization">
-          <p className="risk-article-section-label">PRODUCTIZATION LENS</p>
+          <p className="risk-article-section-label">상품화 검토 관점</p>
           <h3>상품화 관점에서 볼 항목</h3>
           <p className="risk-article-product-status"><span>현재 검토 상태</span><strong>{detail.decisionStatus}</strong></p>
-          <p className="risk-article-section-note">이 화면은 상품화 확정이 아니라, 위험을 상품으로 검토할 때 먼저 확인할 조건을 보여줍니다.</p>
+          <p className="risk-article-section-note">상품화 여부를 확정하는 화면이 아니라, 보장 구조를 검토하기 전에 확인할 조건을 정리합니다.</p>
           <ul className="risk-article-check-list">
             {productChecks.map((check, index) => <li key={`${check}-${index}`}><span>{String(index + 1).padStart(2, '0')}</span><p>{check}</p></li>)}
           </ul>
@@ -184,7 +184,7 @@ export function RiskArticleOverview({
       </div>
 
       <details className="risk-article-source-context">
-        <summary>기사 분석에 연결된 정보 보기</summary>
+        <summary>이 해석에 사용한 범위 보기</summary>
         <div>
           <span>분석 범위</span>
           <p>{facts?.timeAndPlace ?? '위험 후보 설명과 연결 근거를 바탕으로 정리한 분석입니다.'}</p>

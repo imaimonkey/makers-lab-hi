@@ -45,7 +45,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
       setLastLiveAt(new Date().toISOString())
       return next
     } catch (error) {
-      setLiveError(error instanceof Error ? error.message : 'detail API unavailable')
+      setLiveError(error instanceof Error ? error.message : '상세 자료를 불러오지 못했습니다.')
       setLiveStale(true)
       return null
     } finally {
@@ -66,16 +66,16 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
   const detailSourceLabel = developerMode
     ? '실제 원문'
     : liveLoading
-      ? 'LOADING'
+      ? '자료 불러오는 중'
       : liveDetail && liveStale
         ? '최근 정상 응답'
-        : liveDetail
-          ? '연결 데이터'
+          : liveDetail
+          ? '연결 자료'
           : liveError
-            ? '예시 데이터'
+            ? '샘플 자료'
             : articleId
-              ? '검토 데이터'
-              : '연결 대기'
+              ? '검토 자료'
+              : '자료 연결 대기'
   const catalogPath = developerMode ? '/developer-test/risks' : '/risks'
 
   const printRiskDetail = useCallback(() => {
@@ -94,7 +94,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
       <div className="page detail-page sh-visual">
         <PageHeader
           step="03"
-          eyebrow="RISK ASSESSMENT / CANDIDATE DETAIL"
+          eyebrow="위험 후보 상세 검토"
           title="위험 후보를 찾을 수 없습니다"
           description="삭제되었거나 존재하지 않는 위험 ID입니다. 후보 목록에서 다시 선택해 주세요."
         />
@@ -115,28 +115,28 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
     <div className="page detail-page sh-visual">
       <PageHeader
         step="03"
-        eyebrow="RISK ASSESSMENT / CANDIDATE DETAIL"
+        eyebrow="위험 후보 상세 검토"
         title="위험상세"
-          description="위험 후보의 맥락과 손해 경로를 기사처럼 읽고, 연결된 근거와 핵심 판단 기준을 확인하는 화면입니다."
+          description="뉴스 본문에서 포착된 사건을 이해하고, 왜 위험 후보인지와 무엇을 확인해야 하는지 한 화면에서 정리합니다."
       />
       <nav className="sh-command-bar" aria-label="위험상세 명령 바">
         <div className="sh-command-context">
           <Link to={catalogPath}>← 위험 후보</Link>
           <i className={risk.status === '검토 중' ? '' : 'complete'} aria-hidden="true" />
-          <span>{risk.status} · 위험상세</span>
+          <span>{risk.status} · 상세 검토</span>
           <span aria-label={`위험 ID ${risk.id}`}>{risk.id}</span>
         </div>
         <div className="sh-command-actions">
-           <a href="#ai-judgment-evidence">AI 판단 근거로 이동</a>
+          <a href="#ai-judgment-evidence">판단 설명 보기</a>
           <button type="button" onClick={printRiskDetail}>PDF 출력</button>
         </div>
       </nav>
       <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? '연결된 원문과 저장된 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? `${liveStale ? ' 마지막 정상 상세 응답을 유지합니다.' : ' 연결된 상세 데이터를 사용합니다.'}${lastLiveAt ? ` 응답 시각 ${new Date(lastLiveAt).toLocaleString('ko-KR')}` : ''}` : `${sampleOnlyNotice}${liveError ? ' 상세 데이터를 불러오지 못했습니다.' : ''}`}</div>
-      {liveDetail ? <div className="detail-live-strip" role="status"><strong>{detailSourceLabel}</strong><span>본문 {liveArticle?.contentStatus ?? '상태 미제공'}</span><span>분석 {liveArticle?.analysisStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>검증 {liveArticle?.verificationStatus ?? liveAnalysis?.verificationStatus ?? '상태 미제공'}</span><span>기준 시각 {liveArticle?.collectedAt ?? liveArticle?.publishedAt ?? '시각 미제공'}</span></div> : null}
+      {liveDetail ? <div className="detail-live-strip" role="status"><strong>{detailSourceLabel}</strong><span>본문 {liveArticle?.contentStatus ?? '상태 확인 필요'}</span><span>분석 {liveArticle?.analysisStatus ?? liveAnalysis?.verificationStatus ?? '상태 확인 필요'}</span><span>검증 {liveArticle?.verificationStatus ?? liveAnalysis?.verificationStatus ?? '상태 확인 필요'}</span><span>기준 시각 {liveArticle?.collectedAt ?? liveArticle?.publishedAt ?? '시각 확인 필요'}</span></div> : null}
 
       <nav className="risk-anchor-tabs" aria-label="위험상세 섹션 이동">
         <a href="#risk-context">위험 개요</a>
-        <a href="#risk-article-title">본문 AI 리뷰</a>
+        <a href="#risk-article-title">본문 해석</a>
         <a href="#assessment-criteria">평가 기준</a>
         <a href="#ai-judgment-evidence">판단 근거</a>
         <a href="#judgment-materials">상품화 검토</a>
@@ -155,23 +155,23 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           </div>
         </div>
         <div className="risk-score-card">
-           <span>우선 검토 지수</span>
+           <span>검토 우선 점수</span>
           <strong>{risk.signalStrength}</strong>
           <div><i style={{ width: `${risk.signalStrength}%` }} /></div>
           <div className="sh-score-meta">
             <span>점수 범위</span><strong>0–100</strong>
-             <span>데이터 상태</span><strong>{liveDetail ? '연결됨' : '확인 대기'}</strong>
+             <span>자료 상태</span><strong>{liveDetail ? '연결 자료' : developerMode ? '저장 결과' : '샘플 자료'}</strong>
           </div>
-             <p>0–100 · {developerMode ? (step3Results.length ? '저장 평가 기반 보조 지수' : '저장 점수 기반 보조 지수') : '후보 관측 신호 기반'} · 위험 규모·사고확률·손해액 아님</p>
+             <p>0–100 · 후보를 먼저 확인할 순서를 정하는 보조 점수입니다. 위험 규모·사고 확률·손해액을 뜻하지 않습니다.</p>
           <details className="hero-score-logic">
             <summary>산출 근거</summary>
             <div className="logic-step-list">
-               <p><b>01</b><span>입력값</span><code>후보 관측 신호 = {risk.signalStrength}%</code></p>
+              <p><b>01</b><span>입력값</span><code>후보 신호 자료 = {risk.signalStrength}점</code></p>
               <p><b>02</b><span>정규화</span><code>{risk.signalStrength}% → {risk.signalStrength}점 / 100</code></p>
-              <p><b>03</b><span>판정</span><code>{risk.signalStrength >= 80 ? '80 이상 → CRITICAL' : risk.signalStrength >= 65 ? '65–79 → HIGH' : '64 이하 → REVIEW'}</code></p>
-              <p className="logic-step-note">이 지수는 손해액이나 사고 확률이 아닙니다. 현재 후보를 어떤 순서로 먼저 확인할지 정하는 우선순위 기준입니다.</p>
+              <p><b>03</b><span>해석</span><code>{risk.signalStrength >= 80 ? '80점 이상 → 우선 확인' : risk.signalStrength >= 65 ? '65–79점 → 검토 권장' : '64점 이하 → 관찰 유지'}</code></p>
+              <p className="logic-step-note">이 점수는 손해액이나 사고 확률이 아닙니다. 현재 자료에서 드러난 변화와 영향 단서를 바탕으로, 어떤 후보를 먼저 읽고 확인할지 정하는 기준입니다.</p>
               <div className="ai-qualitative-assessment">
-                 <span>AI 정성 해석</span>
+                 <span>해석 메모</span>
                 <p>{aiQualitativeSummary}</p>
               </div>
             </div>
@@ -192,16 +192,16 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
 
       <section className="detail-grid detail-assessment-grid" id="assessment-criteria">
         <article className="assessment-panel surface-card">
-          <div className="panel-heading"><div><p className="eyebrow">ASSESSMENT SUMMARY · AUTHORITY</p><h2>4개 핵심 지표 평가 요약</h2><p className="panel-heading-description">증가성·피해 심각성·확산 가능성·보험 사각지대 가능성을 원점수(0–5), 표시용 점수(0–100), 대표 사유와 원문 인용 상태로 확인합니다.{developerMode && step3Results.length ? ' Step 3 저장 결과가 최신 판단으로 반영되어 있습니다.' : ''}</p></div><span className="updated-label">{detailSourceLabel} · 담당자 검토 필요</span></div>
+          <div className="panel-heading"><div><p className="eyebrow">평가 기준</p><h2>핵심 평가 항목</h2><p className="panel-heading-description">증가성·피해 심각성·확산 가능성·보험 사각지대 가능성을 점수, 판단 이유, 원문 인용 상태로 확인합니다. 점수는 결론이 아니라 다음 검토를 정하는 보조 자료입니다.{developerMode && step3Results.length ? ' 저장된 분석 결과가 최신 판단으로 반영되어 있습니다.' : ''}</p></div><span className="updated-label">{detailSourceLabel} · 담당자 확인 필요</span></div>
           <div className="assessment-list">
             {detail.assessments.filter((item) => !['신규성', '근거 신뢰도'].includes(item.label)).map((item) => {
               const assessmentEvidence = getAssessmentEvidence(item.label, risk.id, detail.evidence)
               return (
               <div className="assessment-row" key={item.label}>
-                <div><strong>{item.label}</strong><small>{item.evidenceStatus === 'verified' ? `${assessmentEvidence.length}건 연결 근거` : developerMode && step3Results.length ? `Step 3 원장 ${detail.evidence.length}건 · 지표별 연결 보류` : `${assessmentEvidence.length}건 연결 근거`} · 신뢰도 {item.confidence}</small><span className={`assessment-evidence-status ${item.evidenceStatus === 'verified' ? 'is-verified' : 'is-pending'}`}>{item.evidenceStatus === 'verified' ? '원문 인용 확인' : '원문 인용 확인 필요'}</span></div>
-                <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}<small>/100</small><em>AI 원점수 {item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)}/5</em></strong></div>
+                <div><strong>{item.label}</strong><small>{item.evidenceStatus === 'verified' ? `${assessmentEvidence.length}건 연결 근거` : developerMode && step3Results.length ? `저장 분석 ${detail.evidence.length}건 · 지표별 연결 보류` : `${assessmentEvidence.length}건 연결 근거`} · 자료 신뢰도 {item.confidence}</small><span className={`assessment-evidence-status ${item.evidenceStatus === 'verified' ? 'is-verified' : 'is-pending'}`}>{item.evidenceStatus === 'verified' ? '원문 인용 확인' : '원문 인용 확인 필요'}</span></div>
+                <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}<small>/100</small><em>5점 척도 {item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)}</em></strong></div>
                  <p className="assessment-reason"><b>왜 이 점수인가</b>{item.note}</p>
-                 {item.evidenceQuotes?.length ? <div className="assessment-quotes"><b>원문 인용</b>{item.evidenceQuotes.map((quote) => <q key={quote}>{quote}</q>)}</div> : <div className="assessment-quotes is-pending"><b>원문 인용</b><span>{developerMode && step3Results.length ? 'Step 3 결과에 이 지표를 직접 가리키는 evidenceRefs·인용 연결이 없어, AI 사유는 표시하되 지표별 근거 확정은 보류했습니다.' : 'Step 2 저장 결과에 정확한 인용 구간이 없어, AI 사유는 표시하되 근거 확정은 보류했습니다.'}</span></div>}
+                 {item.evidenceQuotes?.length ? <div className="assessment-quotes"><b>원문 인용</b>{item.evidenceQuotes.map((quote) => <q key={quote}>{quote}</q>)}</div> : <div className="assessment-quotes is-pending"><b>원문 인용</b><span>{developerMode && step3Results.length ? '저장 분석 결과에 이 지표를 직접 가리키는 인용 연결이 없어, 판단 이유는 표시하되 지표별 근거 확정은 보류했습니다.' : '저장 결과에 정확한 인용 구간이 없어, 판단 이유는 표시하되 지표별 근거 확정은 보류했습니다.'}</span></div>}
                 <div className="assessment-logic-preview" aria-label={`${item.label} 산출 요약`}>
                   <div><span>산출 입력</span><strong>{item.inputs ?? '연결된 원자료 확인 필요'}</strong></div>
                   <div><span>적용 산식</span><strong>{item.formula ?? '원점수 ÷ 5 × 100'}</strong></div>
@@ -216,15 +216,15 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
                     <div><dt>해석</dt><dd>{item.interpretation ?? item.note}</dd></div>
                     <div className="assessment-logic-sources"><dt>연결 자료·출처</dt><dd>
                       {assessmentEvidence.length
-                        ? <ul>{assessmentEvidence.slice(0, 2).map((evidence) => <li key={evidence.id}><strong>{evidence.sourceName}</strong><span>{evidence.id}</span><em>{evidence.sourceUrl ? 'URL 후보' : '원문 연결 대기'}</em></li>)}</ul>
+                        ? <ul>{assessmentEvidence.slice(0, 2).map((evidence) => <li key={evidence.id}><strong>{evidence.sourceName}</strong><span>{evidence.id}</span><em>{evidence.sourceUrl ? '원문 링크 확인' : '원문 링크 필요'}</em></li>)}</ul>
                         : '연결된 자료를 확인한 뒤 출처를 표시합니다.'}
                     </dd></div>
                   </dl>
                   <div className="ai-qualitative-assessment">
-                   <span>AI 정성 해석</span>
+                   <span>해석 메모</span>
                     <p>{developerMode && step3Results.length ? item.interpretation ?? item.note : buildAssessmentAiSummary(item)}</p>
                   </div>
-                  <small>모든 원점수는 1–5 척도이며, 최종 표시값은 원점수 × 20으로 환산합니다.</small>
+                  <small>입력은 1–5점 척도이며, 화면 점수는 원점수에 20을 곱해 100점 기준으로 표시합니다.</small>
                 </details>
               </div>
               )
