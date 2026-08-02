@@ -2968,7 +2968,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .workspace-seoyeon .catalog-page .risk-screening-flow-metric {
-  grid-template-columns: minmax(90px, .85fr) minmax(0, 2.15fr);
+  grid-template-columns: minmax(90px, 1fr) 52px minmax(0, 2.1fr);
 }
 
 /* Right detail flow layout */
@@ -3031,7 +3031,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 @media (max-width: 540px) {
   .workspace-seoyeon .catalog-page .risk-screening-flow-metric {
-    grid-template-columns: minmax(80px, .9fr) minmax(0, 1.8fr);
+    grid-template-columns: minmax(80px, 1fr) 48px minmax(0, 1.8fr);
   }
 }
 .risk-screening-table th:nth-child(2) { text-align: center; }

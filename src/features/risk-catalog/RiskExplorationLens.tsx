@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   riskExplorationRecords,
   type ExplorationCategory,
+  type RiskExplorationMetricKey,
   type RiskExplorationRecord,
 } from '../../domain/risk/riskExplorationDemo'
 import { getCandidateViewModelById } from '../../domain/risk/candidateViewModel'
@@ -192,6 +193,19 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
   const evidenceSourceUrl = evidenceSnapshot?.sourceUrl ?? record.sourceUrl
   const evidenceSourceDate = evidenceSnapshot?.sourceDate ?? (record.collectedAt ? new Date(record.collectedAt).toLocaleDateString('ko-KR') : '발행일 확인 필요')
   const evidenceNextChecks = evidenceSnapshot?.nextChecks ?? [record.gap, record.nextAction]
+  const flowMetricKeys: Record<string, RiskExplorationMetricKey> = {
+    '01': 'demand',
+    '02': 'measurability',
+    '03': 'fortuity',
+    '04': 'legalExposure',
+    '05': 'moralHazard',
+    '06': 'accumulation',
+  }
+  const flowStatusLabel = (number: string) => {
+    const score = record.metricScores[flowMetricKeys[number]]
+    if (!Number.isFinite(score)) return '추가 검토'
+    return score >= 4 ? '높음' : score >= 3 ? '보통' : '낮음'
+  }
   const judgmentEvidence = isOtaCandidate
     ? [
         { number: '01', label: '시장성', text: '피해 대상과 반복 수요가 확인되며, 잠재 가입자군을 비교적 명확히 특정할 수 있음.' },
@@ -243,7 +257,8 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
             <div className="risk-screening-flow-content">
               <div className="risk-screening-flow-metrics">
                 {group.items.map((item) => {
-                  return <div className="risk-screening-flow-metric" key={item.number}><strong>{item.label}</strong><span>{removeDetailMetricLabel(item.text)}</span></div>
+                  const status = flowStatusLabel(item.number)
+                  return <div className="risk-screening-flow-metric" key={item.number}><strong>{item.label}</strong><em className={status === '높음' ? 'high' : status === '낮음' ? 'review' : undefined}>{status}</em><span>{removeDetailMetricLabel(item.text)}</span></div>
                 })}
               </div>
             </div>
