@@ -847,7 +847,7 @@ function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: 
 
   return (
     <section className="report-page__section report-page__coverage-gap-section" aria-label="기존 보험의 보장 범위와 공백">
-      <SectionHeading number="04" eyebrow="RISK & COVERAGE GAP" title="기존 보험의 보장 범위와 공백" />
+      <SectionHeading number="03" eyebrow="RISK & COVERAGE GAP" title="기존 보험의 보장 범위와 공백" />
 
       <section className="report-page__coverage-gap-results" aria-labelledby="coverage-gap-results-title">
         <div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">COVERAGE GAP SUMMARY</p><h3 id="coverage-gap-results-title">보장 공백 분석 요약</h3></div></div>
@@ -2294,7 +2294,7 @@ function FeasibilitySection({ report, openCriterionId: controlledOpenCriterionId
     <>
       <section className="report-page__section report-page__feasibility-redesign" aria-labelledby="feasibility-title">
         <SectionHeading
-          number="07"
+          number="02"
           eyebrow=""
           title="상품화 검토 종합평가"
         />
@@ -2317,7 +2317,7 @@ function FeasibilitySection({ report, openCriterionId: controlledOpenCriterionId
       <div className="report-page__feasibility-legacy" aria-hidden="true">
     <section className="report-page__section" aria-labelledby="feasibility-title">
       <SectionHeading
-        number="07"
+        number="02"
         eyebrow="PRODUCT FEASIBILITY"
         title="상품화 검토 종합평가"
         aside={<span className="report-page__gate-summary-badge">필수 기준 {aiJudgment.insuranceGatePassCount} / {COMMERCIALIZATION_GATE_GROUPS.insurance_gate.length} 충족</span>}
@@ -3169,7 +3169,7 @@ function WordingSection({
 
   return (
     <section ref={wordingComponentsRef} className="report-page__section report-page__wording-section" aria-labelledby="wording-title">
-      <SectionHeading number="06" eyebrow="WORDING FEASIBILITY" title="약관화 검토" aside={<span className="report-page__wording-draft-badge">AI 검토용 초안</span>} />
+      <SectionHeading number="04" eyebrow="WORDING FEASIBILITY" title="약관화 검토" aside={<span className="report-page__wording-draft-badge">AI 검토용 초안</span>} />
       <p className="report-page__wording-lead" id="wording-title">상품 개발 제안의 보장 대상과 보험금 지급 조건을 구체화하고, 이를 실제 약관 문장으로 표현할 수 있는지 검토합니다.</p>
       <p className="report-page__wording-disclaimer">현재 문구는 공개자료와 mock 데이터를 바탕으로 생성한 검토용 초안이며, 실제 약관 확정 전 상품·법무·보상 부서의 검토가 필요합니다.</p>
 
@@ -3356,7 +3356,7 @@ function WordingSection({
 
   return (
     <section ref={wordingComponentsRef} className="report-page__section report-page__wording-section" aria-labelledby="wording-title">
-      <SectionHeading number="06" eyebrow="WORDING FEASIBILITY" title="약관화 검토" />
+      <SectionHeading number="04" eyebrow="WORDING FEASIBILITY" title="약관화 검토" />
       <p className="report-page__wording-lead" id="wording-title">현재 분석 중인 위험의 보장 공백을 바탕으로 AI가 보장 항목을 제안하고, 항목별 보험금 지급요건과 약관 문구 초안을 제공합니다.</p>
       <p className="report-page__wording-disclaimer">공개자료와 mock 데이터를 바탕으로 한 검토용 초안이며, 최종 약관 문구는 일반상품 개발 담당자가 확정합니다.</p>
 
@@ -3627,7 +3627,7 @@ function LegacyWordingSection({
 
   return (
     <section ref={wordingComponentsRef} className="report-page__section report-page__wording-section" aria-labelledby="wording-title">
-      <SectionHeading number="06" eyebrow="" title="약관화 검토" />
+      <SectionHeading number="04" eyebrow="" title="약관화 검토" />
       <p className="report-page__wording-lead" id="wording-title">현재 분석 중인 위험의 보장 공백을 바탕으로 AI가 약관화가 필요한 보장 항목을 제안하고, 항목별 보험금 지급요건과 특별약관 초안을 제공합니다.</p>
       <p className="report-page__wording-disclaimer">현재 결과는 공개된 현대해상 약관 구조와 mock 데이터를 바탕으로 작성한 검토용 초안입니다. 실제 약관 확정 전 상품개발 담당자의 검토와 내부 승인 절차가 필요합니다.</p>
 
@@ -3810,6 +3810,7 @@ function FullWordingSection({
   const [dedicatedPrintCreatedAt, setDedicatedPrintCreatedAt] = useState<string | null>(null)
   const wordingComponentsRef = useRef<HTMLElement | null>(null)
   const fullDraftRef = useRef<HTMLElement | null>(null)
+  const policyDocumentRef = useRef<HTMLDivElement | null>(null)
   const previousPrintTitle = useRef<string | null>(null)
   const dedicatedPrintStarted = useRef(false)
   const selectedCoverage = aiFullPolicyDraftMock.specialClauses.find((clause) => clause.id === selectedCoverageId) ?? aiFullPolicyDraftMock.specialClauses[0]
@@ -3860,13 +3861,14 @@ function FullWordingSection({
   }))
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !fullDraftRef.current || printMode) return
+    if (typeof window === 'undefined' || !fullDraftRef.current || !policyDocumentRef.current || printMode) return
+    const policyDocument = policyDocumentRef.current
     const articles = Array.from(fullDraftRef.current.querySelectorAll<HTMLElement>('[data-policy-article-key]'))
     if (!articles.length || !('IntersectionObserver' in window)) return
     const observer = new IntersectionObserver((entries) => {
       const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
       if (visible) setActiveArticleKey((visible.target as HTMLElement).dataset.policyArticleKey ?? null)
-    }, { rootMargin: '-16% 0px -70% 0px', threshold: 0 })
+    }, { root: policyDocument, rootMargin: '-16% 0px -70% 0px', threshold: 0 })
     articles.forEach((article) => observer.observe(article))
     return () => observer.disconnect()
   }, [selectedCoverageId, printMode])
@@ -3907,7 +3909,7 @@ function FullWordingSection({
   return (
     <>
       <section ref={wordingComponentsRef} className={'report-page__section report-page__wording-section' + (dedicatedPrintRequested ? ' report-page__wording-section--dedicated-print' : '')} aria-label="약관화 검토">
-      <SectionHeading number="06" eyebrow="" title="약관화 검토" />
+      <SectionHeading number="04" eyebrow="" title="약관화 검토" />
 
       <div className="report-page__wording-main-flow">
         <section className="report-page__wording-risk-summary" aria-labelledby="wording-risk-title">
@@ -4016,7 +4018,7 @@ function FullWordingSection({
               <div className="report-page__wording-policy-toc-group"><span>특별약관</span>{specialTocEntries.map((entry) => <button key={entry.key} className={activeArticleKey === entry.key ? 'is-active' : ''} type="button" onClick={() => { setActiveArticleKey(entry.key); document.getElementById(entry.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}>{entry.label}</button>)}</div>
               <select aria-label="보통약관 조문 선택" value={commonTocEntries.some((entry) => entry.key === activeArticleKey) ? (activeArticleKey ?? '') : ''} onChange={(event) => { if (event.target.value) scrollToArticle(event.target.value) }}><option value="">조문 선택</option>{commonTocEntries.map((entry) => <option key={entry.key} value={entry.key}>{entry.label}</option>)}</select>
             </nav>
-            <div className="report-page__wording-policy-document">
+            <div ref={policyDocumentRef} className="report-page__wording-policy-document">
               <header className="report-page__wording-policy-cover"><span>FULL POLICY DRAFT</span><h4>{aiFullPolicyDraftMock.documentTitle}</h4><p>상품 구조와 세 가지 추천 보장 항목을 함께 반영한 검토용 약관 초안입니다.</p></header>
               <section className="report-page__wording-policy-common" aria-labelledby="wording-common-policy-title">
                 <h4 id="wording-common-policy-title">{aiFullPolicyDraftMock.commonPolicy.title}</h4>
@@ -4227,7 +4229,7 @@ function EvidenceResearchSection({
   return (
     <section className="report-page__section report-page__evidence-section" aria-labelledby="evidence-title">
       <SectionHeading
-        number="08"
+        number="06"
         eyebrow="EVIDENCE & REVIEW"
         title="근거자료 및 추가 확인사항"
       />

@@ -57,7 +57,7 @@ export function buildJudgmentSignalDetails(
 
   return [
     {
-      label: '관측 신호 수준',
+      label: '위험 신호 수준',
       score: risk.signalStrength,
       note: '뉴스·시장 관측 신호의 현재값. 사고 빈도나 손해액을 뜻하지 않습니다.',
       basis: increase?.inputs ?? `수요 신호 ${(risk.signalStrength / 20).toFixed(1)} / 5 · 비교 레코드 ${risk.signalStrength}점`,
@@ -95,10 +95,10 @@ export function buildAiQualitativeSummary(risk: SampleRiskCandidate, detail: Sam
   const blindSpot = getAssessmentScore(detail, '보험 사각지대 가능성', 50)
   const confidence = getAssessmentScore(detail, '근거 신뢰도', 50)
   const signalRead = risk.signalStrength >= 80
-    ? '수요 신호가 강하게 나타나'
+    ? '위험 신호가 강하게 나타나'
     : risk.signalStrength >= 65
-      ? '수요 신호가 비교적 뚜렷하게 나타나'
-      : '수요 신호가 관찰되고 있어'
+      ? '위험 신호가 비교적 뚜렷하게 나타나'
+      : '위험 신호가 관찰되고 있어'
   const lossRead = severity >= 70
     ? '사고가 발생했을 때 손실 규모와 누적 영향을 함께 살펴볼 필요가 있습니다.'
     : '손실이 실제로 얼마나 커질지는 추가 확인이 필요합니다.'
@@ -107,9 +107,9 @@ export function buildAiQualitativeSummary(risk: SampleRiskCandidate, detail: Sam
     : '기존 상품·약관과의 차이는 원문을 대조해 확인해야 합니다.'
   const evidenceRead = confidence >= 70
     ? '다만 공식 원문과 실제 손실 데이터를 확인하기 전에는 가설로 봅니다.'
-    : '근거 신뢰도가 아직 충분하지 않아 공식 원문·독립 출처·최신 시각 확인 전에는 판단을 보류합니다.'
+    : '근거 신뢰도가 아직 충분하지 않아 공식 원문·독립 출처·자료 작성일 확인 전에는 판단을 보류합니다.'
 
-  return `‘${risk.title}’ 후보는 ${signalRead} 우선 확인할 가치가 있습니다. ${lossRead} ${gapRead} ${evidenceRead}`
+  return `현재 자료에서 ‘${risk.title}’ 관련 ${signalRead} 우선 검토 대상으로 분류했습니다. ${lossRead} ${gapRead} ${evidenceRead}`
 }
 
 export function buildAssessmentAiSummary(item: SampleRiskAssessment): string {
@@ -125,7 +125,7 @@ export function buildAssessmentAiSummary(item: SampleRiskAssessment): string {
     case '보험 사각지대 가능성':
       return '현재 상품·약관만으로 책임과 보장 범위를 설명하기 어려운 구간이 있을 수 있습니다. 원문 확인 전에는 보장 공백으로 확정하지 않습니다.'
     case '근거 신뢰도':
-      return '공식 원문·독립 출처·표본·최신 시각이 얼마나 갖춰졌는지를 보여줍니다. 출처 검증 전에는 확정 판단으로 사용하지 않습니다.'
+      return '공식 원문·독립 출처·표본·자료 최신성이 얼마나 갖춰졌는지를 보여줍니다. 출처 검증 전에는 확정 판단으로 사용하지 않습니다.'
     default:
       return item.interpretation ?? item.note
   }

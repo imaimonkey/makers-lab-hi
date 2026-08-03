@@ -21215,7 +21215,16 @@
 .report-page__wording-section .report-page__wording-policy-toc button:hover,
 .report-page__wording-section .report-page__wording-policy-toc button.is-active { color: #173b63; background: #eaf2f9; }
 .report-page__wording-section .report-page__wording-policy-toc select { width: 100%; margin-top: 16px; padding: 8px; border: 1px solid #dbe4ed; border-radius: 5px; color: #475569; background: #fff; font-size: .75rem; }
-.report-page__wording-section .report-page__wording-policy-document { min-width: 0; overflow: hidden; border: 1px solid #e2e8f0; background: #fff; }
+.report-page__wording-section .report-page__wording-policy-document {
+  min-width: 0;
+  max-height: min(760px, calc(100dvh - 220px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  scrollbar-gutter: stable;
+}
 .report-page__wording-section .report-page__wording-policy-cover {
   padding: 30px 32px; border-bottom: 1px solid #e2e8f0; background: linear-gradient(110deg, #f7faff 0%, #fff 100%);
 }
@@ -21253,11 +21262,23 @@
 .report-page__wording-section .report-page__wording-policy-attachments ul { display: grid; gap: 10px; margin: 16px 0 0; padding: 0; list-style: none; }
 .report-page__wording-section .report-page__wording-policy-attachments li { display: grid; gap: 3px; padding-bottom: 10px; border-bottom: 1px solid #eef2f6; color: #475569; font-size: .84rem; }
 .report-page__wording-section .report-page__wording-policy-attachments li strong { color: #334155; }
-.report-page__wording-section .report-page__wording-grounds-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-.report-page__wording-section .report-page__wording-grounds-grid > article { min-width: 0; }
-.report-page__wording-section .report-page__wording-grounds-grid > article > h4 { color: #173b63; }
+.report-page__wording-section .report-page__wording-grounds-grid {
+  display: grid;
+  grid-template-columns: minmax(250px, .85fr) minmax(0, 1.15fr);
+  gap: 24px;
+  align-items: start;
+}
+.report-page__wording-section .report-page__wording-grounds-grid > article { min-width: 0; align-self: start; }
+.report-page__wording-section .report-page__wording-grounds-grid > article > h4 { margin: 0; color: #173b63; }
 .report-page__wording-section .report-page__wording-grounds-grid > article > ul { display: grid; gap: 8px; margin: 12px 0 0; padding-left: 18px; color: #475569; }
-.report-page__wording-section .report-page__wording-term-columns { display: grid; gap: 10px; margin-top: 12px; }
+.report-page__wording-section .report-page__wording-grounds-grid > article:last-child { padding-left: 24px; border-left: 1px solid #eef2f6; }
+.report-page__wording-section .report-page__wording-term-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 18px;
+  margin-top: 12px;
+  align-items: start;
+}
 .report-page__wording-section .report-page__wording-term-columns p { display: grid; gap: 3px; margin: 0; padding-bottom: 9px; border-bottom: 1px solid #eef2f6; }
 .report-page__wording-section .report-page__wording-term-columns strong { color: #334155; }
 .report-page__wording-section .report-page__wording-term-columns span { color: #64748b; font-size: .82rem; line-height: 1.55; }
@@ -21272,6 +21293,10 @@
   .report-page__wording-section .report-page__wording-prototype-assumption dl { grid-template-columns: 1fr; }
   .report-page__wording-section .report-page__wording-policy-layout { grid-template-columns: 1fr; }
   .report-page__wording-section .report-page__wording-policy-toc { position: static; }
+  .report-page__wording-section .report-page__wording-policy-document { max-height: min(70dvh, 680px); }
+  .report-page__wording-section .report-page__wording-grounds-grid { grid-template-columns: 1fr; }
+  .report-page__wording-section .report-page__wording-grounds-grid > article:last-child { padding-left: 0; border-left: 0; border-top: 1px solid #eef2f6; padding-top: 18px; }
+  .report-page__wording-section .report-page__wording-term-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .report-page__wording-section .report-page__wording-policy-common,
   .report-page__wording-section .report-page__wording-policy-clause,
   .report-page__wording-section .report-page__wording-policy-attachments,
@@ -21281,6 +21306,8 @@
 }
 @media print {
   .report-page__wording-section .report-page__wording-policy-layout { display: block; }
+  .report-page__wording-section .report-page__wording-policy-document { max-height: none; overflow: visible; }
+  .report-page__wording-section .report-page__wording-term-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .report-page__wording-section .report-page__wording-policy-toc,
   .report-page__wording-section .report-page__wording-draft-actions,
   .report-page__wording-section .report-page__no-print { display: none !important; }
@@ -21289,6 +21316,10 @@
   .report-page__wording-section .report-page__wording-policy-article,
   .report-page__wording-section .report-page__wording-policy-clause,
   .report-page__wording-section .report-page__wording-risk-summary-card { page-break-inside: avoid; }
+}
+
+@media screen and (max-width: 520px) {
+  .report-page__wording-section .report-page__wording-term-columns { grid-template-columns: 1fr; }
 }
 
 /* Dedicated wording-review document. It is mounted only while the wording
