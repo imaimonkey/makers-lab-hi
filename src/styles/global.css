@@ -3384,6 +3384,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .sh-visual .risk-anchor-tabs a { min-height: 44px; font-size: 11px; font-weight: 800; transition: color .2s ease, background .2s ease; }.sh-visual .risk-anchor-tabs a:hover { color: #174a86; background: #eef6ff; }
 .sh-visual .sh-command-actions a { display: inline-flex; align-items: center; min-height: 30px; padding: 0 11px; border: 1px solid #cbd9e8; border-radius: 7px; color: #174a86; background: #fff; font-size: 10px; font-weight: 800; text-decoration: none; }
 .sh-visual .detail-status-strip strong { color: #174a86; }.sh-visual .detail-status-strip b { color: #64748b; font-size: 10px; }
+.sh-visual .assessment-linked-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 10px; padding: 9px 10px; border: 1px solid #dbe7f2; border-radius: 7px; background: #f8fbff; font-size: 10px; line-height: 1.5; }
+.sh-visual .assessment-linked-sources b { color: #174a86; }.sh-visual .assessment-linked-sources a { color: #2563eb; font-weight: 800; text-decoration: none; }.sh-visual .assessment-linked-sources a:hover { text-decoration: underline; }.sh-visual .assessment-linked-sources span { color: #8a5a25; }
 @media (max-width: 800px) { .embedded-context-heading, .embedded-context-grid, .embedded-context-facts { display: grid; grid-template-columns: 1fr; }.embedded-context-heading > span { white-space: normal; } }
 
 /* 상품개발 사전 브리핑: 균등한 카드 묶음 대신 읽는 순서가 있는 리포트 레이아웃 */

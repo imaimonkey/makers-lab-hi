@@ -130,13 +130,6 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           <button type="button" onClick={printRiskDetail}>PDF 출력</button>
         </div>
       </nav>
-      <div className="sample-notice"><span>{detailSourceLabel}</span>{developerMode ? '연결된 원문과 저장된 분석 결과를 사용합니다. 값이 없는 항목은 확인 필요로 표시합니다.' : liveDetail ? `${liveStale ? '최근 정상 응답을 유지하고 있습니다.' : '연결된 상세 데이터를 사용합니다.'}${lastLiveAt ? ` 응답 시각 ${new Date(lastLiveAt).toLocaleString('ko-KR')}` : ''}` : `${sampleOnlyNotice}${liveError ? ' 상세 데이터를 불러오지 못했습니다.' : ''}`}</div>
-      <div className="detail-status-strip" role="status" aria-label="자료 및 검토 상태">
-        <span><b>자료 상태</b><strong>{liveDetail ? '연결 자료' : '원문 확인 필요'}</strong></span>
-        <span><b>AI 분석</b><strong>{developerMode && step3Results.length ? '저장 결과' : '1차 검토'}</strong></span>
-        <span><b>담당자 확인</b><strong>필요</strong></span>
-      </div>
-
       <nav className="risk-anchor-tabs" aria-label="위험상세 섹션 이동">
         <a href="#risk-context">위험 개요</a>
         <a href="#risk-overview">위험 요약</a>
@@ -150,7 +143,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           <div className="sh-detail-breadcrumb" aria-label="현재 위치"><Link to={catalogPath}>위험 후보</Link><span>/</span><span>상세 검토</span><strong>{risk.id}</strong></div>
           <div className="risk-badges"><span>{risk.themeLabel}</span><em>{risk.status}</em></div>
           <h2>{displayTitle}</h2>
-          <p><strong>한줄 요약</strong> {detail.riskStatement}</p>
+          <p><strong>검토 대상</strong> {risk.title}과 관련해 현재 자료에서 확인된 위험 신호와 보험 검토 쟁점을 정리합니다.</p>
           <div className="risk-facts">
             <span><small>주요 대상</small>{detail.exposedParty}</span>
             <span><small>주요 손해 유형</small>{detail.primaryLoss}</span>
@@ -212,6 +205,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
                 <div><div className="assessment-heading-line"><strong>{assessmentLabel}</strong><span className="assessment-rank">우선 {assessmentRank}</span></div><small>{item.evidenceStatus === 'verified' ? `${assessmentEvidence.length}건 연결 근거` : developerMode && step3Results.length ? `저장 분석 ${detail.evidence.length}건 · 지표별 연결 보류` : `${assessmentEvidence.length}건 연결 근거`} · 자료 신뢰도 {item.confidence}</small><span className={`assessment-evidence-status ${item.evidenceStatus === 'verified' ? 'is-verified' : 'is-pending'}`}>{item.evidenceStatus === 'verified' ? '원문 인용 확인' : '근거 확인 필요'}</span></div>
                 <div className="assessment-bar"><span><i style={{ width: `${item.score}%` }} /></span><strong>{item.score}<small>/100</small><em>5점 척도 {item.rawScore?.toFixed(1) ?? (item.score / 20).toFixed(1)}</em></strong></div>
                  <p className="assessment-reason"><b>검토 포인트</b>{assessmentNote}</p>
+                 <div className="assessment-linked-sources"><b>판단 근거</b>{assessmentEvidence.length ? assessmentEvidence.slice(0, 2).map((evidence) => evidence.sourceUrl ? <a key={evidence.id} href={evidence.sourceUrl} target="_blank" rel="noreferrer noopener">{evidence.sourceName} · 원문 보기 ↗</a> : <span key={evidence.id}>{evidence.sourceName} · 원문 확인 필요</span>) : <span>연결된 근거자료를 확인한 뒤 판단합니다.</span>}</div>
                  {item.evidenceQuotes?.length ? <div className="assessment-quotes"><b>원문 인용</b>{item.evidenceQuotes.map((quote) => <q key={quote}>{quote}</q>)}</div> : <div className="assessment-quotes is-pending"><b>원문 인용</b><span>{developerMode && step3Results.length ? '저장 분석 결과에 이 지표를 직접 가리키는 인용 연결이 없어, 판단 이유는 표시하되 지표별 근거 확정은 보류했습니다.' : '저장 결과에 정확한 인용 구간이 없어, 판단 이유는 표시하되 지표별 근거 확정은 보류했습니다.'}</span></div>}
                 <div className="assessment-logic-preview" aria-label={`${item.label} 산출 요약`}>
                   <div><span>산출 입력</span><strong>{item.inputs ?? '연결된 원자료 확인 필요'}</strong></div>

@@ -69,8 +69,8 @@ export function RiskArticleOverview({
       <div className="brief-report-lead">
         <article className="brief-thesis">
           <p className="brief-label">검토 방향</p>
-          <h2>{isAiCopyright ? '생성형 AI 저작권은 현재 상품화 결론보다 책임 기준과 국내 손해자료 확인이 먼저 필요한 위험입니다.' : `${risk.title} 위험은 상품화 여부를 정하기 전에 손해 범위와 기존 보장 여부를 먼저 확인해야 하는 후보입니다.`}</h2>
-          <p>{detail.riskStatement}</p>
+          <h2>{isAiCopyright ? '책임 기준과 국내 손해자료를 먼저 확인해야 하는 위험입니다.' : '손해 범위와 기존 보장 여부를 먼저 확인해야 하는 위험 후보입니다.'}</h2>
+          <p>아래 내용은 위험의 배경과 보험 관점의 쟁점을 요약한 1차 브리핑입니다. 세부 판단은 연결된 근거자료와 원문을 함께 확인해야 합니다.</p>
           <div className="brief-thesis-tags"><span>{risk.themeLabel}</span><span>{displayDecisionStatus}</span></div>
         </article>
         <aside className="brief-decision-card">
