@@ -249,17 +249,6 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
 
       <RiskDecisionWorkspace key={`review-${risk.id}`} risk={risk} detail={detail} developerMode={developerMode} step3Results={step3Results} />
 
-      <section className="detail-decision-footer" aria-label="다음 작업">
-        <div className="detail-decision-footer-copy">
-          <p className="eyebrow">다음 단계</p>
-          <h2>근거를 확인한 뒤 종합 리포트로 이어가기</h2>
-          <p>공식 원문과 국내 손해자료를 확인한 뒤, 보장 범위와 상품 구조를 종합 리포트에서 검토합니다.</p>
-        </div>
-        <div className="detail-decision-footer-actions">
-          <a href="#ai-judgment-evidence">판단 메모로 이동</a>
-          <Link to="/reports">종합 리포트로 이동 <AppIcon name="arrow" size={16} /></Link>
-        </div>
-      </section>
     </div>
   )
 }
