@@ -165,6 +165,15 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
         <div className="embedded-context-facts"><article><span>자료에서 확인된 사실</span><p>{isEssRisk ? '소방청·산업부 공개 조사자료를 바탕으로 사고 시점과 안전관리 쟁점을 정리했습니다.' : '연결된 공개자료의 사실관계와 AI가 해석한 내용을 구분해 표시합니다.'} 공식 자료는 위험 신호를 보여주지만 개별 계약의 사고확률이나 보험손해액을 확정하지는 않습니다.</p></article><article><span>다음 확인 항목</span><p>{isEssRisk ? 'BMS 이상 이력·배터리 용량·설치 위치·이격거리·소방설비·정기검사 이력과 재물손해·영업중단 손해를 계약 단위로 확인해야 합니다.' : '국내 사례·기존 약관·실제 손해자료를 확인한 뒤 보장 공백과 상품개발 가능성을 판단해야 합니다.'}</p></article></div>
       </section>
 
+      <section className="ai-reasoning-map surface-card" aria-labelledby="ai-reasoning-title">
+        <div className="ai-reasoning-heading"><div><p className="eyebrow">AI JUDGMENT MAP · 근거 연결</p><h2 id="ai-reasoning-title">AI는 어떤 근거로 이 위험을 판단했나</h2><p>자료의 사실과 AI의 해석을 분리해, 판단이 만들어지는 과정을 보여줍니다.</p></div><span>확정 결론 아님 · 원문 확인 필요</span></div>
+        <div className="ai-reasoning-grid">
+          <article><div className="ai-reasoning-step">01</div><div><span>자료에서 확인한 사실</span><strong>{isEssRisk ? 'ESS 화재는 충전 중에만 발생하지 않았습니다.' : '관련 자료에서 반복적으로 확인되는 위험 신호가 있습니다.'}</strong><p>{isEssRisk ? '공식 조사자료는 충전 완료 후 대기 중 발생한 사고와 충·방전 중 발생한 사고를 구분해 제시합니다.' : '연결된 원문과 자료에서 확인된 사건·피해·책임 단서를 우선 추출했습니다.'}</p><div className="reasoning-source-links">{linkedSources.slice(0, 2).map((source) => <a key={source.id} href={source.sourceUrl ?? undefined} target="_blank" rel="noreferrer noopener">{source.sourceName} · 근거 확인 ↗</a>)}</div></div></article>
+          <article><div className="ai-reasoning-step">02</div><div><span>AI가 도출한 위험 판단</span><strong>사고가 발생하면 단일 손해가 아닌 복합 손해로 확대될 수 있습니다.</strong><p>{isEssRisk ? '배터리·설비 재물손해뿐 아니라 정전, 복구 지연, 생산·서비스 중단, 제3자 책임까지 연결될 가능성을 위험 신호로 해석했습니다.' : '사건의 발생 원인과 예상 손해를 연결해 기존 위험과 다른 책임·보장 공백 가능성을 해석했습니다.'}</p><div className="reasoning-source-links">{linkedSources.length ? <span>위 사실자료를 바탕으로 한 AI 해석</span> : <span>연결 근거자료 확인 필요</span>}</div></div></article>
+          <article><div className="ai-reasoning-step">03</div><div><span>보험 관점의 검토 결론</span><strong>상품화보다 보장 범위와 인수 조건 확인이 먼저입니다.</strong><p>{isEssRisk ? '배터리 용량·설치 환경·BMS·소방설비·점검 이력에 따라 위험도가 달라질 수 있어, 보장 대상·면책·누적한도를 계약 단위로 검토해야 합니다.' : '기존 약관의 적용 범위와 실제 손해자료를 대조한 뒤 신규 보장 필요성을 판단해야 합니다.'}</p><div className="reasoning-source-links"><span>추가 확인: 국내 사고사례·약관·손해액 자료</span></div></div></article>
+        </div>
+      </section>
+
       <div className="detail-review-shell">
         <RiskArticleOverview
           risk={risk}
