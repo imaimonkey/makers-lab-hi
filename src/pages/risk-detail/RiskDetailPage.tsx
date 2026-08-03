@@ -125,6 +125,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           <span aria-label={`위험 ID ${risk.id}`}>{risk.id}</span>
         </div>
         <div className="sh-command-actions">
+          <Link to={`/risks/${risk.id}/context`}>위험 배경 브리핑</Link>
           <a href="#ai-judgment-evidence">판단 메모 보기</a>
           <button type="button" onClick={printRiskDetail}>PDF 출력</button>
         </div>
