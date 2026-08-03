@@ -4,7 +4,6 @@ import './riskDashboardPage.css'
 import { clearCustomerSignals, readCustomerSignals } from '../../domain/risk/customerSignalStorage'
 import type { CustomerSignal } from '../../domain/risk/types'
 import { candidateListViewModels } from '../../domain/risk/candidateViewModel'
-import { sampleRiskDetails } from '../../domain/risk/sampleData'
 import { useRiskRadarSnapshot } from '../../features/risk-dashboard/useRiskRadarSnapshot'
 import { getMockReportData } from '../../report/data/mock-data-adapter'
 import { createGeneratedReportList } from '../../report/services/report-list'
@@ -115,56 +114,20 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
 
   const reportData = getMockReportData()
   const generatedReports = createGeneratedReportList(reportData.riskData, reportData.fallbackReport).slice(0, 4)
-  const reportById = new Map(generatedReports.map((report) => [report.reportId, report]))
-  const candidateReportMap: Record<string, string> = {
-    'ev-battery-fire': 'RPT-EVFIRE-001-20260228',
-    'generative-ai-copyright': 'SAMPLE-RPT-DIGITAL-002',
-  }
-  const dashboardWorkItems = candidateListViewModels.slice(0, 5).map((candidate, index) => {
+  const reportByRiskId = new Map(generatedReports.map((report) => [report.riskId, report]))
+  const favoriteReports = candidateListViewModels.slice(0, 3).map((candidate, index) => {
     const detailId = candidate.detailRiskId ?? candidate.id
-    const detail = sampleRiskDetails[detailId]
-    const matchedReportId = candidateReportMap[detailId]
-    const report = matchedReportId ? reportById.get(matchedReportId) : undefined
-    const evidenceCount = detail?.evidence.length ?? candidate.evidence.count
-    const screeningScore = candidate.screeningScore.value === null ? 0 : Math.round(candidate.screeningScore.value * 20)
-    const productScore = detail?.assessments.find((item) => item.label.includes('보험'))?.score ?? screeningScore
-    const todaySignal = index === 0 ? '+15' : index === 1 ? '+8' : index === 2 ? '+5' : '+3'
+    const report = reportByRiskId.get(detailId)
     return {
       id: detailId,
-      rank: index + 1,
       title: candidate.title,
-      category: candidate.categories[0] ?? candidate.tags[0] ?? '신규위험',
-      summary: candidate.summary,
-      score: productScore,
-      todaySignal,
-      evidenceCount,
-      decisionBadge: detail?.decisionBadge ?? candidate.candidateStatus,
-      decisionTitle: detail?.decisionTitle ?? candidate.nextAction ?? candidate.summary,
-      nextAction: detail?.decisionChecks[0] ?? candidate.nextAction ?? '상세 검토',
-      coverageGap: detail?.decisionChecks[1] ?? candidate.candidateStatus,
-      reportStatus: report ? report.workflowStatus : '리포트 준비 전',
-      reportAction: report?.detailAvailable ? '리포트 열기' : report ? '목록에서 확인' : '리포트 준비',
-      detailHref: buildDeveloperPath(`/risks/${detailId}`, developerMode),
-      catalogHref: buildDeveloperPath('/risks', developerMode),
-      reportHref: report?.detailAvailable
+      summary: index === 0 ? '오늘 먼저 검토할 후보입니다. 보장 공백과 상품화 가능성을 함께 확인합니다.' : candidate.candidateStatus,
+      badge: index === 0 ? '즐겨찾기' : report?.workflowStatus ?? candidate.candidateStatus,
+      href: report?.detailAvailable
         ? `${buildDeveloperPath('/reports', developerMode)}?reportId=${encodeURIComponent(report.reportId)}`
         : buildDeveloperPath('/reports', developerMode),
     }
   })
-
-  const favoriteReports = dashboardWorkItems.slice(0, 3).map((risk, index) => ({
-    id: risk.id,
-    title: risk.title,
-    summary: index === 0 ? '오늘 먼저 검토할 후보입니다. 보장 공백과 상품화 가능성을 함께 확인합니다.' : risk.coverageGap,
-    badge: index === 0 ? '즐겨찾기' : risk.reportStatus,
-    href: risk.reportHref,
-  }))
-
-  const candidateStatusSummary = [
-    { label: '바로 검토', value: visibleRisks.filter((risk) => risk.status.includes('상세') || risk.stage.includes('상세')).length },
-    { label: '검증 필요', value: visibleRisks.filter((risk) => risk.status.includes('확인') || risk.stage.includes('검증')).length },
-    { label: '리포트 후보', value: favoriteReports.length },
-  ]
 
   const channelMix = [
     { label: '뉴스', value: Math.max(24, radarSnapshot.news.length || metrics.news || 0), tone: 'orange' },
@@ -298,52 +261,6 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
       </section>
 
       <section className="hi-dashboard-grid">
-        <article className="hi-panel hi-priority-board hi-workbench-board">
-          <div className="panel-heading">
-            <div><p className="eyebrow">TODAY WORKBENCH</p><h2>오늘 우선 검토 후보</h2><p>위험 탐색 점수, 상세 판단, 리포트 상태를 한 줄에서 바로 확인합니다.</p></div>
-            <Link to={buildDeveloperPath('/risks', developerMode)} className="panel-icon-link" aria-label="위험 후보 전체 보기" title="위험 후보 전체 보기"><AppIcon name="arrow" size={15} /></Link>
-          </div>
-          <div className="hi-candidate-status-strip" aria-label="후보 상태 요약">
-            {candidateStatusSummary.map((item) => (
-              <span key={item.label}>{item.label}<strong>{item.value}</strong></span>
-            ))}
-          </div>
-          <div className="hi-workbench-table">
-            <div className="hi-workbench-head">
-              <span>후보</span><span>오늘 변화</span><span>상세 판단</span><span>리포트</span><span>바로가기</span>
-            </div>
-            {dashboardWorkItems.map((risk) => (
-              <article className="hi-workbench-row" key={risk.id}>
-                <div className="hi-workbench-risk">
-                  <span className="rank">0{risk.rank}</span>
-                  <div>
-                    <strong>{risk.title}</strong>
-                    <small>{risk.category} · 근거 {risk.evidenceCount}건 · 탐색점수 {risk.score}</small>
-                  </div>
-                </div>
-                <div className="hi-workbench-change">
-                  <b>{risk.todaySignal}</b>
-                  <small>전일 대비 신호</small>
-                </div>
-                <div className="hi-workbench-decision">
-                  <em>{risk.decisionBadge}</em>
-                  <p>{risk.coverageGap}</p>
-                </div>
-                <div className="hi-workbench-report">
-                  <strong>{risk.reportStatus}</strong>
-                  <small>{risk.reportAction}</small>
-                </div>
-                <div className="hi-workbench-actions">
-                  <Link to={risk.detailHref}>상세</Link>
-                  <Link to={risk.catalogHref}>탐색</Link>
-                  <Link to={risk.reportHref}>{risk.reportAction}</Link>
-                </div>
-              </article>
-            ))}
-            {!dashboardWorkItems.length ? <div className="table-empty">표시할 위험 후보가 없습니다. 원문 수집 후 AI 분류를 실행하세요.</div> : null}
-          </div>
-        </article>
-
         <article className="hi-panel hi-daily-changes">
           <div className="panel-heading">
             <div><p className="eyebrow">TODAY'S CHANGES</p><h2>새로운 위험 신호</h2></div>
