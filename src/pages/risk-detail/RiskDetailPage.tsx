@@ -61,6 +61,7 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
   const liveAnalysis = liveDetail?.analysis
   const displayTitle = risk?.title
   const isEssRisk = risk?.id === 'ess-ups-battery-fire'
+  const linkedSources = detail?.evidence.filter((item) => item.sourceUrl).slice(0, 3) ?? []
   const detailSourceLabel = developerMode
     ? '실제 원문'
     : liveLoading
@@ -156,10 +157,10 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
       </section>
 
       <section className="embedded-context surface-card" aria-labelledby="embedded-context-title">
-        <div className="embedded-context-heading"><div><p className="eyebrow">AI RISK CONTEXT · 위험 맥락 브리핑</p><h2 id="embedded-context-title">왜 이 위험을 검토해야 하나</h2><p>근거자료를 하나씩 읽기 전에, 위험이 발생하는 구조와 보험 검토 포인트를 먼저 이해할 수 있도록 요약했습니다.</p></div><span>공개자료 기반 · 담당자 확인 필요</span></div>
+        <div className="embedded-context-heading"><div><p className="eyebrow">AI RISK CONTEXT · 위험 맥락 브리핑</p><h2 id="embedded-context-title">왜 이 위험을 검토해야 하나</h2><p>근거자료를 하나씩 읽기 전에, 위험이 발생하는 구조와 보험 검토 포인트를 먼저 이해할 수 있도록 요약했습니다.</p></div><span>판단 근거 {linkedSources.length}건 연결 · 담당자 확인 필요</span></div>
         <div className="embedded-context-grid">
-          <article><span className="context-label is-fact">위험 배경</span><strong>{isEssRisk ? '설비 손해에서 운영중단 손해로 확대될 수 있습니다.' : '새로운 위험 신호가 실제 손해로 이어지는 경로를 확인합니다.'}</strong><p>{isEssRisk ? 'ESS·UPS는 전기에너지를 저장하고 있어 이상 상태가 발생하면 배터리·전력변환장치 손상에 그치지 않고 정전, 복구 지연, 생산·서비스 중단으로 피해가 이어질 수 있습니다.' : detail.riskStatement}</p><div className="context-flow">{(isEssRisk ? ['전기 저장·충전', '이상 징후·열폭주', '화재·정전', '복구·영업중단'] : ['환경·행태 변화', '위험 노출 확대', '사고·분쟁', '보험 손해']).map((item, index, items) => <span key={item}>{item}{index < items.length - 1 ? <b> → </b> : null}</span>)}</div></article>
-          <article><span className="context-label is-meaning">보험 관점</span><strong>재물·중단·책임 손해를 분리해 봐야 합니다.</strong><ul className="context-bullets"><li><strong>재물손해</strong><span>배터리 랙·전력변환장치·주변 설비 손상</span></li><li><strong>영업중단</strong><span>정전과 복구 기간에 따른 생산·서비스 중단</span></li><li><strong>책임손해</strong><span>시설 운영자·시공사·제조사 간 책임 분쟁</span></li></ul></article>
+          <article><span className="context-label is-fact">위험 배경</span><strong>{isEssRisk ? '설비 손해에서 운영중단 손해로 확대될 수 있습니다.' : '새로운 위험 신호가 실제 손해로 이어지는 경로를 확인합니다.'}</strong><p>{isEssRisk ? 'ESS·UPS는 전기에너지를 저장하고 있어 이상 상태가 발생하면 배터리·전력변환장치 손상에 그치지 않고 정전, 복구 지연, 생산·서비스 중단으로 피해가 이어질 수 있습니다.' : detail.riskStatement}</p><div className="context-flow">{(isEssRisk ? ['전기 저장·충전', '이상 징후·열폭주', '화재·정전', '복구·영업중단'] : ['환경·행태 변화', '위험 노출 확대', '사고·분쟁', '보험 손해']).map((item, index, items) => <span key={item}>{item}{index < items.length - 1 ? <b> → </b> : null}</span>)}</div><div className="context-inline-evidence"><b>이 판단의 근거</b>{linkedSources.slice(0, 2).map((source) => <a key={source.id} href={source.sourceUrl ?? undefined} target="_blank" rel="noreferrer noopener">{source.sourceName} · 원문 ↗</a>)}</div></article>
+          <article><span className="context-label is-meaning">보험 관점</span><strong>재물·중단·책임 손해를 분리해 봐야 합니다.</strong><ul className="context-bullets"><li><strong>누가 손해를 입나</strong><span>{detail.exposedParty}</span></li><li><strong>무슨 손해가 생기나</strong><span>{detail.primaryLoss}</span></li><li><strong>무엇을 판단해야 하나</strong><span>기존 약관의 보장 범위·면책·책임 주체·누적한도</span></li></ul><div className="context-inline-evidence"><b>보험 판단 근거</b>{linkedSources.slice(0, 2).map((source) => <a key={source.id} href={source.sourceUrl ?? undefined} target="_blank" rel="noreferrer noopener">{source.sourceName} · 원문 ↗</a>)}</div></article>
         </div>
         <div className="embedded-context-facts"><article><span>자료에서 확인된 사실</span><p>{isEssRisk ? '소방청·산업부 공개 조사자료를 바탕으로 사고 시점과 안전관리 쟁점을 정리했습니다.' : '연결된 공개자료의 사실관계와 AI가 해석한 내용을 구분해 표시합니다.'} 공식 자료는 위험 신호를 보여주지만 개별 계약의 사고확률이나 보험손해액을 확정하지는 않습니다.</p></article><article><span>다음 확인 항목</span><p>{isEssRisk ? 'BMS 이상 이력·배터리 용량·설치 위치·이격거리·소방설비·정기검사 이력과 재물손해·영업중단 손해를 계약 단위로 확인해야 합니다.' : '국내 사례·기존 약관·실제 손해자료를 확인한 뒤 보장 공백과 상품개발 가능성을 판단해야 합니다.'}</p></article></div>
       </section>
