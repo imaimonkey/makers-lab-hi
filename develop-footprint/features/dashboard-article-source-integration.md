@@ -2,7 +2,10 @@
 
 ## Current slice
 
-- Dashboard fallback reads the PDF originals under `src/article/` in the browser.
+- Dashboard blocks use a compact Hi Navy/Hi Orange workboard treatment: signal-toned KPI cards, consistent panel edges, and interactive keyword/source tiles. Existing shared brand tokens are reused; no new global token was added.
+
+- Developer dashboard fallback reads the PDF originals under `src/article/` in the browser. Practitioner routes never read those originals or their derived reports; when their API is unavailable they remain on the separately labeled `SAMPLE` fixture.
+- Dashboard keyword links now use the catalog's canonical `q`/`category`/`sort` query contract, and screening searches match titles, summaries, tags, categories, actions, facts, and metric labels.
 - PDF text is extracted through the shared `src/features/llm-util/fileContext.ts` parser.
 - The derived snapshot exposes source file, extracted character count, collection time, article count, candidate count, and review-gate status.
 - `articleSourceData.ts` now maps the article body into a display-only structured result: facts, affected targets, damage types, metrics, evidence quotes, coverage gaps, uncertainty, and next action.

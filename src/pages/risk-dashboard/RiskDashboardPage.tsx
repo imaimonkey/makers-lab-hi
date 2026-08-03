@@ -10,9 +10,14 @@ function buildDeveloperPath(path: string, developerMode: boolean) {
   return developerMode ? `/developer-test${path === '/' ? '' : path}` : path
 }
 
+function buildCatalogFilterPath(keyword: string, developerMode: boolean, category = 'all') {
+  const search = new URLSearchParams({ q: keyword, category, sort: 'score' })
+  return `${buildDeveloperPath('/risks', developerMode)}?${search.toString()}`
+}
+
 export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'developer' }) {
   const developerMode = mode === 'developer'
-  const { snapshot: radarSnapshot } = useRiskRadarSnapshot({ preferLocalArticles: developerMode })
+  const { snapshot: radarSnapshot } = useRiskRadarSnapshot({ mode })
 
   const visibleRisks = developerMode
     ? radarSnapshot.risks.map((risk) => ({
@@ -170,7 +175,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
           <div className="hi-law-monitor-list">
             {lawMonitorItems.map((item) => (
               <Link
-                to={`${buildDeveloperPath('/risks', developerMode)}?keyword=${encodeURIComponent(item.title)}`}
+                to={buildCatalogFilterPath(item.title, developerMode, 'legal')}
                 key={item.title}
               >
                 <span>{item.type}</span>
@@ -218,7 +223,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
             <div className="hi-watchlist-cloud">
               {emergingKeywords.map((keyword) => (
                 <Link
-                  to={`${buildDeveloperPath('/risks', developerMode)}?keyword=${encodeURIComponent(keyword.label)}`}
+                  to={buildCatalogFilterPath(keyword.label, developerMode)}
                   key={keyword.label}
                   className={`keyword-${keyword.tone}`}
                   style={{ '--keyword-weight': keyword.articles / maxKeywordArticles } as CSSProperties}

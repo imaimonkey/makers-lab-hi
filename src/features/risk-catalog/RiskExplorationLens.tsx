@@ -45,6 +45,35 @@ const isScreeningSort = (value: string | null): value is ScreeningSort => (
   value === 'score' || value === 'title' || value === 'market' || value === 'fortuity' || value === 'legalExposure' || value === 'pml'
 )
 
+function normalizeSearchText(value: string) {
+  return value.normalize('NFKC').toLocaleLowerCase('ko-KR').replace(/\s+/g, ' ').trim()
+}
+
+function matchesRiskQuery(record: RiskExplorationRecord, query: string) {
+  const normalizedQuery = normalizeSearchText(query)
+  if (!normalizedQuery) return true
+  const haystack = normalizeSearchText([
+    record.title,
+    record.summary,
+    record.tags.join(' '),
+    record.secondaryTags.join(' '),
+    record.categories.join(' '),
+    record.gap,
+    record.nextAction,
+    record.signalOrigin ?? '',
+    record.sourceName ?? '',
+    record.contentInsight?.topic ?? '',
+    record.contentInsight?.event ?? '',
+    ...(record.facts ?? []),
+    ...(record.metrics ?? []).flatMap((metric) => [metric.label, metric.value, metric.sourceHint ?? '']),
+  ].join(' '))
+  if (haystack.includes(normalizedQuery)) return true
+  const tokens = normalizedQuery.split(/\s+/).filter((token) => token.length > 1)
+  if (!tokens.length) return false
+  const matchedTokens = tokens.filter((token) => haystack.includes(token)).length
+  return matchedTokens >= Math.ceil(tokens.length / 2)
+}
+
 function metricSortValue(record: RiskExplorationRecord, key: RiskCandidateQuantificationKey) {
   return getRiskCandidateQuantification(record)[key].numericValue
 }
@@ -321,7 +350,6 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
   }
 
   const sortedRecords = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
     const filtered = (developerMode ? (sourceRecords ?? []) : (sourceRecords ?? riskExplorationRecords)).filter((record) => {
       const matchesCategory = category === 'all'
         ? true
@@ -333,11 +361,10 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
               ? record.primaryCategory === 'regulatory'
               : (category === 'department' && record.signalOrigin === 'department-intake')
               || (category === 'customer' && record.signalOrigin === 'customer-intake')
-    const haystack = `${record.title} ${record.summary}`.toLocaleLowerCase('ko-KR')
       const matchesSource = sourceFilter === 'all' || record.sourceName === sourceFilter
       const collectedAt = record.collectedAt ? new Date(record.collectedAt).getTime() : Number.NaN
       const matchesPeriod = period === 'all' || (Number.isFinite(collectedAt) && collectedAt >= now - Number(period) * 24 * 60 * 60 * 1000)
-      return matchesCategory && matchesSource && matchesPeriod && (!normalizedQuery || haystack.includes(normalizedQuery))
+      return matchesCategory && matchesSource && matchesPeriod && matchesRiskQuery(record, query)
     })
     return [...filtered].sort((first, second) => {
       if (sort === 'title') return first.title.localeCompare(second.title, 'ko-KR')

@@ -35,6 +35,8 @@ export type RiskRadarRefreshResult = {
   completedAt: string
 }
 
+export type RiskRadarSnapshotMode = 'analyst' | 'developer'
+
 const sampleGeneratedAt = '2026-07-19T09:40:00+09:00'
 
 const sampleNews: RadarNewsArticle[] = demoRisks.map((risk) => ({
@@ -137,9 +139,6 @@ const sampleDashboard: RadarDashboardData = {
   lastSync: { completedAt: sampleGeneratedAt, status: 'sample-fallback' },
 }
 
-// The practitioner API fallback keeps this fixture isolated from developer mode.
-void sampleDashboard
-
 const emptyDashboard: RadarDashboardData = {
   generatedAt: '',
   metrics: { news: 0, contentReady: 0, analyzed: 0, pending: 0, failed: 0, clusters: 0, evidencePending: 0, riskCandidates: 0 },
@@ -155,7 +154,7 @@ function fallbackStatus(previous: RadarSnapshotSourceStatus): RadarSnapshotSourc
   return previous === 'live' || previous === 'local' || previous === 'stale' ? 'stale' : 'sample'
 }
 
-export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }) {
+export function useRiskRadarSnapshot(options?: { mode?: RiskRadarSnapshotMode }) {
   const requestSequence = useRef(0)
   const [snapshot, setSnapshot] = useState<RiskRadarSnapshotState>({
     dashboard: emptyDashboard,
@@ -175,7 +174,7 @@ export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }
       errors: {},
     }))
 
-    if (options?.preferLocalArticles) {
+    if (options?.mode === 'developer') {
       const completedAt = new Date().toISOString()
       try {
         const [localArticles, classificationStore] = await Promise.all([
@@ -262,21 +261,20 @@ export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }
 
     if (requestId === requestSequence.current && liveSources.length === 0) {
       try {
-        const localArticles = await loadArticleSourceRecords()
-        const localSnapshot = deriveArticleDashboard(localArticles)
+        const localSnapshot = { dashboard: sampleDashboard, news: sampleNews, risks: sampleRisks }
         setSnapshot((current) => ({
           ...current,
           dashboard: localSnapshot.dashboard,
           news: localSnapshot.news,
           risks: localSnapshot.risks,
-          sourceStatus: { dashboard: 'local', news: 'local', risks: 'local' },
-          errors: Object.fromEntries(failedSources.map((source) => [source, '운영 API 미연결 · 로컬 원문으로 대체'])) as RiskRadarSnapshotState['errors'],
+          sourceStatus: { dashboard: 'sample', news: 'sample', risks: 'sample' },
+          errors: Object.fromEntries(failedSources.map((source) => [source, '운영 API 미연결 · SAMPLE 표시'])) as RiskRadarSnapshotState['errors'],
           initialLoading: false,
           refreshing: false,
           lastAttemptAt: completedAt,
-          lastSuccessfulAt: completedAt,
+          lastSuccessfulAt: current.lastSuccessfulAt,
         }))
-        return { failedSources: [], liveSources: ['dashboard', 'news', 'risks'], completedAt }
+        return { failedSources, liveSources: [], completedAt }
       } catch (error) {
         failedSources.push('dashboard', 'news', 'risks')
         console.error('Local article source fallback failed.', error)
@@ -311,7 +309,7 @@ export function useRiskRadarSnapshot(options?: { preferLocalArticles?: boolean }
     }
 
     return { failedSources, liveSources, completedAt }
-  }, [options?.preferLocalArticles])
+  }, [options?.mode])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
