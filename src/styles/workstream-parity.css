@@ -1499,3 +1499,318 @@
   .workspace-sh .assessment-logic-preview { grid-template-columns: 1fr; }
   .workspace-sh .detail-judgment-detail-heading { align-items: flex-start; }
 }
+
+/*
+ * Shared analyst shell QA.
+ *
+ * The workstreams keep their own palette and content density, but the same
+ * navigation and control roles should occupy the same visual rhythm. Keep
+ * this layer intentionally small so editorial detail and dashboard cards
+ * remain workstream-specific.
+ */
+.workspace-hyoje,
+.workspace-seoyeon,
+.workspace-sh,
+.workspace-jh {
+  --analyst-sidebar-width: 248px;
+  --analyst-topbar-height: 72px;
+  --analyst-content-gutter: clamp(24px, 3vw, 40px);
+  --analyst-content-max: 1440px;
+  --analyst-control-height: 40px;
+  --analyst-tab-height: 44px;
+  --analyst-tab-width: clamp(112px, 12vw, 160px);
+}
+
+@media (min-width: 981px) {
+  .app-shell:has(.workspace-hyoje),
+  .app-shell:has(.workspace-seoyeon),
+  .app-shell:has(.workspace-sh),
+  .app-shell:has(.workspace-jh) {
+    grid-template-columns: var(--analyst-sidebar-width) minmax(0, 1fr);
+  }
+
+  .app-shell:has(.workspace-hyoje) .sidebar,
+  .app-shell:has(.workspace-seoyeon) .sidebar,
+  .app-shell:has(.workspace-sh) .sidebar,
+  .app-shell:has(.workspace-jh) .sidebar {
+    width: var(--analyst-sidebar-width);
+  }
+}
+
+.workspace-hyoje .topbar,
+.workspace-seoyeon .topbar,
+.workspace-sh .topbar,
+.workspace-jh .topbar {
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) minmax(240px, 460px) auto;
+  height: var(--analyst-topbar-height);
+  padding-inline: var(--analyst-content-gutter);
+  gap: 24px;
+  border-bottom: 1px solid #dce3ea;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: none;
+}
+
+.workspace-hyoje .topbar-context,
+.workspace-seoyeon .topbar-context,
+.workspace-sh .topbar-context,
+.workspace-jh .topbar-context {
+  min-width: 0;
+}
+
+.workspace-hyoje .topbar-context-icon,
+.workspace-seoyeon .topbar-context-icon,
+.workspace-sh .topbar-context-icon,
+.workspace-jh .topbar-context-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.workspace-hyoje .topbar > div:first-child p,
+.workspace-seoyeon .topbar > div:first-child p,
+.workspace-sh .topbar > div:first-child p,
+.workspace-jh .topbar > div:first-child p {
+  margin: 0;
+  color: #718096;
+  font: 700 10px/1.2 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  letter-spacing: .06em;
+}
+
+.workspace-hyoje .topbar > div:first-child strong,
+.workspace-seoyeon .topbar > div:first-child strong,
+.workspace-sh .topbar > div:first-child strong,
+.workspace-jh .topbar > div:first-child strong {
+  margin-top: 4px;
+  color: #1f334d;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  line-height: 1.2;
+}
+
+.workspace-hyoje .topbar-search,
+.workspace-seoyeon .topbar-search,
+.workspace-sh .topbar-search,
+.workspace-jh .topbar-search {
+  width: 100%;
+  min-width: 0;
+  border-color: #dce3ea;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.workspace-hyoje .topbar-actions,
+.workspace-seoyeon .topbar-actions,
+.workspace-sh .topbar-actions,
+.workspace-jh .topbar-actions {
+  justify-self: end;
+}
+
+.workspace-hyoje .topbar > div:first-child strong,
+.workspace-seoyeon .topbar > div:first-child strong,
+.workspace-sh .topbar > div:first-child strong,
+.workspace-jh .topbar > div:first-child strong {
+  font-size: 15px;
+}
+
+.workspace-hyoje .topbar-search,
+.workspace-seoyeon .topbar-search,
+.workspace-sh .topbar-search,
+.workspace-jh .topbar-search {
+  min-height: var(--analyst-control-height);
+}
+
+.workspace-hyoje .page,
+.workspace-seoyeon .page,
+.workspace-sh .page,
+.workspace-jh .page {
+  width: min(var(--analyst-content-max), 100%);
+  max-width: var(--analyst-content-max);
+  padding: 36px var(--analyst-content-gutter) 64px;
+}
+
+/* Category filters are a compact strip, not a second page header. */
+.workspace-seoyeon .catalog-page .risk-exploration-filter-row {
+  align-items: stretch;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-shell {
+  position: sticky;
+  top: var(--analyst-topbar-height);
+  left: auto;
+  right: auto;
+  z-index: 15;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: 0;
+  padding: 0;
+  border: 1px solid var(--workspace-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 6px 18px rgba(11, 43, 82, .07);
+  backdrop-filter: blur(12px);
+}
+
+.workspace-seoyeon .catalog-page .risk-category-tabs {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  min-height: var(--analyst-tab-height);
+  gap: 0;
+  padding: 4px;
+  overflow-x: auto;
+  border: 0;
+  scrollbar-width: none;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-tabs::-webkit-scrollbar { display: none; }
+
+.workspace-seoyeon .catalog-page .risk-category-button {
+  flex: 0 0 var(--analyst-tab-width);
+  width: var(--analyst-tab-width);
+  min-width: var(--analyst-tab-width);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--analyst-tab-height);
+  margin: 0;
+  padding-inline: 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Detail anchors follow the risk-category tab geometry and state treatment. */
+.workspace-sh .risk-anchor-tabs {
+  position: sticky;
+  width: fit-content;
+  max-width: 100%;
+  top: var(--analyst-topbar-height);
+  z-index: 15;
+  display: flex;
+  gap: 0;
+  margin: 0 0 18px;
+  padding: 4px;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 6px 18px rgba(11, 43, 82, .07);
+  backdrop-filter: blur(12px);
+  scrollbar-width: none;
+}
+
+.workspace-sh .risk-anchor-tabs::-webkit-scrollbar { display: none; }
+
+.workspace-sh .sh-command-bar {
+  top: var(--analyst-topbar-height);
+}
+
+.workspace-sh .risk-anchor-tabs a {
+  flex: 0 0 var(--analyst-tab-width);
+  width: var(--analyst-tab-width);
+  min-width: var(--analyst-tab-width);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--analyst-tab-height);
+  margin: 0;
+  padding-inline: 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px;
+  color: #14213d;
+  background: transparent;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.workspace-sh .risk-anchor-tabs a:hover,
+.workspace-sh .risk-anchor-tabs a:focus-visible {
+  border-bottom-color: transparent;
+  color: #1d4ed8;
+  background: #eff6ff;
+  outline: none;
+}
+
+.workspace-sh .risk-anchor-tabs a[aria-current='page'],
+.workspace-sh .risk-anchor-tabs a[aria-current='true'],
+.workspace-sh .risk-anchor-tabs a.active {
+  color: #fff;
+  background: #2563eb;
+}
+
+.workspace-hyoje :is(.filter-tabs button, .risk-exploration-tabs button),
+.workspace-seoyeon :is(.filter-tabs button, .risk-exploration-tabs button),
+.workspace-sh :is(.filter-tabs button, .risk-exploration-tabs button),
+.workspace-jh :is(.filter-tabs button, .risk-exploration-tabs button),
+.workspace-seoyeon .screening-filter-group :is(input, select) {
+  min-height: var(--analyst-control-height);
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .workspace-hyoje .page,
+  .workspace-seoyeon .page,
+  .workspace-sh .page,
+  .workspace-jh .page {
+    padding-inline: 20px;
+  }
+
+  .workspace-seoyeon .catalog-page .risk-category-shell {
+    width: 100%;
+  }
+
+  .workspace-seoyeon .catalog-page .risk-category-tabs,
+  .workspace-sh .risk-anchor-tabs {
+    width: 100%;
+  }
+
+  .workspace-seoyeon .catalog-page .risk-category-button,
+  .workspace-sh .risk-anchor-tabs a {
+    flex: 0 0 auto;
+    width: 112px;
+    min-width: 112px;
+  }
+}
+
+@media (max-width: 720px) {
+  .workspace-hyoje .topbar,
+  .workspace-seoyeon .topbar,
+  .workspace-sh .topbar,
+  .workspace-jh .topbar {
+    display: flex;
+    height: 64px;
+    padding-inline: 18px;
+  }
+
+  .workspace-hyoje .topbar-context,
+  .workspace-seoyeon .topbar-context,
+  .workspace-sh .topbar-context,
+  .workspace-jh .topbar-context {
+    flex: 1 1 auto;
+  }
+
+  .workspace-hyoje .page,
+  .workspace-seoyeon .page,
+  .workspace-sh .page,
+  .workspace-jh .page {
+    padding: 24px 16px 48px;
+  }
+
+  .workspace-seoyeon .catalog-page .risk-category-shell,
+  .workspace-sh .risk-anchor-tabs {
+    top: 64px;
+  }
+}

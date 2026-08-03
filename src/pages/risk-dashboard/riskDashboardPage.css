@@ -841,3 +841,18 @@
   }
   .hi-dashboard-page .hi-linked-actions { justify-content: flex-start; }
 }
+
+/* Keep the dashboard grid on the shared content axis without changing its card density. */
+.workspace-hyoje .hi-dashboard-page {
+  width: 100%;
+  max-width: none;
+  padding-top: 36px;
+  padding-inline: 0;
+}
+
+@media (max-width: 720px) {
+  .workspace-hyoje .hi-dashboard-page {
+    padding-top: 24px;
+    padding-inline: 0;
+  }
+}

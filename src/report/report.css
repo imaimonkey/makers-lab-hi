@@ -10329,6 +10329,70 @@
 .report-page__wording-accordion-copy small { font-size: 14px; }
 .report-page__wording-accordion-count { font-size: 13px !important; }
 .report-page__wording-group-grid > section > h4 { font-size: 17px; }
+
+/* Shared analyst tab QA: keep report navigation in the document flow below the topbar. */
+.workspace-jh .reports-page .report-page__tabs {
+  position: sticky;
+  top: var(--analyst-topbar-height, 72px);
+  left: auto;
+  right: auto;
+  z-index: 10;
+  width: 100%;
+  margin: 0 0 18px;
+  border: 1px solid var(--report-border);
+  border-top: 3px solid var(--report-orange);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(11, 43, 82, .07);
+}
+
+.workspace-jh .reports-page .report-page__tabs-list {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: var(--analyst-tab-height, 44px);
+  height: auto;
+  justify-content: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.workspace-jh .reports-page .report-page__tabs-list::-webkit-scrollbar { display: none; }
+
+.workspace-jh .reports-page .report-page__tab {
+  flex: 0 0 var(--analyst-tab-width, clamp(112px, 12vw, 160px));
+  width: var(--analyst-tab-width, clamp(112px, 12vw, 160px));
+  min-width: var(--analyst-tab-width, clamp(112px, 12vw, 160px));
+  min-height: var(--analyst-tab-height, 44px);
+  padding-inline: 12px;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.workspace-jh .reports-page .report-page__screen-content {
+  padding-top: 0;
+}
+
+.workspace-jh .reports-page .report-page__report-list {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .workspace-jh .reports-page .report-page__tabs {
+    width: 100%;
+  }
+
+  .workspace-jh .reports-page .report-page__tabs-list {
+    width: max-content;
+    max-width: 100%;
+  }
+
+  .workspace-jh .reports-page .report-page__tab {
+    flex: 0 0 auto;
+    width: 112px;
+    min-width: 112px;
+  }
+}
 .report-page__wording-group-grid .report-page__condition-list article {
   grid-template-columns: 60px minmax(0, 1fr);
   gap: 10px;
