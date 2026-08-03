@@ -74,8 +74,8 @@ const riskContextById: Record<string, RiskContext> = {
   'generative-ai-copyright': {
     theme: 'ai-digital',
     themeLabel: 'AI·디지털',
-    exposedParty: 'AI 도입 기업·콘텐츠 사업자·권리자',
-    primaryLoss: '분쟁 방어비용·배상책임·매출 손실',
+    exposedParty: 'AI 활용 기업·콘텐츠 제작사·저작권자',
+    primaryLoss: '법률검토·소송 방어비용·손해배상금·매출 손실',
   },
   'commercial-drone': {
     theme: 'mobility',
@@ -479,15 +479,15 @@ function buildDecision(record: RiskExplorationRecord) {
 function buildDetail(record: RiskExplorationRecord): SampleRiskDetail {
   const context = riskContextById[record.detailRiskId] ?? fallbackContext
   return {
-    riskStatement: `${record.summary} 가능성을 검토하는 위험 가설입니다. 실제 손해 발생과 보험 적용 여부는 공식 자료로 확인해야 합니다.`,
+    riskStatement: `${record.summary}과 관련된 신규 위험 후보입니다. 실제 손해사례와 기존 약관의 적용 여부는 공식 자료와 국내 사례 확인이 필요합니다.`,
     exposedParty: context.exposedParty,
     primaryLoss: context.primaryLoss,
     ...buildDecision(record),
     decisionChecks: [
       record.nextAction,
       record.gap,
-      '공식 통계·원문과 최신 시각 확인',
-      '기존 상품·약관과 책임 경계 확인',
+      '공식 통계·원문과 자료 작성일 확인',
+      '기존 상품·약관의 보장 범위와 책임 주체 확인',
     ],
     assessments: buildAssessments(record),
     evidence: buildEvidence(record),

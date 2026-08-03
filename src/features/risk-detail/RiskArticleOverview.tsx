@@ -50,13 +50,13 @@ export function RiskArticleOverview({
   const damageTypes = firstOrFallback(interpretation?.expectedLosses, [detail.primaryLoss])
   const affectedTargets = firstOrFallback(interpretation?.responsibilityCandidates, [detail.exposedParty])
   const industries = firstOrFallback(facts?.industries, [risk.themeLabel])
-  const uncertainties = firstOrFallback(analysis?.uncertainty, ['공식 원문·독립 출처·국내 적용 여부를 추가 확인해야 합니다.'])
+  const uncertainties = firstOrFallback(analysis?.uncertainty, ['공식 원문·국내 판례·실제 손해자료를 추가 확인해야 합니다.'])
   const headline = article?.summary ?? detail.riskStatement
   const event = facts?.event ?? detail.riskStatement
-  const whyNow = interpretation?.whyNow ?? '현재 관측된 변화가 기존 위험 분류와 보장 범위를 다시 확인할 이유를 만들고 있습니다.'
+  const whyNow = interpretation?.whyNow ?? '관련 변화가 기존 약관의 보장 범위와 책임 기준을 다시 확인할 필요성을 만들고 있습니다.'
   const sourceUrl = getSafeSourceUrl(article?.originalUrl ?? null)
-  const reviewEnvironment = compact(interpretation?.riskEnvironment) || '기사에서 포착된 변화가 어떤 손해와 책임 공백으로 이어질 수 있는지 AI가 구조화했습니다.'
-  const confidenceReason = compact(analysis?.confidence?.reason) || '원문과 연결 자료의 범위를 기준으로 한 1차 해석입니다. 실제 손해액과 보험 적용 여부는 별도 검증이 필요합니다.'
+  const reviewEnvironment = compact(interpretation?.riskEnvironment) || '관련 자료에서 확인된 변화가 어떤 손해와 책임 공백으로 이어질 수 있는지 AI가 정리했습니다.'
+  const confidenceReason = compact(analysis?.confidence?.reason) || '원문과 연결 자료를 바탕으로 한 1차 검토입니다. 실제 손해액과 기존 약관의 적용 여부는 별도 확인이 필요합니다.'
   const reviewEvidence = analysis?.evidence?.filter((item) => compact(item.quote)).slice(0, 3) ?? []
   const quoteEvidence = reviewEvidence.length
     ? reviewEvidence.map((item, index) => ({ key: `analysis-${index}-${item.sentenceNo ?? 'na'}`, quote: item.quote, source: article?.source ?? '기사 본문', url: sourceUrl }))
@@ -73,7 +73,7 @@ export function RiskArticleOverview({
     <section className="risk-article-overview" aria-labelledby="risk-article-title">
       <header className="risk-article-header">
         <div className="risk-article-kicker"><span>위험 브리핑</span><i aria-hidden="true" /> <span>{risk.themeLabel}</span></div>
-        <h2 id="risk-article-title">{article?.title ?? risk.title}</h2>
+        <h2 id="risk-article-title">위험 브리핑</h2>
         <p className="risk-article-dek">{headline}</p>
         <div className="risk-article-meta" aria-label="기사 메타데이터">
           <span>{article?.source ?? '위험 후보 분석'}</span>
@@ -98,7 +98,7 @@ export function RiskArticleOverview({
           <h3>왜 위험으로 보는가</h3>
           <p>{whyNow}</p>
           <dl>
-            <div><dt>노출 주체</dt><dd>{affectedTargets.slice(0, 2).join(' · ')}</dd></div>
+            <div><dt>주요 대상</dt><dd>{affectedTargets.slice(0, 2).join(' · ')}</dd></div>
             <div><dt>예상 손해</dt><dd>{damageTypes.slice(0, 2).join(' · ')}</dd></div>
           </dl>
         </aside>
@@ -130,8 +130,8 @@ export function RiskArticleOverview({
       <div className="risk-article-review-grid">
         <article className="risk-article-ai-review">
           <p className="risk-article-section-label">본문 해석</p>
-          <h3>본문에서 읽은 위험 설명</h3>
-          <p className="risk-article-review-lead">본문에서 확인된 사건·피해·책임 단서를 바탕으로, 실무자가 다음 검토를 시작할 수 있도록 위험의 맥락을 정리했습니다.</p>
+          <h3>상품 검토를 위한 위험 해석</h3>
+          <p className="risk-article-review-lead">관련 자료에서 확인된 사건·피해·책임 단서를 바탕으로, 상품개발 담당자가 다음 검토를 시작할 수 있도록 위험의 맥락을 정리했습니다.</p>
           <dl className="risk-article-review-points">
             <div><dt>핵심 판단</dt><dd>{reviewEnvironment}</dd></div>
             <div><dt>왜 지금 확인하나</dt><dd>{whyNow}</dd></div>
@@ -158,7 +158,7 @@ export function RiskArticleOverview({
       <div className="risk-article-materials-grid">
         <article className="risk-article-materials">
           <p className="risk-article-section-label">원문과 연결 자료</p>
-          <h3>원문과 연결 자료</h3>
+          <h3>근거자료 및 원문 링크</h3>
           <p className="risk-article-section-note">본문 해석에 연결된 원문·관련 기사·법령을 구분해 확인합니다. 아직 링크가 확인되지 않은 자료는 별도로 표시합니다.</p>
           <ul className="risk-article-material-list">
             {sourceItems.length ? sourceItems.map((item) => (
@@ -173,7 +173,7 @@ export function RiskArticleOverview({
 
         <article className="risk-article-productization">
           <p className="risk-article-section-label">상품화 검토 관점</p>
-          <h3>상품화 관점에서 볼 항목</h3>
+          <h3>상품개발 검토 항목</h3>
           <p className="risk-article-product-status"><span>현재 검토 상태</span><strong>{detail.decisionStatus}</strong></p>
           <p className="risk-article-section-note">상품화 여부를 확정하는 화면이 아니라, 보장 구조를 검토하기 전에 확인할 조건을 정리합니다.</p>
           <ul className="risk-article-check-list">

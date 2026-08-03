@@ -149,9 +149,9 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           <h2>{displayTitle}</h2>
           <p><strong>위험 문장</strong> {detail.riskStatement}</p>
           <div className="risk-facts">
-            <span><small>노출 주체</small>{detail.exposedParty}</span>
-            <span><small>주요 손해</small>{detail.primaryLoss}</span>
-            <span><small>검토 초점</small>{detail.decisionChecks[0] ?? '확인 항목 없음'}</span>
+            <span><small>주요 대상</small>{detail.exposedParty}</span>
+            <span><small>주요 손해 유형</small>{detail.primaryLoss}</span>
+            <span><small>상품 검토 포인트</small>{detail.decisionChecks[0] ?? '확인 항목 없음'}</span>
           </div>
         </div>
         <div className="risk-score-card">
