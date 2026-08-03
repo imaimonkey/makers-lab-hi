@@ -28016,3 +28016,1623 @@
     line-height: 1.6;
   }
 }
+
+/* Report library quick actions: keep card navigation separate from state controls. */
+:is(#report-root, .reports-page) .report-page__report-card-main {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-main--unavailable {
+  cursor: pointer;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-main:focus-visible {
+  outline: 2px solid var(--report-orange);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-controls {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-pin {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  color: #7b8b99;
+  background: transparent;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card > .report-page__report-card-pin {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  z-index: 2;
+  flex: 0 0 28px;
+  margin: 0;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-pin:hover,
+:is(#report-root, .reports-page) .report-page__report-card-pin:focus-visible {
+  color: var(--report-orange-ink);
+  background: #fff5ec;
+  outline: 2px solid rgba(244, 122, 32, .26);
+  outline-offset: 1px;
+  border-radius: 6px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-pin.is-active {
+  color: var(--report-orange-ink);
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-review {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #627588;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-review input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--report-navy);
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-review > span[aria-hidden="true"] {
+  display: none;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-review.is-active {
+  color: #287a6b;
+  font-weight: 750;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card-action {
+  flex: 0 0 auto;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card.is-pinned {
+  border-left-color: var(--report-orange);
+}
+
+:is(#report-root, .reports-page) .report-page__report-card.is-reviewed {
+  border-color: #cbdde0;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list {
+  grid-template-columns: minmax(250px, .95fr) minmax(240px, 1.4fr) minmax(220px, .8fr);
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-main {
+  display: grid;
+  grid-column: 1 / 3;
+  grid-row: 2;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1.4fr);
+  align-self: stretch;
+  column-gap: 18px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-top {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-heading {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-conclusion {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-bottom {
+  grid-column: 3;
+  grid-row: 2;
+  min-width: 0;
+  align-self: center;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-controls {
+  justify-content: flex-end;
+}
+
+:is(#report-root, .reports-page) .report-page__report-toolbar {
+  grid-template-columns: minmax(230px, 1.6fr) repeat(3, minmax(130px, .7fr)) auto;
+}
+
+@media (max-width: 1060px) {
+  :is(#report-root, .reports-page) .report-page__report-toolbar {
+    grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(125px, 1fr)) auto;
+  }
+}
+
+@media (max-width: 760px) {
+  :is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-main {
+    display: flex;
+    width: 100%;
+  }
+
+  :is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-bottom {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  :is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-controls {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  :is(#report-root, .reports-page) .report-page__report-card-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  :is(#report-root, .reports-page) .report-page__report-card-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) .report-page__report-card-pin,
+  :is(#report-root, .reports-page) .report-page__report-card-review {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-main {
+    grid-column: 1 / 3;
+  }
+}
+
+/* Report-wide visual language refinement.
+   Keep the report tabs distinct by content, not by competing card systems. */
+:is(#report-root, .reports-page) {
+  --report-border: #e5e9f0;
+  --report-border-soft: #edf0f4;
+  --report-surface: #ffffff;
+  --report-surface-soft: #f7f9fb;
+  --report-surface-blue: #f4f8fc;
+  --report-surface-warm: #fffaf4;
+  --report-section-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  --report-item-shadow: 0 2px 9px rgba(15, 23, 42, 0.045);
+  --report-radius-large: 12px;
+  --report-radius-medium: 10px;
+  --report-state-pass: #287a6b;
+  --report-state-pass-bg: #f1faf7;
+  --report-state-follow-up: #b86b63;
+  --report-state-follow-up-bg: #fff5f3;
+  --report-state-critical: #a83f38;
+  --report-state-critical-bg: #fff0ef;
+  --report-state-info: #625f86;
+  --report-state-info-bg: #f6f5fb;
+}
+
+/* The report frame is shared; the active tab is the only strong tab-level cue. */
+:is(#report-root, .reports-page) .report-page__tab[aria-selected='true'] {
+  border-bottom-width: 2px;
+  background: #fff9f4;
+}
+
+:is(#report-root, .reports-page) .report-page__tab-panel > .report-page__section {
+  margin-bottom: 28px;
+  padding: clamp(24px, 3.2vw, 42px);
+  border: 0;
+  border-radius: var(--report-radius-large);
+  background: var(--report-surface);
+  box-shadow: var(--report-section-shadow);
+}
+
+:is(#report-root, .reports-page) .report-page__tab-panel > .report-page__section > .report-page__section-heading {
+  margin-bottom: 26px;
+}
+
+/* 종합 브리핑: 결론과 카드만 남기고 바깥 프레임은 여백으로 대체합니다. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-risk-context {
+  margin-top: 8px;
+  padding: 10px 0 9px;
+  border: 0;
+  border-bottom: 1px solid var(--report-border-soft);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-risk-context-list {
+  border-top: 0;
+  border-bottom: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-risk-context-list > div {
+  border-right-color: var(--report-border-soft);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-conclusion {
+  margin-top: 24px;
+  padding: 18px 20px 16px;
+  border: 0;
+  border-left: 3px solid var(--report-navy);
+  border-radius: var(--report-radius-medium);
+  background: linear-gradient(110deg, #f4f8fc 0%, #fbfdff 72%, #ffffff 100%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-conclusion-points {
+  gap: 5px 18px;
+  margin-top: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-section--core-judgments > .report-page__ai-summary-block,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-core-results,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-actions,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-section[aria-labelledby='decision-briefing-product-title'] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-section--core-judgments,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-core-results,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance {
+  margin-top: 20px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-section--core-judgments > .report-page__ai-summary-block-heading,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-section-head {
+  margin-bottom: 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-section--core-judgments .report-page__ai-summary-core-card,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-core-card {
+  border: 0;
+  border-top: 2px solid var(--report-orange);
+  border-radius: var(--report-radius-medium);
+  background: #ffffff;
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-summary {
+  gap: 10px;
+  margin-top: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card {
+  border: 0;
+  border-top: 2px solid var(--report-orange);
+  border-radius: var(--report-radius-medium);
+  background: linear-gradient(135deg, #fff8ef 0%, #fffdf9 54%, #ffffff 100%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-product-head > div {
+  border: 0;
+  border-top: 2px solid var(--report-orange);
+  background: linear-gradient(135deg, #fffaf4 0%, #ffffff 88%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-product-facts-table {
+  border-top-color: var(--report-border);
+  border-bottom-color: var(--report-border);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-product-facts-table th {
+  background: #f8fafc;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-wording-preview {
+  border: 0;
+  border-left-color: var(--report-orange);
+  border-radius: 8px;
+  background: #fffaf5;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-work-column {
+  border: 0;
+  border-radius: var(--report-radius-medium);
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-evidence-meta {
+  border-top-color: var(--report-border);
+  border-bottom-color: var(--report-border);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-evidence-meta > div {
+  border-right-color: var(--report-border-soft);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-evaluation-status {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-criterion-card {
+  border: 0;
+  border-radius: 8px;
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-criterion-card--pass {
+  background: var(--report-state-pass-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-criterion-card--needs-review {
+  background: var(--report-state-follow-up-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-criterion-card--needs-review .report-page__ai-summary-criterion-status {
+  color: var(--report-state-follow-up);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-criterion-card--needs-review .report-page__ai-summary-criterion-status > span {
+  color: var(--report-state-follow-up);
+  background: #fdecea;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-criterion-card--additional-check {
+  background: var(--report-state-info-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-criterion-card--critical {
+  background: var(--report-state-critical-bg);
+}
+
+/* 상품화 종합평가: 상태색은 의미를 유지하되, 상태 외곽선은 조용하게 둡니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign {
+  --feasibility-line: var(--report-border);
+  --feasibility-follow-up: var(--report-state-follow-up);
+  --feasibility-critical: var(--report-state-critical);
+  --feasibility-info: var(--report-state-info);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero {
+  border: 0;
+  border-left: 3px solid var(--report-state-pass);
+  border-radius: var(--report-radius-large);
+  background: linear-gradient(110deg, #f2f8fb 0%, #f9fcfd 64%, #ffffff 100%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-subsection,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-visible-group {
+  padding-inline: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__judgment-evidence-card,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card {
+  border: 0;
+  border-radius: var(--report-radius-medium);
+  background: linear-gradient(135deg, #fff9f1 0%, #ffffff 90%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__follow-up-action-card {
+  border: 0;
+  border-bottom: 1px solid var(--report-border-soft);
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card--pass,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__judgment-evidence-card--pass {
+  color: var(--report-state-pass);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card--needs_review,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__judgment-evidence-card--needs_review {
+  background: var(--report-state-follow-up-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card--critical {
+  background: var(--report-state-critical-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__assessment-status--needs_review {
+  color: var(--report-state-follow-up);
+  border-color: #edc9c4;
+  background: var(--report-state-follow-up-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__assessment-status--critical {
+  color: var(--report-state-critical);
+  border-color: #e3aaa5;
+  background: var(--report-state-critical-bg);
+}
+
+/* 보장 공백: 비교표의 구조선은 보존하고, 브라운 면과 중첩 프레임은 줄입니다. */
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results {
+  border: 0;
+  border-left: 3px solid var(--report-orange);
+  border-radius: var(--report-radius-large);
+  background: linear-gradient(110deg, #fff8f0 0%, #fffdf9 62%, #ffffff 100%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-finding-grid article,
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-inputs li,
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-evidence-grid article {
+  border: 0;
+  border-radius: 8px;
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-finding-grid article:first-child {
+  background: var(--report-surface-warm);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-summary > div {
+  border: 0;
+  border-bottom: 1px solid var(--report-border-soft);
+  border-radius: 0;
+  background: transparent;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-summary > div:nth-child(3) {
+  background: var(--report-state-follow-up-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-section .report-page__gap-table {
+  border: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-section .report-page__gap-table th,
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-section .report-page__gap-table td {
+  border: 0;
+  border-bottom: 1px solid var(--report-border-soft);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-section .report-page__gap-table th {
+  background: #f3f6fa;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-section .report-page__gap-table tr:last-child td {
+  border-bottom: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-section .report-page__gap-table td.report-page__gap-cell {
+  background: #ffffff !important;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-section .report-page__gap-bullets strong,
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-finding-grid p strong {
+  color: var(--report-orange) !important;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-conclusion,
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-assessment {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-conclusion-lead {
+  border-left-color: var(--report-state-pass);
+  background: #f5faf8;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-scope {
+  border: 0;
+  border-left: 2px solid #9bb5ca;
+  border-radius: 8px;
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-inputs {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* 약관 검토: 문서 프레임 하나와 최소한의 행 구분선만 남깁니다. */
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-section {
+  --wording-final-line: var(--report-border-soft);
+  --wording-final-orange: var(--report-orange);
+  --wording-final-green: var(--report-state-pass);
+  --wording-final-purple: var(--report-state-info);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card {
+  border: 0;
+  border-left: 3px solid var(--report-navy);
+  border-radius: var(--report-radius-large);
+  background: linear-gradient(110deg, #f4f8fc 0%, #fbfdff 72%, #ffffff 100%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card {
+  border: 0;
+  border-radius: var(--report-radius-medium);
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card:hover,
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card:focus-visible {
+  border: 0;
+  background: #ffffff;
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected {
+  border: 0;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 92%);
+  box-shadow: inset 3px 0 0 var(--report-orange), var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected::after {
+  display: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card-title em {
+  margin-left: 7px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy {
+  border: 0;
+  border-radius: var(--report-radius-medium);
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote {
+  border: 0;
+  border-left: 3px solid var(--report-orange);
+  background: #ffffff;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b {
+  border: 0;
+  border-radius: var(--report-radius-medium);
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card,
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c > .report-page__wording-zone-heading {
+  padding-inline: 0;
+  border: 0;
+  background: transparent;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card {
+  border: 0;
+  border-radius: 8px;
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card:last-child {
+  background: var(--report-surface-warm);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-d,
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-full-policy,
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-policy-document {
+  border-color: var(--report-border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-policy-clause {
+  border-top: 2px solid var(--report-border-soft);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-policy-clause.is-selected {
+  border-top-color: var(--report-orange);
+  background: #fffaf5;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid > article:last-child {
+  border-left-color: var(--report-border-soft);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns > section {
+  border: 0;
+  border-bottom: 1px solid var(--report-border-soft);
+  border-radius: 0;
+  background: transparent;
+}
+
+/* 상품 개발 제안: 추천 구조는 한 가지 포인트선으로만 강조합니다. */
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero {
+  border: 0;
+  border-left: 3px solid var(--report-navy);
+  border-radius: var(--report-radius-large);
+  background: linear-gradient(110deg, #f4f8fc 0%, #fbfdff 72%, #ffffff 100%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation {
+  border: 0;
+  border-radius: var(--report-radius-medium);
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-grid > article,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-grid > article,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid article {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-form-option {
+  border: 0;
+  border-radius: var(--report-radius-medium);
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-form-option--recommended {
+  background: linear-gradient(135deg, #fff8ef 0%, #ffffff 92%);
+  box-shadow: inset 3px 0 0 var(--report-orange), var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric {
+  border: 0;
+  border-top: 2px solid var(--report-orange);
+  border-radius: var(--report-radius-medium);
+  background: linear-gradient(135deg, #fff8ef 0%, #ffffff 90%);
+  box-shadow: var(--report-item-shadow);
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow > ol > li {
+  border: 0;
+  border-radius: 8px;
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow > ol > li.is-highlighted {
+  background: var(--report-surface-blue);
+  box-shadow: inset 3px 0 0 var(--report-navy);
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > article,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-basic,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-optional,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-excluded {
+  border: 0;
+  border-radius: 8px;
+  background: var(--report-surface-soft);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-basic {
+  background: var(--report-state-pass-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-optional {
+  background: var(--report-surface-blue);
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-excluded {
+  background: var(--report-surface-warm);
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-tasks,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-ai-badge,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-review-badge {
+  border-color: var(--report-border);
+  background: #f7f9fb;
+}
+
+/* 근거자료: 자료 성격은 라벨로 구분하고, 목록은 행과 여백으로 읽게 합니다. */
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-list-section,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__prototype-evidence,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__required-evidence {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__actual-evidence-row,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__prototype-evidence-item {
+  border: 0;
+  border-bottom: 1px solid var(--report-border-soft);
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+  transform: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card::before {
+  display: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__prototype-evidence-item:hover,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card:hover,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__actual-evidence-row:hover {
+  border-color: var(--report-border-soft);
+  background: var(--report-surface-soft);
+  box-shadow: none;
+  transform: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-filter-bar {
+  border: 0;
+  border-radius: 8px;
+  background: var(--report-surface-soft);
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-type {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-chip {
+  border: 0;
+  background: #f0f4f7;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__prototype-evidence .report-page__evidence-type,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__research-badge--internal {
+  border: 0;
+  color: var(--report-state-follow-up);
+  background: var(--report-state-follow-up-bg);
+}
+
+/* Shared hero surface keeps every report tab in one visual system. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero,
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results,
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero {
+  border: 0;
+  border-left: 3px solid var(--report-navy);
+  border-radius: var(--report-radius-large);
+  background: linear-gradient(110deg, #f4f8fc 0%, #fbfdff 72%, #ffffff 100%);
+  box-shadow: var(--report-item-shadow);
+}
+
+/* Report tables use rows, spacing and header tone instead of full cell grids. */
+@media screen {
+  :is(#report-root, .reports-page) .report-page__tab-panel table {
+    border-inline: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  :is(#report-root, .reports-page) .report-page__tab-panel table th,
+  :is(#report-root, .reports-page) .report-page__tab-panel table td {
+    border-right: 0;
+    border-left: 0;
+    border-bottom-color: var(--report-border-soft);
+  }
+
+  :is(#report-root, .reports-page) .report-page__tab-panel table thead th {
+    background: #f3f6fa;
+  }
+}
+
+/* 화면에서는 여백을 구조로, PDF에서는 표와 행 구분선을 구조로 사용합니다. */
+@media print {
+  :is(#report-root, .reports-page) .report-page__tab-panel > .report-page__section {
+    padding: 0;
+    border: 0;
+    background: transparent !important;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-conclusion,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-risk-context,
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero,
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation {
+    background: #ffffff !important;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-section--core-judgments .report-page__ai-summary-core-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-core-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card,
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__judgment-evidence-card,
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card,
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-card,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-form-option,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card {
+    background: #ffffff !important;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-section .report-page__gap-table td.report-page__gap-cell {
+    background: #ffffff !important;
+  }
+}
+
+/* 상태 의미를 색상에 일관되게 매핑합니다. 보완 필요는 연한 빨강, 추가 확인은 보라 계열입니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card--additional_check,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__judgment-evidence-card--additional_check {
+  background: var(--report-state-info-bg);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__assessment-status {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__assessment-status--additional_check {
+  color: var(--report-state-info);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-status--warning {
+  padding-inline: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--report-state-follow-up);
+  background: transparent;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-status--conditional,
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-clause-status--needs-improvement,
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-status.is-conditional {
+  color: var(--report-state-follow-up);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-status--conditional,
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-clause-status--needs-improvement {
+  padding-inline: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+@media print {
+  :is(#report-root, .reports-page) .report-page__pdf-document,
+  :is(#report-root, .reports-page) .report-page__pdf-document * {
+    box-shadow: none !important;
+  }
+
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__decision-briefing-conclusion,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__product-decision-hero,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__coverage-gap-results,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__wording-risk-summary-card,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__proposal-hero {
+    border: 1px solid #dfe6ed;
+    border-left: 2px solid #315d88;
+    border-radius: 0;
+    background: #ffffff !important;
+  }
+
+  :is(#report-root, .reports-page) .report-page__pdf-document table,
+  :is(#report-root, .reports-page) .report-page__pdf-document tr,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__ai-summary-core-card,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__decision-briefing-core-card,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__decision-briefing-finance-card,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__ai-summary-criterion-card,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__quantitative-metric-card,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__proposal-metric,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__proposal-role-card,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__proposal-flow > ol > li,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__evidence-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* Feasibility decision palette: cool navy-led hierarchy with restrained teal. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero {
+  background: linear-gradient(115deg, #f5f8fb 0%, #fbfdff 62%, #ffffff 100%);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-title {
+  color: #123f73;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li > span:first-child {
+  color: #168174;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-facts-grid > .report-page__product-decision-fact-card {
+  border: 0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 9px rgba(15, 23, 42, 0.045);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-fact-label {
+  color: #53687d;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-fact-card > .report-page__product-decision-fact-value,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-fact-card.is-tam > .report-page__product-decision-fact-value,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-fact-card.is-pml > .report-page__product-decision-fact-value {
+  color: #16766c !important;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-fact-card.is-pass > .report-page__product-decision-fact-value,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-fact-card.is-market > .report-page__product-decision-fact-value {
+  color: #16766c !important;
+}
+
+@media print {
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__product-decision-title {
+    color: #123f73 !important;
+  }
+
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__product-decision-fact-card > .report-page__product-decision-fact-value,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__product-decision-fact-card.is-tam > .report-page__product-decision-fact-value,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__product-decision-fact-card.is-pml > .report-page__product-decision-fact-value {
+    color: #16766c !important;
+  }
+
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__product-decision-fact-card.is-pass > .report-page__product-decision-fact-value,
+  :is(#report-root, .reports-page) .report-page__pdf-document .report-page__product-decision-fact-card.is-market > .report-page__product-decision-fact-value {
+    color: #16766c !important;
+  }
+}
+
+/* Executive briefing flow: conclusion first, then the risk context it qualifies. */
+:is(#report-root, .reports-page) .report-page__briefing--decision {
+  display: flex;
+  flex-direction: column;
+}
+
+:is(#report-root, .reports-page) .report-page__briefing--decision > * {
+  order: 10;
+}
+
+:is(#report-root, .reports-page) .report-page__briefing--decision > .report-page__section-heading {
+  order: 0;
+}
+
+:is(#report-root, .reports-page) .report-page__briefing--decision > .report-page__decision-briefing-conclusion {
+  order: 1;
+}
+
+:is(#report-root, .reports-page) .report-page__briefing--decision > .report-page__decision-briefing-risk-context {
+  order: 2;
+}
+
+/* Evaluation criteria: keep every group easy to scan with the same quiet row boundary. */
+:is(#report-root, .reports-page) #report-panel-feasibility
+  .report-page__feasibility-visible-group
+  .report-page__evaluation-card {
+  border: 1px solid #cbd8e3;
+  border-left: 3px solid #cbd8e3;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility
+  .report-page__feasibility-visible-group
+  .report-page__evaluation-card--fulfilled {
+  border-left-color: var(--report-state-pass);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility
+  .report-page__feasibility-visible-group
+  .report-page__evaluation-card--unfulfilled {
+  border-left-color: var(--report-state-critical);
+}
+
+/* Product proposal: make the recommendation blocks read as separate units. */
+:is(#report-root, .reports-page) #report-panel-proposal
+  .report-page__proposal-recommendation-grid > ol > li,
+:is(#report-root, .reports-page) #report-panel-proposal
+  .report-page__proposal-underwriting-grid > article,
+:is(#report-root, .reports-page) #report-panel-proposal
+  .report-page__proposal-coverage-grid > article,
+:is(#report-root, .reports-page) #report-panel-proposal
+  .report-page__proposal-evidence-grid article {
+  border: 1px solid var(--report-border);
+  border-top: 2px solid #c7d5e0;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: var(--report-item-shadow);
+}
+
+/* Keep the selected AI proposal state distinct from inline validation text. */
+:is(#report-root, .reports-page) #report-panel-wording
+  .report-page__wording-zone-a
+  .report-page__wording-proposal-card.is-selected
+  .report-page__wording-proposal-card-title em {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--report-state-pass);
+  background: var(--report-state-pass-bg);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording
+  .report-page__wording-zone-a
+  .report-page__wording-proposal-card.is-selected
+  .report-page__wording-proposal-card-title em::before {
+  display: inline-grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--report-state-pass);
+  content: '\2713';
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Evidence library: bring back quiet card boundaries without restoring type-color noise. */
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card {
+  border: 1px solid var(--report-border);
+  border-top: 2px solid #c7d5e0;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: var(--report-item-shadow);
+  transform: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card:hover,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card:focus-within {
+  border-color: #c7d5e0;
+  border-top-color: #9eb4c4;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.07);
+  transform: translateY(-1px);
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-meta time.report-page__evidence-date--missing {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--report-state-follow-up);
+  background: transparent;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-chip,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-more {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #607486;
+  background: transparent;
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card {
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* Report tab typography alignment: give the proposal and evidence views the same reading scale as the other report tabs. */
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading h3 {
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading p:not(.report-page__eyebrow) {
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-description {
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts dt {
+  font-size: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts dd {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li h4 {
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li ul,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-detail-block-grid ul {
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid small {
+  font-size: 11px;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-form-option p,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-proposal {
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card h4,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid h4 {
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card li,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow > ol > li > ul,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid p {
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow h4 {
+  font-size: 15px;
+  line-height: 1.48;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow-note,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-condition-note {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid strong {
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-judgment > strong,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-judgment > p {
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-card-heading h4 {
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-assessment {
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-block h5,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-scenario h5 {
+  font-size: 11px;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-block li {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-scenario p,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-note {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-condition-map h4 {
+  font-size: 13px;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-condition-map li,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-decisions > ul > li {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid h4 {
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid ul {
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-meta,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-sections > span:first-child,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-source-hint {
+  font-size: 13px;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card h4 {
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-purpose {
+  min-height: 48px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading h3 {
+    font-size: 21px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card h4 {
+    font-size: 18px;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading h3 {
+    font-size: 12pt;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading p:not(.report-page__eyebrow),
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li ul,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card li,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow > ol > li > ul,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid p,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-block li,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid ul {
+    font-size: 9pt;
+    line-height: 1.5;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card h4 {
+    font-size: 10pt;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-purpose {
+    min-height: 0;
+    font-size: 8.5pt;
+    line-height: 1.55;
+  }
+}
+
+/* Proposal and evidence scale correction: these two tabs carry denser content, so their body type needs the same visual weight as the other report tabs. */
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading h3 {
+  font-size: 25px;
+  line-height: 1.35;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading p:not(.report-page__eyebrow),
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-form-option p,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-proposal,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow-note,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-condition-note,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-scenario p,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-note {
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li h4,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card h4,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid h4,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid h4 {
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li ul,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-detail-block-grid ul,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card li,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow > ol > li > ul,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid p,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-block li,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid ul {
+  font-size: 15px;
+  line-height: 1.62;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow h4 {
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-judgment > strong,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-judgment > p {
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-card-heading h4 {
+  font-size: 19px;
+  line-height: 1.48;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-assessment {
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-block h5,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-scenario h5,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts dt {
+  font-size: 13px;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts dd,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid strong {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-decisions > ul > li,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-condition-map li {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading h3 {
+  font-size: 25px;
+  line-height: 1.35;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading p,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-intro,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-notice {
+  font-size: 15px;
+  line-height: 1.68;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-meta,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-sections > span:first-child,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-source-hint,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-chip,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-more {
+  font-size: 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card h4 {
+  font-size: 21px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-purpose {
+  min-height: 52px;
+  font-size: 16px;
+  line-height: 1.68;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading h3,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading h3 {
+    font-size: 22px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card h4 {
+    font-size: 19px;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading h3,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading h3 {
+    font-size: 13pt;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section .report-page__proposal-section-heading p:not(.report-page__eyebrow),
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li ul,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card li,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow > ol > li > ul,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid p,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-block li,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid ul,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading p,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-intro,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-notice {
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card h4 {
+    font-size: 11pt;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-purpose {
+    min-height: 0;
+    font-size: 9pt;
+    line-height: 1.55;
+  }
+}
+
+/* Keep the proposal and evidence tabs on the same reading scale as the rest of the report. */
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section-heading h3,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading h3 {
+  font-size: 26px;
+  line-height: 1.35;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section-heading p:not(.report-page__eyebrow),
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-lead,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-form-option p,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-proposal,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow-note,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-condition-note,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-scenario p,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-note,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading p,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-intro,
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-notice {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li ul,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-detail-block-grid ul,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card li,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow > ol > li > ul,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid p,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-block li,
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid ul {
+  font-size: 16px;
+  line-height: 1.62;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card h4 {
+  font-size: 21px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-purpose {
+  font-size: 16px;
+  line-height: 1.68;
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section-heading h3,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading h3 {
+    font-size: 13pt;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section-heading p:not(.report-page__eyebrow),
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li ul,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-detail-block-grid ul,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-role-card li,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow > ol > li > ul,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid p,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting-block li,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence-grid ul,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading p,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-intro,
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-notice {
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card h4 {
+    font-size: 11pt;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card-purpose {
+    font-size: 9pt;
+    line-height: 1.55;
+  }
+}
+
+/* These two panels should use the same full report width as the other tabs. */
+:is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section,
+:is(#report-root, .reports-page) #report-panel-evidence > .report-page__evidence-section {
+  width: 100%;
+  max-width: none;
+}

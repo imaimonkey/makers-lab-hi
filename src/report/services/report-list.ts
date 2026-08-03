@@ -24,10 +24,6 @@ const PRIMARY_REPORT_SHORT_CONCLUSIONS: Record<string, string> = {
   'RPT-EVFIRE-001-20260228': '상품화 검토는 가능하나 책임주체와 요율자료 확인이 필요함',
 }
 
-/**
- * 원본 리포트에는 아직 실무 워크플로우 메타데이터가 없으므로 목록 표시용
- * 최소 메타데이터만 reportId에 매핑합니다. 향후 API/저장소로 교체할 지점입니다.
- */
 const PROTOTYPE_WORKFLOW_METADATA: Record<string, Pick<GeneratedReportListItem, 'workflowStatus' | 'priority'>> = {
   'RPT-EVFIRE-001-20260228': {
     workflowStatus: '실무자 미검토',
