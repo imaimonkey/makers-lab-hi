@@ -3,7 +3,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   calculateRiskExplorationScore,
   riskExplorationRecords,
-  type ExplorationCategory,
   type RiskExplorationMetricKey,
   type RiskExplorationRecord,
 } from '../../domain/risk/riskExplorationDemo'
@@ -13,14 +12,13 @@ import {
   type RiskCandidateQuantificationKey,
 } from '../../domain/risk/riskCandidateQuantification'
 import type { ScreeningCategory } from '../../domain/risk/riskScreeningInsights'
-import { riskLawTrackingItems } from '../../domain/risk/riskLawTracking'
 import { riskCandidateEvidenceSnapshots } from '../../domain/risk/riskCandidateEvidence'
 import { RiskLawTrackingPanel } from './RiskLawTrackingPanel'
 import type { DeveloperLawQueueItem, DeveloperRiskCatalogViewData } from './developerStep2Adapter'
 
 const categoryFilters: Array<{ key: ScreeningCategory; label: string }> = [
   { key: 'all', label: '전체' },
-  { key: 'individual', label: '개인 위험' },
+  { key: 'individual', label: '가계 위험' },
   { key: 'corporate', label: '기업 위험' },
   { key: 'legal', label: '법률 및 규제 위험' },
   { key: 'department', label: '사내 요청' },
@@ -64,14 +62,6 @@ function removeDetailMetricLabel(text: string) {
     .trim()
 }
 
-function isLawUpdateRelatedRecord(record: RiskExplorationRecord) {
-  return riskLawTrackingItems.some((item) => item.candidateIds?.includes(record.id))
-}
-
-function isLegalOnlyCandidate(record: RiskExplorationRecord) {
-  return record.categories.length === 1 && record.categories[0] === 'legal'
-}
-
 const screeningColumns: RiskCandidateQuantificationKey[] = ['market', 'fortuity', 'pml']
 
 function screeningScoreFor(record: RiskExplorationRecord, developerMode: boolean) {
@@ -90,6 +80,12 @@ function confirmationBadgeLabel(metricKey: RiskCandidateQuantificationKey) {
 
 function metricValueIsUnconfirmed(value: string) {
   return value.includes('확인 필요')
+}
+
+function renderCandidateSummary(record: RiskExplorationRecord) {
+  if (record.id !== 'ev-battery-fire' || !record.summary.includes('지하주차장')) return record.summary
+  const [firstLine, secondLine] = record.summary.split('지하주차장')
+  return <>{firstLine}<br />지하주차장{secondLine}</>
 }
 
 const CATEGORY_TABS_REVEAL_DISTANCE = 4
@@ -141,8 +137,8 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
         <td className="screening-rank">{index + 1}</td>
         <td className="screening-keyword">
           <strong>{record.title}</strong>
-          <small>{record.summary}</small>
-          <span>{record.tags.map((tag) => <i className={`screening-tag ${tagClass(tag)}`} key={tag}>{tag}</i>)}</span>
+          <small>{renderCandidateSummary(record)}</small>
+          <span>{record.secondaryTags.map((tag) => <i className={`screening-tag ${tagClass(tag)}`} key={tag}>{tag}</i>)}</span>
         </td>
         {screeningColumns.map((key) => {
           const metric = quantification[key]
@@ -248,7 +244,7 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
     : [
         record.gap,
         record.nextAction,
-        `${record.tags.join('·')} 대상의 제휴형 또는 특화 담보 구조 검토`,
+        `${record.secondaryTags.join('·')} 대상의 제휴형 또는 특화 담보 구조 검토`,
       ]
   const flowGroups = [
     { number: '01', title: '수요와 손해 파악', question: '보험을 필요로 하는 시장이 있고 손해를 계산할 수 있는가?', items: judgmentEvidence.slice(0, 2) },
@@ -261,7 +257,7 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
   return (
     <aside className="risk-screening-detail-panel" aria-label={`${record.title} 상세 평가`}>
       <div className="risk-screening-detail-topline">
-        <span>{record.tags[0] ?? '위험 후보'}</span>
+        <span>{record.secondaryTags[0] ?? '위험 후보'}</span>
         <small>상품화 우선순위 {rank}위</small>
       </div>
       <h4>{record.title}</h4>
@@ -327,12 +323,17 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
   const sortedRecords = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
     const filtered = (developerMode ? (sourceRecords ?? []) : (sourceRecords ?? riskExplorationRecords)).filter((record) => {
-      const matchesCategory = category === 'all' || category === 'individual' || category === 'corporate'
-        ? !isLegalOnlyCandidate(record) && (category === 'all' || record.categories.includes(category as ExplorationCategory))
-        : (category === 'legal' && isLawUpdateRelatedRecord(record))
-        || (category === 'department' && record.signalOrigin === 'department-intake')
-        || (category === 'customer' && record.signalOrigin === 'customer-intake')
-      const haystack = `${record.title} ${record.summary} ${record.tags.join(' ')}`.toLocaleLowerCase('ko-KR')
+      const matchesCategory = category === 'all'
+        ? true
+        : category === 'individual'
+          ? record.primaryCategory === 'personal'
+          : category === 'corporate'
+            ? record.primaryCategory === 'corporate'
+            : category === 'legal'
+              ? record.primaryCategory === 'regulatory'
+              : (category === 'department' && record.signalOrigin === 'department-intake')
+              || (category === 'customer' && record.signalOrigin === 'customer-intake')
+    const haystack = `${record.title} ${record.summary}`.toLocaleLowerCase('ko-KR')
       const matchesSource = sourceFilter === 'all' || record.sourceName === sourceFilter
       const collectedAt = record.collectedAt ? new Date(record.collectedAt).getTime() : Number.NaN
       const matchesPeriod = period === 'all' || (Number.isFinite(collectedAt) && collectedAt >= now - Number(period) * 24 * 60 * 60 * 1000)

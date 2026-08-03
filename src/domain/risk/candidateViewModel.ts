@@ -87,7 +87,7 @@ export function toCandidateListViewModel(record: RiskExplorationRecord): Candida
     title: record.title,
     summary: record.summary,
     categories: record.categories,
-    tags: record.tags,
+    tags: record.secondaryTags,
     metricScores: record.metricScores,
     screeningScore: {
       value: calculateRiskExplorationScore(record.metricScores),

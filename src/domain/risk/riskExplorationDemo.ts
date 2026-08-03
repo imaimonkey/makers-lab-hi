@@ -1,4 +1,5 @@
 export type ExplorationCategory = 'individual' | 'corporate' | 'legal' | 'department' | 'customer'
+export type PrimaryRiskCategory = 'personal' | 'corporate' | 'regulatory'
 export type RiskSignalOrigin = 'public-evidence' | 'department-intake' | 'customer-intake'
 
 export const riskExplorationMetricKeys = [
@@ -60,6 +61,9 @@ export type RiskExplorationRecord = {
   title: string
   summary: string
   tags: string[]
+  /** Legacy tag field retained for downstream contracts; use secondaryTags for screening display. */
+  secondaryTags: string[]
+  primaryCategory: PrimaryRiskCategory
   categories: ExplorationCategory[]
   demand: string
   fortuity: string
@@ -90,6 +94,32 @@ const MIN_METRIC_SCORE = 1
 const MAX_METRIC_SCORE = 5
 
 const clampMetricScore = (score: number) => Math.min(MAX_METRIC_SCORE, Math.max(MIN_METRIC_SCORE, score))
+
+const primaryCategoryByRiskId: Record<string, PrimaryRiskCategory> = {
+  'ai-transparency-obligation': 'regulatory',
+  'mydata-portability-demand': 'regulatory',
+  'heatwave-workplace-duty': 'regulatory',
+  'kuam-urban-pilot': 'regulatory',
+  'ai-voice-investigation': 'personal',
+  'medical-liability-insurance': 'regulatory',
+  'sns-impersonation-commerce': 'personal',
+  'ota-delivery-consumer-disputes': 'personal',
+  'ev-battery-fire': 'regulatory',
+  'generative-ai-copyright': 'regulatory',
+  'commercial-drone': 'regulatory',
+  'autonomous-level4': 'regulatory',
+  'deepfake-phishing': 'personal',
+  'urban-flooding': 'regulatory',
+  'enterprise-ransomware': 'corporate',
+  'ess-ups-battery-fire': 'corporate',
+  'heatwave-health-income-loss': 'personal',
+  'platform-worker-transit-accident': 'personal',
+}
+
+export function getPrimaryRiskCategory(id: string, categories: ExplorationCategory[] = []): PrimaryRiskCategory {
+  return primaryCategoryByRiskId[id]
+    ?? (categories.includes('legal') ? 'regulatory' : categories.includes('individual') ? 'personal' : 'corporate')
+}
 
 type EvidenceBackedRecordInput = {
   id: string
@@ -143,6 +173,8 @@ function createEvidenceBackedRecord(input: EvidenceBackedRecordInput): RiskExplo
     title: input.title,
     summary: input.summary,
     tags: input.tags,
+    secondaryTags: input.tags,
+    primaryCategory: getPrimaryRiskCategory(input.id, input.categories),
     categories: input.categories,
     demand: `${scoreLevel(metricScores.demand)} · ${demandPercent}%`,
     fortuity: `${scoreLevel(metricScores.fortuity)} · ${metricScores.fortuity}/5`,
@@ -332,6 +364,16 @@ export function calculateRiskExplorationScore(scores: RiskExplorationMetricScore
   }, 0)
 
   return total / riskExplorationMetricKeys.length
+}
+
+function normalizeRiskExplorationRecord(record: RiskExplorationRecord): RiskExplorationRecord {
+  const secondaryTags = record.secondaryTags ?? record.tags
+  return {
+    ...record,
+    primaryCategory: record.primaryCategory ?? getPrimaryRiskCategory(record.id, record.categories),
+    secondaryTags,
+    tags: secondaryTags,
+  }
 }
 
 /**
@@ -687,4 +729,4 @@ export const riskExplorationRecords: RiskExplorationRecord[] = ([
     nextAction: '산재·자동차보험 조정과 운행시간 기반 보장 조건 검토',
   },
   ...evidenceBackedRecords,
-] as RiskExplorationRecord[]).map((record) => ({ ...record, signalOrigin: inferSignalOrigin(record) }))
+] as RiskExplorationRecord[]).map((record) => normalizeRiskExplorationRecord({ ...record, signalOrigin: inferSignalOrigin(record) }))

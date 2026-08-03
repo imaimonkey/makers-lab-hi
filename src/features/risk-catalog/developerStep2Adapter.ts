@@ -1,5 +1,5 @@
 import { readStep2AnalysisResults, type SavedStep2AnalysisRow } from '../llm-util/util-2'
-import { type RiskExplorationMetricKey, type RiskExplorationMetricEvidence, type RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
+import { getPrimaryRiskCategory, type RiskExplorationMetricKey, type RiskExplorationMetricEvidence, type RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
 import type { ProductRisk } from '../../domain/risk/riskRadarDemo'
 import type { SampleRiskAssessment, SampleRiskCandidate, SampleRiskDetail, SampleRiskEvidence } from '../../domain/risk/sampleData'
 import type { RiskTheme } from '../../domain/risk/types'
@@ -446,6 +446,8 @@ function buildContentDerivedRecord(article: ArticleSourceRecord, index: number):
     title: article.title,
     summary: profile.summary,
     tags: profile.keywords.slice(0, 4),
+    secondaryTags: profile.keywords.slice(0, 4),
+    primaryCategory: profile.topic === '법률·사회보험' ? 'regulatory' : 'corporate',
     categories: [...categories],
     demand: display.demandVal,
     fortuity: display.fortVal,
@@ -546,7 +548,8 @@ export function buildDeveloperStep2Records(rows: SavedStep2AnalysisRow[], articl
     }
     return {
       id: `developer-${articleId}`, detailRiskId: `developer-${articleId}`, title,
-      summary: textValue(candidate.summary, article?.summary ?? actualCheckRequired), tags,
+      summary: textValue(candidate.summary, article?.summary ?? actualCheckRequired), tags, secondaryTags: tags,
+      primaryCategory: getPrimaryRiskCategory(`developer-${articleId}`, ['corporate']),
       categories: ['corporate'], demand: display.demandVal, fortuity: display.fortVal, accumulation: display.accumVal,
       measurability: display.measVal, adverseSelection: display.adverseVal, moralHazard: display.moralVal,
       dataConfidence: display.dataVal, legalExposure: display.riskLabel,
@@ -577,7 +580,7 @@ export function buildDeveloperProductRisks(records: RiskExplorationRecord[]): Pr
       keyword: record.title,
       audience: '개인·기업',
       target: record.summary,
-      industry: record.tags.join(' · ') || '확인 필요',
+      industry: record.secondaryTags.join(' · ') || '확인 필요',
       loss: record.summary,
       coverageGap: record.gap,
       market: marketOf(record.demand),
@@ -590,7 +593,7 @@ export function buildDeveloperProductRisks(records: RiskExplorationRecord[]): Pr
       score,
       mentions: 1,
       sourceCount: 1,
-      keywords: record.tags,
+      keywords: record.secondaryTags,
       trend: score > 0 ? Array.from({ length: 7 }, (_, point) => Math.max(12, Math.round(score * 16 + point * 3 + index))) : [],
       impact: record.summary,
       next: record.nextAction,
@@ -645,7 +648,7 @@ export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[
   const keywords = new Set<string>()
 
   articles.forEach((article) => keywords.add(article.title))
-  records.forEach((record) => record.tags.forEach((tag) => keywords.add(tag)))
+  records.forEach((record) => record.secondaryTags.forEach((tag) => keywords.add(tag)))
 
   for (const article of articles) {
     const articleRows = rowsByArticle.get(article.id) ?? []

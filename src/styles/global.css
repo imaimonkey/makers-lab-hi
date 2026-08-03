@@ -3057,13 +3057,39 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .risk-exploration-lens .risk-screening-list-heading span,
 .risk-exploration-lens .risk-screening-list-heading small { font-size: 10px; }
 .risk-exploration-lens .risk-screening-table th { font-size: 10px; }
+.risk-exploration-lens .risk-screening-table th:nth-child(3),
+.risk-exploration-lens .risk-screening-table th:nth-child(4),
+.risk-exploration-lens .risk-screening-table th:nth-child(5),
+.risk-exploration-lens .risk-screening-table th:nth-child(6) {
+  padding-left: 10px;
+  text-align: center !important;
+}
 .risk-exploration-lens .risk-screening-table td { font-size: 11px; }
+.risk-exploration-lens .risk-screening-table td:nth-child(3),
+.risk-exploration-lens .risk-screening-table td:nth-child(4),
+.risk-exploration-lens .risk-screening-table td:nth-child(5),
+.risk-exploration-lens .risk-screening-table td:nth-child(6) { text-align: center !important; }
+.risk-exploration-lens .risk-screening-table td:nth-child(3) > strong,
+.risk-exploration-lens .risk-screening-table td:nth-child(3) > small,
+.risk-exploration-lens .risk-screening-table td:nth-child(4) > strong,
+.risk-exploration-lens .risk-screening-table td:nth-child(4) > small,
+.risk-exploration-lens .risk-screening-table td:nth-child(5) > strong,
+.risk-exploration-lens .risk-screening-table td:nth-child(5) > small {
+  width: 100%;
+  text-align: center !important;
+}
+.risk-exploration-lens .risk-screening-table .risk-screening-score-wrap,
+.risk-exploration-lens .risk-screening-table .risk-screening-score-wrap > strong,
+.risk-exploration-lens .risk-screening-table .risk-screening-score-wrap > small,
+.risk-exploration-lens .risk-screening-table .risk-screening-score-wrap > em { text-align: center !important; }
+.risk-exploration-lens .risk-screening-table .risk-screening-score-wrap > i { width: 80%; }
 .risk-exploration-lens .risk-screening-table .screening-keyword > strong { font-size: 14px !important; }
 .risk-exploration-lens .risk-screening-table .screening-keyword > small { font-size: 11px !important; }
 .risk-exploration-lens .risk-screening-table .screening-metric-cell strong { font-size: 12px; }
 .risk-exploration-lens .risk-screening-table .screening-metric-cell small { font-size: 9px; }
 .risk-exploration-lens .risk-screening-detail-topline > span,
 .risk-exploration-lens .risk-screening-detail-topline > small { font-size: 10px; }
+.risk-exploration-lens .risk-screening-detail-topline > span { padding: 3px 6px; }
 .risk-exploration-lens .risk-screening-detail-panel h4 { font-size: 22px; line-height: 1.3; }
 .risk-exploration-lens .risk-screening-detail-description { font-size: 12px; line-height: 1.6; }
 .risk-exploration-lens .risk-screening-flow-card .risk-screening-flow-heading strong { font-size: 10px; }

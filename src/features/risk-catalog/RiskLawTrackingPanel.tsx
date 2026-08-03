@@ -296,9 +296,7 @@ export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperSt
     <section className="risk-law-tracking" aria-labelledby="risk-law-tracking-title">
       <div className="risk-law-tracking-sidebar">
         <div className="risk-law-filter-panel">
-          <label className="risk-law-search"><span className="sr-only">법령 검색</span><span aria-hidden="true">⌕</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void searchOfficial() }} placeholder="법령명, 소관부처, 키워드 검색" /></label>
-          <button type="button" className="secondary-action risk-law-api-search" onClick={() => void searchOfficial()} disabled={officialLoading}>{officialLoading ? '국가법령정보 조회 중...' : '국가법령정보 API 조회'}</button>
-          <button type="button" className="secondary-action risk-law-api-search" onClick={() => void searchPrecedents()} disabled={precedentLoading}>{precedentLoading ? '판례 API 조회 중...' : '국가법령정보 판례 API 조회'}</button>
+          <label className="risk-law-search"><span className="sr-only">법령 검색</span><span aria-hidden="true">⌕</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} aria-busy={officialLoading || precedentLoading} onKeyDown={(event) => { if (event.key === 'Enter') void (event.shiftKey ? searchPrecedents() : searchOfficial()) }} placeholder="법령명, 소관부처, 키워드 검색" /></label>
           {officialError ? <p className="developer-inline-error" role="alert">{officialError}</p> : null}
           {precedentError ? <p className="developer-inline-error" role="alert">{precedentError}</p> : null}
           <div className="risk-law-filter-selects">
