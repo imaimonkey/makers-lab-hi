@@ -3044,3 +3044,295 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .risk-screening-table .risk-screening-score-wrap > strong { font-size: 20px; }
 .workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > strong { font-size: 14px !important; line-height: 1.35; }
 .workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > small { margin-top: 6px; font-size: 11px !important; line-height: 1.5; }
+
+/* 위험 상세 의사결정 화면 고도화 */
+.sh-visual .detail-status-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: -8px 0 12px; }
+.sh-visual .detail-status-strip span { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 38px; padding: 8px 12px; border: 1px solid #dce7f1; border-radius: 10px; background: #fff; color: #64748b; font-size: 10px; }
+.sh-visual .detail-status-strip b { color: #64748b; font-weight: 700; }
+.sh-visual .detail-status-strip strong { color: #1d4ed8; font-size: 10px; }
+.sh-visual .detail-status-strip span:first-child strong { color: #c36b19; }
+.sh-visual .detail-status-strip span:last-child strong { color: #be5f54; }
+.sh-visual .detail-workflow { display: grid; grid-template-columns: minmax(0, 1fr) 22px minmax(0, 1fr) 22px minmax(0, 1fr) 22px minmax(0, 1fr); align-items: stretch; gap: 6px; margin: 12px 0 14px; padding: 0; border: 1px solid #dce7f1; border-radius: 12px; background: #fff; overflow: hidden; }
+.sh-visual .detail-workflow > div { display: grid; grid-template-columns: 23px minmax(0, 1fr); grid-template-rows: auto auto; align-content: center; column-gap: 8px; min-height: 58px; padding: 8px 12px; color: #64748b; }
+.sh-visual .detail-workflow > div > span { grid-row: span 2; align-self: center; display: grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; color: #fff; background: #b8c4d2; font-size: 10px; font-weight: 800; }
+.sh-visual .detail-workflow > div > strong { align-self: end; color: #52657d; font-size: 10px; }
+.sh-visual .detail-workflow > div > small { align-self: start; color: #94a3b8; font-size: 8px; }
+.sh-visual .detail-workflow > i { display: grid; place-items: center; color: #94a3b8; font-size: 21px; font-style: normal; }
+.sh-visual .detail-workflow .is-current { background: #eff6ff; box-shadow: inset 0 -2px 0 #2563eb; }
+.sh-visual .detail-workflow .is-current > span { background: #2563eb; }
+.sh-visual .detail-workflow .is-current > strong { color: #1d4ed8; }
+.sh-visual .risk-article-header { padding-bottom: 19px; }
+.sh-visual .risk-article-header h2 { color: #0f172a; }
+.sh-visual .risk-article-lead-grid { border-color: #dce7f1; }
+.sh-visual .risk-article-story, .sh-visual .risk-article-why { min-height: 170px; }
+.sh-visual .risk-article-verification-bar article:first-child { background: #f0fbf7; }
+.sh-visual .risk-article-verification-bar article:last-child { background: #fff8ef; }
+.sh-visual .risk-article-materials-grid { gap: 14px; }
+.sh-visual .risk-article-materials, .sh-visual .risk-article-productization { border-color: #dce7f1; }
+.sh-visual .risk-article-productization { background: #fbfdff; }
+.sh-visual .risk-article-check-list li { border-color: #e2eaf2; background: #fff; }
+.sh-visual .risk-article-check-list li > span { color: #2563eb; background: #eff6ff; }
+.sh-visual .detail-assessment-grid { margin-top: 14px; }
+.sh-visual .assessment-list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.sh-visual .assessment-row { min-width: 0; padding: 15px; border: 1px solid #dce7f1; border-radius: 10px; background: #fff; }
+.sh-visual .assessment-row > div:first-child { min-height: 53px; }
+.sh-visual .assessment-row > div:first-child strong { font-size: 12px; }
+.sh-visual .assessment-row .assessment-reason { min-height: 42px; }
+.sh-visual .assessment-row .assessment-quotes { min-height: 49px; }
+.sh-visual .assessment-row .assessment-logic-preview { grid-template-columns: 1fr; gap: 7px; }
+.sh-visual .assessment-row .assessment-logic-preview > div { display: flex; justify-content: space-between; gap: 8px; }
+.sh-visual .assessment-row .assessment-logic-preview strong { text-align: right; }
+.sh-visual .detail-decision-footer { display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: 16px; margin: 14px 0 18px; padding: 18px 20px; border: 1px solid #f0b27d; border-radius: 12px; background: linear-gradient(90deg, #fffaf4, #fff); }
+.sh-visual .detail-decision-footer-icon { display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid #f0a25c; border-radius: 50%; color: #e9782a; font-size: 22px; }
+.sh-visual .detail-decision-footer-copy .eyebrow { margin-bottom: 3px; color: #c77800; }
+.sh-visual .detail-decision-footer-copy h2 { margin: 0 0 3px; color: #c77800; font-size: 16px; }
+.sh-visual .detail-decision-footer-copy p:last-child { margin: 0; color: #64748b; font-size: 10px; line-height: 1.55; }
+.sh-visual .detail-decision-footer-actions { display: flex; align-items: center; gap: 8px; }
+.sh-visual .detail-decision-footer-actions a { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 13px; border: 1px solid #cbd9e8; border-radius: 8px; color: #174a86; background: #fff; font-size: 10px; font-weight: 800; text-decoration: none; }
+.sh-visual .detail-decision-footer-actions a:last-child { border-color: #2563eb; color: #fff; background: #2563eb; }
+@media (max-width: 1100px) { .sh-visual .assessment-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sh-visual .detail-decision-footer { grid-template-columns: 48px minmax(0, 1fr); } .sh-visual .detail-decision-footer-actions { grid-column: 2; } }
+@media (max-width: 700px) { .sh-visual .detail-status-strip, .sh-visual .assessment-list { grid-template-columns: 1fr; } .sh-visual .detail-workflow { grid-template-columns: 1fr; gap: 0; } .sh-visual .detail-workflow > i { display: none; } .sh-visual .detail-workflow > div { min-height: 49px; border-bottom: 1px solid #e7edf4; } .sh-visual .detail-workflow > div:last-child { border-bottom: 0; } .sh-visual .detail-decision-footer { grid-template-columns: 42px minmax(0, 1fr); } .sh-visual .detail-decision-footer-actions { grid-column: 1 / -1; flex-wrap: wrap; } }
+
+/* 시안 기준: 요약 3열 → 평가·근거 2열 */
+.sh-visual .detail-review-shell { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 14px; align-items: start; }
+.sh-visual .detail-review-shell > .risk-article-overview { display: contents; }
+.sh-visual .detail-overview-grid { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, .98fr) minmax(0, .98fr); align-items: start; gap: 10px; }
+.sh-visual .detail-overview-card { min-width: 0; min-height: 0; padding: 16px; border: 1px solid #dce7f1; border-radius: 12px; background: #fff; }
+.sh-visual .detail-card-heading { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 13px; }
+.sh-visual .detail-card-heading > span { display: grid; place-items: center; width: 21px; height: 21px; flex: 0 0 auto; border-radius: 50%; color: #fff; background: #2563eb; font: 800 10px/1 'DM Sans', sans-serif; }
+.sh-visual .detail-card-heading .risk-article-section-label { margin-bottom: 4px; color: #2563eb; }
+.sh-visual .detail-card-heading h3 { margin: 0; color: #0f172a; font-size: 14px; letter-spacing: -.03em; }
+.sh-visual .detail-confirmed-list { display: grid; gap: 8px; margin: 0; padding: 12px 13px 12px 28px; border: 1px solid #bfe8d9; border-radius: 9px; background: #f0fbf7; color: #52657d; font-size: 10px; line-height: 1.55; }
+.sh-visual .detail-confirmed-list li::marker { color: #15966d; }
+.sh-visual .detail-pending-box { margin-top: 9px; padding: 9px 11px; border: 1px solid #ffd4ba; border-radius: 9px; color: #9a5b2d; background: #fff8f1; font-size: 9px; line-height: 1.45; }
+.sh-visual .detail-pending-box strong { display: block; margin-bottom: 3px; color: #e1742a; font-size: 9px; }
+.sh-visual .detail-pending-box p { margin: 0; }
+.sh-visual .detail-mini-facts { display: grid; gap: 8px; }
+.sh-visual .detail-mini-facts > div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; padding: 10px; border: 1px solid #e3ebf3; border-radius: 9px; background: #fbfdff; }
+.sh-visual .detail-mini-facts strong { color: #2563eb; font-size: 10px; }
+.sh-visual .detail-mini-facts p { margin: 0; color: #52657d; font-size: 9px; line-height: 1.45; }
+.sh-visual .detail-check-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.sh-visual .detail-check-list li { display: grid; grid-template-columns: 14px minmax(0, 1fr); align-items: start; gap: 8px; padding: 9px 10px; border: 1px solid #e3ebf3; border-radius: 8px; color: #52657d; background: #fbfdff; font-size: 9px; line-height: 1.45; }
+.sh-visual .detail-check-list i { width: 12px; height: 12px; border: 1px solid #a9b7c8; border-radius: 3px; background: #fff; }
+.sh-visual .detail-product-frame { display: grid; gap: 7px; }
+.sh-visual .detail-product-frame > div { display: grid; grid-template-columns: 57px minmax(0, 1fr); gap: 8px; align-items: start; padding: 8px 9px; border: 1px solid #e3ebf3; border-radius: 8px; background: #fbfdff; }
+.sh-visual .detail-product-frame span { color: #2563eb; font-size: 8px; font-weight: 800; }
+.sh-visual .detail-product-frame strong { color: #52657d; font-size: 9px; font-weight: 600; line-height: 1.45; }
+.sh-visual .detail-product-checks { margin-top: 9px; border-top: 1px solid #e3ebf3; padding-top: 8px; }
+.sh-visual .detail-product-checks summary { color: #2563eb; cursor: pointer; font-size: 9px; font-weight: 800; list-style: none; }
+.sh-visual .detail-product-checks summary::before { content: '+'; display: inline-grid; place-items: center; width: 15px; height: 15px; margin-right: 5px; border: 1px solid #cbd9e8; border-radius: 50%; color: #ff6b35; }
+.sh-visual .detail-product-checks[open] summary::before { content: '−'; }
+.sh-visual .detail-product-checks .detail-check-list { margin-top: 9px; }
+.sh-visual .detail-evidence-panel { grid-column: 2; grid-row: 2; min-width: 0; padding: 18px; border: 1px solid #dce7f1; border-radius: 12px; background: #fff; }
+.sh-visual .detail-evidence-heading { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.sh-visual .detail-evidence-heading .risk-article-section-label { margin-bottom: 4px; color: #2563eb; }
+.sh-visual .detail-evidence-heading h3 { margin: 0; color: #0f172a; font-size: 16px; }
+.sh-visual .detail-evidence-heading p { margin: 6px 0 0; color: #64748b; font-size: 9px; line-height: 1.45; }
+.sh-visual .detail-evidence-heading > span { flex: 0 0 auto; height: fit-content; padding: 6px 8px; border: 1px solid #cbdff5; border-radius: 999px; color: #2563eb; background: #f3f8ff; font-size: 8px; font-weight: 800; }
+.sh-visual .detail-evidence-table { border-top: 1px solid #dce7f1; }
+.sh-visual .detail-evidence-row { display: grid; grid-template-columns: 62px minmax(0, 1fr) 78px 58px; gap: 8px; align-items: center; min-height: 48px; border-bottom: 1px solid #e8eef4; color: #52657d; font-size: 9px; }
+.sh-visual .detail-evidence-row--head { min-height: 30px; color: #94a3b8; font-size: 8px; }
+.sh-visual .detail-evidence-row > div { min-width: 0; display: grid; gap: 3px; }
+.sh-visual .detail-evidence-row strong { overflow: hidden; color: #334155; font-size: 9px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.sh-visual .detail-evidence-row small { overflow: hidden; color: #94a3b8; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.sh-visual .detail-evidence-kind { color: #2563eb; font-size: 8px; }
+.sh-visual .detail-evidence-row em, .sh-visual .detail-evidence-row button { justify-self: start; padding: 5px 6px; border: 1px solid #f4c596; border-radius: 5px; color: #bd6a21; background: #fff8ef; font-size: 8px; font-style: normal; white-space: nowrap; }
+.sh-visual .detail-evidence-row em.is-pending, .sh-visual .detail-evidence-row button { border-color: #dce7f1; color: #64748b; background: #f8fafc; }
+.sh-visual .detail-evidence-row a { justify-self: start; color: #2563eb; font-size: 8px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.sh-visual .detail-evidence-row button { cursor: not-allowed; }
+.sh-visual .detail-evidence-empty { grid-column: 1 / -1; padding: 24px 0; color: #94a3b8; font-size: 10px; text-align: center; }
+.sh-visual .detail-evidence-footnote { margin: 12px 0 0; color: #94a3b8; font-size: 8px; }
+.sh-visual .detail-review-shell .detail-assessment-grid { grid-column: 1; grid-row: 2; margin: 0; }
+.sh-visual .detail-review-shell .assessment-panel { height: 100%; padding: 18px; }
+.sh-visual .detail-review-shell .assessment-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.sh-visual .detail-review-shell .assessment-row { grid-template-columns: 1fr; min-height: 0; padding: 12px; border-radius: 9px; }
+.sh-visual .detail-review-shell .assessment-row > div:first-child { min-height: 0; }
+.sh-visual .detail-review-shell .assessment-row > div:first-child small { display: none; }
+.sh-visual .detail-review-shell .assessment-row > div:first-child strong { display: block; margin-bottom: 2px; font-size: 12px; }
+.sh-visual .detail-review-shell .assessment-bar { width: 100%; min-width: 0; }
+.sh-visual .detail-review-shell .assessment-bar strong { flex: 0 0 auto; min-width: 39px; }
+.sh-visual .detail-review-shell .assessment-row .assessment-quotes, .sh-visual .detail-review-shell .assessment-row .assessment-logic-preview, .sh-visual .detail-review-shell .assessment-row details { display: none; }
+.sh-visual .detail-review-shell .assessment-row .assessment-reason { min-height: 32px; margin-top: 8px; font-size: 9px; }
+@media (max-width: 1050px) { .sh-visual .detail-overview-grid { grid-template-columns: 1fr 1fr; } .sh-visual .detail-overview-card--summary { grid-column: 1 / -1; } .sh-visual .detail-review-shell { grid-template-columns: 1fr; } .sh-visual .detail-review-shell .detail-assessment-grid, .sh-visual .detail-evidence-panel { grid-column: 1; grid-row: auto; } }
+@media (max-width: 700px) { .sh-visual .detail-overview-grid { grid-template-columns: 1fr; } .sh-visual .detail-overview-card--summary { grid-column: auto; } .sh-visual .detail-evidence-row { grid-template-columns: 54px minmax(0, 1fr); padding: 8px 0; } .sh-visual .detail-evidence-row--head, .sh-visual .detail-evidence-row > em, .sh-visual .detail-evidence-row > a, .sh-visual .detail-evidence-row > button { display: none; } }
+.sh-visual .detail-workspace { margin-top: 14px; }
+.sh-visual .detail-judgment-detail { border-color: #dce7f1; border-radius: 12px; background: #fff; }
+.sh-visual .detail-judgment-detail-heading { padding: 18px 20px 15px; }
+.sh-visual .detail-judgment-detail-heading h2 { color: #0f172a; font-size: 17px; }
+.sh-visual .detail-judgment-detail-heading p:last-child { color: #64748b; font-size: 9px; }
+.sh-visual .detail-judgment-detail-content { padding: 0 20px 20px; }
+.sh-visual .detail-judgment-callout { border: 1px solid #cbdff5; border-radius: 10px; background: #f5f9ff; }
+.sh-visual .detail-judgment-callout strong { color: #0f172a; font-size: 15px; }
+.sh-visual .detail-judgment-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.sh-visual .detail-judgment-summary-grid article { min-width: 0; padding: 14px; border: 1px solid #e1eaf3; border-radius: 10px; background: #fbfdff; }
+.sh-visual .detail-judgment-summary-grid article > span { display: block; margin-bottom: 7px; color: #2563eb; font-size: 9px; font-weight: 800; }
+.sh-visual .detail-judgment-summary-grid article > strong { display: block; margin: -1px 0 6px; color: #0f172a; font-size: 12px; }
+.sh-visual .detail-judgment-summary-grid article p, .sh-visual .detail-judgment-summary-grid article li { color: #52657d; font-size: 9px; line-height: 1.6; }
+.sh-visual .detail-judgment-summary-grid article p { margin: 0; }
+.sh-visual .detail-judgment-summary-grid article ul { display: grid; gap: 6px; margin: 0; padding-left: 16px; }
+@media (max-width: 700px) { .sh-visual .detail-judgment-summary-grid { grid-template-columns: 1fr; } }
+
+/* 위험 상세: 실무 검토용 가독성 보강 */
+.sh-visual .risk-hero-main > p { max-width: 900px; font-size: 14px; line-height: 1.85; color: #334155; }
+.sh-visual .risk-hero h2 { font-size: clamp(32px, 3.2vw, 48px); line-height: 1.1; }
+.sh-visual .risk-facts span { font-size: 14px; line-height: 1.55; }
+.sh-visual .risk-facts small { font-size: 11px; margin-bottom: 8px; }
+.sh-visual .risk-score-card p { font-size: 12px; line-height: 1.7; }
+.sh-visual .risk-article-header h2 { font-size: 24px; }
+.sh-visual .risk-article-dek,
+.sh-visual .risk-article-event,
+.sh-visual .risk-article-why > p,
+.sh-visual .risk-article-review-lead,
+.sh-visual .risk-article-section-note { font-size: 12px; line-height: 1.8; }
+.sh-visual .risk-article-story h3,
+.sh-visual .risk-article-why h3,
+.sh-visual .risk-article-analysis h3,
+.sh-visual .risk-article-review-grid h3,
+.sh-visual .risk-article-materials-grid h3 { font-size: 19px; }
+.sh-visual .assessment-reason,
+.sh-visual .assessment-logic-grid dd,
+.sh-visual .assessment-logic-preview strong { font-size: 12px; line-height: 1.75; }
+.sh-visual .detail-judgment-callout p,
+.sh-visual .detail-judgment-summary-grid article p,
+.sh-visual .detail-judgment-summary-grid article li { font-size: 12px; line-height: 1.75; }
+
+/* 상품개발 사전 브리핑: 균등한 카드 묶음 대신 읽는 순서가 있는 리포트 레이아웃 */
+.sh-visual .detail-review-shell { display: block; }
+.sh-visual .detail-review-shell > .risk-brief-report { display: grid; gap: 14px; }
+.sh-visual .brief-report-lead { display: grid; grid-template-columns: minmax(0, 1.38fr) minmax(260px, .62fr); gap: 14px; }
+.sh-visual .brief-thesis,
+.sh-visual .brief-decision-card,
+.sh-visual .brief-risk-panel,
+.sh-visual .brief-product-panel,
+.sh-visual .brief-evidence-panel { min-width: 0; border: 1px solid #d8e4ef; border-radius: 14px; background: #fff; }
+.sh-visual .brief-thesis { padding: 24px 26px; border-left: 4px solid #2563eb; background: linear-gradient(135deg, #fff 0%, #f7fbff 100%); }
+.sh-visual .brief-label { margin: 0 0 8px; color: #2563eb; font-size: 9px; font-weight: 800; letter-spacing: .04em; }
+.sh-visual .brief-thesis h2 { max-width: 760px; margin: 0; color: #0f172a; font-size: 23px; font-weight: 800; letter-spacing: -.045em; line-height: 1.38; }
+.sh-visual .brief-thesis > p:not(.brief-label) { max-width: 780px; margin: 13px 0 0; color: #52657d; font-size: 11px; line-height: 1.65; }
+.sh-visual .brief-thesis-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+.sh-visual .brief-thesis-tags span { padding: 5px 8px; border: 1px solid #d9e4ef; border-radius: 999px; color: #52657d; background: #fff; font-size: 8px; }
+.sh-visual .brief-decision-card { padding: 22px; color: #fff; background: #0b2b52; }
+.sh-visual .brief-decision-card .brief-label { color: #9fc5ff; }
+.sh-visual .brief-decision-card > strong { display: block; color: #ff9a50; font-size: 22px; letter-spacing: -.04em; }
+.sh-visual .brief-decision-card > p:not(.brief-label) { margin: 9px 0 18px; color: #c8d7e8; font-size: 10px; line-height: 1.6; }
+.sh-visual .brief-decision-card dl { display: grid; gap: 0; margin: 0; border-top: 1px solid rgba(255,255,255,.18); }
+.sh-visual .brief-decision-card dl > div { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+.sh-visual .brief-decision-card dt { color: #9fb4cb; font-size: 9px; }
+.sh-visual .brief-decision-card dd { margin: 0; color: #fff; font-size: 9px; font-weight: 800; text-align: right; }
+.sh-visual .brief-report-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.sh-visual .brief-risk-panel, .sh-visual .brief-product-panel, .sh-visual .brief-evidence-panel { padding: 20px; }
+.sh-visual .brief-risk-panel header, .sh-visual .brief-product-panel header { margin-bottom: 16px; }
+.sh-visual .brief-risk-panel h3, .sh-visual .brief-product-panel h3, .sh-visual .brief-evidence-panel h3 { margin: 0; color: #0f172a; font-size: 17px; letter-spacing: -.04em; }
+.sh-visual .brief-risk-panel header > p:not(.brief-label), .sh-visual .brief-product-panel header > p:not(.brief-label), .sh-visual .brief-evidence-heading p:not(.brief-label) { margin: 7px 0 0; color: #64748b; font-size: 9px; line-height: 1.55; }
+.sh-visual .brief-fact-list, .sh-visual .brief-product-list { margin: 0; border-top: 1px solid #dce7f1; }
+.sh-visual .brief-fact-list > div, .sh-visual .brief-product-list > div { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 14px; padding: 13px 0; border-bottom: 1px solid #e7eef5; }
+.sh-visual .brief-fact-list dt, .sh-visual .brief-product-list dt { color: #2563eb; font-size: 9px; font-weight: 800; }
+.sh-visual .brief-fact-list dd, .sh-visual .brief-product-list dd { margin: 0; color: #334155; font-size: 10px; line-height: 1.55; }
+.sh-visual .brief-next-checks { margin-top: 13px; padding-top: 13px; border-top: 1px solid #dce7f1; }
+.sh-visual .brief-next-checks summary { cursor: pointer; color: #2563eb; font-size: 9px; font-weight: 800; list-style: none; }
+.sh-visual .brief-next-checks summary::before { content: '+'; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: 6px; border: 1px solid #bfd1e3; border-radius: 50%; color: #f07d33; }
+.sh-visual .brief-next-checks[open] summary::before { content: '−'; }
+.sh-visual .brief-next-checks ul { display: grid; gap: 7px; margin: 11px 0 0; padding-left: 18px; color: #52657d; font-size: 9px; line-height: 1.5; }
+.sh-visual .brief-evidence-heading { display: flex; justify-content: space-between; gap: 14px; margin-bottom: 15px; }
+.sh-visual .brief-evidence-heading > span { align-self: flex-start; flex: 0 0 auto; padding: 6px 9px; border: 1px solid #cbdff5; border-radius: 999px; color: #2563eb; background: #f5f9ff; font-size: 8px; font-weight: 800; }
+.sh-visual .brief-evidence-table { border-top: 1px solid #dce7f1; }
+.sh-visual .brief-evidence-row { display: grid; grid-template-columns: 72px minmax(0, 1fr) 100px 72px; gap: 10px; align-items: center; min-height: 52px; border-bottom: 1px solid #e7eef5; color: #52657d; font-size: 9px; }
+.sh-visual .brief-evidence-row--head { min-height: 31px; color: #94a3b8; font-size: 8px; }
+.sh-visual .brief-evidence-row > div { display: grid; gap: 3px; min-width: 0; }
+.sh-visual .brief-evidence-row strong { overflow: hidden; color: #334155; font-size: 9px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.sh-visual .brief-evidence-row small { overflow: hidden; color: #94a3b8; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.sh-visual .brief-evidence-kind { color: #2563eb; font-size: 8px; font-weight: 700; }
+.sh-visual .brief-evidence-row em { justify-self: start; padding: 5px 6px; border: 1px solid #f5c99f; border-radius: 5px; color: #b96a26; background: #fff8ef; font-size: 8px; font-style: normal; white-space: nowrap; }
+.sh-visual .brief-evidence-row a, .sh-visual .brief-evidence-row button { justify-self: start; padding: 5px 6px; border: 1px solid #cbdff5; border-radius: 5px; color: #2563eb; background: #f5f9ff; font-size: 8px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.sh-visual .brief-evidence-row button { color: #64748b; background: #f8fafc; cursor: not-allowed; }
+.sh-visual .brief-evidence-empty { grid-column: 1 / -1; margin: 0; padding: 23px 0; color: #94a3b8; font-size: 10px; text-align: center; }
+.sh-visual .brief-analytics-panel { padding: 20px; border: 1px solid #d8e4ef; border-radius: 14px; background: #f8fbff; }
+.sh-visual .brief-analytics-heading { display: flex; justify-content: space-between; gap: 14px; margin-bottom: 15px; }
+.sh-visual .brief-analytics-heading h3 { margin: 0; color: #0f172a; font-size: 17px; letter-spacing: -.04em; }
+.sh-visual .brief-analytics-heading p:not(.brief-label) { margin: 7px 0 0; color: #64748b; font-size: 9px; line-height: 1.55; }
+.sh-visual .brief-analytics-heading > span { align-self: flex-start; flex: 0 0 auto; padding: 6px 9px; border: 1px solid #cbdff5; border-radius: 999px; color: #2563eb; background: #fff; font-size: 8px; font-weight: 800; }
+.sh-visual .brief-analytics-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.sh-visual .brief-analytic-card { min-width: 0; min-height: 132px; padding: 15px; border: 1px solid #dce7f1; border-radius: 10px; background: #fff; }
+.sh-visual .brief-analytic-label { margin: 0 0 11px; color: #2563eb; font-size: 9px; font-weight: 800; }
+.sh-visual .brief-analytic-value { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.sh-visual .brief-analytic-value strong { overflow: hidden; color: #0f172a; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.sh-visual .brief-analytic-value b { flex: 0 0 auto; color: #174a86; font-size: 22px; letter-spacing: -.04em; }
+.sh-visual .brief-analytic-value b small { margin-left: 2px; color: #94a3b8; font-size: 9px; font-weight: 700; letter-spacing: 0; }
+.sh-visual .brief-analytic-bar { height: 7px; margin: 12px 0 11px; overflow: hidden; border-radius: 999px; background: #e6edf5; }
+.sh-visual .brief-analytic-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2563eb, #4f8ef7); }
+.sh-visual .brief-analytic-card--coverage .brief-analytic-bar i { background: linear-gradient(90deg, #0f9f78, #55cba6); }
+.sh-visual .brief-analytic-card--gate { border-color: #f4c596; background: #fffaf4; }
+.sh-visual .brief-analytic-card--gate .brief-analytic-label { color: #d36b1c; }
+.sh-visual .brief-analytic-card--gate > strong { display: block; color: #334155; font-size: 13px; line-height: 1.45; }
+.sh-visual .brief-analytic-card > p:last-child { margin: 0; color: #64748b; font-size: 9px; line-height: 1.55; }
+.sh-visual .brief-analytic-card--gate > p:last-child { margin-top: 13px; }
+.sh-visual .detail-review-shell > .detail-assessment-grid { margin-top: 14px; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-panel { padding: 20px; }
+@media (max-width: 900px) { .sh-visual .brief-report-lead, .sh-visual .brief-report-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .sh-visual .brief-analytics-grid { grid-template-columns: 1fr 1fr; } .sh-visual .brief-analytic-card--gate { grid-column: 1 / -1; } }
+@media (max-width: 600px) { .sh-visual .brief-thesis, .sh-visual .brief-decision-card, .sh-visual .brief-risk-panel, .sh-visual .brief-product-panel, .sh-visual .brief-evidence-panel, .sh-visual .brief-analytics-panel { padding: 16px; } .sh-visual .brief-thesis h2 { font-size: 19px; } .sh-visual .brief-evidence-row { grid-template-columns: 58px minmax(0, 1fr); gap: 7px; padding: 8px 0; } .sh-visual .brief-evidence-row--head, .sh-visual .brief-evidence-row > em, .sh-visual .brief-evidence-row > a, .sh-visual .brief-evidence-row > button { display: none; } .sh-visual .brief-analytics-grid { grid-template-columns: 1fr; } .sh-visual .brief-analytic-card--gate { grid-column: auto; } }
+
+/* 반복되는 상태 문구와 구현용 점수 설명은 숨기고, 검토자가 읽을 정보만 남긴다. */
+.sh-visual .detail-review-shell .assessment-evidence-status,
+.sh-visual .detail-review-shell .assessment-bar em { display: none; }
+.sh-visual .detail-decision-footer { grid-template-columns: minmax(0, 1fr) auto; }
+.sh-visual .detail-decision-footer-actions { grid-column: auto; }
+@media (max-width: 1100px) { .sh-visual .detail-decision-footer { grid-template-columns: minmax(0, 1fr) auto; } .sh-visual .detail-decision-footer-actions { grid-column: auto; } }
+@media (max-width: 700px) { .sh-visual .detail-decision-footer { grid-template-columns: 1fr; } .sh-visual .detail-decision-footer-actions { grid-column: auto; } }
+
+/* 분석 모듈 시각 고도화: 세 개의 카드를 하나의 분석 보드처럼 묶는다. */
+.sh-visual .brief-analytics-panel { position: relative; overflow: hidden; padding: 0; border: 1px solid #0d3665; border-radius: 16px; background: #0b2b52; box-shadow: 0 12px 28px rgba(15, 53, 94, .08); }
+.sh-visual .brief-analytics-panel::after { position: absolute; top: -70px; right: 7%; width: 260px; height: 180px; border-radius: 50%; background: rgba(53, 123, 221, .15); content: ''; filter: blur(6px); pointer-events: none; }
+.sh-visual .brief-analytics-heading { position: relative; z-index: 1; align-items: flex-end; margin: 0; padding: 20px 22px 18px; }
+.sh-visual .brief-analytics-heading .brief-label { color: #9fc5ff; }
+.sh-visual .brief-analytics-heading h3 { color: #fff; font-size: 18px; }
+.sh-visual .brief-analytics-heading p:not(.brief-label) { color: #c8d7e8; }
+.sh-visual .brief-analytics-heading > span { border-color: rgba(255,255,255,.2); color: #dbeafe; background: rgba(255,255,255,.08); }
+.sh-visual .brief-analytics-grid { position: relative; z-index: 1; gap: 1px; background: #d8e5f2; }
+.sh-visual .brief-analytic-card { min-height: 148px; padding: 18px 18px 17px; border: 0; border-radius: 0; background: #fff; }
+.sh-visual .brief-analytic-card--signal { background: linear-gradient(145deg, #fff 0%, #f2f7ff 100%); }
+.sh-visual .brief-analytic-card--signal::before, .sh-visual .brief-analytic-card--coverage::before, .sh-visual .brief-analytic-card--gate::before { display: block; width: 26px; height: 3px; margin-bottom: 14px; border-radius: 999px; background: #2563eb; content: ''; }
+.sh-visual .brief-analytic-card--coverage::before { background: #1aa37c; }
+.sh-visual .brief-analytic-card--gate::before { background: #f28a3d; }
+.sh-visual .brief-analytic-card--gate { border: 0; border-radius: 0; background: #fffaf4; }
+.sh-visual .brief-analytic-label { margin-bottom: 10px; color: #52657d; font-size: 9px; letter-spacing: .02em; }
+.sh-visual .brief-analytic-card--gate .brief-analytic-label { color: #d36b1c; }
+.sh-visual .brief-analytic-value strong { font-size: 14px; }
+.sh-visual .brief-analytic-value b { font-size: 24px; }
+.sh-visual .brief-analytic-bar { height: 6px; margin-top: 13px; background: #dfe8f2; }
+.sh-visual .brief-analytic-card > p:last-child { max-width: 280px; font-size: 9px; line-height: 1.6; }
+.sh-visual .brief-analytic-card--gate > strong { max-width: 285px; font-size: 13px; line-height: 1.55; }
+
+/* 평가·근거 영역도 분석 보드와 같은 밀도와 대비로 정리한다. */
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-panel { border-color: #d6e2ee; border-radius: 16px; box-shadow: 0 8px 22px rgba(15, 53, 94, .04); }
+.sh-visual .detail-review-shell > .detail-assessment-grid .panel-heading { align-items: flex-end; padding-bottom: 16px; border-bottom: 1px solid #dfe8f1; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .panel-heading h2 { font-size: 20px; letter-spacing: -.045em; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .panel-heading-description { max-width: 660px; color: #64748b; line-height: 1.6; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .updated-label { border-color: #cbdff5; color: #2563eb; background: #f5f9ff; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-list { padding-top: 14px; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row { position: relative; overflow: hidden; min-height: 154px; padding: 18px 20px 16px 22px; border-color: #dbe6f0; border-radius: 12px; background: #fbfdff; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row::before { position: absolute; top: 0; bottom: 0; left: 0; width: 3px; background: #2563eb; content: ''; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row:nth-child(2)::before { background: #f28a3d; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row:nth-child(3)::before { background: #1aa37c; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row:nth-child(4)::before { background: #7c6ee6; }
+.sh-visual .brief-evidence-panel { border-radius: 16px; box-shadow: 0 8px 22px rgba(15, 53, 94, .04); }
+.sh-visual .brief-evidence-row:not(.brief-evidence-row--head):hover { background: #f7fbff; }
+.sh-visual .brief-evidence-row em { border-color: #f3c18f; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .panel-heading-description { font-size: 10px; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row > div:first-child strong { color: #0f172a; font-size: 14px; letter-spacing: -.025em; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-heading-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-rank { flex: 0 0 auto; padding: 4px 7px; border: 1px solid #cbdff5; border-radius: 999px; color: #2563eb; background: #f5f9ff; font-size: 8px; font-weight: 800; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-bar { gap: 12px; margin-top: 8px; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-bar > span { height: 8px; border-radius: 999px; background: #e3ebf4; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-bar > span i { border-radius: inherit; background: #174a86; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-bar strong { min-width: 58px; color: #174a86; font-size: 21px; letter-spacing: -.04em; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-bar strong small { margin-left: 2px; color: #94a3b8; font-size: 9px; letter-spacing: 0; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-reason { display: grid; grid-template-columns: 66px minmax(0, 1fr); align-items: start; gap: 10px; min-height: 0; margin-top: 14px; color: #52657d; font-size: 10px; line-height: 1.65; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-reason b { color: #2563eb; font-size: 9px; white-space: nowrap; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row details { display: block; grid-column: 1 / -1; margin-top: 2px; border-top: 1px dashed #dce7f1; padding-top: 9px; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row details > summary { width: fit-content; cursor: pointer; color: #2563eb; font-size: 9px; font-weight: 800; list-style: none; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row details > summary::-webkit-details-marker { display: none; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row details > summary::before { content: '+'; display: inline-grid; place-items: center; width: 15px; height: 15px; margin-right: 5px; border: 1px solid #cbd9e8; border-radius: 50%; color: #f28a3d; font-size: 11px; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row details[open] > summary::before { content: '−'; }
+.sh-visual .detail-review-shell > .detail-assessment-grid .assessment-row details[open] .assessment-logic-grid { margin-top: 10px; }
+@media (max-width: 600px) { .sh-visual .brief-analytics-heading { align-items: flex-start; flex-direction: column; } .sh-visual .brief-analytics-heading > span { align-self: flex-start; } }

@@ -75,7 +75,7 @@ const riskContextById: Record<string, RiskContext> = {
     theme: 'ai-digital',
     themeLabel: 'AI·디지털',
     exposedParty: 'AI 활용 기업·콘텐츠 제작사·저작권자',
-    primaryLoss: '법률검토·소송 방어비용·손해배상금·매출 손실',
+    primaryLoss: '법률 검토·소송 방어비용·손해배상금·매출 손실',
   },
   'commercial-drone': {
     theme: 'mobility',
@@ -110,8 +110,8 @@ const riskContextById: Record<string, RiskContext> = {
   'ess-ups-battery-fire': {
     theme: 'climate-energy',
     themeLabel: '에너지·기업',
-    exposedParty: '데이터센터·공장·설비 운영자',
-    primaryLoss: '화재 재물손해·장시간 운영중단·배상책임',
+    exposedParty: '데이터센터·공장·ESS 운영자·시설 소유자',
+    primaryLoss: '배터리·설비 재물손해·영업중단·대물 배상책임',
   },
   'heatwave-health-income-loss': {
     theme: 'health-lifestyle',
@@ -292,6 +292,18 @@ function verifiedOfficialEvidence(record: RiskExplorationRecord): SampleRiskEvid
 }
 
 const linkedEvidenceByRiskId: Record<string, SampleRiskEvidence[]> = {
+  'ess-ups-battery-fire': [
+    linkedEvidence(
+      'ess-ups-battery-fire-evidence-nfa',
+      '정부 조사자료',
+      'regulation',
+      '산업통상자원부·소방청',
+      'ESS 화재사고 원인조사 및 종합안전관리대책',
+      'https://www.nfa.go.kr/nfa/news/pressrelease/press/?cntId=525&mode=view&pageIdx=1&searchCondition=all',
+      ['risk:ess-ups-battery-fire', 'assessment:severity', 'assessment:blind-spot'],
+      '23개 사고현장 조사 결과를 담은 공개 자료입니다. 현재 시설의 사고확률·보험손해액을 직접 산출한 자료는 아니므로 개별 인수 판단에는 추가 자료가 필요합니다.',
+    ),
+  ],
   'generative-ai-copyright': [
     linkedEvidence(
       'generative-ai-copyright-evidence-kisa',
@@ -354,7 +366,7 @@ function buildEvidence(record: RiskExplorationRecord): SampleRiskEvidence[] {
       record,
       'gap',
       '검증 과제',
-      `${record.title} 데이터·보장 공백 확인`,
+      record.detailRiskId === 'generative-ai-copyright' ? '생성형 AI 저작권 관련 자료·보장 공백 확인' : `${record.title} 데이터·보장 공백 확인`,
       record.gap,
       [`risk:${record.detailRiskId}`, 'decision:gap-review'],
       '기존 상품·약관·공식 손해 통계를 확인하면 공백 가설이 축소되거나 반증될 수 있습니다.',
@@ -479,15 +491,19 @@ function buildDecision(record: RiskExplorationRecord) {
 function buildDetail(record: RiskExplorationRecord): SampleRiskDetail {
   const context = riskContextById[record.detailRiskId] ?? fallbackContext
   return {
-    riskStatement: `${record.summary}과 관련된 신규 위험 후보입니다. 실제 손해사례와 기존 약관의 적용 여부는 공식 자료와 국내 사례 확인이 필요합니다.`,
+    riskStatement: record.detailRiskId === 'ess-ups-battery-fire'
+      ? 'ESS·UPS 배터리의 열폭주와 화재가 설비 손해를 넘어 데이터센터·공장의 장시간 운영중단으로 이어질 수 있는 위험 후보입니다. 실제 사고 원인과 손해 규모, 기존 약관의 적용 여부는 시설별 자료와 국내 사고사례 확인이 필요합니다.'
+      : record.detailRiskId === 'generative-ai-copyright'
+      ? '생성형 AI 활용 과정에서 발생하는 저작권 분쟁과 학습 데이터·생성물의 권리 책임을 검토합니다. 실제 손해사례와 기존 약관의 적용 여부는 공식 자료와 국내 사례 확인이 필요합니다.'
+      : `${record.summary}과 관련된 신규 위험 후보입니다. 실제 손해사례와 기존 약관의 적용 여부는 공식 자료와 국내 사례 확인이 필요합니다.`,
     exposedParty: context.exposedParty,
     primaryLoss: context.primaryLoss,
     ...buildDecision(record),
     decisionChecks: [
       record.nextAction,
       record.gap,
-      '공식 통계·원문과 자료 작성일 확인',
-      '기존 상품·약관의 보장 범위와 책임 주체 확인',
+      record.detailRiskId === 'ess-ups-battery-fire' ? '충전 상태·설치 장소·BMS 이상 이력별 사고 빈도 확인' : '공식 통계·원문과 자료 작성일 확인',
+      record.detailRiskId === 'ess-ups-battery-fire' ? '재물손해·영업중단·제3자 손해의 보장 범위와 누적한도 확인' : '기존 상품·약관의 보장 범위와 책임 주체 확인',
     ],
     assessments: buildAssessments(record),
     evidence: buildEvidence(record),
@@ -532,4 +548,4 @@ export function resolveSampleRiskId(riskId?: string): string | undefined {
   return sampleRiskAliases[riskId] ?? riskId
 }
 
-export const sampleOnlyNotice = '예시 데이터 · 실제 내부 운영 데이터 아님'
+export const sampleOnlyNotice = '예시 데이터 · 실제 운영 데이터가 아닙니다'

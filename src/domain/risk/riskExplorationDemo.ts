@@ -397,7 +397,7 @@ export const riskExplorationRecords: RiskExplorationRecord[] = ([
     id: 'generative-ai-copyright',
     detailRiskId: 'generative-ai-copyright',
     title: '생성형 AI 저작권',
-    summary: '생성형 AI 활용 과정의 저작권 분쟁과 학습데이터·생성물의 권리 책임',
+    summary: '생성형 AI 활용 과정의 저작권 분쟁과 학습 데이터·생성물의 권리 책임',
     tags: ['기업', '내부책임'],
     categories: ['corporate', 'legal', 'department'],
     demand: '높음 · 78%',

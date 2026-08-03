@@ -95,10 +95,10 @@ export function buildAiQualitativeSummary(risk: SampleRiskCandidate, detail: Sam
   const blindSpot = getAssessmentScore(detail, '보험 사각지대 가능성', 50)
   const confidence = getAssessmentScore(detail, '근거 신뢰도', 50)
   const signalRead = risk.signalStrength >= 80
-    ? '수요 신호가 강하게 나타나'
+    ? '위험 신호가 강하게 나타나'
     : risk.signalStrength >= 65
-      ? '수요 신호가 비교적 뚜렷하게 나타나'
-      : '수요 신호가 관찰되고 있어'
+      ? '위험 신호가 비교적 뚜렷하게 나타나'
+      : '위험 신호가 관찰되고 있어'
   const lossRead = severity >= 70
     ? '사고가 발생했을 때 손실 규모와 누적 영향을 함께 살펴볼 필요가 있습니다.'
     : '손실이 실제로 얼마나 커질지는 추가 확인이 필요합니다.'
@@ -109,7 +109,7 @@ export function buildAiQualitativeSummary(risk: SampleRiskCandidate, detail: Sam
     ? '다만 공식 원문과 실제 손실 데이터를 확인하기 전에는 가설로 봅니다.'
     : '근거 신뢰도가 아직 충분하지 않아 공식 원문·독립 출처·자료 작성일 확인 전에는 판단을 보류합니다.'
 
-  return `‘${risk.title}’ 후보는 ${signalRead} 우선 확인할 가치가 있습니다. ${lossRead} ${gapRead} ${evidenceRead}`
+  return `현재 자료에서 ‘${risk.title}’ 관련 ${signalRead} 우선 검토 대상으로 분류했습니다. ${lossRead} ${gapRead} ${evidenceRead}`
 }
 
 export function buildAssessmentAiSummary(item: SampleRiskAssessment): string {
