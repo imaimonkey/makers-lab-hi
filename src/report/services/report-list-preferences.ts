@@ -1,6 +1,5 @@
 export type ReportListPreference = {
   pinned: boolean
-  reviewed: boolean
 }
 
 export type ReportListPreferences = Record<string, ReportListPreference>
@@ -15,7 +14,6 @@ const normalizePreference = (value: unknown): ReportListPreference => {
   const record = isRecord(value) ? value : {}
   return {
     pinned: record.pinned === true,
-    reviewed: record.reviewed === true,
   }
 }
 

@@ -70,6 +70,16 @@ function ReportPageSession({
     return () => window.removeEventListener('popstate', syncView)
   }, [entries, fallbackReport])
 
+  useEffect(() => {
+    if (!showDetail) return
+    const frame = window.requestAnimationFrame(() => {
+      const header = document.querySelector<HTMLElement>('.report-page__report-header')
+      if (!header) return
+      window.scrollTo({ top: Math.max(0, window.scrollY + header.getBoundingClientRect().top - 8), behavior: 'auto' })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [selectedEntry, showDetail])
+
   const openReport = (selectedReport: GeneratedReportListItem) => {
     const url = new URL(window.location.href)
     url.searchParams.set('reportId', selectedReport.reportId)
@@ -105,17 +115,13 @@ function ReportPageSession({
         <GeneratedReportList reports={reports} onOpenReport={openReport} />
       </> : (
         <div className="report-page__generated">
-          <div className="report-page__detail-toolbar report-page__no-print">
-            <button className="report-page__button" type="button" onClick={closeReport}>
-              ← 생성된 리포트 목록
-            </button>
-          </div>
           <ReportSections
             key={`${selectedEntry.report.meta.sourceRiskId}:${selectedEntry.report.meta.generatedAt ?? ''}`}
             report={selectedEntry.report}
             riskData={selectedEntry.riskData}
             reportProxy={reportProxy}
             navigation={navigation}
+            onBackToList={closeReport}
           />
         </div>
       )}

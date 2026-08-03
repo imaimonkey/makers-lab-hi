@@ -18437,7 +18437,7 @@
 }
 
 .report-page__feasibility-redesign .report-page__evaluation-review-status--completed {
-  color: #2563eb;
+  color: #4f7480;
 }
 
 .report-page__feasibility-redesign .report-page__evaluation-review-status--pending {
@@ -25156,8 +25156,8 @@
 }
 
 .report-page__decision-briefing-decision-checklist li > span {
-  color: var(--decision-blue);
-  font-size: 17px;
+  color: var(--decision-teal);
+  font-size: 18px;
   line-height: 1.2;
 }
 
@@ -26093,12 +26093,15 @@
 
 .report-page__novelty-accordion {
   overflow: hidden;
-  border: 1px solid var(--feasibility-final-line);
+  border: 1px solid #d9e5ea;
+  border-left: 3px solid #c7dfe0;
+  border-radius: 4px;
   background: #ffffff;
 }
 
 .report-page__novelty-accordion.is-open {
-  border-color: #cbd8e0;
+  border-color: #b9d8d5;
+  border-left-color: var(--feasibility-final-teal);
 }
 
 .report-page__novelty-accordion-heading {
@@ -26113,14 +26116,14 @@
   gap: 14px;
   padding: 13px 15px;
   border: 0;
-  background: #ffffff;
+  background: linear-gradient(90deg, #ffffff 0%, #fbfdfd 100%);
   color: var(--feasibility-final-charcoal);
   text-align: left;
   cursor: pointer;
 }
 
 .report-page__novelty-accordion-heading button:hover {
-  background: #fbfcfd;
+  background: #f4faf9;
 }
 
 .report-page__novelty-accordion-heading button > span:first-child {
@@ -26144,7 +26147,7 @@
 
 .report-page__novelty-accordion-toggle {
   flex: 0 0 auto;
-  color: var(--feasibility-final-blue);
+  color: var(--feasibility-final-teal);
   font-size: 10.5px;
   font-weight: 750;
   white-space: nowrap;
@@ -28181,8 +28184,16 @@
 
 @media (max-width: 1060px) {
   :is(#report-root, .reports-page) .report-page__report-toolbar {
-    grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(125px, 1fr)) auto;
+    grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(125px, 1fr)) auto;
   }
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-main {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:is(#report-root, .reports-page) .report-page__report-card--list .report-page__report-card-heading {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 760px) {
@@ -29483,6 +29494,15 @@
   line-height: 1.55;
 }
 
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-decision-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--proposal-teal);
+  font-size: 15px;
+  line-height: 1;
+}
+
 :is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-section-heading h3 {
   font-size: 25px;
   line-height: 1.35;
@@ -29635,4 +29655,518 @@
 :is(#report-root, .reports-page) #report-panel-evidence > .report-page__evidence-section {
   width: 100%;
   max-width: none;
+}
+
+:is(#report-root, .reports-page) .report-page__report-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-pagination button {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid #cbd8e2;
+  border-radius: 7px;
+  color: var(--report-navy);
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.report-page__feasibility-redesign .report-page__quantitative-metric-details summary:hover {
+  color: var(--report-navy);
+}
+
+.report-page__feasibility-redesign .report-page__quantitative-metric-details summary:focus-visible {
+  outline: 2px solid #d59055;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-pagination button:hover:not(:disabled) {
+  border-color: #9fb6c8;
+  background: #f6f9fb;
+}
+
+:is(#report-root, .reports-page) .report-page__report-pagination button:focus-visible {
+  outline: 2px solid var(--report-orange);
+  outline-offset: 2px;
+}
+
+:is(#report-root, .reports-page) .report-page__report-pagination button:disabled {
+  color: #a0adb8;
+  background: #f7f9fb;
+  cursor: not-allowed;
+}
+
+:is(#report-root, .reports-page) .report-page__report-pagination strong {
+  min-width: 48px;
+  color: var(--report-deep-navy);
+  font-size: 13px;
+  text-align: center;
+}
+
+@media print {
+  :is(#report-root, .reports-page) .report-page__report-pagination {
+    display: none;
+  }
+}
+
+/* 종합 브리핑 헤더 리듬: 영문 소제목과 평가 현황의 좌우 기준선을 통일합니다. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-kicker,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading .report-page__eyebrow {
+    margin-bottom: 6px;
+    color: #71869a;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    line-height: 1.2;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-evaluation-status {
+    margin-top: 20px;
+    padding: 0;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading .report-page__eyebrow {
+    font-size: 9pt;
+    letter-spacing: .12em;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-evaluation-status {
+    padding: 4mm;
+  }
+}
+
+/* 종합 브리핑의 반복 안내 링크는 조용한 이동 아이콘으로 정리합니다. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing-icon-link {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  flex: 0 0 30px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #f1d2b3;
+  border-radius: 9px;
+  color: var(--report-orange) !important;
+  background: #fff4e8;
+  font-size: 0;
+  line-height: 1;
+  text-decoration: none;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing-icon-link:hover {
+  color: var(--report-orange-ink) !important;
+  border-color: #edbd8f;
+  background: #ffe8d2;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing-icon-link:focus-visible {
+  outline: 2px solid var(--report-orange);
+  outline-offset: 2px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing-icon-link > svg {
+  display: block;
+  flex: 0 0 auto;
+  transition: transform .2s ease;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing-icon-link:hover > svg,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing-icon-link:focus-visible > svg {
+  transform: translateX(2px);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-core-card .report-page__briefing-icon-link {
+  align-self: flex-end;
+  margin-top: auto;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__ai-summary-core-card,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-core-card {
+  display: flex;
+  flex-direction: column;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-core-card .report-page__briefing-icon-link {
+  align-self: flex-end;
+  margin-top: auto;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-section-head > .report-page__briefing-icon-link,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-wording-preview-head > .report-page__briefing-icon-link {
+  flex: 0 0 auto;
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing-icon-link {
+    display: none !important;
+  }
+}
+
+/* 리포트 목록 복귀는 별도 툴바 대신 헤더 안의 정렬된 아이콘으로 제공합니다. */
+:is(#report-root, .reports-page) .report-page__report-back-link {
+  display: inline-flex;
+  min-width: 42px;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid #c6d4df;
+  border-radius: 8px;
+  color: var(--report-navy);
+  background: #ffffff;
+  font: inherit;
+  font-size: 21px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color .16s ease, background-color .16s ease, color .16s ease;
+}
+
+:is(#report-root, .reports-page) .report-page__report-back-link:hover {
+  border-color: #9db6c7;
+  color: #315e69;
+  background: #f3f8f8;
+}
+
+:is(#report-root, .reports-page) .report-page__report-back-link:focus-visible {
+  outline: 2px solid var(--report-orange);
+  outline-offset: 2px;
+}
+
+@media print {
+  :is(#report-root, .reports-page) .report-page__report-back-link {
+    display: none !important;
+  }
+}
+
+/* 약관 작성 근거 하단의 핵심 용어는 라벨과 설명을 분리해 읽기 흐름을 정리합니다. */
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+  margin-top: 16px;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns p {
+  display: grid;
+  grid-template-columns: minmax(96px, .34fr) minmax(0, .66fr);
+  gap: 12px;
+  min-width: 0;
+  align-items: start;
+  margin: 0;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--report-border-soft);
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns p strong {
+  color: var(--report-deep-navy);
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+:is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns p span {
+  color: var(--report-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+@media screen and (max-width: 800px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 560px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns p {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-columns p {
+    grid-template-columns: minmax(70px, .3fr) minmax(0, .7fr);
+    gap: 8px;
+    padding: 8px 0;
+  }
+}
+
+/* 약관 검토 흐름: 선택한 보장의 핵심 문구·지급요건을 먼저 확인한 뒤 전체 초안으로 이어갑니다. */
+.report-page__wording-section .report-page__wording-main-flow > .report-page__wording-risk-summary { order: 0; }
+.report-page__wording-section .report-page__wording-main-flow > .report-page__wording-zone-a { order: 1; }
+.report-page__wording-section .report-page__wording-main-flow > .report-page__wording-recommended-copy { order: 2; }
+.report-page__wording-section .report-page__wording-main-flow > .report-page__wording-zone-b { order: 3; }
+.report-page__wording-section .report-page__wording-main-flow > .report-page__wording-zone-c { order: 4; }
+.report-page__wording-section .report-page__wording-main-flow > .report-page__wording-full-policy { order: 5; }
+.report-page__wording-section .report-page__wording-main-flow > .report-page__wording-grounds { order: 6; }
+
+/* 전체 약관 목차의 조문 선택은 목차 제목 바로 아래에서 먼저 접근할 수 있게 합니다. */
+.report-page__wording-section .report-page__wording-policy-toc .report-page__wording-policy-toc-select {
+  display: block;
+  width: 100%;
+  margin: 0 0 14px;
+}
+
+.report-page__wording-section .report-page__wording-policy-toc {
+  box-sizing: border-box;
+  display: flex;
+  height: min(760px, calc(100dvh - 220px));
+  max-height: min(760px, calc(100dvh - 220px));
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.report-page__wording-section .report-page__wording-policy-toc-scroll {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+@media screen and (max-width: 850px) {
+  .report-page__wording-section .report-page__wording-policy-toc {
+    display: block;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .report-page__wording-section .report-page__wording-policy-toc-scroll {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media print {
+  .report-page__wording-section .report-page__wording-policy-toc,
+  .report-page__wording-section .report-page__wording-policy-toc-scroll {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* Evidence type labels: use small, consistent icon tiles with restrained category color. */
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card {
+  --evidence-accent: #5d91a9;
+  --evidence-label: #356b82;
+  --evidence-label-bg: #eef7fa;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card--incident {
+  --evidence-accent: #b77969;
+  --evidence-label: #925848;
+  --evidence-label-bg: #fff4f0;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card--legal {
+  --evidence-accent: #827aa6;
+  --evidence-label: #665e8b;
+  --evidence-label-bg: #f5f3fb;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card--insurance {
+  --evidence-accent: #4c9589;
+  --evidence-label: #36766d;
+  --evidence-label-bg: #eff9f6;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-card--statistics {
+  --evidence-accent: #6684ae;
+  --evidence-label: #48698f;
+  --evidence-label-bg: #f1f5fb;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-type {
+  min-height: 29px;
+  gap: 7px;
+  padding: 3px 10px 3px 5px;
+  border: 1px solid color-mix(in srgb, var(--evidence-accent) 38%, #dce6ec);
+  border-radius: 999px;
+  color: var(--evidence-label);
+  background: var(--evidence-label-bg);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-type-icon {
+  display: inline-grid;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
+  place-items: center;
+  border-radius: 7px;
+  color: #ffffff;
+  background: var(--evidence-accent);
+}
+
+:is(#report-root, .reports-page) #report-panel-evidence .report-page__evidence-type-icon .app-icon {
+  display: block;
+}
+
+/* Product proposal detail control: keep the expand link quiet and aligned with the report palette. */
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-detail > summary {
+  color: #4f6d7a;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-detail > summary::before {
+  color: #4f6d7a;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-detail > summary span {
+  color: #82919a;
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-detail > summary:hover {
+  color: var(--report-orange-ink);
+}
+
+:is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-detail > summary:hover::before {
+  color: var(--report-orange-ink);
+}
+
+/* 상품화 평가 기준 상세: 실무자 검토 열을 제거한 뒤 남은 공간을
+   AI 판단 정보의 2열 구조로 활용합니다. */
+.report-page__feasibility-redesign .report-page__evaluation-detail--binary {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 16px 18px 18px;
+  background: linear-gradient(180deg, #f7fafc 0%, #fbfcfd 100%);
+}
+
+.report-page__feasibility-redesign .report-page__evaluation-detail-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.report-page__feasibility-redesign .report-page__evaluation-detail-list > div {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-content: start;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid #dce6ed;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(18, 55, 88, 0.035);
+}
+
+.report-page__feasibility-redesign .report-page__evaluation-detail-list > div:first-child {
+  border-top: 2px solid #5d9b99;
+}
+
+.report-page__feasibility-redesign .report-page__evaluation-detail-list > div:nth-child(2) {
+  border-top: 2px solid #d59a55;
+}
+
+.report-page__feasibility-redesign .report-page__evaluation-detail-list > div:nth-child(5) {
+  grid-column: 1 / -1;
+}
+
+.report-page__feasibility-redesign .report-page__evaluation-detail-list dt {
+  color: #1d456d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.report-page__feasibility-redesign .report-page__evaluation-detail-list dd {
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* 정량지표의 근거 열기 링크는 강한 파랑 대신 카드의 차분한 보조색을 사용합니다. */
+.report-page__feasibility-redesign .report-page__quantitative-metric-details summary {
+  color: #5d7780;
+  transition: color 0.2s ease;
+}
+
+.report-page__feasibility-redesign .report-page__quantitative-metric-details summary:hover {
+  color: var(--feasibility-final-orange);
+}
+
+@media screen and (max-width: 760px) {
+  .report-page__feasibility-redesign .report-page__evaluation-detail--binary {
+    padding: 13px 12px 15px;
+  }
+
+  .report-page__feasibility-redesign .report-page__evaluation-detail-list {
+    grid-template-columns: 1fr;
+  }
+
+  .report-page__feasibility-redesign .report-page__evaluation-detail-list > div:nth-child(5) {
+    grid-column: auto;
+  }
+}
+
+@media print {
+  .report-page__feasibility-redesign .report-page__evaluation-detail--binary {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 3mm;
+    background: #ffffff;
+  }
+
+  .report-page__feasibility-redesign .report-page__evaluation-detail-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5mm;
+    border: 0;
+  }
+
+  .report-page__feasibility-redesign .report-page__evaluation-detail-list > div {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 1.5mm;
+    margin: 0;
+    padding: 2.5mm;
+    border: 1px solid #dce5ec;
+    border-top-width: 1px;
+    border-radius: 1.5mm;
+    background: #ffffff;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-page__feasibility-redesign .report-page__evaluation-detail-list > div:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+
+  .report-page__feasibility-redesign .report-page__evaluation-detail-list dt {
+    font-size: 7.5pt;
+  }
+
+  .report-page__feasibility-redesign .report-page__evaluation-detail-list dd {
+    font-size: 8pt;
+    line-height: 1.5;
+  }
 }

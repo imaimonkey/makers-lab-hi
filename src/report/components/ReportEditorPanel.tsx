@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { BriefingContent, BriefingCountItem, BriefingCoreCard, BriefingReviewStatus, BriefingRiskItem, CommercializationConfidence, CommercializationCriterionStatus, CommercializationEvidence, CommercializationEvidenceStatus, CommercializationNextAction, ReportResult } from '../types'
+import type { BriefingContent, BriefingCountItem, BriefingCoreCard, BriefingRiskItem, CommercializationConfidence, CommercializationCriterionStatus, CommercializationEvidence, CommercializationEvidenceStatus, CommercializationNextAction, ReportResult } from '../types'
 import { updateReportContent, type EditorPath } from '../services/report-content'
 import { COMMERCIALIZATION_CRITERION_DEFINITIONS } from '../services/commercialization-assessment'
 import { createBriefingContent } from '../services/briefing-content'
@@ -225,7 +225,6 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
           <ListField label="강점" value={feasibility.topStrengths} onChange={(value) => update(['productFeasibility', 'assessment', 'topStrengths'], value)} />
           <ListField label="주요 리스크" value={feasibility.topRisks} onChange={(value) => update(['productFeasibility', 'assessment', 'topRisks'], value)} />
           <ListField label="우선 조치" value={feasibility.priorityActions} onChange={(value) => update(['productFeasibility', 'assessment', 'priorityActions'], value)} />
-          <Field label="실무자 종합 메모" value={feasibility.reviewerMemo ?? ''} onChange={(value) => update(['productFeasibility', 'assessment', 'reviewerMemo'], value)} multiline />
         </Grid>
         <p className="report-page__editor-note">평가항목 ID·분류·순서·질문은 고정됩니다. 상태·근거·추가정보·다음 조치만 수정할 수 있으며, 법령·규제는 독립 평가항목으로 추가하지 않습니다.</p>
         <div className="report-page__editor-list">
@@ -243,13 +242,11 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
                     <SelectField label="근거 상태" value={criterion.evidenceStatus} options={evidenceStatusOptions} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'evidenceStatus'], value)} />
                     <SelectField label="근거 충분도" value={criterion.confidence} options={confidenceOptions} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'confidence'], value)} />
                     <label className="report-page__editor-field report-page__editor-checkbox"><span>차단 항목</span><input type="checkbox" checked={criterion.isBlocking} onChange={(event) => update(['productFeasibility', 'assessment', 'criteria', index, 'isBlocking'], event.target.checked)} /></label>
-                    <label className="report-page__editor-field report-page__editor-checkbox"><span>실무 검토 필요</span><input type="checkbox" checked={criterion.requiresReviewerInput} onChange={(event) => update(['productFeasibility', 'assessment', 'criteria', index, 'requiresReviewerInput'], event.target.checked)} /></label>
                     <ListField label="연동 출처" value={criterion.sourceSections} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'sourceSections'], value)} />
                     <Field label="판단 요약" value={criterion.summary} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'summary'], value)} multiline />
                     <Field label="판단 근거" value={criterion.rationale} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'rationale'], value)} multiline />
                     <Field label="확인된 사실" value={criterion.confirmedFacts ?? ''} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'confirmedFacts'], value)} multiline />
                     <ListField label="추가 확보 정보" value={criterion.missingInformation} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'missingInformation'], value)} />
-                    <Field label="실무자 판단 메모" value={criterion.reviewerMemo ?? ''} onChange={(value) => update(['productFeasibility', 'assessment', 'criteria', index, 'reviewerMemo'], value)} multiline />
                   </Grid>
                   <div className="report-page__editor-list">
                     <div className="report-page__editor-list-heading"><strong>근거자료</strong><button type="button" onClick={() => update(['productFeasibility', 'assessment', 'criteria', index, 'evidence'], [...criterion.evidence, { ...emptyEvidence, id: `${criterion.id}-evidence-${criterion.evidence.length + 1}` }])}>근거 추가</button></div>
@@ -350,11 +347,6 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
     (() => {
       const briefing: BriefingContent = createBriefingContent(report)
       const updateBriefing = (path: EditorPath, value: unknown) => update(['ui', 'briefing', ...path], value)
-      const reviewStatusOptions: Array<[BriefingReviewStatus, string]> = [
-        ['미검토', '미검토'],
-        ['검토 중', '검토 중'],
-        ['검토 완료', '검토 완료'],
-      ]
       return (
     <Group title="종합 브리핑">
       <Grid>
@@ -487,12 +479,6 @@ export function ReportEditorPanel({ activeTab, report, onChange, openCriterionId
           </div>
         ))}
       </div>
-      <Group title="실무자 검토">
-        <Grid>
-          <SelectField label="검토 상태" value={briefing.reviewerStatus} options={reviewStatusOptions} onChange={(value) => updateBriefing(['reviewerStatus'], value)} />
-          <Field label="실무자 검토 메모" value={briefing.reviewerOpinion} placeholder="AI 분석 결과에 대한 실무 검토 의견을 작성해 주세요." onChange={(value) => updateBriefing(['reviewerOpinion'], value)} multiline />
-        </Grid>
-      </Group>
       <Field label="최하단 안내 문구" value={briefing.disclaimer} onChange={(value) => updateBriefing(['disclaimer'], value)} multiline />
     </Group>
       )

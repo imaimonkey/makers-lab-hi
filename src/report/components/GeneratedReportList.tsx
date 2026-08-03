@@ -13,7 +13,8 @@ type ViewMode = 'grid' | 'list'
 type SortOrder = 'latest' | 'oldest'
 type TargetFilter = 'all' | GeneratedReportListItem['targetType']
 type PriorityFilter = 'all' | GeneratedReportListItem['priority']
-type ReviewFilter = 'all' | 'pending' | 'completed'
+
+const REPORTS_PER_PAGE = 6
 
 const formatDate = (value: string | null): string => {
   if (!value) return '생성일 확인 필요'
@@ -32,7 +33,6 @@ function ReportCard({
   onOpenReport,
   onUnavailable,
   onTogglePinned,
-  onToggleReviewed,
   viewMode,
 }: {
   report: GeneratedReportListItem
@@ -40,10 +40,9 @@ function ReportCard({
   onOpenReport?: (report: GeneratedReportListItem) => void
   onUnavailable?: (report: GeneratedReportListItem) => void
   onTogglePinned: (reportId: string) => void
-  onToggleReviewed: (reportId: string) => void
   viewMode: ViewMode
 }) {
-  const cardClassName = `report-page__report-card report-page__report-card--${viewMode}${report.priority === '우선 검토' ? ' report-page__report-card--priority' : ''}${preference.reviewed ? ' is-reviewed' : ''}${preference.pinned ? ' is-pinned' : ''}`
+  const cardClassName = `report-page__report-card report-page__report-card--${viewMode}${report.priority === '우선 검토' ? ' report-page__report-card--priority' : ''}${preference.pinned ? ' is-pinned' : ''}`
   const openReport = (event: MouseEvent<HTMLAnchorElement>) => {
     if (!onOpenReport) return
     event.preventDefault()
@@ -64,25 +63,11 @@ function ReportCard({
           <h3>{report.riskName}</h3>
           {report.priority === '우선 검토' ? <span className="report-page__report-card-priority-mark"><i aria-hidden="true" />우선 검토</span> : null}
         </div>
-        <div className="report-page__report-card-submeta">
-          <span>{report.targetType}</span>
-          <span aria-hidden="true">·</span>
-          <span title={`위험 ID: ${report.riskId}`}>{report.reportId}</span>
-        </div>
-      </div>
-      <div className="report-page__report-card-conclusion">
-        <span>핵심 결론</span>
-        <p>{report.shortConclusion}</p>
       </div>
     </>
   )
   const cardActions = (
     <div className="report-page__report-card-controls" aria-label="리포트 빠른 작업">
-      <label className={`report-page__report-card-review${preference.reviewed ? ' is-active' : ''}`} title="검토 완료 표시">
-        <input type="checkbox" checked={preference.reviewed} onChange={() => onToggleReviewed(report.reportId)} />
-        <span aria-hidden="true">✓</span>
-        <span>검토 완료</span>
-      </label>
       {report.detailAvailable ? (
         <a className="report-page__report-card-action" href={report.detailHref} onClick={openReport}>
           리포트 열기 <span aria-hidden="true">→</span>
@@ -97,8 +82,8 @@ function ReportCard({
       className={`report-page__report-card-pin${preference.pinned ? ' is-active' : ''}`}
       type="button"
       aria-pressed={preference.pinned}
-      aria-label={preference.pinned ? '즐겨찾기 해제' : '즐겨찾기 추가'}
-      title={preference.pinned ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+      aria-label={preference.pinned ? '스크랩 해제' : '스크랩'}
+      title={preference.pinned ? '스크랩 해제' : '스크랩'}
       onClick={() => onTogglePinned(report.reportId)}
     >
       <span aria-hidden="true">{preference.pinned ? '★' : '☆'}</span>
@@ -160,23 +145,21 @@ function EmptyReportState({ onRequestCreate, filtered }: { onRequestCreate?: () 
 export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: GeneratedReportListProps) {
   const [query, setQuery] = useState('')
   const [targetFilter, setTargetFilter] = useState<TargetFilter>('all')
-  const [reviewFilter, setReviewFilter] = useState<ReviewFilter>('all')
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all')
   const [sortOrder, setSortOrder] = useState<SortOrder>('latest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [notice, setNotice] = useState('')
   const [preferences, setPreferences] = useState<ReportListPreferences>(() => browserReportListPreferences.load())
+  const [currentPage, setCurrentPage] = useState(1)
 
   const summary = useMemo(() => ({ total: reports.length }), [reports.length])
 
-  const updatePreference = (reportId: string, key: keyof ReportListPreference) => {
+  const updatePreference = (reportId: string) => {
     setPreferences((current) => {
       const next = {
         ...current,
         [reportId]: {
-          pinned: current[reportId]?.pinned ?? false,
-          reviewed: current[reportId]?.reviewed ?? false,
-          [key]: !(current[reportId]?.[key] ?? false),
+          pinned: !(current[reportId]?.pinned ?? false),
         },
       }
       browserReportListPreferences.save(next)
@@ -189,7 +172,6 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
     return reports
       .filter((report) => !normalizedQuery || [report.riskName, report.reportId, report.riskId].some((value) => value.toLowerCase().includes(normalizedQuery)))
       .filter((report) => targetFilter === 'all' || report.targetType === targetFilter)
-      .filter((report) => reviewFilter === 'all' || (reviewFilter === 'completed' ? preferences[report.reportId]?.reviewed === true : preferences[report.reportId]?.reviewed !== true))
       .filter((report) => priorityFilter === 'all' || report.priority === priorityFilter)
       .sort((a, b) => {
         const pinnedDifference = Number(preferences[b.reportId]?.pinned === true) - Number(preferences[a.reportId]?.pinned === true)
@@ -198,14 +180,21 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
         const right = b.generatedAt ? new Date(b.generatedAt).getTime() : 0
         return sortOrder === 'latest' ? right - left : left - right
       })
-  }, [preferences, priorityFilter, query, reports, reviewFilter, sortOrder, targetFilter])
+  }, [preferences, priorityFilter, query, reports, sortOrder, targetFilter])
+
+  const pageCount = Math.max(1, Math.ceil(filteredReports.length / REPORTS_PER_PAGE))
+  const activePage = Math.min(currentPage, pageCount)
+  const visibleReports = useMemo(() => {
+    const start = (activePage - 1) * REPORTS_PER_PAGE
+    return filteredReports.slice(start, start + REPORTS_PER_PAGE)
+  }, [activePage, filteredReports])
 
   const resetFilters = () => {
     setQuery('')
     setTargetFilter('all')
-    setReviewFilter('all')
     setPriorityFilter('all')
     setSortOrder('latest')
+    setCurrentPage(1)
   }
 
   return (
@@ -215,16 +204,15 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
           <div>
             <p className="report-page__eyebrow">REPORT LIBRARY</p>
             <h2 id="report-library-title">생성된 리포트 <span>총 {summary.total}건</span></h2>
-            <p>AI 분석 결과와 실무 검토 상태를 확인할 수 있습니다.</p>
+            <p>AI 분석 결과와 생성된 리포트를 확인할 수 있습니다.</p>
           </div>
         </div>
 
         <div className="report-page__report-toolbar" aria-label="리포트 검색 및 필터">
-          <label className="report-page__report-search"><span className="sr-only">리포트 검색</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="리포트명 또는 위험 ID 검색" type="search" /></label>
-          <label><span className="sr-only">대상 구분</span><select value={targetFilter} onChange={(event) => setTargetFilter(event.target.value as TargetFilter)}><option value="all">전체 대상</option><option value="가계">가계</option><option value="기업">기업</option><option value="혼합">혼합</option></select></label>
-          <label><span className="sr-only">검토 상태</span><select value={reviewFilter} onChange={(event) => setReviewFilter(event.target.value as ReviewFilter)}><option value="all">전체 검토 상태</option><option value="pending">미완료</option><option value="completed">검토 완료</option></select></label>
-          <label><span className="sr-only">우선순위</span><select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as PriorityFilter)}><option value="all">전체 우선순위</option><option value="우선 검토">우선 검토</option><option value="일반">일반</option></select></label>
-          <label><span className="sr-only">정렬</span><select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as SortOrder)}><option value="latest">최신순</option><option value="oldest">오래된순</option></select></label>
+          <label className="report-page__report-search"><span className="sr-only">리포트 검색</span><input value={query} onChange={(event) => { setCurrentPage(1); setQuery(event.target.value) }} placeholder="리포트명 또는 위험 ID 검색" type="search" /></label>
+          <label><span className="sr-only">대상 구분</span><select value={targetFilter} onChange={(event) => { setCurrentPage(1); setTargetFilter(event.target.value as TargetFilter) }}><option value="all">전체 대상</option><option value="가계">가계</option><option value="기업">기업</option><option value="혼합">혼합</option></select></label>
+          <label><span className="sr-only">우선순위</span><select value={priorityFilter} onChange={(event) => { setCurrentPage(1); setPriorityFilter(event.target.value as PriorityFilter) }}><option value="all">전체 우선순위</option><option value="우선 검토">우선 검토</option><option value="일반">일반</option></select></label>
+          <label><span className="sr-only">정렬</span><select value={sortOrder} onChange={(event) => { setCurrentPage(1); setSortOrder(event.target.value as SortOrder) }}><option value="latest">최신순</option><option value="oldest">오래된순</option></select></label>
           <div className="report-page__report-view-toggle" role="group" aria-label="보기 방식">
             <button type="button" className={viewMode === 'grid' ? 'is-active' : ''} aria-pressed={viewMode === 'grid'} onClick={() => setViewMode('grid')} title="그리드 보기">▦<span className="sr-only">그리드 보기</span></button>
             <button type="button" className={viewMode === 'list' ? 'is-active' : ''} aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')} title="리스트 보기">☷<span className="sr-only">리스트 보기</span></button>
@@ -234,9 +222,22 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
         {notice ? <p className="report-page__report-list-notice" role="status">{notice}</p> : null}
         {reports.length === 0 ? <EmptyReportState onRequestCreate={onRequestCreate} /> : filteredReports.length === 0 ? <EmptyReportState filtered onRequestCreate={resetFilters} /> : (
 
-          <div className={`report-page__report-list-grid report-page__report-list-grid--${viewMode}`}>
-            {filteredReports.map((report) => <ReportCard key={report.reportId} report={report} preference={preferences[report.reportId] ?? { pinned: false, reviewed: false }} viewMode={viewMode} onOpenReport={onOpenReport} onTogglePinned={(reportId) => updatePreference(reportId, 'pinned')} onToggleReviewed={(reportId) => updatePreference(reportId, 'reviewed')} onUnavailable={(item) => setNotice(`${item.riskName}의 상세 리포트는 준비 중입니다.`)} />)}
-          </div>
+          <>
+            <div className={`report-page__report-list-grid report-page__report-list-grid--${viewMode}`}>
+              {visibleReports.map((report) => <ReportCard key={report.reportId} report={report} preference={preferences[report.reportId] ?? { pinned: false }} viewMode={viewMode} onOpenReport={onOpenReport} onTogglePinned={updatePreference} onUnavailable={(item) => setNotice(`${item.riskName}의 상세 리포트는 준비 중입니다.`)} />)}
+            </div>
+            {pageCount > 1 ? (
+              <nav className="report-page__report-pagination" aria-label="리포트 목록 페이지 이동">
+                <button type="button" disabled={activePage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>
+                  <span aria-hidden="true">←</span> 이전
+                </button>
+                <strong aria-live="polite">{activePage} / {pageCount}</strong>
+                <button type="button" disabled={activePage === pageCount} onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}>
+                  다음 <span aria-hidden="true">→</span>
+                </button>
+              </nav>
+            ) : null}
+          </>
         )}
       </section>
     </section>
