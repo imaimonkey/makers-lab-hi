@@ -195,7 +195,7 @@ export function RiskRadarOperationsPanel({
       <div className="radar-operations-grid">
         <article className="radar-issue-focus surface-card">
           <div className="panel-heading">
-            <div><p className="eyebrow">ISSUE REGISTER</p><h2>상품개발 이슈 큐</h2></div>
+            <div><p className="eyebrow">ISSUE REGISTER</p><h2>우선 검토 위험 신호</h2></div>
             <span className="status-badge sample">{developerMode ? 'CONTENT-DERIVED SAMPLE' : 'SAMPLE'}</span>
           </div>
           <div className="radar-issue-controls">
@@ -257,13 +257,13 @@ export function RiskRadarOperationsPanel({
           <ol className="radar-process-list">
             <li><span>01</span><div><strong>수집</strong><small>뉴스·현장 신호</small></div><b>{developerMode ? radarSnapshot.news.length : demoDashboardMetrics.unresolved}</b></li>
             <li><span>02</span><div><strong>후보화</strong><small>클러스터·반복성</small></div><b>{developerMode ? radarSnapshot.risks.length : demoDashboardMetrics.candidates}</b></li>
-            <li><span>03</span><div><strong>근거·법령 확인</strong><small>보류 이유 기록</small></div><b>{developerMode ? radarSnapshot.dashboard.metrics.evidencePending : demoDashboardMetrics.lawPending}</b></li>
+            <li><span>03</span><div><strong>원문·법률 확인</strong><small>보류 이유 기록</small></div><b>{developerMode ? radarSnapshot.dashboard.metrics.evidencePending : demoDashboardMetrics.lawPending}</b></li>
             <li><span>04</span><div><strong>담당자 판단</strong><small>상품화 다음 단계</small></div><b>{developerMode ? radarSnapshot.dashboard.metrics.reviewerPending : demoDashboardMetrics.reviewerPending}</b></li>
           </ol>
         </article>
 
         <article className="radar-laws-panel surface-card">
-          <div className="panel-heading"><div><p className="eyebrow">LAW & REGULATION</p><h2>공식 확인 대기 변화</h2></div><button type="button" disabled={Boolean(busy)} onClick={() => void runAction('법령 검색', developerMode ? searchDeveloperLaw : async () => undefined)}>법령 검색</button></div>
+          <div className="panel-heading"><div><p className="eyebrow">LAW & REGULATION</p><h2>법률 업데이트</h2></div><button type="button" disabled={Boolean(busy)} onClick={() => void runAction('법령 검색', developerMode ? searchDeveloperLaw : async () => undefined)}>법령 검색</button></div>
           {developerMode ? lawResults.length ? <ul>{lawResults.map((law) => <li key={`${law.title}-${law.date}`}><span>{law.agency}</span><strong>{law.title}</strong><small>{law.date} · 국가법령정보</small></li>)}</ul> : <p className="table-empty">공식 법령 검색을 실행하면 결과가 표시됩니다.</p> : <ul>{demoLaws.slice(0, 4).map((law) => <li key={law.title}><span>{law.institution}</span><strong>{law.title}</strong><small>{law.impact} · {law.when}</small></li>)}</ul>}
         </article>
       </div>

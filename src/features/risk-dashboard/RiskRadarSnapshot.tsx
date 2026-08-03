@@ -56,7 +56,7 @@ export function RiskRadarLiveSnapshotPanel({
       <div className="panel-heading">
         <div>
           <p className="eyebrow">LIVE SNAPSHOT / API BOUNDARY</p>
-          <h2>위험 레이더 데이터 연결 상태</h2>
+          <h2>수집 신호 상태</h2>
         </div>
         <button type="button" className="text-button" disabled={state.initialLoading || state.refreshing} onClick={() => void onRefresh()}>
           {state.initialLoading ? '불러오는 중…' : state.refreshing ? '갱신 중…' : '다시 조회'}

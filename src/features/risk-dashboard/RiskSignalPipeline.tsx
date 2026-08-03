@@ -53,7 +53,7 @@ export function RiskSignalPipeline({ radarSnapshot, developerMode = false, devel
 
       <div className="risk-pipeline-grid">
         <article className="risk-pipeline-issues surface-card">
-          <div className="panel-heading"><div><p className="eyebrow">ISSUE REGISTER</p><h2>상품개발 이슈 큐</h2></div><Link to={developerMode ? '/developer-test/risks' : '/risks'} className="panel-icon-link" aria-label="위험 후보 보기" title="위험 후보 보기"><AppIcon name="arrow" size={15} /></Link></div>
+          <div className="panel-heading"><div><p className="eyebrow">ISSUE REGISTER</p><h2>우선 검토 위험 신호</h2></div><Link to={developerMode ? '/developer-test/risks' : '/risks'} className="panel-icon-link" aria-label="위험 후보 보기" title="위험 후보 보기"><AppIcon name="arrow" size={15} /></Link></div>
           <div className="risk-audience-tabs" aria-label="신호 유입 채널 필터">{audiences.map((item) => <button type="button" key={item} aria-pressed={audience === item} className={audience === item ? 'active' : ''} onClick={() => setAudience(item)}>{item}</button>)}</div>
           <div className="risk-issue-list">
             {issues.slice(0, 4).map((issue) => <Link to={developerMode ? `/developer-test/risks/developer-${encodeURIComponent(issue.id.replace(/^RISK-/, ''))}` : '/risks'} className="risk-issue-row" key={issue.id}><span className={`risk-issue-status ${issue.severity === '심각' ? 'critical' : 'high'}`}>{issue.type}</span><div><strong>{issue.title}</strong><small>{issue.target} · 신호 {issue.sourceCount}건</small></div><span className="risk-issue-gap">{issue.coverageGap}</span><AppIcon name="arrow" size={15} /></Link>)}
@@ -62,15 +62,15 @@ export function RiskSignalPipeline({ radarSnapshot, developerMode = false, devel
         </article>
 
         <article className="risk-pipeline-flow surface-card">
-          <div className="panel-heading"><div><p className="eyebrow">PROCESS GATES</p><h2>검증 단계 현황</h2></div><span className="updated-label">{developerMode ? 'ACTUAL ARTICLE' : 'API 연결 상태'}</span></div>
+          <div className="panel-heading"><div><p className="eyebrow">PROCESS GATES</p><h2>검증 단계 현황</h2></div><span className="updated-label">{developerMode ? 'ACTUAL ARTICLE' : '샘플 표시'}</span></div>
           <ol className="risk-pipeline-steps"><li><span>01</span><div><strong>수집</strong><small>뉴스·현장 신호</small></div><b>{pipelineMetrics.unresolved}</b></li><li><span>02</span><div><strong>위험 후보화</strong><small>클러스터·반복성</small></div><b>{pipelineMetrics.candidates}</b></li><li><span>03</span><div><strong>근거·법령 확인</strong><small>검증 보류 포함</small></div><b>{pipelineMetrics.lawPending}</b></li><li><span>04</span><div><strong>상품성 검토</strong><small>담당자 판단</small></div><b>{pipelineMetrics.reviewerPending}</b></li></ol>
-          <div className="risk-pipeline-bottleneck"><span>현재 병목</span><strong>{developerMode ? 'Step 2·법령 근거 보강' : '법령·손해 데이터 보강'}</strong><small>자동 점수는 우선순위 보조이며 최종 결정은 실무자가 수행합니다.</small></div>
+          <div className="risk-pipeline-bottleneck"><span>현재 확인 필요</span><strong>{developerMode ? 'Step 2·법률 원문 확인' : '법률·손해 데이터 확인'}</strong><small>자동 점수는 우선순위 보조이며 최종 결정은 실무자가 수행합니다.</small></div>
         </article>
       </div>
 
       <div className="risk-pipeline-grid secondary">
         <article className="risk-pipeline-trend surface-card">
-          <div className="panel-heading"><div><p className="eyebrow">SIGNAL VELOCITY</p><h2>주요 위험 신호 추이</h2></div><span className="updated-label">{developerMode ? 'Step 2 signalTrend 결과' : 'API 연결 상태'}</span></div>
+          <div className="panel-heading"><div><p className="eyebrow">SIGNAL VELOCITY</p><h2>주요 위험 신호 추이</h2></div><span className="updated-label">{developerMode ? 'Step 2 signalTrend 결과' : '샘플 표시'}</span></div>
           {trend.length ? <div className="risk-trend-chart" aria-label="최근 위험 신호 추이">{trend.map((value, index) => <div className="risk-trend-column" key={`${value}-${index}`}><span style={{ height: `${(value / maxTrend) * 100}%` }} /><small>{index === trend.length - 1 ? '오늘' : `${trend.length - index}일 전`}</small></div>)}</div> : <div className="table-empty">{developerMode ? 'Step 2 signalTrend 결과가 있는 후보가 없습니다.' : '추이 데이터가 없습니다.'}</div>}
         </article>
         <article className="risk-pipeline-laws surface-card">
