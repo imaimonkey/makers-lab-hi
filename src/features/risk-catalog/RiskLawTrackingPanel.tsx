@@ -11,8 +11,6 @@ import {
 import { riskLawTrackingItems } from '../../domain/risk/riskLawTracking'
 import type { DeveloperLawQueueItem } from './developerStep2Adapter'
 
-type LawTrackingFilter = 'all' | 'assembly' | 'administrative'
-
 type OfficialLawResult = RiskLawTrackingItem & { sourceUrl: string; officialId: string; lawId?: string }
 
 type OfficialPrecedentResult = {
@@ -204,7 +202,6 @@ export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperSt
   const developerMode = developerLaws !== undefined
   const sourceItems = useMemo(() => developerMode ? buildDeveloperTrackingItems(developerLaws) : riskLawTrackingItems, [developerLaws, developerMode])
   const [query, setQuery] = useState('')
-  const [sourceFilter, setSourceFilter] = useState<LawTrackingFilter>('all')
   const [institution, setInstitution] = useState('all')
   const [riskLevel, setRiskLevel] = useState<LawTrackingRiskLevel | 'all'>('all')
   const [selectedId, setSelectedId] = useState(sourceItems[0]?.id ?? '')
@@ -225,13 +222,12 @@ export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperSt
     const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
     return connectedItems.filter((item) => {
       const categoryMatch = category === 'all' || item.categories.includes(category)
-      const sourceMatch = sourceFilter === 'all' || item.sourceType === sourceFilter
       const institutionMatch = institution === 'all' || item.institution === institution
       const riskMatch = riskLevel === 'all' || item.riskLevel === riskLevel
       const searchMatch = !normalizedQuery || `${item.title} ${item.institution} ${item.summary}`.toLocaleLowerCase('ko-KR').includes(normalizedQuery)
-      return categoryMatch && sourceMatch && institutionMatch && riskMatch && searchMatch
+      return categoryMatch && institutionMatch && riskMatch && searchMatch
     })
-  }, [category, connectedItems, institution, query, riskLevel, sourceFilter])
+  }, [category, connectedItems, institution, query, riskLevel])
   const selected = items.find((item) => item.id === selectedId) ?? items[0]
   const selectedWithPrecedents = selected && precedentResults.length
     ? { ...selected, relatedCases: [], relatedCaseCount: precedentResults.length }
@@ -305,11 +301,6 @@ export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperSt
           <button type="button" className="secondary-action risk-law-api-search" onClick={() => void searchPrecedents()} disabled={precedentLoading}>{precedentLoading ? '판례 API 조회 중...' : '국가법령정보 판례 API 조회'}</button>
           {officialError ? <p className="developer-inline-error" role="alert">{officialError}</p> : null}
           {precedentError ? <p className="developer-inline-error" role="alert">{precedentError}</p> : null}
-          <div className="risk-law-filter-chips" aria-label="법령 유형 필터">
-            <button type="button" className={sourceFilter === 'all' ? 'active' : ''} aria-pressed={sourceFilter === 'all'} onClick={() => setSourceFilter('all')}>전체 보기</button>
-            <button type="button" className={sourceFilter === 'assembly' ? 'active' : ''} aria-pressed={sourceFilter === 'assembly'} onClick={() => setSourceFilter('assembly')}>🏛️ 국회 입법</button>
-            <button type="button" className={sourceFilter === 'administrative' ? 'active' : ''} aria-pressed={sourceFilter === 'administrative'} onClick={() => setSourceFilter('administrative')}>📄 행정·가이드라인</button>
-          </div>
           <div className="risk-law-filter-selects">
             <label><span className="sr-only">소관부처</span><select value={institution} onChange={(event) => setInstitution(event.target.value)}><option value="all">소관부처: 전체</option>{institutions.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
             <label><span className="sr-only">리스크 레벨</span><select value={riskLevel} onChange={(event) => setRiskLevel(event.target.value as LawTrackingRiskLevel | 'all')}><option value="all">리스크 레벨: 전체</option><option value="high">🔥 High (고위험)</option><option value="medium">⚠️ Medium (주의)</option><option value="low">Low</option></select></label>

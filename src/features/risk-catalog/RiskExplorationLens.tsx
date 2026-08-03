@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
+  calculateRiskExplorationScore,
   riskExplorationRecords,
   type ExplorationCategory,
   type RiskExplorationMetricKey,
@@ -12,7 +13,7 @@ import {
   type RiskCandidateQuantificationKey,
 } from '../../domain/risk/riskCandidateQuantification'
 import type { ScreeningCategory } from '../../domain/risk/riskScreeningInsights'
-import { lawProductizationPriority, riskLawTrackingItems } from '../../domain/risk/riskLawTracking'
+import { riskLawTrackingItems } from '../../domain/risk/riskLawTracking'
 import { riskCandidateEvidenceSnapshots } from '../../domain/risk/riskCandidateEvidence'
 import { RiskLawTrackingPanel } from './RiskLawTrackingPanel'
 import type { DeveloperLawQueueItem, DeveloperRiskCatalogViewData } from './developerStep2Adapter'
@@ -50,15 +51,6 @@ function metricSortValue(record: RiskExplorationRecord, key: RiskCandidateQuanti
   return getRiskCandidateQuantification(record)[key].numericValue
 }
 
-function actualScore(record: RiskExplorationRecord) {
-  const values = Object.values(record.metricScores).filter((value) => Number.isFinite(value) && value > 0)
-  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0
-}
-
-function riskLevelLabel(record: RiskExplorationRecord) {
-  return record.display.riskLabel.replace(/^[^가-힣A-Za-z]+/, '')
-}
-
 function metricSubLabel(sub: string) {
   return sub
     .replace(/^상품화 종합평가\s*/, '')
@@ -72,27 +64,18 @@ function removeDetailMetricLabel(text: string) {
     .trim()
 }
 
-function legalPriorityForRecord(record: RiskExplorationRecord) {
-  const linkedLaws = riskLawTrackingItems.filter((item) => item.candidateIds?.includes(record.id))
-  return linkedLaws.length ? Math.max(...linkedLaws.map(lawProductizationPriority)) : null
-}
-
 function isLawUpdateRelatedRecord(record: RiskExplorationRecord) {
   return riskLawTrackingItems.some((item) => item.candidateIds?.includes(record.id))
+}
+
+function isLegalOnlyCandidate(record: RiskExplorationRecord) {
+  return record.categories.length === 1 && record.categories[0] === 'legal'
 }
 
 const screeningColumns: RiskCandidateQuantificationKey[] = ['market', 'fortuity', 'pml']
 
 function screeningScoreFor(record: RiskExplorationRecord, developerMode: boolean) {
-  return developerMode ? actualScore(record) : getCandidateViewModelById(record.id)?.screeningScore.value ?? null
-}
-
-function screeningStatusLabel(record: RiskExplorationRecord, score: number | null) {
-  if (score === null) return '추가 검토'
-  const label = riskLevelLabel(record)
-  if (label.includes('고위험')) return '고위험'
-  if (label.includes('중위험')) return '중위험'
-  return '추가 검토'
+  return developerMode ? calculateRiskExplorationScore(record.metricScores) : getCandidateViewModelById(record.id)?.screeningScore.value ?? null
 }
 
 function formatScreeningScore(score: number | null) {
@@ -148,7 +131,7 @@ function useRiskCategoryTabsVisibility() {
   return isVisible
 }
 
-function RiskCandidateComparisonRow({ record, index, developerMode, selected, onSelect, legalPriority }: { record: RiskExplorationRecord; index: number; developerMode: boolean; selected: boolean; onSelect: () => void; legalPriority?: number | null }) {
+function RiskCandidateComparisonRow({ record, index, developerMode, selected, onSelect }: { record: RiskExplorationRecord; index: number; developerMode: boolean; selected: boolean; onSelect: () => void }) {
   const quantification = getRiskCandidateQuantification(record)
   const score = screeningScoreFor(record, developerMode)
 
@@ -174,8 +157,7 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
           <div className="risk-screening-score-wrap">
             {score === null ? <span className="risk-metric-badge warning">[추가 검토]</span> : <strong>{formatScreeningScore(score)}</strong>}
             {score !== null && score !== undefined ? <i aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(0, score / 5 * 100))}%` }} /></i> : null}
-            {legalPriority ? <small>법률 우선 {legalPriority.toFixed(1)} · 시행·제재 반영</small> : developerMode ? <small>0-5 · 실제 Step 2 결과</small> : null}
-            <em>{screeningStatusLabel(record, score)}</em>
+            <small>AI 종합점수 · 5점 기준</small>
           </div>
         </td>
       </tr>
@@ -192,7 +174,25 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
   const evidenceSourceName = evidenceSnapshot?.sourceName ?? record.sourceName ?? '공식 원문 확인 필요'
   const evidenceSourceUrl = evidenceSnapshot?.sourceUrl ?? record.sourceUrl
   const evidenceSourceDate = evidenceSnapshot?.sourceDate ?? (record.collectedAt ? new Date(record.collectedAt).toLocaleDateString('ko-KR') : '발행일 확인 필요')
-  const evidenceNextChecks = evidenceSnapshot?.nextChecks ?? [record.gap, record.nextAction]
+  const evidenceNextChecks = Array.from(new Set([
+    ...(evidenceSnapshot?.nextChecks ?? []),
+    ...(record.contentInsight?.reviewActions ?? []),
+    record.gap,
+    record.nextAction,
+  ])).filter(Boolean)
+  const factualEvidence = [
+    ...(evidenceSnapshot?.facts ?? []),
+    ...(record.contentInsight?.facts ?? []),
+    ...(record.facts ?? []),
+  ]
+  const metricEvidenceText = (metricKey: RiskExplorationMetricKey, fallback: string, factIndex: number, checkIndex: number) => {
+    const evidence = record.metricEvidence?.[metricKey]
+    return evidence?.quotes?.[0]
+      ?? evidence?.reasons?.[0]
+      ?? factualEvidence[factIndex]
+      ?? evidenceNextChecks[checkIndex]
+      ?? fallback
+  }
   const flowMetricKeys: Record<string, RiskExplorationMetricKey> = {
     '01': 'demand',
     '02': 'measurability',
@@ -203,25 +203,41 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
   }
   const flowStatusLabel = (number: string) => {
     const score = record.metricScores[flowMetricKeys[number]]
-    if (!Number.isFinite(score)) return '추가 검토'
-    return score >= 4 ? '높음' : score >= 3 ? '보통' : '낮음'
+    if (!Number.isFinite(score)) return { label: '확인 필요', tone: 'review' as const }
+    const definitions: Record<string, { positive: string; middle: string; negative: string; isRisk: boolean }> = {
+      '01': { positive: '수요 강함', middle: '수요 확인 중', negative: '수요 제한적', isRisk: false },
+      '02': { positive: '측정 용이', middle: '추가 계측 필요', negative: '측정 불확실', isRisk: false },
+      '03': { positive: '사고 정의 명확', middle: '조건 구체화 필요', negative: '사고 정의 불명확', isRisk: false },
+      '04': { positive: '규제 부담 낮음', middle: '규제 검토 필요', negative: '규제 부담 큼', isRisk: true },
+      '05': { positive: '통제 용이', middle: '통제 기준 보완', negative: '통제 어려움', isRisk: true },
+      '06': { positive: '누적 영향 제한적', middle: '누적 위험 주의', negative: '누적 영향 큼', isRisk: true },
+    }
+    const definition = definitions[number]
+    if (!definition) return { label: '확인 필요', tone: 'review' as const }
+    const isHighScore = score >= 4
+    const isLowScore = score < 3
+    const label = definition.isRisk
+      ? isHighScore ? definition.negative : isLowScore ? definition.positive : definition.middle
+      : isHighScore ? definition.positive : isLowScore ? definition.negative : definition.middle
+    const tone = definition.isRisk ? (isHighScore ? 'review' : isLowScore ? 'high' : undefined) : (isHighScore ? 'high' : isLowScore ? 'review' : undefined)
+    return { label, tone }
   }
   const judgmentEvidence = isOtaCandidate
     ? [
         { number: '01', label: '시장성', text: '피해 대상과 반복 수요가 확인되며, 잠재 가입자군을 비교적 명확히 특정할 수 있음.' },
         { number: '02', label: '손해 측정 가능성', text: '취소·지연·오배송 등 사고 유형별 피해 금액은 산정 가능하나 세부 통계 확보가 추가로 필요함.' },
         { number: '03', label: '보험사고 성립성', text: '사고 발생 여부와 피해 시점을 객관적으로 확인할 수 있어 보험사고 정의가 비교적 명확함.' },
-        { number: '04', label: '법적 책임·규제 안정성', text: 'OTA·항공사·택배사·판매자 간 책임 주체와 환불·배상 기준을 약관에 명확히 반영할 필요가 있음.' },
+        { number: '04', label: '법적 책임·규제 부담', text: 'OTA·항공사·택배사·판매자 간 책임 주체와 환불·배상 기준을 약관에 명확히 반영할 필요가 있음.' },
         { number: '05', label: '통제 가능성', text: '고의적 청구·중복 보상 방지를 위해 예약·배송·환불 이력과의 연계가 필요함.' },
         { number: '06', label: '손실 규모', text: '개별 사고의 손실은 제한적이나 다수 사고가 동시에 발생하는 누적 노출을 고려해야 함.' },
       ]
     : [
-        { number: '01', label: '시장성', text: `${quantification.market.official[0] ?? '시장 수요 신호'} ${quantification.market.assumption[0] ?? '잠재 가입자군과 반복 수요 확인 필요'}` },
-        { number: '02', label: '손해 측정 가능성', text: `${quantification.pml.result}. ${quantification.pml.uncertainty[0] ?? '실제 손해액과 누적 범위 확인 필요'}` },
-        { number: '03', label: '보험사고 성립성', text: `${record.fortuity}. 사고 발생 조건과 피해 시점의 객관적 확인 가능성을 검토합니다.` },
-        { number: '04', label: '법적 책임·규제 안정성', text: `${record.legalExposure}. 책임 주체와 약관 반영 기준을 추가 확인합니다.` },
-        { number: '05', label: '통제 가능성', text: `${record.moralHazard}. ${record.nextAction}` },
-        { number: '06', label: '손실 규모', text: `${quantification.pml.result}. ${record.gap}` },
+        { number: '01', label: '시장성', text: metricEvidenceText('demand', record.summary, 0, 0) },
+        { number: '02', label: '손해 측정 가능성', text: [quantification.pml.numericValue !== null ? `PML ${quantification.pml.value}` : null, metricEvidenceText('measurability', record.gap, 1, 1)].filter(Boolean).join(' · ') },
+        { number: '03', label: '보험사고 성립성', text: metricEvidenceText('fortuity', `${record.fortuity} · ${record.summary}`, -1, 0) },
+        { number: '04', label: '법적 책임·규제 부담', text: metricEvidenceText('legalExposure', `${record.legalExposure} · ${evidenceNextChecks[0] ?? record.nextAction}`, 2, 0) },
+        { number: '05', label: '통제 가능성', text: metricEvidenceText('moralHazard', record.nextAction, 0, 0) },
+        { number: '06', label: '손실 규모', text: metricEvidenceText('accumulation', record.gap, -1, 1) },
       ]
   const productizationPoints = isOtaCandidate
     ? [
@@ -252,18 +268,17 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
       <p className="risk-screening-detail-description">{record.summary}</p>
       <div className="risk-screening-detail-divider" aria-hidden="true" />
       <section className="risk-screening-flow">
-        {flowGroups.map((group) => (
-          <section className="risk-screening-flow-group" key={group.number}>
-            <div className="risk-screening-flow-content">
-              <div className="risk-screening-flow-metrics">
-                {group.items.map((item) => {
+        <div className="risk-screening-flow-card">
+          <div className="risk-screening-flow-heading">
+            <strong>핵심 평가 메트릭스</strong>
+          </div>
+          <div className="risk-screening-flow-metrics">
+            {flowGroups.flatMap((group) => group.items).map((item) => {
                   const status = flowStatusLabel(item.number)
-                  return <div className="risk-screening-flow-metric" key={item.number}><strong>{item.label}</strong><em className={status === '높음' ? 'high' : status === '낮음' ? 'review' : undefined}>{status}</em><span>{removeDetailMetricLabel(item.text)}</span></div>
-                })}
-              </div>
-            </div>
-          </section>
-        ))}
+                  return <div className="risk-screening-flow-metric" key={item.number}><strong>{item.label}</strong><em className={status.tone}>{status.label}</em><span>{removeDetailMetricLabel(item.text)}</span></div>
+            })}
+          </div>
+        </div>
       </section>
       <section className="risk-screening-product-direction"><span>S</span><div><strong>최종 상품 설계 포인트</strong><p>{productDesignDirection}</p></div></section>
       <div className="risk-screening-detail-summary-grid">
@@ -312,11 +327,11 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
   const sortedRecords = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
     const filtered = (developerMode ? (sourceRecords ?? []) : (sourceRecords ?? riskExplorationRecords)).filter((record) => {
-      const matchesCategory = category === 'all'
-        || (category === 'legal' && isLawUpdateRelatedRecord(record))
+      const matchesCategory = category === 'all' || category === 'individual' || category === 'corporate'
+        ? !isLegalOnlyCandidate(record) && (category === 'all' || record.categories.includes(category as ExplorationCategory))
+        : (category === 'legal' && isLawUpdateRelatedRecord(record))
         || (category === 'department' && record.signalOrigin === 'department-intake')
         || (category === 'customer' && record.signalOrigin === 'customer-intake')
-        || (category !== 'legal' && category !== 'department' && category !== 'customer' && record.categories.includes(category as ExplorationCategory))
       const haystack = `${record.title} ${record.summary} ${record.tags.join(' ')}`.toLocaleLowerCase('ko-KR')
       const matchesSource = sourceFilter === 'all' || record.sourceName === sourceFilter
       const collectedAt = record.collectedAt ? new Date(record.collectedAt).getTime() : Number.NaN
@@ -396,7 +411,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
               <option value="all">출처 전체</option>{actualSources.map((source) => <option value={source} key={source}>{source}</option>)}
             </select></label>
             <label><span className="sr-only">정렬</span><select value={sort} onChange={(event) => { setScreeningPage(1); setSelectedRecordId(undefined); updateSearchParam('sort', event.target.value, 'score') }}>
-              <option value="score">후보 선별점수 순</option><option value="market">시장성 순</option><option value="fortuity">우연성 순</option><option value="legalExposure">법률 및 규제 리스크 순</option><option value="pml">PML 순</option><option value="title">후보명 순</option>
+              <option value="score">AI 종합점수 순</option><option value="market">시장성 순</option><option value="fortuity">우연성 순</option><option value="legalExposure">법률 및 규제 리스크 순</option><option value="pml">PML 순</option><option value="title">후보명 순</option>
             </select></label>
           </div>
         </div>
@@ -417,7 +432,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
                   </tr>
                 </thead>
                 <tbody>
-                  {records.map((record, index) => <RiskCandidateComparisonRow key={record.id} record={record} index={pageStart + index} developerMode={developerMode} selected={record.id === selectedRecord?.id} legalPriority={category === 'legal' ? legalPriorityForRecord(record) : undefined} onSelect={() => setSelectedRecordId(record.id)} />)}
+                  {records.map((record, index) => <RiskCandidateComparisonRow key={record.id} record={record} index={pageStart + index} developerMode={developerMode} selected={record.id === selectedRecord?.id} onSelect={() => setSelectedRecordId(record.id)} />)}
                 </tbody>
               </table>
             </div>

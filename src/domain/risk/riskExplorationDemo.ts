@@ -86,12 +86,6 @@ export type RiskExplorationRecord = {
   nextAction: string
 }
 
-const inverseMetricKeys = new Set<RiskExplorationMetricKey>([
-  'accumulation',
-  'moralHazard',
-  'legalExposure',
-])
-
 const MIN_METRIC_SCORE = 1
 const MAX_METRIC_SCORE = 5
 
@@ -331,17 +325,10 @@ const evidenceBackedRecords: RiskExplorationRecord[] = [
   }),
 ]
 
-/**
- * 8개 평가 지표를 동일 가중치로 계산합니다.
- * 누적위험·도덕적 해이·규제/법적 위험은 원점수가 높을수록 불리하므로 역점수화합니다.
- */
+/** 보험화 우선순위: 8개 평가 지표를 동일 가중치로 원점수 그대로 계산합니다. */
 export function calculateRiskExplorationScore(scores: RiskExplorationMetricScores): number {
   const total = riskExplorationMetricKeys.reduce((sum, key) => {
-    const score = clampMetricScore(scores[key])
-    const weightedScore = inverseMetricKeys.has(key)
-      ? MIN_METRIC_SCORE + MAX_METRIC_SCORE - score
-      : score
-    return sum + weightedScore
+    return sum + clampMetricScore(scores[key])
   }, 0)
 
   return total / riskExplorationMetricKeys.length
