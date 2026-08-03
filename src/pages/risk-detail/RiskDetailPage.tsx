@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   resolveSampleRiskId,
-  sampleOnlyNotice,
   sampleRiskCandidates,
   sampleRiskDetails,
 } from '../../domain/risk/sampleData'
@@ -27,7 +26,6 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
   const [liveLoading, setLiveLoading] = useState(false)
   const [liveError, setLiveError] = useState('')
   const [liveStale, setLiveStale] = useState(false)
-  const [lastLiveAt, setLastLiveAt] = useState<string | null>(null)
 
   const refreshLiveDetail = useCallback(async () => {
     if (!articleId || developerMode) {
@@ -42,7 +40,6 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
       setLiveDetail(next)
       setLiveError('')
       setLiveStale(false)
-      setLastLiveAt(new Date().toISOString())
       return next
     } catch (error) {
       setLiveError(error instanceof Error ? error.message : '상세 자료를 불러오지 못했습니다.')
