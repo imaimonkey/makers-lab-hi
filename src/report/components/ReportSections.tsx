@@ -15,7 +15,7 @@ import { PolicyDraftModal } from './ReportAssistPanels'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { AppIcon, type IconName } from '../../shared/components/AppIcon'
 import { createPortal } from 'react-dom'
-import { ChevronRight } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, CircleChevronDown, CircleChevronUp } from 'lucide-react'
 import { createBriefingContent } from '../services/briefing-content'
 import { pushPreservingHistoryState, type ReportNavigation } from '../services/browser-history'
 import { WORDING_ANALYSIS_RISK } from '../data/wording-review-mock'
@@ -471,7 +471,7 @@ function createProductReviewSummaryInsights(report: ReportView) {
     { id: 'pass', label: '충족', count: evaluationTotal, tone: 'pass', names: evaluationCriteriaNames },
     { id: 'critical', label: '불충족', count: 0, tone: 'critical', names: [] as string[] },
   ] as const
-  return { coreJudgmentCards, evaluationStatuses, evaluationTotal, evaluationHeadline: `충족 ${evaluationTotal}개 · 불충족 0개` }
+  return { coreJudgmentCards, evaluationStatuses, evaluationTotal }
 }
 
 function SummaryCoreJudgmentsSection({ report, printMode = false }: { report: ReportView; printMode?: boolean }) {
@@ -480,27 +480,30 @@ function SummaryCoreJudgmentsSection({ report, printMode = false }: { report: Re
   return (
     <section className="report-page__ai-summary-section report-page__ai-summary-section--compact report-page__ai-summary-section--integrated report-page__ai-summary-section--core-judgments">
       <section className="report-page__ai-summary-block report-page__ai-summary-judgment-cards" aria-labelledby="ai-summary-judgment-title">
-        <div className="report-page__ai-summary-block-heading"><div><p className="report-page__eyebrow">CORE JUDGMENTS</p><h3 id="ai-summary-judgment-title">핵심 판단 근거</h3></div><span>검토 가치 판단에 필요한 세 가지 결과</span></div>
+        <div className="report-page__ai-summary-block-heading"><div><p className="report-page__eyebrow">CORE JUDGMENTS</p><h3 id="ai-summary-judgment-title">핵심 판단 근거</h3><p className="report-page__ai-summary-block-subtitle">위 검토 결론을 도출한 세 가지 핵심 결과입니다.</p></div></div>
         {printMode ? (
           <table className="report-page__ai-summary-core-table">
             <caption>핵심 판단 근거</caption>
             <thead><tr><th scope="col">검토 영역</th><th scope="col">주요 판단</th><th scope="col">핵심 수치</th><th scope="col">핵심 근거</th></tr></thead>
-            <tbody>{coreJudgmentCards.map((card) => <tr key={card.id}>
-              <th scope="row">{card.label}</th>
+            <tbody>{coreJudgmentCards.map((card, index) => <tr key={card.id}>
+              <th scope="row"><span className="report-page__ai-summary-card-index">{String(index + 1).padStart(2, '0')}</span>{card.label}</th>
               <td>{card.title}</td>
               <td>{card.metric}</td>
-              <td><ul className="report-page__ai-summary-core-table-bullets">{card.bullets.map((bullet) => <li key={bullet}><span aria-hidden="true">✓</span>{bullet}</li>)}</ul></td>
+              <td><ul className="report-page__ai-summary-core-table-bullets">{card.bullets.map((bullet) => <li key={bullet}><span aria-hidden="true">•</span>{bullet}</li>)}</ul></td>
             </tr>)}</tbody>
           </table>
         ) : (
           <div className="report-page__ai-summary-core-grid report-page__ai-summary-core-grid--three">
-            {coreJudgmentCards.map((card) => <article className={`report-page__ai-summary-core-card report-page__ai-summary-core-card--${card.id}`} key={card.id}>
-              <span className="report-page__ai-summary-card-label">{card.label}</span>
+            {coreJudgmentCards.map((card, index) => <article className={`report-page__ai-summary-core-card report-page__ai-summary-core-card--${card.id}`} key={card.id}>
+              <span className="report-page__ai-summary-card-label"><span className="report-page__ai-summary-card-index">{String(index + 1).padStart(2, '0')}</span>{card.label}</span>
               <h4 className="report-page__ai-summary-decision-title">{card.title}</h4>
               <strong className="report-page__ai-summary-metric-value">{card.metric}</strong>
-              <ul className="report-page__ai-summary-card-bullets">
-                {card.bullets.map((bullet) => <li key={bullet}><span className="report-page__ai-summary-card-bullet-icon" aria-hidden="true">✓</span><span className="report-page__ai-summary-card-bullet-text">{bullet}</span></li>)}
-              </ul>
+              <details className="report-page__ai-summary-card-evidence" open={printMode || undefined}>
+                <summary><span>판단 근거</span><ChevronDown aria-hidden="true" size={16} strokeWidth={1.8} /></summary>
+                <ul className="report-page__ai-summary-card-bullets">
+                  {card.bullets.map((bullet) => <li key={bullet}><span className="report-page__ai-summary-card-bullet-icon" aria-hidden="true">•</span><span className="report-page__ai-summary-card-bullet-text">{bullet}</span></li>)}
+                </ul>
+              </details>
             </article>)}
           </div>
         )}
@@ -510,18 +513,18 @@ function SummaryCoreJudgmentsSection({ report, printMode = false }: { report: Re
 }
 
 function SummaryEvaluationStatusSection({ report, printMode = false }: { report: ReportView; printMode?: boolean }) {
-  const { evaluationTotal, evaluationHeadline } = createProductReviewSummaryInsights(report)
+  const { evaluationTotal } = createProductReviewSummaryInsights(report)
   const criteria = report.productFeasibility.assessment?.criteria ?? []
   const evaluationCriteria = criteria.length
     ? criteria.map((criterion) => {
       const state = criterion.status
       const status = state === 'needs_review'
-        ? { label: '보완 필요', tone: 'needs-review', icon: '!' }
+        ? { label: '보완 필요', tone: 'needs-review' }
         : state === 'additional_check'
-          ? { label: '추가 확인', tone: 'additional-check', icon: '?' }
+          ? { label: '추가 확인', tone: 'additional-check' }
           : state === 'critical'
-            ? { label: '불충족', tone: 'critical', icon: '!' }
-            : { label: '충족', tone: 'pass', icon: '✓' }
+            ? { label: '불충족', tone: 'critical' }
+            : { label: '충족', tone: 'pass' }
       return { id: criterion.id, title: criterion.title, ...status }
     })
     : PRODUCT_REVIEW_SUMMARY_COPY.criteria.groups.flatMap((group) => group.itemLabels).map((title, index) => ({
@@ -529,20 +532,19 @@ function SummaryEvaluationStatusSection({ report, printMode = false }: { report:
       title,
       label: '충족',
       tone: 'pass',
-      icon: '✓',
     }))
   return (
     <section className="report-page__ai-summary-section report-page__ai-summary-section--compact report-page__ai-summary-section--integrated">
       <section className="report-page__ai-summary-block report-page__ai-summary-evaluation-status" aria-labelledby="ai-summary-evaluation-title">
         <div className="report-page__ai-summary-block-heading">
-          <div><p className="report-page__eyebrow">EVALUATION STATUS</p><h3 id="ai-summary-evaluation-title">상품화 평가 현황</h3></div>
+          <div><h3 id="ai-summary-evaluation-title">상품화 평가 현황</h3></div>
           <div className="report-page__ai-summary-evaluation-heading-actions"><span>현재 평가 데이터 기준</span></div>
         </div>
-        <div className="report-page__ai-summary-evaluation-summary"><strong>{evaluationTotal}개 기준 중 {evaluationTotal}개 충족</strong><span>{evaluationHeadline}</span></div>
+        <div className="report-page__ai-summary-evaluation-summary"><strong>상품화 평가 기준</strong><span>{evaluationTotal}/{evaluationTotal} 충족</span></div>
         <div className={`report-page__ai-summary-criteria-grid${printMode ? ' report-page__ai-summary-criteria-grid--print' : ''}`} aria-label="상품화 평가 기준 목록">
           {evaluationCriteria.map((criterion) => <article className={`report-page__ai-summary-criterion-card report-page__ai-summary-criterion-card--${criterion.tone}`} key={criterion.id}>
             <strong className="report-page__ai-summary-criterion-title">{criterion.title}</strong>
-            <span className="report-page__ai-summary-criterion-status"><span aria-hidden="true">{criterion.icon}</span>{criterion.label}</span>
+            <span className="report-page__ai-summary-criterion-status">{criterion.label}</span>
           </article>)}
         </div>
       </section>
@@ -1069,6 +1071,20 @@ const FEASIBILITY_METRIC_DISPLAY: FeasibilityMetricDisplay[] = [
   },
 ]
 
+const FEASIBILITY_METRIC_STATUS: Record<FeasibilityMetricDisplay['id'], 'positive' | 'caution'> = {
+  market: 'positive',
+  tam: 'positive',
+  frequency: 'positive',
+  pml: 'caution',
+}
+
+const FEASIBILITY_METRIC_STATUS_LABEL: Record<FeasibilityMetricDisplay['id'], '양호' | '유의'> = {
+  market: '양호',
+  tam: '양호',
+  frequency: '양호',
+  pml: '유의',
+}
+
 const compactCriterionText = (value: string, maxLength = 150) => value.length > maxLength ? `${value.slice(0, maxLength - 1).trim()}…` : value
 
 const UNASSESSED_GUIDANCE: Record<string, string> = {
@@ -1119,43 +1135,17 @@ const criterionDetailOf = (criterion: CommercializationCriterion): Commercializa
   reviewerChecks: criterion.nextActions.filter((action) => !action.completed).map((action) => action.text),
 }
 
-const SOURCE_SECTION_LABELS: Record<string, string> = {
-  'risk-detail': '위험 상세',
-  'risk-search': '위험 탐색',
-  'coverage-gap': '보장 공백',
-  product: '상품 구조',
-  wording: '약관 검토',
-  evidence: '근거자료',
-  internal_data: '실무 입력자료',
-}
-
-type PrecedingAnalysisLink = {
-  sourceKeys: string[]
-  tabId: ReportTabId
-}
-
-const PRECEDING_ANALYSIS_LINKS: PrecedingAnalysisLink[] = [
-  { sourceKeys: ['risk-detail'], tabId: 'ai-judgment' },
-  { sourceKeys: ['coverage-gap'], tabId: 'coverage-gap' },
-  { sourceKeys: ['wording'], tabId: 'wording' },
-  { sourceKeys: ['evidence'], tabId: 'evidence' },
-  { sourceKeys: ['internal_data'], tabId: 'feasibility' },
-]
-
-const sourceSectionLabel = (source: string) => SOURCE_SECTION_LABELS[source] ?? source
-
-const sourceSectionConfig = (source: string) => PRECEDING_ANALYSIS_LINKS.find((config) => config.sourceKeys.includes(source))
-
 function FeasibilityCriterionDetail({ criterion, onNavigateTab }: { criterion: CommercializationCriterion; onNavigateTab?: (id: ReportTabId) => void }) {
   const detail = criterionDetailOf(criterion)
   const openActions = criterion.nextActions.filter((action) => !action.completed)
+  void onNavigateTab
 
   return (
     <div className="report-page__evaluation-detail report-page__evaluation-detail--binary">
       <dl className="report-page__evaluation-detail-list">
         <div><dt>AI 판단 요약</dt><dd><p>{neutralizeCommercializationText(detail.aiSummary)}</p></dd></div>
         <div><dt>판단 근거</dt><dd><ul>{detail.rationale.map((item) => <li key={item}>{neutralizeCommercializationText(item)}</li>)}</ul></dd></div>
-        <div><dt>사용 자료·출처</dt><dd><ul>{detail.materials.map((item) => <li key={item}>{neutralizeCommercializationText(item)}</li>)}</ul>{criterion.evidence.length ? <ul className="report-page__evaluation-evidence-inline">{criterion.evidence.map((item) => <li key={item.id}><code>{item.id}</code> {neutralizeCommercializationText(item.title)}{item.sourceName ? ` · ${neutralizeCommercializationText(item.sourceName)}` : ''}</li>)}</ul> : null}{criterion.sourceSections.length ? <div className="report-page__evaluation-source-links">{criterion.sourceSections.map((source) => { const config = sourceSectionConfig(source); return config ? <button className="report-page__source-link report-page__no-print" type="button" key={source} onClick={() => onNavigateTab?.(config.tabId)}>{sourceSectionLabel(source)} 보기 →</button> : null })}</div> : null}</dd></div>
+        <div><dt>사용 자료·출처</dt><dd><ul>{detail.materials.map((item) => <li key={item}>{neutralizeCommercializationText(item)}</li>)}</ul>{criterion.evidence.length ? <ul className="report-page__evaluation-evidence-inline">{criterion.evidence.map((item) => <li key={item.id}><code>{item.id}</code> {neutralizeCommercializationText(item.title)}{item.sourceName ? ` · ${neutralizeCommercializationText(item.sourceName)}` : ''}</li>)}</ul> : null}</dd></div>
         <div><dt>가정 및 한계</dt><dd><div className="report-page__evaluation-detail-subgroup"><strong>적용 가정</strong><ul>{detail.assumptions.map((item) => <li key={item}>{neutralizeCommercializationText(item)}</li>)}</ul></div><div className="report-page__evaluation-detail-subgroup"><strong>분석 한계</strong><ul>{detail.limitations.map((item) => <li key={item}>{neutralizeCommercializationText(item)}</li>)}</ul></div></dd></div>
         <div><dt>추가 확인사항</dt><dd>{detail.reviewerChecks.length || openActions.length ? <ul>{[...detail.reviewerChecks, ...openActions.map((action) => action.text)].filter((item, index, values) => item && values.indexOf(item) === index).map((item) => <li key={item}>{neutralizeCommercializationText(item)}</li>)}</ul> : <p>추가 확인사항 없음</p>}</dd></div>
       </dl>
@@ -1178,7 +1168,6 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
   const mandatoryCritical = mandatory.filter((criterion) => noveltyCriterionDecision(criterion, noveltyAnalysis) === 'unfulfilled').length
   const noveltyCriterion = criteria.find(isNoveltyCriterion)
   const noveltyDecision = noveltyCriterion ? noveltyCriterionDecision(noveltyCriterion, noveltyAnalysis) : 'fulfilled'
-  const pmlBaseScenario = FEASIBILITY_PML_DATA.scenarios.find((scenario) => scenario.id === FEASIBILITY_PML_DATA.baseScenario)
   const groupCounts = (group: FeasibilityDisplayGroup) => group.criterionIds.reduce<Record<CommercializationCriterionStatus, number>>((result, id) => {
     const criterion = findCriterion(id)
     if (criterion) {
@@ -1216,25 +1205,17 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
             {mandatoryCritical === 0 ? <li className="is-satisfied"><span aria-hidden="true">✓</span><span>확인된 검토 중단 사유 없음</span></li> : null}
           </ul>
         </div>
-        <div className="report-page__product-decision-facts">
-          <div className="report-page__product-decision-facts-grid">
-            <span id="insurance-criteria" className="report-page__product-decision-fact-card is-pass"><span className="report-page__product-decision-fact-label">보험성 필수 기준</span><strong className="report-page__product-decision-fact-value">{mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</strong><small>피보험이익 · 우연성 · 사행성 배제·실손보상 원칙</small></span>
-            <span id="marketability-criteria" className="report-page__product-decision-fact-card is-market"><span className="report-page__product-decision-fact-label">시장성</span><strong className="report-page__product-decision-fact-value">A · 84점</strong><small>성장성·보험 수요·국내 출시·신규성 기준</small></span>
-            <span className="report-page__product-decision-fact-card is-tam"><span className="report-page__product-decision-fact-label">총도달가능시장</span><strong className="report-page__product-decision-fact-value">기준 연 121억 원</strong><small>추정 범위 · 연 65억~191억 원</small><em>공동주택 중심의 프로토타입 추정</em></span>
-            <span className="report-page__product-decision-fact-card is-pml"><span className="report-page__product-decision-fact-label">최대가능손해(PML)</span><strong className="report-page__product-decision-fact-value">기준 {formatKrwCompact(pmlBaseScenario?.result ?? 0)}</strong><small>추정 범위 · {formatKrwCompact(FEASIBILITY_PML_DATA.range.low)}~{formatKrwCompact(FEASIBILITY_PML_DATA.range.high)}</small></span>
-          </div>
-        </div>
       </section>
 
       <section className="report-page__quantitative-metrics report-page__feasibility-subsection" aria-labelledby="quantitative-metrics-title">
         <div className="report-page__feasibility-subsection-heading">
-          <div><h3 id="quantitative-metrics-title">핵심 정량지표</h3><p>공개자료와 mock 산식을 적용한 프로토타입 추정 결과입니다.</p></div>
+          <div><p className="report-page__quantitative-metric-eyebrow">상품화 판단 핵심 지표</p><h3 id="quantitative-metrics-title">핵심 정량지표</h3></div>
         </div>
         <div className="report-page__quantitative-metric-grid">{FEASIBILITY_METRIC_DISPLAY.map((metric) => <article className={`report-page__quantitative-metric-card report-page__quantitative-metric-card--${metric.id}`} key={metric.id}>
-          <header><h4>{metric.title}</h4></header>
+          <header><h4>{metric.title}</h4><span className={`report-page__quantitative-metric-status report-page__quantitative-metric-status--${FEASIBILITY_METRIC_STATUS[metric.id]}`}>{FEASIBILITY_METRIC_STATUS_LABEL[metric.id]}</span></header>
           <strong className="report-page__quantitative-metric-value">{metric.value}</strong>
           <p className="report-page__quantitative-metric-subvalue">{metric.subvalue}</p>
-          <ul>{metric.items.map((item, index) => <li className={`is-${item.tone}`} key={`${metric.id}-${index}`}><span aria-hidden="true">{item.tone === 'confirmed' ? '✓' : '–'}</span><span>{item.text}</span></li>)}</ul>
+          <ul>{metric.items.map((item, index) => <li className={`is-${item.tone}`} key={`${metric.id}-${index}`}>{item.text}</li>)}</ul>
           <details className="report-page__quantitative-metric-details">
             <summary><span className="report-page__quantitative-detail-label"><span className="is-closed">산정 근거 보기</span><span className="is-open">산정 근거 닫기</span></span></summary>
             <div className="report-page__quantitative-metric-detail-body">
@@ -1275,11 +1256,11 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
               const display = feasibilityCriterionDisplay(criterion, noveltyAnalysis)
               const criterionForDetail = noveltyCriterionForDisplay(criterion, noveltyAnalysis)
               return <article className={'report-page__evaluation-card report-page__evaluation-card--' + (aiDecision === 'fulfilled' ? 'fulfilled' : 'unfulfilled') + (isOpen ? ' is-open' : '')} key={criterion.id}>
-                <button className="report-page__evaluation-toggle" type="button" id={'redesign-feasibility-toggle-' + criterion.id} aria-label={display.title + ' 상세 평가 ' + (isOpen ? '접기' : '펼치기')} aria-expanded={isOpen} aria-controls={'redesign-feasibility-detail-' + criterion.id} onClick={() => { if (!printMode) setOpenCriterionId(isOpen ? null : criterion.id) }}>
+                <button className="report-page__evaluation-toggle" type="button" id={'redesign-feasibility-toggle-' + criterion.id} aria-label={display.title + ' 상세 내용 ' + (isOpen ? '접기' : '펼치기')} aria-expanded={isOpen} aria-controls={'redesign-feasibility-detail-' + criterion.id} onClick={() => { if (!printMode) setOpenCriterionId(isOpen ? null : criterion.id) }}>
                   <span className="report-page__evaluation-card-main"><span className="report-page__evaluation-card-heading"><strong>{display.title}</strong></span><span className="report-page__evaluation-judgment">{display.description}</span></span>
-                  <span className="report-page__evaluation-card-side"><span className={`report-page__evaluation-ai-status report-page__evaluation-ai-status--${aiDecision}`}><span className="report-page__evaluation-status-icon" aria-hidden="true">{aiDecision === 'fulfilled' ? '✓' : '✕'}</span>{aiDecisionLabel(aiDecision)}</span><span className="report-page__evaluation-chevron" aria-hidden="true">{isOpen ? '⌃' : '⌄'}</span></span>
+                  <span className="report-page__evaluation-card-side"><span className={`report-page__evaluation-ai-status report-page__evaluation-ai-status--${aiDecision}`}>{aiDecisionLabel(aiDecision)}</span><span className={`report-page__evaluation-chevron${isOpen ? ' is-open' : ''}`} aria-hidden="true"><CircleChevronDown className="report-page__evaluation-toggle-icon report-page__evaluation-toggle-icon--down" size={25} strokeWidth={1.8} /><CircleChevronUp className="report-page__evaluation-toggle-icon report-page__evaluation-toggle-icon--up" size={25} strokeWidth={1.8} /></span></span>
                 </button>
-                <div id={'redesign-feasibility-detail-' + criterion.id} className="report-page__evaluation-detail-shell" hidden={!isOpen}><FeasibilityCriterionDetail key={criterion.id} criterion={criterionForDetail} onNavigateTab={onNavigateTab} /></div>
+                <div id={'redesign-feasibility-detail-' + criterion.id} className={`report-page__evaluation-detail-shell${isOpen ? ' is-open' : ''}`} aria-hidden={!isOpen} hidden={!isOpen}><div className="report-page__evaluation-detail-shell-inner"><FeasibilityCriterionDetail key={criterion.id} criterion={criterionForDetail} onNavigateTab={onNavigateTab} /></div></div>
               </article>
             })}</div>
           </section>
@@ -3255,6 +3236,30 @@ function ExecutiveBriefingSection({
     <section className="report-page__section report-page__briefing report-page__briefing--decision" aria-label="종합 브리핑">
       <SectionHeading number="01" eyebrow={briefing.eyebrow} title={reportLabel(report, 'briefingTitle', '종합 브리핑')} />
 
+      <section className="report-page__decision-briefing-summary" aria-labelledby="decision-briefing-summary-title">
+        <div className="report-page__decision-briefing-summary-head">
+          <div><p className="report-page__decision-briefing-kicker">SUMMARY</p><h3 id="decision-briefing-summary-title">검토 결론 요약</h3></div>
+        </div>
+
+        <section className="report-page__decision-briefing-conclusion" aria-labelledby="decision-briefing-conclusion-title">
+          <div className="report-page__decision-briefing-conclusion-head">
+            <div><p className="report-page__decision-briefing-kicker">최종 검토 결론</p><h3 id="decision-briefing-conclusion-title">{briefing.conclusion}</h3></div>
+          </div>
+          <div className="report-page__decision-briefing-conclusion-points">
+            <div className="report-page__decision-briefing-conclusion-group">
+              <h4>확인된 판단</h4>
+              <ul>{briefing.conclusionPoints.slice(0, 2).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}</ul>
+            </div>
+            <div className="report-page__decision-briefing-conclusion-group">
+              <h4>후속 확인</h4>
+              <ul>{briefing.conclusionPoints.slice(2, 4).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}</ul>
+            </div>
+          </div>
+        </section>
+
+        <SummaryCoreJudgmentsSection report={report} printMode={printMode} />
+      </section>
+
       <section className="report-page__decision-briefing-section report-page__decision-briefing-risk-context" aria-labelledby="decision-briefing-risk-context-title">
         <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">RISK OVERVIEW</p><h3 id="decision-briefing-risk-context-title">검토 대상 위험</h3></div></div>
         <dl className="report-page__decision-briefing-risk-context-list">
@@ -3263,17 +3268,6 @@ function ExecutiveBriefingSection({
           <div><dt>상품개발 검토 배경</dt><dd>{briefing.riskContext.background}</dd></div>
         </dl>
       </section>
-
-      <section className="report-page__decision-briefing-conclusion" aria-labelledby="decision-briefing-conclusion-title">
-        <div className="report-page__decision-briefing-conclusion-head">
-          <div><p className="report-page__decision-briefing-kicker">최종 검토 결론</p><h3 id="decision-briefing-conclusion-title">{briefing.conclusion}</h3></div>
-        </div>
-        <ul className="report-page__decision-briefing-conclusion-points">
-          {briefing.conclusionPoints.slice(0, 4).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}
-        </ul>
-      </section>
-
-      <SummaryCoreJudgmentsSection report={report} printMode={printMode} />
 
       <section id="decision-briefing-core-results" className="report-page__decision-briefing-section report-page__decision-briefing-core-results" aria-labelledby="decision-briefing-core-title">
         <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">CORE REVIEW RESULTS</p><h3 id="decision-briefing-core-title">핵심 검토 결과</h3></div></div>
@@ -3290,23 +3284,25 @@ function ExecutiveBriefingSection({
         ) : (
           <div className="report-page__decision-briefing-core-grid">
             {briefing.coreCards.map((card) => <article className={`report-page__decision-briefing-core-card report-page__decision-briefing-core-card--${card.tone} report-page__decision-briefing-core-card--${card.id}`} key={card.id}>
-              <div className="report-page__decision-briefing-core-card-head"><h4>{card.title}</h4></div>
+              <div className="report-page__decision-briefing-core-card-head">
+                <h4>{card.title}</h4>
+                {onNavigateTab ? <button className="report-page__text-button report-page__briefing-icon-link report-page__no-print" type="button" onClick={() => {
+                  if (card.id === 'proposal') {
+                    onNavigateTab('proposal')
+                    return
+                  }
+                  if (card.id === 'feasibility') {
+                    onNavigateTab('feasibility')
+                    window.requestAnimationFrame(() => {
+                      window.requestAnimationFrame(() => document.getElementById('insurance-criteria')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+                    })
+                    return
+                  }
+                  onNavigateTab(card.tab)
+                }} aria-label="상세 탭으로 이동" title="상세 탭으로 이동"><ArrowUpRight aria-hidden="true" size={18} strokeWidth={1.9} /></button> : null}
+              </div>
               <strong className="report-page__decision-briefing-core-card-result">{card.status}</strong>
               <ul>{card.lines.slice(0, 2).map((line) => <li key={line}><span aria-hidden="true">✓</span>{line}</li>)}</ul>
-              {onNavigateTab ? <button className="report-page__text-button report-page__briefing-icon-link report-page__no-print" type="button" onClick={() => {
-                if (card.id === 'proposal') {
-                  onNavigateTab('proposal')
-                  return
-                }
-                if (card.id === 'feasibility') {
-                  onNavigateTab('feasibility')
-                  window.requestAnimationFrame(() => {
-                    window.requestAnimationFrame(() => document.getElementById('insurance-criteria')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-                  })
-                  return
-                }
-                onNavigateTab(card.tab)
-              }} aria-label={`${card.title} 상세 보기`} title={`${card.title} 상세 보기`}><ChevronRight aria-hidden="true" size={16} strokeWidth={2.2} /></button> : null}
             </article>)}
           </div>
         )}

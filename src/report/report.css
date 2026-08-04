@@ -30352,3 +30352,1528 @@
     box-shadow: none;
   }
 }
+
+/* 상품화 종합평가 상단 요약 수치는 제거하고 종합판정만 전체 폭으로 사용합니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero {
+  grid-template-columns: 1fr;
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 핵심 정량지표: 숫자는 하나의 네이비 규칙으로, 상태는 시장성에만 작게 표시합니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card {
+  min-height: 264px;
+  padding: 18px 20px 16px;
+  border: 1px solid #e2e8f0;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.055);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > header {
+  display: flex;
+  min-height: 22px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > header h4 {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #168174;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status::before {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #168174;
+  content: '';
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-value {
+  margin: 12px 0 0;
+  color: #123f73 !important;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-subvalue {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul {
+  display: grid;
+  gap: 7px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li {
+  display: flex;
+  gap: 8px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li::before {
+  flex: 0 0 8px;
+  color: #94a3b8;
+  content: '•';
+  font-weight: 700;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li.is-confirmed,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li.is-follow-up,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li.is-additional-check {
+  color: #475569;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details {
+  margin-top: auto;
+  padding-top: 14px;
+  border: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  color: #526a7c;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details summary::before {
+  color: #64748b;
+  content: '+';
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details[open] summary::before {
+  content: '−';
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details summary:hover {
+  color: var(--report-orange);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details summary:focus-visible {
+  outline: 2px solid #b9ccda;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card {
+    min-height: 0;
+    border-color: #d7dee6;
+    border-top-color: #d7dee6;
+    background: #ffffff !important;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-value {
+    color: #123f73 !important;
+  }
+}
+
+/* 핵심 정량지표 상태 배지: 두 가지 용어와 동일한 크기로만 구분합니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status {
+  display: inline-flex;
+  min-width: 56px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status::before {
+  display: none;
+  content: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status--positive {
+  color: #0f766e;
+  border-color: #c5e5df;
+  background: #eef8f6;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status--caution {
+  color: #a16207;
+  border-color: #f1dfb5;
+  background: #fff7e6;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-value {
+  font-size: 29px;
+  font-weight: 700;
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status {
+    font-size: 9pt;
+  }
+}
+
+/* 핵심 정량지표 섹션 자체를 상품화 판단의 대표 영역으로 묶습니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics {
+  padding: 24px;
+  border: 1px solid #d8e4ee;
+  border-left: 4px solid #2c5d88;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f2f7fb 0%, #edf3f8 100%);
+  box-shadow: 0 8px 24px rgba(33, 69, 102, 0.08);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading {
+  margin-bottom: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-eyebrow {
+  margin: 0 0 6px;
+  color: #55718a;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading h3 {
+  color: #123f73;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading p:not(.report-page__quantitative-metric-eyebrow) {
+  margin: 7px 0 0;
+  color: #526a7c;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status--caution {
+  color: #b4232f;
+  border-color: #efc7cb;
+  background: #fff3f4;
+}
+
+@media screen and (max-width: 560px) {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics {
+    padding: 17px 16px;
+  }
+
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics {
+    padding: 4mm;
+    border: 1px solid #d7dee6;
+    border-left: 2px solid #315d88;
+    border-radius: 0;
+    background: #ffffff !important;
+    box-shadow: none;
+  }
+
+}
+
+/* 정량지표는 대형 카드가 아닌 독립 섹션으로 구분합니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics {
+  padding: 28px 20px 32px;
+  border: 0;
+  border-left: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, #f4f7fa 0%, #eef3f7 100%);
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading {
+  margin-bottom: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading h3::after {
+  display: block;
+  width: 32px;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--report-orange);
+  content: '';
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-grid {
+  margin-top: 20px;
+}
+
+@media screen and (max-width: 560px) {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics {
+    padding: 24px 16px 28px;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics {
+    padding: 4mm 0;
+    border: 0;
+    border-radius: 0;
+    background: #f8fafc !important;
+    box-shadow: none;
+  }
+}
+
+/* 12개 기준 토글: 상태 배지와 펼침 힌트를 한 줄에 정돈하고, 작은 테두리 박스는 제거합니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: max-content;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #6b7f91;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle:hover .report-page__evaluation-chevron,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle:focus-visible .report-page__evaluation-chevron {
+  color: #123f73;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card.is-open .report-page__evaluation-chevron {
+  color: #123f73;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card-side {
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    margin-top: 4px;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron {
+    display: none;
+  }
+}
+
+/* 보장 공백 요약의 세 단계 흐름을 은은한 구분선으로 나눕니다. */
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-grid {
+  gap: 0;
+  border-top: 1px solid #e2eaf0;
+  border-bottom: 1px solid #e2eaf0;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-card {
+  min-height: 168px;
+  padding: 18px 18px 20px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-card + .report-page__coverage-gap-result-card {
+  border-left: 1px solid #dce6ed;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-grid {
+    border-bottom: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-card + .report-page__coverage-gap-result-card {
+    border-top: 1px solid #dce6ed;
+    border-left: 0;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-grid {
+    border-color: #d7dee6;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-result-card + .report-page__coverage-gap-result-card {
+    border-left-color: #d7dee6;
+  }
+}
+
+/* 12개 평가 기준 아코디언의 접힌 헤더를 실무용 한 줄 컨트롤로 정리합니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle {
+  min-height: 78px;
+  padding: 16px 18px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 11px;
+  min-width: max-content;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-ai-status {
+  display: inline-flex;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border: 1px solid #b9ddd7;
+  border-radius: 6px;
+  color: #0f766e;
+  background: #f1faf8;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-ai-status--unfulfilled {
+  border-color: #efc7cb;
+  color: #b4232f;
+  background: #fff3f4;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #64748b;
+  background: transparent;
+  line-height: 1;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron svg {
+  display: block;
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron.is-open svg {
+  transform: rotate(180deg);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle:hover .report-page__evaluation-chevron,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle:focus-visible .report-page__evaluation-chevron,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card.is-open .report-page__evaluation-chevron {
+  color: #123f73;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card.is-open .report-page__evaluation-detail-shell {
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card-side {
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-ai-status {
+    padding: 2px 6px;
+    font-size: 9pt;
+  }
+}
+
+/* 원형 Chevron 아이콘 자체를 사용하므로 별도 사각형 버튼 표면은 제거합니다. */
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: max-content;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron {
+  position: relative;
+  display: inline-flex;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #315d88;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background 175ms ease, color 175ms ease, transform 175ms ease;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle-icon {
+  position: absolute;
+  display: block;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle-icon--down {
+  opacity: 1;
+  transform: scale(1);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle-icon--up {
+  opacity: 0;
+  transform: scale(0.82);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron.is-open .report-page__evaluation-toggle-icon--down {
+  opacity: 0;
+  transform: scale(0.82);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron.is-open .report-page__evaluation-toggle-icon--up {
+  opacity: 1;
+  transform: scale(1);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle:hover .report-page__evaluation-chevron {
+  color: #c6651a;
+  background: #fff7ed;
+  transform: scale(1.03);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-toggle:focus-visible .report-page__evaluation-chevron {
+  outline: 2px solid #315d88;
+  outline-offset: 2px;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-card-side {
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__evaluation-chevron {
+    display: none;
+  }
+}
+
+/* Keep the novelty review calm and distinct from the page's orange interaction accent. */
+:is(#report-root, .reports-page) #report-panel-feasibility.report-page__tab-panel .report-page__novelty-analysis-heading .report-page__eyebrow,
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign .report-page__novelty-analysis-heading .report-page__eyebrow {
+  color: var(--feasibility-muted, #6f7f8c);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign .report-page__novelty-analysis {
+  border-top-color: var(--feasibility-line, #dce5eb);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign .report-page__novelty-summary-panel {
+  border-left-color: var(--feasibility-navy, #17324d);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign .report-page__novelty-summary-judgment > strong {
+  color: var(--feasibility-emerald, #16766a);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign .report-page__novelty-summary-judgment h4 {
+  color: var(--feasibility-navy, #17324d);
+}
+
+/* Executive briefing: keep the conclusion and its three reasons in one reading unit. */
+
+.report-page__briefing--decision .report-page__decision-briefing-summary {
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid var(--decision-line);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(23, 59, 99, .04);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--decision-line);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary-head h3 {
+  margin: 0;
+  color: var(--decision-navy);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+  margin-top: 0;
+  padding: 18px 20px;
+  border-left: 3px solid var(--decision-teal);
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+  margin: 18px 0 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated > .report-page__ai-summary-block {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading {
+  margin-bottom: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--decision-line);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading h3 {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+@media screen and (max-width: 680px) {
+  .report-page__briefing--decision .report-page__decision-briefing-summary {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary-head {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary-head h3 {
+    font-size: 20px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+    padding: 16px;
+  }
+}
+
+@media print {
+  .report-page__briefing--decision .report-page__decision-briefing-summary {
+    padding: 4mm;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary-head {
+    margin-bottom: 3mm;
+    padding-bottom: 2.5mm;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    margin-top: 3mm;
+  }
+}
+
+/* Core review cards use an explicit navigation affordance in the title row. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card {
+  transition: border-color 175ms ease;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card:hover {
+  border-color: #c7d8e5;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card-head {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card-head h4 {
+  min-width: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card-head .report-page__briefing-icon-link {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  flex: 0 0 32px;
+  align-self: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d5e0e8;
+  border-radius: 8px;
+  color: #315d88 !important;
+  background: #f7fafc;
+  box-shadow: none;
+  cursor: pointer;
+  transition: color 175ms ease, background-color 175ms ease, border-color 175ms ease, transform 175ms ease;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card-head .report-page__briefing-icon-link:hover {
+  border-color: #edbd8f;
+  color: var(--report-orange) !important;
+  background: #fff7ed;
+  transform: translateY(-1px);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card-head .report-page__briefing-icon-link:focus-visible {
+  outline: 2px solid #315d88;
+  outline-offset: 2px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card-head .report-page__briefing-icon-link > svg {
+  display: block;
+  transform: none;
+  transition: none;
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card-head .report-page__briefing-icon-link {
+    display: none;
+  }
+}
+
+/* The three core judgments are the primary content of the briefing summary. */
+.report-page__briefing--decision .report-page__decision-briefing-summary-head {
+  margin-bottom: 20px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion .report-page__decision-briefing-conclusion-head h3 {
+  font-size: 26px;
+  line-height: 1.25;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 28px;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-group {
+  min-width: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-group h4 {
+  margin: 0;
+  color: var(--decision-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-group ul {
+  display: grid;
+  gap: 5px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-group li {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 7px;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-group li > span {
+  flex: 0 0 auto;
+  color: var(--decision-teal);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+  margin: 28px -6px 0;
+  padding: 18px 6px 6px;
+  border-radius: 10px;
+  background: #fffaf5;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading {
+  display: block;
+  margin-bottom: 16px;
+  padding: 0;
+  border: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading .report-page__eyebrow {
+  margin-bottom: 5px;
+  color: #8b6b55;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading h3 {
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.report-page__briefing--decision .report-page__ai-summary-block-subtitle {
+  margin: 5px 0 0;
+  color: var(--decision-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three {
+  gap: 12px;
+  margin-top: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+  min-height: 236px;
+  padding: 17px 16px;
+  border: 1px solid #e2e9f0;
+  border-top: 2px solid #d3e1ec;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #526b7e;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-index {
+  color: #b86a35;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-decision-title {
+  margin-top: 12px;
+  color: var(--decision-navy);
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-card .report-page__ai-summary-metric-value {
+  margin-top: 8px;
+  color: var(--decision-teal);
+  font-size: 14px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullets {
+  margin-top: 14px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullet-icon {
+  color: #6f8797;
+  font-weight: 500;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullet-text {
+  color: #475569;
+}
+
+@media screen and (max-width: 680px) {
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion .report-page__decision-briefing-conclusion-head h3 {
+    font-size: 22px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    margin-right: -2px;
+    margin-left: -2px;
+    padding-right: 2px;
+    padding-left: 2px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading h3 {
+    font-size: 22px;
+  }
+}
+
+@media print {
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    margin: 4mm 0 0;
+    padding: 3mm 0 0;
+    background: #ffffff;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+    min-height: 0;
+    padding: 3mm;
+    background: #ffffff;
+  }
+}
+
+/* Evaluation status is a quiet checklist below the primary quantitative metrics. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-status {
+  margin-top: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-status .report-page__ai-summary-block-heading {
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-status .report-page__ai-summary-block-heading h3 {
+  margin: 0;
+  color: var(--report-navy);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-heading-actions {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin: 0 0 12px;
+  color: var(--report-navy);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-summary strong {
+  color: var(--report-navy);
+  font-weight: 500;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-summary span {
+  color: #0f766e;
+  font-weight: 700;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criteria-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criterion-card {
+  display: flex;
+  min-height: 52px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #dfe7ee !important;
+  border-radius: 8px;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criterion-title {
+  min-width: 0;
+  color: var(--report-navy);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criterion-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0;
+  align-self: center;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criterion-card--needs-review .report-page__ai-summary-criterion-status {
+  color: #9a641c;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criterion-card--additional-check .report-page__ai-summary-criterion-status {
+  color: #6658a8;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criterion-card--critical .report-page__ai-summary-criterion-status {
+  color: #b42318;
+}
+
+@media screen and (max-width: 1080px) {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criteria-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 680px) {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-status .report-page__ai-summary-block-heading {
+    align-items: flex-start;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criteria-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criterion-card {
+    min-height: 48px;
+    padding: 10px 12px;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-criterion-card {
+    min-height: 0;
+    padding: 2.5mm 3mm;
+    background: #ffffff !important;
+  }
+}
+
+/* Unified review board: one surface, with the three judgments set as columns. */
+.report-page__briefing--decision .report-page__decision-briefing-summary {
+  padding: 24px;
+  border: 1px solid #dce5ec;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary-head {
+  margin-bottom: 22px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion .report-page__decision-briefing-conclusion-head {
+  display: block;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion .report-page__decision-briefing-kicker {
+  margin-bottom: 6px;
+  color: #71869a;
+  font-size: 11px;
+  letter-spacing: .08em;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion .report-page__decision-briefing-conclusion-head h3 {
+  margin: 0;
+  color: var(--report-navy);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1.25;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+  margin-top: 14px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+  margin: 32px 0 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated > .report-page__ai-summary-block {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading {
+  margin-bottom: 18px;
+  padding: 0;
+  border: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading h3 {
+  color: var(--report-navy);
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-subtitle {
+  margin-top: 5px;
+  color: #667085;
+  font-size: 12px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+  min-height: 210px;
+  padding: 18px 22px;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+  border-left: 1px solid #e2e8f0 !important;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-label {
+  color: #526b7e;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-index {
+  color: var(--report-orange);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-decision-title {
+  color: var(--report-navy) !important;
+  font-size: 17px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-card .report-page__ai-summary-metric-value {
+  color: #0f766e !important;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullet-icon {
+  color: #71869a;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullet-text {
+  color: #475569;
+}
+
+@media screen and (max-width: 680px) {
+  .report-page__briefing--decision .report-page__decision-briefing-summary {
+    padding: 18px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion .report-page__decision-briefing-conclusion-head h3 {
+    font-size: 24px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    margin-top: 26px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+    min-height: 0;
+    padding: 16px 0;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+    border-top: 1px solid #e2e8f0 !important;
+    border-left: 0 !important;
+  }
+}
+
+@media print {
+  .report-page__briefing--decision .report-page__decision-briefing-summary {
+    padding: 4mm;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    margin-top: 5mm;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+    min-height: 0;
+    padding: 3mm 4mm;
+  }
+}
+
+/* Review board refinement: compress the conclusion and give the evidence a focused panel. */
+.report-page__briefing--decision .report-page__decision-briefing-summary {
+  padding: 22px;
+  border-color: #e1e8ee;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary-head {
+  margin-bottom: 16px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+  display: grid;
+  grid-template-columns: minmax(250px, .78fr) minmax(0, 1.22fr);
+  align-items: center;
+  gap: 26px;
+  padding: 20px 22px;
+  border: 0 !important;
+  border-radius: 11px;
+  background: #f7fafc !important;
+  box-shadow: none !important;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion .report-page__decision-briefing-conclusion-head h3 {
+  font-size: 29px;
+  line-height: 1.2;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion .report-page__decision-briefing-conclusion-points {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 22px;
+  margin: 0;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+  margin: 22px 0 0;
+  padding: 22px 22px 20px;
+  border-radius: 12px;
+  background: #fbfaf7;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading {
+  margin-bottom: 18px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading h3 {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+  display: flex;
+  min-height: 230px;
+  flex-direction: column;
+  padding: 20px 21px;
+  border: 1px solid #dfe7ee !important;
+  border-radius: 11px;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-label {
+  color: #526b7e;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-index {
+  color: var(--report-orange);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-decision-title {
+  margin-top: 12px;
+  color: var(--report-navy) !important;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-card .report-page__ai-summary-metric-value {
+  margin-top: 8px;
+  color: #0f766e !important;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-basis-label {
+  display: block;
+  margin-top: 16px;
+  color: #7b8794;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullets {
+  margin-top: 6px;
+}
+
+@media screen and (max-width: 760px) {
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    padding: 18px 16px;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three {
+    grid-template-columns: 1fr;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+    min-height: 0;
+  }
+}
+
+@media print {
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+    padding: 4mm;
+    background: #f7fafc !important;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    padding: 4mm;
+    background: #fbfaf7;
+  }
+
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+    min-height: 0;
+    padding: 3mm;
+  }
+}
+
+/* Center the content within each of the three judgment cards. */
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+  align-items: center;
+  text-align: center;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-label {
+  justify-content: center;
+  text-align: center;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullets {
+  width: 100%;
+  text-align: center;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullets li {
+  justify-content: center;
+  text-align: center;
+}
+
+/* Keep the evidence copy readable while the card summary remains centered. */
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-basis-label {
+  width: 100%;
+  text-align: left;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullets {
+  text-align: left;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-bullets li {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+/* Evidence is revealed on demand so the card summary stays concise. */
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence {
+  width: 100%;
+  margin-top: auto;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #edf1f5;
+  color: #71869a;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  list-style: none;
+  text-align: left;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence summary::-webkit-details-marker {
+  display: none;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence summary svg {
+  flex: 0 0 auto;
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence[open] summary {
+  color: var(--report-navy);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence[open] summary svg {
+  color: var(--report-orange);
+  transform: rotate(180deg);
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence summary:focus-visible {
+  outline: 2px solid #315d88;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence .report-page__ai-summary-card-bullets {
+  margin-top: 9px;
+}
+
+/* Let evidence expand below the summary instead of being pinned to the card bottom. */
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+  min-height: 190px;
+  padding: 18px 20px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-label {
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-index {
+  font-size: 13px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence {
+  margin-top: 14px;
+}
+
+.report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-card-evidence summary::marker {
+  content: '';
+}
+
+@media screen and (max-width: 760px) {
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+    min-height: 0;
+  }
+}
+
+@media print {
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+  .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+    min-height: 0;
+  }
+}

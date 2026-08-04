@@ -1,858 +1,2377 @@
-.hi-dashboard-page {
-  display: grid;
-  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
-  grid-template-areas:
-    'hero kpi'
-    'work work'
-    'analytics analytics';
-  align-items: start;
-  gap: 16px;
-  --hi-navy: #00205b;
-  --hi-orange: #ff9e1b;
-  --hi-orange-strong: #ff7a00;
-  --hi-soft-line: #edf1f6;
-  width: min(1480px, 100%);
-  padding-top: 22px;
-}
+.riskRadarPage{
+      --navy-950:#13213d;
+      --navy-900:#1d2e4d;
+      --navy-800:#32496d;
+      --navy-700:#4d668d;
+      --navy-600:#7589aa;
+      --navy-300:#c8d4e4;
+      --navy-200:#dce5f1;
+      --navy-100:#ebf1f8;
+      --navy-50:#f5f8fc;
 
-.hi-dashboard-page .hi-command-hero {
-  grid-area: hero;
-  display: grid;
-  grid-template-columns: 1fr;
-  margin-bottom: 0;
-}
+      --orange-800:#b65d29;
+      --orange-700:#ca7137;
+      --orange-600:#df8850;
+      --orange-500:#eca06d;
+      --orange-300:#f3c4a3;
+      --orange-200:#f8d7c0;
+      --orange-100:#fff0e4;
+      --orange-50:#fff8f3;
 
-.hi-dashboard-page .hi-command-copy {
-  min-height: 168px;
-  display: grid;
-  grid-template-columns: 1fr;
-  align-content: center;
-  align-items: center;
-  padding: 26px;
-  border-radius: 14px;
-  border-left: 4px solid var(--hi-orange);
-  color: #fff;
-  background: radial-gradient(circle at 92% 8%, rgba(255, 158, 27, .3), transparent 32%), linear-gradient(135deg, rgba(0, 32, 91, .98), rgba(0, 20, 61, .94)), var(--hi-navy);
-  box-shadow: 0 12px 28px rgba(0, 32, 91, .16);
-}
+      --teal-700:#2f7d70;
+      --teal-600:#4b9588;
+      --teal-100:#e8f4f1;
 
-.hi-dashboard-page .hi-command-copy .page-kicker { color: #ffcf8b; }
-.hi-dashboard-page .hi-command-copy .page-kicker span { color: #fff; }
-.hi-dashboard-page .hi-command-greeting {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-}
-.hi-dashboard-page .hi-command-greeting span { color: #ffb86b; font-size: 12px; font-weight: 900; text-transform: uppercase; }
-.hi-dashboard-page .hi-command-greeting strong { color: #fff; font-size: 38px; line-height: 1.05; letter-spacing: 0; }
-.hi-dashboard-page .hi-command-copy h1 {
-  max-width: 830px;
-  margin: 0;
-  font-size: clamp(34px, 4vw, 58px);
-  line-height: 1.08;
-  letter-spacing: -.045em;
-}
-.hi-dashboard-page .hi-command-copy p:last-of-type {
-  max-width: 720px;
-  margin: 18px 0 0;
-  color: rgba(255, 255, 255, .74);
-  font-size: 14px;
-  line-height: 1.75;
-}
-.hi-dashboard-page .hi-focus-insurance-card,
-.hi-dashboard-page .hi-panel {
-  border: 1px solid var(--hi-soft-line);
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 8px 20px rgba(33, 58, 94, .05);
-}
-.hi-dashboard-page .hi-focus-insurance-card {
-  display: grid;
-  align-content: start;
-  gap: 14px;
-  padding: 26px;
-  background: radial-gradient(circle at 90% 5%, rgba(255, 158, 27, .22), transparent 38%), linear-gradient(180deg, #fff, #fff7ec);
-}
-.hi-dashboard-page .hi-focus-label {
-  width: fit-content;
-  padding: 6px 10px;
-  border-radius: 999px;
-  color: #9a5b00;
-  background: #fff0d8;
-  font-size: 10px;
-  font-weight: 900;
-}
-.hi-dashboard-page .hi-focus-insurance-card > strong { color: var(--hi-navy); font-size: 22px; line-height: 1.35; }
-.hi-dashboard-page .hi-focus-insurance-card > p { margin: 0; color: #64748b; font-size: 12px; line-height: 1.6; }
-.hi-dashboard-page .hi-risk-meter { height: 10px; overflow: hidden; border-radius: 999px; background: #f1e6d7; }
-.hi-dashboard-page .hi-risk-meter span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--hi-orange), var(--hi-navy));
-}
-.hi-dashboard-page .hi-focus-insurance-card dl { display: grid; gap: 8px; margin: 4px 0 0; }
-.hi-dashboard-page .hi-focus-insurance-card dl > div {
-  display: grid;
-  grid-template-columns: 84px 1fr;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, .78);
-}
-.hi-dashboard-page .hi-focus-insurance-card dt { color: #8d9bac; font-size: 10px; font-weight: 800; }
-.hi-dashboard-page .hi-focus-insurance-card dd { margin: 0; color: var(--hi-navy); font-size: 11px; font-weight: 800; line-height: 1.45; }
+      --purple-700:#7864a5;
+      --purple-100:#f0ecfa;
 
-.hi-dashboard-page .hi-kpi-grid {
-  grid-area: kpi;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 0;
-}
-.hi-dashboard-page .hi-kpi-card {
-  min-height: 168px;
-  position: relative;
-  display: grid;
-  align-content: space-between;
-  padding: 24px;
-  overflow: hidden;
-  border: 1px solid var(--hi-soft-line);
-  border-top: 4px solid var(--hi-orange);
-  border-radius: 14px;
-  color: var(--hi-navy);
-  background: #fff;
-  box-shadow: 0 8px 20px rgba(33, 58, 94, .05);
-}
-.hi-dashboard-page .hi-kpi-card.orange { color: #fff; border-color: #ff9e1b; background: linear-gradient(135deg, #ffb252, var(--hi-orange)); }
-.hi-dashboard-page .hi-kpi-card.green { border-color: #c9ebe1; border-top-color: #11a77b; background: linear-gradient(145deg, #e9f9f4, #fff); }
-.hi-dashboard-page .hi-kpi-card.blue { border-color: #d3e5f6; border-top-color: #2c91d2; background: linear-gradient(145deg, #edf7ff, #fff); }
-.hi-dashboard-page .hi-kpi-card span { display: block; color: #64748b; font-size: 11px; font-weight: 800; }
-.hi-dashboard-page .hi-kpi-card.orange span,
-.hi-dashboard-page .hi-kpi-card.orange small,
-.hi-dashboard-page .hi-kpi-card.orange p { color: rgba(255, 255, 255, .82); }
-.hi-dashboard-page .hi-kpi-card.green strong { color: #08795a; }
-.hi-dashboard-page .hi-kpi-card.blue strong { color: #1f6fa7; }
-.hi-dashboard-page .hi-kpi-card strong { display: block; margin-top: 16px; font-size: 44px; line-height: 1; }
-.hi-dashboard-page .hi-kpi-card small { margin-left: 4px; color: #8491a3; font-size: 12px; }
-.hi-dashboard-page .hi-kpi-card p { margin: 11px 0 0; color: #718096; font-size: 11px; }
+      --source-orange:#e58c4d;
+      --source-navy:#56739e;
+      --source-blue:#8ea2bf;
+      --source-mist:#c6d1df;
 
-.hi-dashboard-page .hi-analytics-grid {
-  grid-area: analytics;
-  display: grid;
-  grid-template-columns: minmax(360px, .9fr) minmax(0, 1.1fr);
-  gap: 16px;
-  margin-bottom: 0;
-}
+      --ink:#222b39;
+      --muted:#6d7889;
+      --soft:#8b95a5;
+      --line:#e2e7ee;
+      --surface:#ffffff;
+      --canvas:#f5f7fa;
 
-.hi-dashboard-page .hi-channel-panel,
-.hi-dashboard-page .hi-heatmap-panel,
-.hi-dashboard-page .hi-watchlist-panel {
-  min-height: 248px;
-}
+      --shadow:0 14px 34px rgba(27,42,71,.075);
+      --shadow-sm:0 7px 20px rgba(31,45,73,.055);
+      --radius-xl:22px;
+      --radius-lg:17px;
+      --radius-md:12px;
+    }.riskRadarPage *{box-sizing:border-box}.riskRadarPage{scroll-behavior:smooth}.riskRadarPage{
+      margin:0;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 4% 0%, rgba(236,160,109,.10), transparent 27rem),
+        radial-gradient(circle at 94% 2%, rgba(77,102,141,.10), transparent 30rem),
+        var(--canvas);
+      font-family:Pretendard,"Noto Sans KR",Apple SD Gothic Neo,Segoe UI,sans-serif;
+      font-size:14px;
+      line-height:1.55;
+    }.riskRadarPage button{font:inherit;cursor:pointer}.riskRadarPage a{text-decoration:none;color:inherit}.riskRadarPage .app{
+      display:grid;
+      grid-template-columns:220px minmax(0,1fr);
+      min-height:100vh;
+    }
 
-.hi-dashboard-page .hi-channel-donut {
-  margin-top: 12px;
-  padding: 10px;
-  border: 1px solid #edf1f6;
-  border-radius: 18px;
-  background: #f8fbff;
-}
+    /* Sidebar */
+    .riskRadarPage .sidebar{
+      position:sticky;
+      top:0;
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      padding:22px 16px;
+      color:#fff;
+      background:linear-gradient(180deg,var(--navy-950),#213757 72%,#294164);
+    }.riskRadarPage .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:2px 8px 24px;
+      font-weight:850;
+      letter-spacing:-.02em;
+    }.riskRadarPage .brand-mark{
+      width:34px;
+      height:34px;
+      display:grid;
+      place-items:center;
+      border-radius:12px;
+      background:#fff;
+      color:var(--navy-950);
+      font-weight:950;
+      box-shadow:0 6px 14px rgba(0,0,0,.15);
+    }.riskRadarPage .menu-label{
+      margin:12px 10px 7px;
+      color:rgba(255,255,255,.45);
+      font-size:11px;
+      font-weight:750;
+      letter-spacing:.1em;
+    }.riskRadarPage .nav-item{
+      display:flex;
+      align-items:center;
+      gap:11px;
+      min-height:44px;
+      margin-bottom:4px;
+      padding:0 12px;
+      border-radius:12px;
+      color:rgba(255,255,255,.72);
+      font-weight:650;
+      transition:.18s ease;
+    }.riskRadarPage .nav-item:hover{background:rgba(255,255,255,.07);color:#fff}.riskRadarPage .nav-item.active{
+      color:#fff;
+      background:rgba(255,255,255,.12);
+      box-shadow:inset 3px 0 0 var(--orange-500);
+    }.riskRadarPage .nav-icon{width:19px;height:19px;flex:0 0 auto}.riskRadarPage .sidebar-foot{
+      margin-top:auto;
+      padding:14px 12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+    }
 
-.hi-dashboard-page .hi-channel-donut > div {
-  height: 30px;
+    /* Main */
+    .riskRadarPage{
+      min-width:0;
+      padding:30px 34px 58px;
+    }.riskRadarPage .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:18px;
+    }.riskRadarPage .eyebrow{
+      margin-bottom:5px;
+      color:var(--orange-800);
+      font-size:12px;
+      font-weight:850;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }.riskRadarPage h1{
+      margin:0;
+      color:var(--navy-950);
+      font-size:30px;
+      line-height:1.18;
+      letter-spacing:-.035em;
+    }.riskRadarPage .subtitle{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }.riskRadarPage .analysis-meta{
+      display:grid;
+      gap:8px;
+      min-width:230px;
+    }.riskRadarPage .meta-card{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.9);
+      box-shadow:var(--shadow-sm);
+    }.riskRadarPage .meta-card-label{
+      color:var(--soft);
+      font-size:10px;
+      font-weight:800;
+    }.riskRadarPage .meta-card-value{
+      color:var(--navy-800);
+      text-align:right;
+      font-size:11px;
+      font-weight:900;
+      white-space:nowrap;
+    }.riskRadarPage .focus-note{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      margin-top:11px;
+      padding:6px 11px;
+      border:1px solid var(--orange-200);
+      border-radius:999px;
+      background:var(--orange-50);
+      color:#8b5a3b;
+      font-size:12px;
+      font-weight:750;
+    }.riskRadarPage .panel{
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:var(--radius-xl);
+      background:var(--surface);
+      box-shadow:var(--shadow);
+    }.riskRadarPage .panel-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:20px 22px 14px;
+    }.riskRadarPage .panel-title{
+      margin:0;
+      color:var(--navy-950);
+      font-size:18px;
+      letter-spacing:-.02em;
+    }.riskRadarPage .panel-desc{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:12px;
+    }.riskRadarPage .text-link{
+      border:0;
+      background:none;
+      color:var(--orange-800);
+      font-size:12px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+
+    /* 1행: KPI */
+    .riskRadarPage .kpi-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+      margin-bottom:20px;
+    }.riskRadarPage .kpi{
+      --kpi-accent:var(--orange-600);
+      --kpi-tint:var(--orange-50);
+      position:relative;
+      min-height:156px;
+      overflow:hidden;
+      padding:18px 19px 16px;
+      border:1px solid color-mix(in srgb, var(--kpi-accent) 28%, var(--line));
+      border-top:4px solid var(--kpi-accent);
+      border-radius:18px;
+      background:linear-gradient(145deg,#fff 55%,var(--kpi-tint));
+      box-shadow:0 11px 27px rgba(31,45,73,.075);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }.riskRadarPage .kpi:nth-child(2){
+      --kpi-accent:var(--navy-700);
+      --kpi-tint:var(--navy-50);
+    }.riskRadarPage .kpi:nth-child(3){
+      --kpi-accent:#8195b3;
+      --kpi-tint:#f2f5f9;
+    }.riskRadarPage .kpi:hover{
+      transform:translateY(-2px);
+      box-shadow:0 15px 34px rgba(31,45,73,.10);
+    }.riskRadarPage .kpi-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }.riskRadarPage .kpi-title-wrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }.riskRadarPage .kpi-icon{
+      width:38px;
+      height:38px;
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      border:1px solid color-mix(in srgb, var(--kpi-accent) 24%, #fff);
+      border-radius:12px;
+      background:#fff;
+      color:var(--kpi-accent);
+      box-shadow:0 5px 13px rgba(35,50,79,.07);
+    }.riskRadarPage .kpi-icon svg{
+      width:19px;
+      height:19px;
+      fill:none;
+      stroke:currentColor;
+      stroke-width:1.8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }.riskRadarPage .kpi-label{
+      color:var(--navy-900);
+      font-size:14px;
+      font-weight:850;
+      letter-spacing:-.015em;
+    }.riskRadarPage .kpi-period{
+      flex:0 0 auto;
+      padding:4px 7px;
+      border-radius:999px;
+      background:rgba(255,255,255,.78);
+      color:var(--soft);
+      font-size:9px;
+      font-weight:800;
+    }.riskRadarPage .kpi-value{
+      display:flex;
+      align-items:flex-end;
+      gap:6px;
+      margin-top:13px;
+    }.riskRadarPage .kpi-value strong{
+      color:var(--navy-950);
+      font-size:43px;
+      line-height:.92;
+      letter-spacing:-.055em;
+    }.riskRadarPage .kpi-value span{
+      margin-bottom:4px;
+      color:var(--kpi-accent);
+      font-size:13px;
+      font-weight:900;
+    }.riskRadarPage .kpi-note{
+      margin-top:12px;
+      padding-top:10px;
+      border-top:1px solid color-mix(in srgb, var(--kpi-accent) 14%, var(--line));
+      color:var(--muted);
+      font-size:10.5px;
+    }
+
+
+    /* 업계 상품개발 동향 + 최근 보험시장 업데이트 */
+    .riskRadarPage .market-panel{
+      margin-bottom:18px;
+      box-shadow:0 10px 26px rgba(27,42,71,.06);
+    }.riskRadarPage .market-panel .panel-head{
+      padding:17px 20px 11px;
+    }.riskRadarPage .market-head-meta{
+      display:block;
+    }.riskRadarPage .market-grid{
+      display:grid;
+      grid-template-columns:minmax(0,1.7fr) minmax(330px,.9fr);
+      gap:12px;
+      padding:0 16px 15px;
+    }.riskRadarPage .market-box{
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:linear-gradient(180deg,#fff,var(--navy-50));
+    }.riskRadarPage .market-box-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px 10px;
+      border-bottom:1px solid #ebeff4;
+    }.riskRadarPage .market-box-title{
+      margin:0;
+      color:var(--navy-950);
+      font-size:14px;
+      font-weight:900;
+      letter-spacing:-.018em;
+    }.riskRadarPage .market-box-desc{
+      margin-top:3px;
+      color:var(--muted);
+      font-size:9.5px;
+    }.riskRadarPage .market-all-link{
+      flex:0 0 auto;
+      border:0;
+      background:none;
+      color:var(--orange-800);
+      font-size:9.5px;
+      font-weight:900;
+      white-space:nowrap;
+    }.riskRadarPage .product-trend-list{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:0;
+    }.riskRadarPage .product-trend{
+      position:relative;
+      min-width:0;
+      padding:12px 13px 11px;
+      border-right:1px solid #e9edf3;
+      background:#fff;
+      transition:background .16s ease;
+    }.riskRadarPage .product-trend:last-child{border-right:0}.riskRadarPage .product-trend:hover{background:var(--orange-50)}.riskRadarPage .trend-status{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      margin-bottom:9px;
+      padding:3px 7px;
+      border-radius:999px;
+      font-size:8.5px;
+      font-weight:900;
+    }.riskRadarPage .trend-status.granted{
+      background:var(--orange-100);
+      color:var(--orange-800);
+    }.riskRadarPage .trend-status.applied{
+      background:var(--navy-100);
+      color:var(--navy-700);
+    }.riskRadarPage .trend-status.launched{
+      background:#edf2f7;
+      color:#63758e;
+    }.riskRadarPage .trend-company{
+      margin-bottom:4px;
+      color:var(--soft);
+      font-size:8.5px;
+      font-weight:800;
+    }.riskRadarPage .trend-title{
+      min-height:38px;
+      color:var(--navy-950);
+      font-size:11px;
+      font-weight:900;
+      line-height:1.45;
+      word-break:keep-all;
+    }.riskRadarPage .trend-summary{
+      display:-webkit-box;
+      margin-top:6px;
+      overflow:hidden;
+      color:var(--muted);
+      font-size:8.7px;
+      line-height:1.45;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }.riskRadarPage .trend-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-top:10px;
+      padding-top:8px;
+      border-top:1px solid #edf0f4;
+      color:var(--soft);
+      font-size:8.3px;
+    }.riskRadarPage .trend-link{
+      color:var(--orange-800);
+      font-weight:900;
+      white-space:nowrap;
+    }.riskRadarPage .update-list{
+      padding:2px 13px 9px;
+      background:#fff;
+    }.riskRadarPage .update-item{
+      position:relative;
+      padding:10px 0 10px 15px;
+      border-bottom:1px solid #edf0f4;
+    }.riskRadarPage .update-item:last-child{
+      border-bottom:0;
+      padding-bottom:6px;
+    }.riskRadarPage .update-item::before{
+      content:"";
+      position:absolute;
+      top:18px;
+      left:0;
+      width:7px;
+      height:7px;
+      border-radius:2px;
+      background:var(--orange-500);
+      transform:rotate(45deg);
+    }.riskRadarPage .update-source{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:4px;
+      color:var(--soft);
+      font-size:8.5px;
+      font-weight:800;
+    }.riskRadarPage .update-title{
+      color:var(--navy-950);
+      font-size:11px;
+      font-weight:900;
+      line-height:1.45;
+    }.riskRadarPage .update-meaning{
+      display:-webkit-box;
+      margin-top:5px;
+      overflow:hidden;
+      color:var(--muted);
+      font-size:8.7px;
+      line-height:1.45;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }.riskRadarPage .update-meaning b{
+      color:var(--navy-700);
+      font-weight:900;
+    }.riskRadarPage .update-link{
+      display:inline-flex;
+      margin-top:8px;
+      color:var(--orange-800);
+      font-size:8.5px;
+      font-weight:900;
+    }
+
+    /* 공통 2열 */
+    .riskRadarPage .row-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:18px;
+      margin-bottom:18px;
+      align-items:stretch;
+    }.riskRadarPage .row-grid.secondary{
+      grid-template-columns:minmax(0,1.45fr) minmax(350px,.95fr);
+    }.riskRadarPage .row-grid.tertiary{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+      align-items:start;
+    }
+
+    /* 2행 왼쪽: 우선 검토 후보 */
+    .riskRadarPage .priority-body{
+      display:grid;
+      grid-template-columns:minmax(0,1.7fr) minmax(230px,.8fr);
+      gap:16px;
+      padding:0 18px 18px;
+    }.riskRadarPage .ranking-chart{
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:linear-gradient(180deg,#fff,var(--navy-50));
+    }.riskRadarPage .chart-label{
+      margin:0 0 3px;
+      color:var(--navy-950);
+      font-size:14px;
+      font-weight:850;
+    }.riskRadarPage .chart-sub{
+      margin:0 0 17px;
+      color:var(--muted);
+      font-size:10px;
+    }.riskRadarPage .bar-list{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }.riskRadarPage .bar-row{
+      display:grid;
+      grid-template-columns:minmax(135px,170px) minmax(0,1fr) 35px;
+      gap:10px;
+      align-items:center;
+    }.riskRadarPage .bar-name-wrap{
+      min-width:0;
+    }.riskRadarPage .bar-name{
+      overflow:hidden;
+      color:var(--navy-950);
+      font-size:11px;
+      font-weight:850;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }.riskRadarPage .grade{
+      display:inline-flex;
+      margin-top:3px;
+      padding:2px 6px;
+      border-radius:999px;
+      background:var(--navy-100);
+      color:var(--navy-700);
+      font-size:9px;
+      font-weight:850;
+    }.riskRadarPage .bar-track{
+      height:7px;
+      overflow:hidden;
+      border-radius:999px;
+      background:#e8edf4;
+    }.riskRadarPage .bar-fill{
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--navy-700),#93a7c1);
+    }.riskRadarPage .bar-row:first-child .bar-fill{
+      background:linear-gradient(90deg,var(--orange-600),var(--orange-300));
+    }.riskRadarPage .bar-score{
+      color:var(--navy-800);
+      text-align:right;
+      font-size:11px;
+      font-weight:900;
+    }.riskRadarPage .top-risk{
+      position:relative;
+      overflow:hidden;
+      padding:17px;
+      border:1px solid var(--orange-200);
+      border-radius:16px;
+      background:
+        radial-gradient(circle at 95% 4%, rgba(236,160,109,.22), transparent 8rem),
+        var(--orange-50);
+    }.riskRadarPage .top-risk::after{
+      content:"";
+      position:absolute;
+      right:-42px;
+      bottom:-50px;
+      width:135px;
+      height:135px;
+      border-radius:50%;
+      border:20px solid rgba(77,102,141,.06);
+    }.riskRadarPage .top-badge{
+      position:relative;
+      z-index:1;
+      display:inline-flex;
+      padding:4px 8px;
+      border:1px solid var(--orange-200);
+      border-radius:999px;
+      background:#fff;
+      color:var(--orange-800);
+      font-size:10px;
+      font-weight:900;
+    }.riskRadarPage .top-title{
+      position:relative;
+      z-index:1;
+      margin:12px 0 6px;
+      color:var(--navy-950);
+      font-size:18px;
+      letter-spacing:-.025em;
+    }.riskRadarPage .top-copy{
+      position:relative;
+      z-index:1;
+      margin:0;
+      color:var(--muted);
+      font-size:11px;
+    }.riskRadarPage .top-metrics{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:7px;
+      margin-top:14px;
+    }.riskRadarPage .top-metric{
+      padding:9px;
+      border:1px solid rgba(219,229,241,.9);
+      border-radius:10px;
+      background:rgba(255,255,255,.86);
+    }.riskRadarPage .top-metric-label{
+      color:var(--soft);
+      font-size:9px;
+      font-weight:850;
+    }.riskRadarPage .top-metric-value{
+      margin-top:2px;
+      color:var(--navy-800);
+      font-size:11px;
+      font-weight:900;
+    }.riskRadarPage .top-actions{
+      position:relative;
+      z-index:1;
+      display:flex;
+      gap:7px;
+      margin-top:13px;
+    }.riskRadarPage .small-btn{
+      flex:1;
+      padding:8px 9px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      background:#fff;
+      color:var(--navy-800);
+      font-size:10px;
+      font-weight:850;
+    }.riskRadarPage .small-btn.primary{
+      border-color:var(--orange-600);
+      background:var(--orange-600);
+      color:#fff;
+    }
+
+    /* 분석 자료 구성 */
+    .riskRadarPage .source-body{
+      display:flex;
+      flex-direction:column;
+      padding:0 18px 18px;
+    }.riskRadarPage .source-visual{
+      display:grid;
+      grid-template-columns:138px minmax(0,1fr);
+      gap:14px;
+      align-items:center;
+      min-height:228px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:linear-gradient(145deg,#fff 55%,var(--navy-50));
+    }.riskRadarPage .donut-wrap{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }.riskRadarPage .source-donut{
+      position:relative;
+      width:126px;
+      height:126px;
+      border-radius:50%;
+      background:
+        conic-gradient(
+          var(--source-orange) 0 30%,
+          var(--source-navy) 30% 55%,
+          var(--source-blue) 55% 90%,
+          var(--source-mist) 90% 100%
+        );
+      box-shadow:
+        0 12px 24px rgba(35,50,79,.10),
+        inset 0 0 0 1px rgba(255,255,255,.52);
+    }.riskRadarPage .source-donut::after{
+      content:"";
+      position:absolute;
+      inset:21px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:
+        inset 0 0 0 1px #e9edf3,
+        0 4px 12px rgba(35,50,79,.055);
+    }.riskRadarPage .donut-center{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      color:var(--soft);
+      text-align:center;
+      font-size:8.5px;
+      font-weight:800;
+      line-height:1.35;
+    }.riskRadarPage .donut-center strong{
+      display:block;
+      margin-top:1px;
+      color:var(--navy-950);
+      font-size:21px;
+      line-height:1;
+      letter-spacing:-.04em;
+    }.riskRadarPage .donut-caption{
+      color:var(--soft);
+      text-align:center;
+      font-size:8.5px;
+      line-height:1.45;
+    }.riskRadarPage .source-legend{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      min-width:0;
+    }.riskRadarPage .source-legend-item{
+      --source-color:var(--source-orange);
+      display:grid;
+      grid-template-columns:9px minmax(0,1fr) auto;
+      gap:8px;
+      align-items:start;
+      padding:9px 10px;
+      border:1px solid #e5eaf1;
+      border-radius:11px;
+      background:rgba(255,255,255,.9);
+      transition:border-color .16s ease, transform .16s ease, background .16s ease;
+    }.riskRadarPage .source-legend-item:nth-child(2){--source-color:var(--source-navy)}.riskRadarPage .source-legend-item:nth-child(3){--source-color:var(--source-blue)}.riskRadarPage .source-legend-item:nth-child(4){--source-color:var(--source-mist)}.riskRadarPage .source-legend-item:hover{
+      transform:translateX(2px);
+      border-color:color-mix(in srgb,var(--source-color) 35%,var(--line));
+      background:#fff;
+    }.riskRadarPage .source-swatch{
+      width:8px;
+      height:8px;
+      margin-top:3px;
+      border-radius:3px;
+      background:var(--source-color);
+      box-shadow:0 0 0 3px color-mix(in srgb,var(--source-color) 13%,transparent);
+    }.riskRadarPage .source-info{
+      min-width:0;
+    }.riskRadarPage .source-name{
+      color:var(--navy-900);
+      font-size:9.5px;
+      font-weight:900;
+      line-height:1.35;
+    }.riskRadarPage .source-role{
+      margin-top:3px;
+      color:var(--muted);
+      font-size:8.2px;
+      line-height:1.4;
+    }.riskRadarPage .source-share{
+      color:var(--navy-950);
+      font-size:10px;
+      font-weight:950;
+      line-height:1.35;
+    }.riskRadarPage .source-note{
+      margin-top:10px;
+      padding-top:8px;
+      border-top:1px solid var(--line);
+      color:var(--soft);
+      font-size:8.7px;
+    }
+
+    /* 신규 위험 후보 */
+    .riskRadarPage .candidate-list{
+      padding:0 16px 16px;
+    }.riskRadarPage .filter-status{
+      display:none;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 14px 8px;
+      padding:9px 11px;
+      border:1px solid var(--orange-200);
+      border-radius:11px;
+      background:var(--orange-50);
+      color:#885839;
+      font-size:10px;
+      font-weight:750;
+    }.riskRadarPage .filter-status.active{display:flex}.riskRadarPage .clear-filter{
+      border:0;
+      background:none;
+      color:var(--orange-800);
+      font-size:10px;
+      font-weight:900;
+    }.riskRadarPage .candidate{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:14px;
+      align-items:center;
+      padding:13px;
+      border-bottom:1px solid #edf0f4;
+      transition:.15s ease;
+    }.riskRadarPage .candidate:last-child{border-bottom:0}.riskRadarPage .candidate:hover{background:var(--navy-50);border-radius:12px}.riskRadarPage .candidate.hidden{display:none}.riskRadarPage .candidate-name{
+      color:var(--navy-950);
+      font-size:13px;
+      font-weight:850;
+    }.riskRadarPage .candidate-copy{
+      margin-top:3px;
+      color:var(--muted);
+      font-size:11px;
+    }.riskRadarPage .chips{
+      display:flex;
+      gap:5px;
+      flex-wrap:wrap;
+      margin-top:7px;
+    }.riskRadarPage .chip{
+      display:inline-flex;
+      padding:3px 7px;
+      border-radius:999px;
+      background:var(--navy-50);
+      color:var(--navy-700);
+      font-size:10px;
+      font-weight:800;
+    }.riskRadarPage .chip.orange{background:var(--orange-50);color:var(--orange-800)}.riskRadarPage .candidate-link{
+      color:var(--orange-800);
+      font-size:12px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+
+    /* 법규 */
+    .riskRadarPage .event-list{padding:0 18px 18px}.riskRadarPage .event{
+      position:relative;
+      margin-left:5px;
+      padding:4px 0 17px 18px;
+      border-left:1px solid #dfe5ee;
+    }.riskRadarPage .event:last-child{padding-bottom:0}.riskRadarPage .event::before{
+      content:"";
+      position:absolute;
+      top:8px;
+      left:-5px;
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:var(--orange-500);
+      box-shadow:0 0 0 4px var(--orange-100);
+    }.riskRadarPage .event-source{
+      margin-bottom:3px;
+      color:var(--orange-800);
+      font-size:9px;
+      font-weight:900;
+    }.riskRadarPage .event-title{
+      color:var(--navy-950);
+      font-size:12px;
+      font-weight:850;
+      line-height:1.4;
+    }.riskRadarPage .event-copy{
+      margin:5px 0 7px;
+      color:var(--muted);
+      font-size:10px;
+    }.riskRadarPage .event-footer{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      color:#8290a4;
+      font-size:9px;
+    }.riskRadarPage .event-footer b{color:var(--navy-700)}.riskRadarPage .mini-link{
+      color:var(--orange-800);
+      font-size:10px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+
+    /* 스크랩 */
+    .riskRadarPage .scrap-list{
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:9px;
+      padding:0 18px 18px;
+    }.riskRadarPage .scrap-item{
+      position:relative;
+      margin-bottom:0;
+      padding:13px 42px 13px 13px;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:#fff;
+      transition:.18s ease;
+    }.riskRadarPage .scrap-item:last-child{margin-bottom:0}.riskRadarPage .scrap-item:hover{border-color:var(--orange-200);background:var(--orange-50)}.riskRadarPage .scrap-name{
+      color:var(--navy-950);
+      font-size:12px;
+      font-weight:850;
+    }.riskRadarPage .scrap-conclusion{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:10px;
+    }.riskRadarPage .scrap-footer{
+      display:flex;
+      justify-content:flex-end;
+      margin-top:7px;
+    }.riskRadarPage .bookmark-btn{
+      position:absolute;
+      top:10px;
+      right:10px;
+      width:30px;
+      height:30px;
+      display:grid;
+      place-items:center;
+      padding:0;
+      border:0;
+      border-radius:50%;
+      background:transparent;
+      color:var(--orange-600);
+      transition:.16s ease;
+    }.riskRadarPage .bookmark-btn:hover{background:var(--orange-100)}.riskRadarPage .bookmark-icon{
+      width:19px;
+      height:19px;
+      fill:currentColor;
+      stroke:currentColor;
+      stroke-width:1.7;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }.riskRadarPage .bookmark-btn.unsaved{
+      color:var(--navy-600);
+    }.riskRadarPage .bookmark-btn.unsaved .bookmark-icon{
+      fill:#fff;
+    }
+
+    /* 키워드 */
+    .riskRadarPage .keyword-body{padding:0 18px 18px}.riskRadarPage .keyword-cloud{
+      min-height:205px;
+      display:flex;
+      align-items:center;
+      align-content:center;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:9px 13px;
+      padding:18px 16px;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:linear-gradient(180deg,#fff,var(--navy-50));
+    }.riskRadarPage .keyword-btn{
+      padding:2px 3px;
+      border:0;
+      background:transparent;
+      font-weight:850;
+      letter-spacing:-.01em;
+      line-height:1.3;
+      transition:.16s ease;
+    }.riskRadarPage .keyword-btn.tech{color:var(--navy-700)}.riskRadarPage .keyword-btn.loss{color:var(--orange-800)}.riskRadarPage .keyword-btn.issue{color:var(--purple-700)}.riskRadarPage .keyword-btn.sm{font-size:11px}.riskRadarPage .keyword-btn.md{font-size:13px}.riskRadarPage .keyword-btn.lg{font-size:15px}.riskRadarPage .keyword-btn:hover,.riskRadarPage .keyword-btn.active{
+      color:var(--orange-800);
+      transform:translateY(-1px) scale(1.03);
+      text-decoration:underline;
+      text-decoration-thickness:1px;
+      text-underline-offset:4px;
+    }.riskRadarPage .keyword-legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:11px;
+      color:var(--muted);
+      font-size:9px;
+    }.riskRadarPage .legend-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+    }.riskRadarPage .legend-dot{
+      width:6px;
+      height:6px;
+      border-radius:50%;
+    }.riskRadarPage .keyword-help{
+      margin-top:10px;
+      color:var(--soft);
+      font-size:9px;
+    }.riskRadarPage .toast{
+      position:fixed;
+      right:24px;
+      bottom:24px;
+      z-index:20;
+      padding:11px 14px;
+      border:1px solid var(--orange-200);
+      border-radius:12px;
+      background:#fff;
+      color:var(--navy-900);
+      box-shadow:0 12px 30px rgba(27,42,71,.16);
+      font-size:11px;
+      font-weight:750;
+      opacity:0;
+      transform:translateY(10px);
+      pointer-events:none;
+      transition:.22s ease;
+    }.riskRadarPage .toast.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+
+    @media (max-width:1180px){.riskRadarPage .app{grid-template-columns:82px minmax(0,1fr)}.riskRadarPage .sidebar{padding:18px 10px}.riskRadarPage .brand span,.riskRadarPage .nav-item span,.riskRadarPage .menu-label,.riskRadarPage .sidebar-foot{display:none}.riskRadarPage .brand{justify-content:center}.riskRadarPage .nav-item{justify-content:center;padding:0}.riskRadarPage{padding:26px 22px 48px}.riskRadarPage .row-grid,.riskRadarPage .row-grid.secondary,.riskRadarPage .row-grid.tertiary{grid-template-columns:1fr}
+    }
+
+    @media (max-width:900px){.riskRadarPage .market-grid{grid-template-columns:1fr}.riskRadarPage .product-trend-list{grid-template-columns:1fr}.riskRadarPage .product-trend{
+        border-right:0;
+        border-bottom:1px solid #e9edf3;
+      }.riskRadarPage .product-trend:last-child{border-bottom:0}.riskRadarPage .priority-body{grid-template-columns:1fr}.riskRadarPage .source-visual{
+        grid-template-columns:124px minmax(0,1fr);
+        gap:11px;
+      }.riskRadarPage .source-donut{
+        width:114px;
+        height:114px;
+      }
+    }
+
+    @media (max-width:760px){.riskRadarPage .app{display:block}.riskRadarPage .sidebar{display:none}.riskRadarPage{padding:20px 14px 40px}.riskRadarPage .topbar{flex-direction:column}.riskRadarPage .analysis-meta{width:100%;min-width:0}.riskRadarPage .kpi-grid{grid-template-columns:1fr}.riskRadarPage .bar-row{grid-template-columns:120px minmax(0,1fr) 32px}.riskRadarPage .candidate{grid-template-columns:1fr}.riskRadarPage .source-visual{
+        grid-template-columns:1fr;
+        min-height:auto;
+      }.riskRadarPage .source-donut{
+        width:132px;
+        height:132px;
+      }
+    }
+    /* ===== 시각 밀도·가독성 개선 v17 ===== */
+    .riskRadarPage{
+      font-size:15px;
+      line-height:1.6;
+    }.riskRadarPage{
+      width:100%;
+      max-width:1540px;
+      margin:0 auto;
+      padding:34px 38px 66px;
+    }.riskRadarPage .panel{
+      border-color:#dbe3ed;
+      border-radius:20px;
+      box-shadow:0 14px 34px rgba(27,42,71,.075);
+    }.riskRadarPage .panel-head{
+      padding:23px 26px 17px;
+    }.riskRadarPage .panel-title{
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }.riskRadarPage .panel-desc{
+      margin-top:6px;
+      color:#647184;
+      font-size:13.5px;
+      line-height:1.55;
+    }.riskRadarPage .text-link{
+      padding-top:2px;
+      font-size:13px;
+    }.riskRadarPage .row-grid,.riskRadarPage .row-grid.secondary,.riskRadarPage .row-grid.tertiary{
+      gap:20px;
+      margin-bottom:22px;
+    }
+
+    /* 상품화 우선 검토 후보 */
+    .riskRadarPage #priority-panel .panel{
+      border-top:3px solid var(--orange-500);
+    }.riskRadarPage .priority-body{
+      grid-template-columns:minmax(0,1.65fr) minmax(300px,.75fr);
+      gap:20px;
+      padding:0 24px 24px;
+    }.riskRadarPage .ranking-chart{
+      padding:21px 22px;
+      border-radius:18px;
+      background:linear-gradient(180deg,#fff 0%,#f6f9fc 100%);
+    }.riskRadarPage .chart-label{
+      margin-bottom:4px;
+      font-size:17px;
+      font-weight:900;
+    }.riskRadarPage .chart-sub{
+      margin-bottom:21px;
+      font-size:12px;
+      line-height:1.45;
+    }.riskRadarPage .bar-list{gap:18px}.riskRadarPage .bar-row{
+      grid-template-columns:minmax(170px,195px) minmax(0,1fr) 40px;
+      gap:14px;
+    }.riskRadarPage .bar-name{
+      font-size:13.5px;
+      font-weight:900;
+    }.riskRadarPage .grade{
+      margin-top:5px;
+      padding:3px 8px;
+      font-size:10.5px;
+    }.riskRadarPage .bar-track{height:9px}.riskRadarPage .bar-score{font-size:13.5px}.riskRadarPage .top-risk{
+      padding:24px;
+      border-radius:18px;
+      background:linear-gradient(145deg,#fffaf6 0%,#fff2e7 100%);
+    }.riskRadarPage .top-risk::after{display:none}.riskRadarPage .top-badge{
+      padding:5px 9px;
+      font-size:11px;
+    }.riskRadarPage .top-title{
+      margin:15px 0 8px;
+      font-size:23px;
+    }.riskRadarPage .top-copy{
+      font-size:13px;
+      line-height:1.6;
+    }.riskRadarPage .top-metrics{
+      gap:10px;
+      margin-top:18px;
+    }.riskRadarPage .top-metric{
+      padding:12px;
+      border-radius:12px;
+    }.riskRadarPage .top-metric-label{font-size:10.5px}.riskRadarPage .top-metric-value{font-size:14px}.riskRadarPage .top-actions{
+      gap:9px;
+      margin-top:16px;
+    }.riskRadarPage .small-btn{
+      min-height:42px;
+      font-size:12px;
+      border-radius:11px;
+    }
+
+    /* 신규 위험 후보 */
+    .riskRadarPage .row-grid.secondary{
+      grid-template-columns:minmax(0,1.48fr) minmax(390px,.92fr);
+    }.riskRadarPage .row-grid.secondary > .panel:first-child{
+      border-top:3px solid #7f98b8;
+    }.riskRadarPage .row-grid.secondary > .panel:last-child{
+      border-top:3px solid #e7a26f;
+    }.riskRadarPage .candidate-list{
+      padding:0 22px 22px;
+    }.riskRadarPage .candidate{
+      padding:17px 16px;
+    }.riskRadarPage .candidate-name{
+      font-size:15px;
+      font-weight:900;
+    }.riskRadarPage .candidate-copy{
+      margin-top:5px;
+      font-size:12.5px;
+      line-height:1.55;
+    }.riskRadarPage .chips{
+      gap:6px;
+      margin-top:9px;
+    }.riskRadarPage .chip{
+      padding:4px 8px;
+      font-size:10.5px;
+    }.riskRadarPage .candidate-link{
+      font-size:12.5px;
+    }
+
+    /* 법·규제 변화 */
+    .riskRadarPage .event-list{
+      padding:0 23px 23px;
+    }.riskRadarPage .event{
+      margin-left:7px;
+      padding:7px 0 21px 22px;
+    }.riskRadarPage .event::before{
+      top:11px;
+      left:-6px;
+      width:11px;
+      height:11px;
+    }.riskRadarPage .event-source{
+      margin-bottom:5px;
+      font-size:10.5px;
+    }.riskRadarPage .event-title{
+      font-size:14px;
+      line-height:1.45;
+    }.riskRadarPage .event-copy{
+      margin:7px 0 9px;
+      font-size:12px;
+      line-height:1.55;
+    }.riskRadarPage .event-footer{
+      font-size:10.5px;
+    }.riskRadarPage .mini-link{
+      font-size:11.5px;
+    }
+
+    /* 보험시장 상품개발 동향 */
+    .riskRadarPage .market-panel{
+      border-top:3px solid #93a7c1;
+    }.riskRadarPage .market-panel .panel-head{
+      padding:22px 26px 16px;
+    }.riskRadarPage .market-grid{
+      gap:16px;
+      padding:0 22px 22px;
+    }.riskRadarPage .market-box{
+      border-radius:18px;
+      background:#fff;
+      box-shadow:0 7px 18px rgba(31,45,73,.045);
+    }.riskRadarPage .market-box-head{
+      padding:16px 18px 13px;
+    }.riskRadarPage .market-box-title{
+      font-size:16px;
+    }.riskRadarPage .market-box-desc{
+      margin-top:4px;
+      font-size:11.5px;
+      line-height:1.45;
+    }.riskRadarPage .market-all-link{
+      font-size:11.5px;
+    }.riskRadarPage .product-trend{
+      padding:17px 17px 15px;
+    }.riskRadarPage .trend-status{
+      margin-bottom:10px;
+      padding:4px 8px;
+      font-size:10px;
+    }.riskRadarPage .trend-company{
+      margin-bottom:5px;
+      font-size:10.5px;
+    }.riskRadarPage .trend-title{
+      min-height:42px;
+      font-size:13.5px;
+      line-height:1.45;
+    }.riskRadarPage .trend-summary{
+      margin-top:8px;
+      font-size:11.5px;
+      line-height:1.55;
+    }.riskRadarPage .trend-meta{
+      margin-top:13px;
+      padding-top:10px;
+      font-size:10.5px;
+    }.riskRadarPage .update-list{
+      padding:4px 17px 12px;
+    }.riskRadarPage .update-item{
+      padding:14px 0 14px 17px;
+    }.riskRadarPage .update-source{
+      margin-bottom:6px;
+      font-size:10.5px;
+    }.riskRadarPage .update-title{
+      font-size:13.5px;
+      line-height:1.45;
+    }.riskRadarPage .update-meaning{
+      margin-top:7px;
+      font-size:11.5px;
+      line-height:1.55;
+    }.riskRadarPage .update-link{
+      margin-top:9px;
+      font-size:10.5px;
+    }
+
+    /* 하단 3개 보조 카드 */
+    .riskRadarPage .row-grid.tertiary{
+      grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr) minmax(0,1.1fr);
+      align-items:stretch;
+    }.riskRadarPage .row-grid.tertiary > .panel:nth-child(1){
+      border-top:3px solid var(--orange-500);
+    }.riskRadarPage .row-grid.tertiary > .panel:nth-child(2){
+      border-top:3px solid var(--navy-700);
+    }.riskRadarPage .row-grid.tertiary > .panel:nth-child(3){
+      border-top:3px solid #9fb2ca;
+    }.riskRadarPage .scrap-list{
+      gap:12px;
+      padding:0 22px 22px;
+    }.riskRadarPage .scrap-item{
+      padding:16px 48px 15px 16px;
+      border-radius:14px;
+      background:linear-gradient(145deg,#fff 70%,#fbfcfe);
+    }.riskRadarPage .scrap-name{
+      font-size:14px;
+      font-weight:900;
+    }.riskRadarPage .scrap-conclusion{
+      margin-top:5px;
+      font-size:12px;
+    }.riskRadarPage .scrap-footer{
+      margin-top:9px;
+    }.riskRadarPage .bookmark-btn{
+      top:11px;
+      right:11px;
+      width:33px;
+      height:33px;
+    }.riskRadarPage .bookmark-icon{
+      width:20px;
+      height:20px;
+    }.riskRadarPage .keyword-body{
+      padding:0 22px 22px;
+    }.riskRadarPage .keyword-cloud{
+      min-height:225px;
+      gap:12px 16px;
+      padding:25px 22px;
+      border-radius:16px;
+      background:
+        radial-gradient(circle at 15% 22%,rgba(236,160,109,.10),transparent 8rem),
+        linear-gradient(180deg,#fff,#f6f9fc);
+    }.riskRadarPage .keyword-btn.sm{font-size:12px}.riskRadarPage .keyword-btn.md{font-size:14.5px}.riskRadarPage .keyword-btn.lg{font-size:17px}.riskRadarPage .keyword-legend{
+      gap:13px;
+      margin-top:13px;
+      font-size:10.5px;
+    }.riskRadarPage .keyword-help{
+      margin-top:11px;
+      font-size:10.5px;
+      line-height:1.45;
+    }
+
+    /* 분석 자료 구성 */
+    .riskRadarPage .source-body{
+      padding:0 22px 22px;
+    }.riskRadarPage .source-visual{
+      grid-template-columns:160px minmax(0,1fr);
+      gap:17px;
+      min-height:248px;
+      padding:18px;
+      border-radius:16px;
+    }.riskRadarPage .source-donut{
+      width:148px;
+      height:148px;
+    }.riskRadarPage .source-donut::after{
+      inset:25px;
+    }.riskRadarPage .donut-center{
+      font-size:10px;
+    }.riskRadarPage .donut-center strong{
+      font-size:26px;
+    }.riskRadarPage .donut-caption{
+      font-size:10px;
+    }.riskRadarPage .source-legend{
+      gap:9px;
+    }.riskRadarPage .source-legend-item{
+      grid-template-columns:10px minmax(0,1fr) auto;
+      gap:9px;
+      padding:11px 12px;
+      border-radius:12px;
+    }.riskRadarPage .source-swatch{
+      width:9px;
+      height:9px;
+    }.riskRadarPage .source-name{
+      font-size:11.5px;
+    }.riskRadarPage .source-role{
+      margin-top:4px;
+      font-size:10.2px;
+      line-height:1.45;
+    }.riskRadarPage .source-share{
+      font-size:12px;
+    }.riskRadarPage .source-note{
+      margin-top:12px;
+      padding-top:10px;
+      font-size:10px;
+    }
+
+    @media (max-width:1180px){.riskRadarPage{
+        max-width:none;
+        padding:28px 24px 52px;
+      }
+    }
+
+    @media (max-width:900px){.riskRadarPage .panel-title{font-size:20px}.riskRadarPage .priority-body{grid-template-columns:1fr}.riskRadarPage .row-grid.secondary,.riskRadarPage .row-grid.tertiary{grid-template-columns:1fr}.riskRadarPage .bar-row{
+        grid-template-columns:minmax(145px,175px) minmax(0,1fr) 38px;
+      }
+    }
+
+
+
+/* 위험레이더 본문을 기존 공통 쉘의 작업 영역에 맞추는 페이지 전용 보정 */
+.riskRadarPage {
+  width: min(1440px, calc(100% - var(--sidebar-width, 0px)));
+  max-width: 1440px;
+  min-width: 0;
+  margin: 0 0 0 var(--sidebar-width, 0px);
+  padding: 30px 34px 58px;
+  box-sizing: border-box;
+}
+.app-main .app-content .riskRadarPage {
+  width: min(1440px, calc(100% - var(--sidebar-width, 0px)));
+  max-width: 1440px;
+  margin-left: var(--sidebar-width, 0px);
+  margin-right: 0;
+}
+.riskRadarPage .riskRadarIntro {
   display: flex;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #edf2f7;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
 }
-
-.hi-dashboard-page .hi-channel-donut span {
-  min-width: 34px;
-  display: grid;
-  place-items: center;
-  color: #fff;
+.riskRadarPage .row-grid.tertiary {
+  grid-auto-rows: auto;
+  align-items: start;
 }
-
-.hi-dashboard-page .hi-channel-donut .orange,
-.hi-dashboard-page .hi-channel-list .orange { background: #ff8a16; }
-.hi-dashboard-page .hi-channel-donut .blue,
-.hi-dashboard-page .hi-channel-list .blue { background: #2c76c8; }
-.hi-dashboard-page .hi-channel-donut .green,
-.hi-dashboard-page .hi-channel-list .green { background: #11a77b; }
-.hi-dashboard-page .hi-channel-donut .navy,
-.hi-dashboard-page .hi-channel-list .navy { background: var(--hi-navy); }
-
-.hi-dashboard-page .hi-channel-donut i {
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 900;
-}
-
-.hi-dashboard-page .hi-channel-list {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.hi-dashboard-page .hi-channel-list > div {
-  display: grid;
-  grid-template-columns: 10px minmax(0, 1fr);
-  align-items: center;
-  gap: 7px;
-  min-height: 38px;
-  padding: 8px 10px;
-  border: 1px solid #edf1f6;
-  border-radius: 12px;
-  background: #fff;
-}
-
-.hi-dashboard-page .hi-channel-list span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.hi-dashboard-page .hi-channel-list strong {
-  color: #27364a;
-  font-size: 11px;
-}
-
-.hi-dashboard-page .hi-channel-list b {
-  grid-column: 2;
-  color: #64748b;
-  font-size: 11px;
-}
-
-.hi-dashboard-page .hi-risk-heatmap {
-  display: grid;
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.hi-dashboard-page .hi-risk-heatmap-head,
-.hi-dashboard-page .hi-risk-heatmap-row {
-  display: grid;
-  grid-template-columns: minmax(96px, .65fr) minmax(170px, 1.35fr);
-  align-items: center;
-  gap: 12px;
-}
-
-.hi-dashboard-page .hi-risk-heatmap-head {
-  color: #8a97a8;
-  font-size: 9px;
-  font-weight: 900;
-}
-
-.hi-dashboard-page .hi-risk-heatmap-row {
-  min-height: 42px;
-  padding: 8px 10px;
-  border: 1px solid #edf1f6;
-  border-radius: 14px;
-  background: #fff;
-}
-
-.hi-dashboard-page .hi-risk-heatmap-row strong {
-  color: var(--hi-navy);
-  font-size: 12px;
-}
-
-.hi-dashboard-page .hi-risk-heatmap-row span {
-  position: relative;
-  height: 18px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #eef2f7;
-}
-
-.hi-dashboard-page .hi-risk-heatmap-row i {
+.riskRadarPage .row-grid.tertiary > .panel {
+  height: auto;
   display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #ff9e1b, #d4552d);
+}
+.riskRadarPage .row-grid.tertiary > .panel > .scrap-list,
+.riskRadarPage .row-grid.tertiary > .panel > .keyword-body,
+.riskRadarPage .row-grid.tertiary > .panel > .source-body {
+  flex: none;
+}
+.riskRadarPage .legend-dot.navy { background: var(--navy-700); }
+.riskRadarPage .legend-dot.orange { background: var(--orange-600); }
+.riskRadarPage .legend-dot.issue { background: var(--purple-700); }
+@media (max-width: 1180px) {
+  .app-main .app-content .riskRadarPage {
+    max-width: none;
+    padding: 28px 24px 52px;
+  }
+}
+@media (max-width: 720px) {
+  .app-main .app-content .riskRadarPage {
+    width: 100%;
+    margin-left: 0;
+    padding: 20px 14px 40px;
+  }
 }
 
-.hi-dashboard-page .hi-risk-heatmap-row span b {
-  position: absolute;
-  inset: 0 8px 0 auto;
-  display: grid;
-  align-items: center;
-  color: #27364a;
-  font-size: 10px;
-  font-weight: 900;
+/* 위험레이더 표면 정리: 선보다 여백·배경·약한 그림자로 정보 위계를 만든다. */
+.riskRadarPage .panel {
+  border: 1px solid rgba(219, 227, 237, .48);
+  box-shadow: 0 8px 24px rgba(15, 45, 85, .05);
 }
 
-.hi-dashboard-page .hi-dashboard-grid {
-  grid-area: work;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-areas:
-    'source source source source source source source law law law law law'
-    'reports reports reports reports keywords keywords keywords keywords keywords keywords keywords keywords';
-  align-items: stretch;
-  gap: 16px;
-  margin-bottom: 0;
-}
-.hi-dashboard-page .hi-panel { padding: 22px; border-top: 3px solid var(--hi-navy); }
-.hi-dashboard-page .hi-law-monitor { border-top-color: var(--hi-orange); }
-.hi-dashboard-page .panel-heading p:last-child {
-  margin: 6px 0 0;
-  color: #8491a3;
-  font-size: 11px;
-  line-height: 1.5;
-}
-.hi-dashboard-page .hi-law-monitor { grid-area: law; }
-.hi-dashboard-page .hi-source-health { grid-area: source; }
-.hi-dashboard-page .hi-favorite-reports { grid-area: reports; }
-
-.hi-dashboard-page .hi-source-list { display: grid; gap: 12px; margin-top: 18px; }
-
-.hi-dashboard-page .hi-focus-insurance-card dd,
-.hi-dashboard-page .hi-focus-insurance-card > p {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-}
-.hi-dashboard-page .hi-source-list {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  overflow: hidden;
+.riskRadarPage .kpi {
   border: 0;
-  border-radius: 0;
+  border-top: 4px solid var(--kpi-accent);
+  box-shadow: 0 8px 24px rgba(15, 45, 85, .06);
 }
 
-.hi-dashboard-page .hi-law-monitor-list {
-  display: grid;
-  gap: 8px;
-  margin-top: 14px;
+.riskRadarPage #priority-panel .panel {
+  border: 0;
+  border-top: 3px solid var(--orange-500);
+  box-shadow: 0 10px 28px rgba(15, 45, 85, .07);
 }
 
-.hi-dashboard-page .hi-law-monitor-list a {
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) 78px;
-  align-items: center;
-  gap: 10px;
-  min-height: 54px;
-  padding: 10px 0;
-  border-top: 1px solid #edf1f6;
-  color: inherit;
-  text-decoration: none;
-  transition: background-color .18s ease, padding .18s ease;
+.riskRadarPage .ranking-chart {
+  border: 0;
+  box-shadow: inset 0 1px 0 rgba(219, 227, 237, .42);
 }
 
-.hi-dashboard-page .hi-law-monitor-list a:first-child { border-top: 0; }
-.hi-dashboard-page .hi-law-monitor-list a:hover,
-.hi-dashboard-page .hi-law-monitor-list a:focus-visible { padding-inline: 8px; background: #fff8ef; outline: none; }
+.riskRadarPage .top-risk {
+  border: 0;
+  box-shadow: 0 8px 20px rgba(198, 123, 67, .08);
+}
 
-.hi-dashboard-page .hi-law-monitor-list span {
-  justify-self: center;
-  min-width: 48px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  color: #a15c00;
-  background: #fff5e9;
-  font-size: 10px;
+.riskRadarPage .top-metric {
+  border: 0;
+  background: rgba(255, 255, 255, .72);
+  box-shadow: 0 3px 10px rgba(15, 45, 85, .045);
+}
+
+.riskRadarPage .small-btn:not(.primary) {
+  border-color: rgba(183, 199, 218, .72);
+  box-shadow: 0 2px 7px rgba(15, 45, 85, .035);
+}
+
+.riskRadarPage .row-grid.secondary > .panel:first-child,
+.riskRadarPage .row-grid.secondary > .panel:last-child,
+.riskRadarPage .market-panel,
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(1),
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(2),
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(3) {
+  border-top: 0;
+}
+
+.riskRadarPage .candidate {
+  margin: 3px 0;
+  border-bottom: 0;
+  border-radius: 12px;
+}
+
+.riskRadarPage .candidate:hover {
+  box-shadow: 0 4px 12px rgba(15, 45, 85, .045);
+}
+
+.riskRadarPage .event {
+  border-left-color: rgba(127, 152, 184, .38);
+}
+
+.riskRadarPage .market-box {
+  border: 0;
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+.riskRadarPage .product-trend {
+  border-right: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .62);
+}
+
+.riskRadarPage .product-trend:hover {
+  background: var(--orange-50);
+  box-shadow: 0 4px 14px rgba(198, 123, 67, .06);
+}
+
+.riskRadarPage .product-trend + .product-trend {
+  border-left: 1px solid rgba(219, 227, 237, .55);
+}
+
+.riskRadarPage .trend-meta {
+  border-top: 0;
+}
+
+.riskRadarPage .update-item {
+  border-bottom: 0;
+}
+
+.riskRadarPage .scrap-item {
+  border: 0;
+  background: #f7f9fc;
+  box-shadow: 0 3px 10px rgba(15, 45, 85, .035);
+}
+
+.riskRadarPage .scrap-item:hover {
+  border-color: transparent;
+  background: var(--orange-50);
+  box-shadow: 0 5px 14px rgba(198, 123, 67, .07);
+}
+
+.riskRadarPage .keyword-cloud {
+  border: 0;
+  background:
+    radial-gradient(circle at 15% 22%, rgba(236, 160, 109, .10), transparent 8rem),
+    linear-gradient(180deg, #fff, #f6f9fc);
+  box-shadow: inset 0 1px 0 rgba(219, 227, 237, .4);
+}
+
+.riskRadarPage .source-visual {
+  border: 0;
+  background: #f8fafc;
+  box-shadow: inset 0 1px 0 rgba(219, 227, 237, .38);
+}
+
+.riskRadarPage .source-legend-item {
+  border: 0;
+  background: rgba(255, 255, 255, .72);
+  box-shadow: 0 2px 8px rgba(15, 45, 85, .035);
+}
+
+.riskRadarPage .source-legend-item:hover {
+  border-color: transparent;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(15, 45, 85, .06);
+}
+
+.riskRadarPage .source-note {
+  border-top: 0;
+  padding-top: 2px;
+}
+
+.riskRadarPage .text-link,
+.riskRadarPage .candidate-link,
+.riskRadarPage .mini-link,
+.riskRadarPage .trend-link,
+.riskRadarPage .update-link,
+.riskRadarPage .market-all-link {
+  color: #315f91;
+}
+
+.riskRadarPage .text-link:hover,
+.riskRadarPage .candidate-link:hover,
+.riskRadarPage .mini-link:hover,
+.riskRadarPage .trend-link:hover,
+.riskRadarPage .update-link:hover,
+.riskRadarPage .market-all-link:hover {
+  color: var(--orange-800);
+}
+
+@media (max-width: 900px) {
+  .riskRadarPage .product-trend + .product-trend {
+    border-left: 0;
+    border-top: 1px solid rgba(219, 227, 237, .55);
+  }
+}
+
+/* 보험시장 상품개발 동향 내부 인사이트 확장 */
+.riskRadarPage .market-grid {
+  grid-template-columns: minmax(0, 1.65fr) minmax(330px, .92fr);
+  align-items: start;
+}
+
+.riskRadarPage .market-insights .market-box-head {
+  min-height: 0;
+  padding-top: 14px;
+  padding-bottom: 10px;
+}
+
+.riskRadarPage .market-grid > .market-box {
+  align-self: start;
+}
+
+.riskRadarPage .insight-content {
+  padding: 0 17px 12px;
+}
+
+.riskRadarPage .insight-subtitle {
+  margin: 0;
+  padding: 10px 0 4px;
+  color: var(--navy-900);
+  font-size: 12px;
   font-weight: 900;
-  text-align: center;
+  letter-spacing: -.015em;
 }
 
-.hi-dashboard-page .hi-law-monitor-list strong {
-  display: block;
-  overflow: hidden;
-  color: var(--hi-navy);
-  font-size: 13px;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.riskRadarPage .update-list {
+  padding: 0;
+  background: transparent;
 }
 
-.hi-dashboard-page .hi-law-monitor-list small {
+.riskRadarPage .domestic-update-item {
+  padding: 4px 0 8px 14px;
+}
+
+.riskRadarPage .domestic-update-item::before {
+  top: 9px;
+  width: 6px;
+  height: 6px;
+}
+
+.riskRadarPage .update-source {
+  font-size: 10px;
+}
+
+.riskRadarPage .update-title {
+  font-size: 12.8px;
+}
+
+.riskRadarPage .update-meaning {
+  margin-top: 4px;
+  font-size: 10.5px;
+  line-height: 1.42;
+}
+
+.riskRadarPage .update-related {
+  margin-top: 5px;
+  color: var(--navy-700);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.riskRadarPage .update-related span,
+.riskRadarPage .global-insight-footer b {
+  margin-right: 4px;
+  color: var(--soft);
+  font-size: 9.5px;
+  font-weight: 850;
+}
+
+.riskRadarPage .update-link {
+  margin-top: 6px;
+  color: var(--orange-800);
+  font-size: 10.5px;
+}
+
+.riskRadarPage .insight-divider {
+  height: 1px;
+  margin: 2px 0 1px;
+  background: rgba(219, 227, 237, .72);
+}
+
+.riskRadarPage .global-insight-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+.riskRadarPage .global-insight-item {
+  min-width: 0;
+  padding: 7px 0 7px;
+}
+
+.riskRadarPage .global-insight-item + .global-insight-item {
+  padding-left: 12px;
+  border-top: 0;
+  border-left: 1px solid rgba(219, 227, 237, .62);
+}
+
+.riskRadarPage .global-insight-organization {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #eef3f8;
+  color: var(--navy-700);
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+
+.riskRadarPage .global-insight-title {
+  margin-top: 4px;
+  color: var(--navy-950);
+  font-size: 12.6px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.riskRadarPage .global-insight-summary {
   display: -webkit-box;
   margin-top: 3px;
   overflow: hidden;
-  color: #7c899b;
-  font-size: 10px;
-  line-height: 1.35;
+  color: var(--muted);
+  font-size: 10.2px;
+  line-height: 1.38;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
 }
 
-.hi-dashboard-page .hi-law-monitor-list b {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
-  color: #2557d6;
-  font-size: 10px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.hi-dashboard-page .hi-report-list {
-  display: grid;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.hi-dashboard-page .hi-report-list a {
-  display: grid;
-  align-content: center;
+.riskRadarPage .global-insight-footer {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 8px;
-  min-height: 76px;
-  padding: 14px;
-  border: 1px solid #edf1f6;
-  border-radius: 10px;
-  border-left: 3px solid #dbe5f1;
-  color: inherit;
-  background: #fff;
-  text-decoration: none;
-  transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  margin-top: 4px;
+  color: var(--navy-700);
+  font-size: 9.5px;
+  line-height: 1.45;
 }
 
-.hi-dashboard-page .hi-report-list a:hover,
-.hi-dashboard-page .hi-report-list a:focus-visible {
-  border-color: var(--hi-orange);
-  background: #fff8ef;
-  box-shadow: none;
-  transform: none;
-  outline: none;
+.riskRadarPage .global-insight-footer .update-link {
+  flex: 0 0 auto;
+  margin-top: 0;
 }
 
-.hi-dashboard-page .hi-report-list a:hover strong,
-.hi-dashboard-page .hi-report-list a:focus-visible strong {
-  color: #c75b00;
+@media (max-width: 900px) {
+  .riskRadarPage .market-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .riskRadarPage .market-insights .market-box-head {
+    min-height: 0;
+  }
 }
 
-.hi-dashboard-page .hi-report-list strong {
-  overflow: hidden;
-  color: var(--hi-navy);
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+@media (max-width: 600px) {
+  .riskRadarPage .global-insight-list {
+    grid-template-columns: 1fr;
+  }
+
+  .riskRadarPage .global-insight-item + .global-insight-item {
+    padding-left: 0;
+    border-top: 1px solid rgba(219, 227, 237, .62);
+    border-left: 0;
+  }
 }
 
-.hi-dashboard-page .hi-report-list small {
-  display: -webkit-box;
-  overflow: hidden;
-  color: #718096;
+/* 상품화 우선순위 요약 카드 캐러셀 */
+.riskRadarPage .top-risk-carousel {
+  min-width: 0;
+}
+
+.riskRadarPage .top-risk-viewport {
+  min-width: 0;
+  overflow-x: auto;
+  border-radius: 18px;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: rgba(198, 123, 67, .45) transparent;
+  scrollbar-width: thin;
+}
+
+.riskRadarPage .top-risk-viewport:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 3px;
+}
+
+.riskRadarPage .top-risk-viewport::-webkit-scrollbar {
+  height: 6px;
+}
+
+.riskRadarPage .top-risk-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.riskRadarPage .top-risk-viewport::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(198, 123, 67, .45);
+}
+
+.riskRadarPage .top-risk-track {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.riskRadarPage .top-risk-track > .top-risk {
+  flex: 0 0 calc(100% - 18px);
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  text-align: center;
+}
+
+.riskRadarPage .top-risk .top-badge,
+.riskRadarPage .top-risk .top-title,
+.riskRadarPage .top-risk .top-copy,
+.riskRadarPage .top-risk .top-metrics,
+.riskRadarPage .top-risk .top-actions {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.riskRadarPage .top-risk .top-metrics {
+  width: 100%;
+}
+
+.riskRadarPage .top-risk .top-metric,
+.riskRadarPage .top-risk .small-btn {
+  min-height: 52px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.riskRadarPage .top-risk .top-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(226, 207, 192, .72);
+  background: rgba(255, 255, 255, .76);
+}
+
+.riskRadarPage .top-risk .small-btn {
+  display: grid;
+  place-items: center;
+  border-color: rgba(226, 207, 192, .72);
+  background: rgba(255, 255, 255, .76);
+  box-shadow: 0 3px 10px rgba(198, 123, 67, .055);
+}
+
+.riskRadarPage .top-risk .small-btn.primary {
+  border-color: var(--orange-600);
+  background: var(--orange-600);
+  color: #fff;
+}
+
+.riskRadarPage .top-risk-carousel-note {
+  margin-top: 8px;
+  color: var(--soft);
+  text-align: center;
   font-size: 10px;
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .riskRadarPage .top-risk-track > .top-risk {
+    flex-basis: 100%;
+  }
+}
+
+/* 우선순위 카드는 스크롤바 대신 가벼운 이전·다음 버튼으로 이동한다. */
+.riskRadarPage .top-risk-carousel {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.riskRadarPage .top-risk-viewport {
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-height: 0;
+  scroll-snap-type: none;
+  scrollbar-width: none;
+}
+
+.riskRadarPage .top-risk-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.riskRadarPage .top-risk-track {
+  height: 100%;
+  min-height: 100%;
+  gap: 0;
+  transition: transform .28s ease;
+  will-change: transform;
+}
+
+.riskRadarPage .top-risk-track > .top-risk {
+  flex-basis: 100%;
+  height: 100%;
+  scroll-snap-align: none;
+}
+
+.riskRadarPage .top-risk-carousel-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  gap: 5px;
+}
+
+.riskRadarPage .top-risk-carousel-control {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(203, 169, 142, .42);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .68);
+  color: rgba(110, 82, 61, .72);
+  opacity: .7;
+  transition: background .16s ease, color .16s ease, opacity .16s ease, transform .16s ease;
+}
+
+.riskRadarPage .top-risk-carousel-control:hover {
+  background: #fff;
+  color: var(--orange-800);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.riskRadarPage .top-risk-carousel-control:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 2px;
+}
+
+.riskRadarPage .top-risk-carousel-control svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.riskRadarPage .top-risk-carousel-note {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  left: 0;
+  z-index: 4;
+  margin-top: 0;
+  color: var(--soft);
+  font-size: 10px;
+  letter-spacing: .04em;
+  pointer-events: none;
+}
+
+.riskRadarPage .top-risk .small-btn.primary {
+  border-color: rgba(226, 207, 192, .72);
+  background: rgba(255, 255, 255, .76);
+  color: var(--navy-800);
+}
+
+/* 우선순위 카드 내부 4개 영역과 전체 콘텐츠를 같은 기준선으로 맞춘다. */
+.riskRadarPage .top-risk-track > .top-risk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.riskRadarPage .top-risk .top-title,
+.riskRadarPage .top-risk .top-copy,
+.riskRadarPage .top-risk .top-metrics,
+.riskRadarPage .top-risk .top-actions {
+  width: 100%;
+}
+
+.riskRadarPage .top-risk .top-metric,
+.riskRadarPage .top-risk .small-btn {
+  height: 64px;
+  min-height: 64px;
+}
+
+/* 신규 후보·법규 패널은 콘텐츠 높이에 맞춰 자연스럽게 끝낸다. */
+.riskRadarPage .row-grid.secondary {
+  align-items: start;
+}
+
+.riskRadarPage .row-grid.secondary > .panel {
+  align-self: start;
+  height: auto;
+}
+
+.riskRadarPage .row-grid.secondary > .panel:last-child {
+  align-self: stretch;
+}
+
+.riskRadarPage .candidate {
+  border-bottom: 1px solid rgba(219, 227, 237, .62);
+}
+
+.riskRadarPage .candidate:last-child {
+  border-bottom: 0;
+}
+
+.riskRadarPage .event-footer {
+  justify-content: flex-start;
+}
+
+/* 보험시장 상품개발 동향: 60:40 바깥 비율과 세로형 인사이트 목록 */
+.riskRadarPage .market-grid {
+  grid-template-columns: minmax(0, 3fr) minmax(380px, 2fr);
+  align-items: stretch;
+}
+
+.riskRadarPage .market-grid > .market-box {
+  align-self: stretch;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.riskRadarPage .market-box > .market-box-head {
+  flex: 0 0 auto;
+}
+
+.riskRadarPage .market-box > .product-trend-list,
+.riskRadarPage .market-box > .insight-content {
+  flex: 1 1 auto;
+}
+
+.riskRadarPage .product-trend-list {
+  align-items: stretch;
+}
+
+.riskRadarPage .product-trend {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 18px 18px 16px;
+}
+
+.riskRadarPage .product-trend + .product-trend {
+  border-left-color: rgba(219, 227, 237, .45);
+}
+
+.riskRadarPage .trend-title {
+  min-height: 44px;
+}
+
+.riskRadarPage .trend-summary {
+  min-height: 48px;
+  line-height: 1.55;
+}
+
+.riskRadarPage .trend-meta {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 0;
+}
+
+.riskRadarPage .market-insights .market-box-title {
+  font-size: 18px;
+}
+
+.riskRadarPage .industry-market-box .market-box-title {
+  font-size: 18px;
+}
+
+.riskRadarPage .market-insights .market-box-desc {
+  font-size: 12px;
+}
+
+.riskRadarPage .insight-content {
+  padding: 0 20px 18px;
+}
+
+.riskRadarPage .insight-subtitle {
+  padding: 15px 0 7px;
+  font-size: 14.5px;
+}
+
+.riskRadarPage .domestic-update-item {
+  padding: 7px 0 14px 15px;
+}
+
+.riskRadarPage .update-source {
+  font-size: 11px;
+}
+
+.riskRadarPage .update-title {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.riskRadarPage .update-meaning {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.riskRadarPage .update-related {
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.riskRadarPage .update-link {
+  margin-top: 9px;
+  font-size: 11.5px;
+}
+
+.riskRadarPage .insight-divider {
+  margin: 5px 0 0;
+}
+
+.riskRadarPage .global-insight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.riskRadarPage .global-insight-item {
+  padding: 14px 0;
+}
+
+.riskRadarPage .global-insight-item + .global-insight-item {
+  padding-left: 0;
+  border-top: 1px solid rgba(219, 227, 237, .62);
+  border-left: 0;
+}
+
+.riskRadarPage .global-insight-organization {
+  display: block;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #4d668d;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.riskRadarPage .global-insight-title {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.riskRadarPage .global-insight-summary {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.55;
+  -webkit-line-clamp: 2;
+}
+
+.riskRadarPage .global-insight-footer {
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.riskRadarPage .global-insight-footer b,
+.riskRadarPage .update-related span {
+  font-size: 11px;
+}
+
+.riskRadarPage .global-insight-footer .update-link {
+  font-size: 11.5px;
+}
+
+@media (max-width: 1100px) {
+  .riskRadarPage .market-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .riskRadarPage .market-grid > .market-box {
+    height: auto;
+  }
+
+  .riskRadarPage .market-box > .product-trend-list,
+  .riskRadarPage .market-box > .insight-content {
+    flex: 0 1 auto;
+  }
+}
+
+/* 왼쪽 상품 카드는 콘텐츠 높이를 유지하고, 카드 내부 푸터만 같은 기준선으로 맞춘다. */
+.riskRadarPage .market-box > .product-trend-list {
+  flex: 0 0 auto;
+}
+
+/* 핵심 위험 키워드 카드는 하단 3열의 높이에 맞추고 내부를 세로 중앙에 배치한다. */
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(2) {
+  align-self: stretch;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(2) .keyword-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(2) .keyword-legend {
+  justify-content: center;
+}
+
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(2) .keyword-help {
+  text-align: center;
+}
+
+/* 업계 상품개발 동향: 배타적사용권 2건 + 최근 신상품 3건 */
+.riskRadarPage .industry-market-box,
+.riskRadarPage .market-insights {
+  background: #fff;
+}
+
+/* 스크랩 리포트도 하단 보조 카드 행의 높이를 채우고, 항목 전체를 이동 영역으로 사용 */
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(1) {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+.riskRadarPage .row-grid.tertiary > .panel:nth-child(1) .scrap-list {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.riskRadarPage .scrap-item {
+  cursor: pointer;
+}
+
+.riskRadarPage .scrap-item:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 3px;
+}
+
+.riskRadarPage .industry-market-content {
+  flex: 0 0 auto;
+  padding: 0 20px 20px;
+  background: #fff;
+}
+
+.riskRadarPage .market-subtitle {
+  margin: 0;
+  padding: 16px 0 9px;
+  color: var(--navy-900);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+}
+
+.riskRadarPage .exclusive-rights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.riskRadarPage .exclusive-right-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid rgba(219, 227, 237, .72);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.riskRadarPage .exclusive-right-card .trend-company {
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.riskRadarPage .exclusive-right-card .trend-title {
+  min-height: 42px;
+  margin-top: 5px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.riskRadarPage .exclusive-right-card .trend-summary {
+  min-height: 48px;
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.riskRadarPage .exclusive-right-card .trend-meta {
+  margin-top: auto;
+  padding-top: 15px;
+  font-size: 10.5px;
+}
+
+.riskRadarPage .recent-products-section {
+  margin-top: 17px;
+  border-top: 1px solid rgba(219, 227, 237, .78);
+}
+
+.riskRadarPage .recent-products-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.riskRadarPage .recent-product-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(219, 227, 237, .62);
+}
+
+.riskRadarPage .recent-product-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.riskRadarPage .recent-product-title {
+  color: var(--navy-950);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.riskRadarPage .recent-product-summary {
+  display: -webkit-box;
+  margin-top: 5px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
-.hi-dashboard-page .hi-source-row {
-  min-height: 82px;
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid #edf1f6;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #fbfcfe, #f4f8fc);
-  transition: border-color .18s ease, transform .18s ease;
-}
-.hi-dashboard-page .hi-source-row:hover { border-color: #b8cfe7; transform: translateY(-2px); }
-.hi-dashboard-page .hi-source-row > span {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  color: var(--hi-navy);
-  background: #eaf1f8;
-  font-size: 11px;
-  font-weight: 900;
-}
-.hi-dashboard-page .hi-source-row div { min-width: 0; }
-.hi-dashboard-page .hi-source-row strong,
-.hi-dashboard-page .hi-source-row small,
-.hi-dashboard-page .hi-source-row b { display: block; }
-.hi-dashboard-page .hi-source-row strong {
-  overflow: hidden;
-  color: var(--hi-navy);
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.hi-dashboard-page .hi-source-row div small {
-  margin-top: 5px;
-  overflow: hidden;
-  color: #8a97a8;
-  font-size: 10px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.hi-dashboard-page .hi-source-row b {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
-  color: #27364a;
-  font-size: 18px;
-  text-align: left;
-}
-.hi-dashboard-page .hi-source-row b small {
-  margin-top: 3px;
-  color: #9aa6b6;
-  font-size: 9px;
-  font-weight: 800;
-}
-.hi-dashboard-page .hi-source-row div small {
-  display: block;
-}
-.hi-dashboard-page .hi-source-row b small {
-  display: none;
-}
-.hi-dashboard-page .hi-decision-grid {
-  grid-area: keywords;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
-  margin-bottom: 0;
+.riskRadarPage .recent-product-source {
+  margin-top: 6px;
+  color: var(--soft);
+  font-size: 10.5px;
 }
 
-.hi-dashboard-page .hi-watchlist-panel {
-  min-height: 248px;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-}
-
-.hi-dashboard-page .hi-watchlist-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  align-items: center;
-  justify-content: center;
-  column-gap: 20px;
-  row-gap: 12px;
-  width: min(100%, 760px);
-  min-height: 164px;
-  margin: 8px auto 0;
-  padding: 4px 8px;
-  text-align: center;
-}
-
-.hi-dashboard-page .hi-watchlist-cloud a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.riskRadarPage .evidence-link {
+  padding: 0;
   border: 0;
-  color: #7287a7;
-  font-size: calc(13px + (var(--keyword-weight, .4) * 7px));
-  font-weight: 900;
-  line-height: 1.16;
-  text-decoration: none;
-  transition: color .18s ease, transform .18s ease, text-shadow .18s ease;
+  background: transparent;
+  color: var(--orange-800);
+  font-size: 11.5px;
+  font-weight: 850;
+  line-height: 1.4;
   white-space: nowrap;
 }
 
-.hi-dashboard-page .hi-watchlist-cloud a:hover,
-.hi-dashboard-page .hi-watchlist-cloud a:focus-visible { color: var(--hi-orange-strong); text-shadow: 0 5px 12px rgba(255, 158, 27, .25); transform: scale(1.14); outline: 2px solid var(--hi-orange); outline-offset: 4px; }
-.hi-dashboard-page .hi-watchlist-cloud .keyword-red { color: #a7655c; }
-.hi-dashboard-page .hi-watchlist-cloud .keyword-gold { color: #bd9550; }
-.hi-dashboard-page .hi-watchlist-cloud .keyword-blue { color: #7790be; }
-.hi-dashboard-page .hi-watchlist-cloud .keyword-blueSoft { color: #7f91ae; }
-
-.hi-dashboard-page .hi-linked-data-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
-  gap: 18px;
-  margin-bottom: 18px;
+.riskRadarPage .evidence-link:hover {
+  color: var(--orange-600);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-.hi-dashboard-page .hi-linked-data-grid .hi-report-linked-panel {
-  grid-column: 1 / -1;
+.riskRadarPage .evidence-link:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
-.hi-dashboard-page .hi-linked-table,
-.hi-dashboard-page .hi-detail-evidence-list,
-.hi-dashboard-page .hi-report-linked-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 18px;
+@media (max-width: 900px) {
+  .riskRadarPage .exclusive-rights-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.hi-dashboard-page .hi-linked-table article {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 108px 124px;
-  align-items: center;
-  gap: 12px;
-  min-height: 72px;
-  padding: 14px;
-  border: 1px solid #e5edf5;
-  border-radius: 14px;
-  background: linear-gradient(180deg, #ffffff, #f9fbfe);
+/* 시장·글로벌 인사이트의 국내 업데이트 2건 세로 목록 */
+.riskRadarPage .market-insights .update-list {
+  padding: 0;
 }
 
-.hi-dashboard-page .hi-linked-rank {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  color: #fff;
-  background: var(--hi-navy);
-  font-size: 12px;
-  font-weight: 950;
+.riskRadarPage .market-insights .domestic-update-item {
+  padding: 14px 0 14px 15px;
+  border-bottom: 0;
 }
 
-.hi-dashboard-page .hi-linked-table strong,
-.hi-dashboard-page .hi-detail-evidence-list strong,
-.hi-dashboard-page .hi-report-linked-list strong {
-  display: block;
-  overflow: hidden;
-  color: #10233e;
-  font-size: 13px;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.riskRadarPage .market-insights .domestic-update-item + .domestic-update-item {
+  border-top: 1px solid #edf1f5;
 }
 
-.hi-dashboard-page .hi-linked-table small,
-.hi-dashboard-page .hi-report-linked-list small {
-  display: block;
-  margin-top: 5px;
-  overflow: hidden;
-  color: #6c7b8d;
-  font-size: 10px;
+.riskRadarPage .market-insights .update-source {
+  margin-bottom: 0;
+  color: #8390a2;
+  font-size: 10.5px;
+}
+
+.riskRadarPage .market-insights .update-title {
+  margin-top: 7px;
+  color: #13213d;
+  font-size: 13.5px;
   font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.45;
 }
 
-.hi-dashboard-page .hi-linked-table em {
-  justify-self: end;
-  min-width: 92px;
-  padding: 7px 10px;
-  border-radius: 999px;
-  color: #0f5d47;
-  background: #e9fbf3;
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 950;
-  text-align: center;
+.riskRadarPage .market-insights .update-meaning {
+  margin-top: 6px;
+  color: #66758a;
+  font-size: 11.5px;
+  line-height: 1.55;
+  -webkit-line-clamp: 2;
 }
 
-.hi-dashboard-page .hi-linked-row-actions,
-.hi-dashboard-page .hi-linked-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+.riskRadarPage .market-insights .update-related {
+  margin-top: 8px;
+  color: #7c899b;
+  font-size: 10.5px;
+  line-height: 1.45;
 }
 
-.hi-dashboard-page .hi-linked-row-actions a,
-.hi-dashboard-page .hi-linked-actions a,
-.hi-dashboard-page .hi-report-linked-list a {
-  min-height: 32px;
+.riskRadarPage .market-insights .update-link {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 11px;
-  border: 1px solid #d9e5f0;
-  border-radius: 999px;
-  color: var(--hi-navy);
-  background: #fff;
-  font-size: 10px;
-  font-weight: 950;
-  text-decoration: none;
-}
-
-.hi-dashboard-page .hi-linked-row-actions a:first-child,
-.hi-dashboard-page .hi-linked-actions a:first-child,
-.hi-dashboard-page .hi-report-linked-list a {
-  color: #fff;
-  border-color: var(--hi-navy);
-  background: var(--hi-navy);
-}
-
-.hi-dashboard-page .hi-detail-evidence-list article {
-  padding: 16px;
-  border: 1px solid #e5edf5;
-  border-radius: 16px;
-  background: #fff;
-}
-
-.hi-dashboard-page .hi-detail-evidence-list article > div:first-child {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.hi-dashboard-page .hi-detail-evidence-list article > div:first-child span,
-.hi-dashboard-page .hi-report-linked-list span {
-  flex: 0 0 auto;
-  padding: 6px 9px;
-  border-radius: 999px;
-  color: #8a4f00;
-  background: #fff4e5;
-  font-size: 10px;
-  font-weight: 950;
-}
-
-.hi-dashboard-page .hi-detail-evidence-list p,
-.hi-dashboard-page .hi-report-linked-list p {
-  margin: 10px 0 0;
-  color: #4f5f72;
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.hi-dashboard-page .hi-detail-evidence-list dl {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 14px 0;
-}
-
-.hi-dashboard-page .hi-detail-evidence-list dl div {
-  min-width: 0;
-  padding: 10px;
-  border-radius: 12px;
-  background: #f6f9fc;
-}
-
-.hi-dashboard-page .hi-detail-evidence-list dt {
-  margin-bottom: 5px;
-  color: #77869a;
-  font-size: 9px;
-  font-weight: 950;
-}
-
-.hi-dashboard-page .hi-detail-evidence-list dd {
-  overflow: hidden;
-  margin: 0;
-  color: #182a43;
-  font-size: 11px;
-  font-weight: 850;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.hi-dashboard-page .hi-report-linked-list {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.hi-dashboard-page .hi-report-linked-list article {
-  min-width: 0;
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  padding: 16px;
-  border: 1px solid #e3edf7;
-  border-radius: 16px;
-  background: #fff;
-}
-
-.hi-dashboard-page .hi-report-linked-list div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.hi-dashboard-page .hi-report-linked-list b,
-.hi-dashboard-page .hi-report-linked-list em {
-  padding: 6px 8px;
-  border-radius: 10px;
-  color: #2f4056;
-  background: #f3f6fa;
-  font-size: 10px;
-  font-style: normal;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--orange-800);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10.5px;
   font-weight: 900;
 }
 
-@media (max-width: 1180px) {
-  .hi-dashboard-page {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas:
-      'hero hero'
-      'kpi kpi'
-      'work work'
-      'analytics analytics';
-  }
-  .hi-dashboard-page .hi-command-hero,
-  .hi-dashboard-page .hi-dashboard-grid,
-  .hi-dashboard-page .hi-analytics-grid,
-  .hi-dashboard-page .hi-decision-grid,
-  .hi-dashboard-page .hi-linked-data-grid {
-    grid-template-columns: 1fr;
-  }
-  .hi-dashboard-page .hi-dashboard-grid { grid-template-areas: 'source' 'law' 'keywords' 'reports'; }
-  .hi-dashboard-page .hi-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hi-dashboard-page .hi-report-linked-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hi-dashboard-page .hi-source-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.riskRadarPage .market-insights .update-link:hover {
+  color: var(--orange-600);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-@media (max-width: 920px) {
-  .hi-dashboard-page .hi-command-hero { grid-template-columns: 1fr; }
-  .hi-dashboard-page .hi-command-copy {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-  .hi-dashboard-page .hi-source-list { grid-template-columns: 1fr; }
-  .hi-dashboard-page .hi-source-row { grid-template-columns: 50px minmax(0, 1fr) 74px; }
-  .hi-dashboard-page .hi-linked-table article {
-    grid-template-columns: 42px minmax(0, 1fr);
-  }
-  .hi-dashboard-page .hi-linked-table em,
-  .hi-dashboard-page .hi-linked-row-actions {
-    grid-column: 2 / -1;
-    justify-self: start;
-  }
-  .hi-dashboard-page .hi-linked-row-actions { justify-content: flex-start; }
-}
-
-@media (max-width: 640px) {
-  .hi-dashboard-page {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'hero'
-      'kpi'
-      'work'
-      'analytics';
-    padding-inline: 16px;
-  }
-  .hi-dashboard-page .hi-command-copy {
-    min-height: 240px;
-    padding: 22px;
-  }
-  .hi-dashboard-page .hi-command-copy {
-    grid-template-columns: 1fr;
-  }
-  .hi-dashboard-page .hi-command-copy h1 { font-size: 31px; }
-  .hi-dashboard-page .hi-command-greeting strong { font-size: 42px; }
-  .hi-dashboard-page .hi-kpi-grid { grid-template-columns: 1fr; }
-  .hi-dashboard-page .hi-watchlist-panel { min-height: 240px; }
-  .hi-dashboard-page .hi-watchlist-cloud {
-    column-gap: 16px;
-    row-gap: 11px;
-    min-height: 160px;
-  }
-  .hi-dashboard-page .hi-watchlist-cloud a {
-    font-size: calc(13px + (var(--keyword-weight, .4) * 6px));
-  }
-  .hi-dashboard-page .hi-detail-evidence-list dl,
-  .hi-dashboard-page .hi-report-linked-list {
-    grid-template-columns: 1fr;
-  }
-  .hi-dashboard-page .hi-linked-actions { justify-content: flex-start; }
-}
-
-/* Keep the dashboard grid on the shared content axis without changing its card density. */
-.workspace-hyoje .hi-dashboard-page {
-  width: 100%;
-  max-width: none;
-  padding-top: 36px;
-  padding-inline: 0;
-}
-
-@media (max-width: 720px) {
-  .workspace-hyoje .hi-dashboard-page {
-    padding-top: 24px;
-    padding-inline: 0;
-  }
+.riskRadarPage .market-insights .update-link:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 3px;
+  border-radius: 4px;
 }

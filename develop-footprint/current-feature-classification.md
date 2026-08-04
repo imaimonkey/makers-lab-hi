@@ -1,11 +1,11 @@
 # 현재 기능 분류
 
-기준일: 2026-08-01
+기준일: 2026-08-04
 
 | 영역 | UI | 로컬 동작 | 운영 연동 | 주요 코드 |
 | --- | --- | --- | --- | --- |
 | 실무자·고객·영업 분리 셸과 사용자 전환 | 구현 | 동작 | 인증 미연동 | `src/app/layouts/RootLayout.tsx`, `src/app/layouts/CustomerLayout.tsx`, `src/app/layouts/SalesLayout.tsx`, `src/shared/components/ModeSwitch.tsx` |
-| 1. 신규위험 대시보드 | 구현 | 5채널 신호·이슈 매트릭스·준비도·시장 추이·법령·상품 설계 보드, 대시보드·뉴스·후보 병렬 조회, 부분 실패·마지막 정상 데이터·SAMPLE fallback | API 어댑터 구현, 서버/키/실데이터 미연결 시 소스별 SAMPLE 유지 | `src/features/risk-dashboard/RiskRadarSnapshot.tsx`, `RiskSignalPipeline.tsx`, `RiskRadarOperationsPanel.tsx`, `RiskProductDevelopmentBoard.tsx` |
+| 1. 신규위험 대시보드 | 구현 | 위험레이더 본문에 최근 30일 KPI·상품화 우선 TOP 5·신규 후보·법·규제·시장동향·스크랩·키워드 필터·분석 자료 도넛을 SAMPLE 배열로 구성, 기존 RootLayout·라우팅·ModeSwitch 유지 | 실제 후보·시장·법령·리포트 데이터 연동 전까지 예시 수치와 판단 유지; 운영 집계·근거 최신성·권한 저장소 필요 | `src/pages/risk-dashboard/RiskDashboardPage.tsx`, `src/pages/risk-dashboard/riskDashboardPage.css`, `src/features/risk-dashboard/riskRadarContent.ts`, 기존 `src/features/risk-dashboard/*` API 경계 |
 | 2. 위험 후보 목록 | 구현 | 수집 단계·기사 큐·후보 등록 요청·5개 카테고리 필터·공식 공개근거가 연결된 TOP-18 신규 위험 타당성 스크리닝 가로 비교표·법률 보험의무/시행단계/제재강도 기반 우선순위·기사 사건 설명·평가 항목 상세·URL 검색/분류/정렬 | API 어댑터 구현, 후보·법령·통계 서버 미연결; 공개근거 기반 예비 점수는 실제 손해·가입 수요가 아님 | `src/domain/risk/riskExplorationDemo.ts`, `riskLawTracking.ts`, `riskScreeningInsights.ts`, `src/features/risk-catalog/RiskExplorationLens.tsx` |
 | 3. 위험 상세·상품화 평가 | 구현 | 기사형 위험 설명·본문 기반 해석·현재 사실/확인 필요 경계·원문/관련 기사/법령 링크·연결 인용·상품화 검토 항목·TOP-18 상세 ID·역할별 검토·근거 원장 대표 항목 미리보기 및 펼치기·원문/근거/교차검증 게이트·4개 핵심 평가 지표·산출 근거·판단 설명·참조 디자인 섹션 탭·PDF 출력·최신형 실무 화면 언어/시각 계층 | 관측 신호 추이 합성 차트는 제거했고, 근거·법령·평가 API 경계 구현 및 브라우저 SAMPLE 저장을 운영 권한 저장소로 교체 필요; URL이 없거나 검증 전인 자료는 연결 대기로 표시 | `src/domain/risk/sampleData.ts`, `src/features/risk-detail/RiskArticleOverview.tsx`, `RiskDecisionWorkspace.tsx`, `EvidenceVerificationWorkspace.tsx`, `ProductizationEvaluationPanel.tsx`, `src/styles/workstream-parity.css` |
 | 4. 종합 리포트 | 구현 | 목록 검색·필터·정렬·보기 전환, 신규 생성·로딩·fallback, 12개 상품화 기준별 AI/실무자 판단, 구조화 브리핑·섹션 편집·저장·약관 초안·Q&A·PDF | same-origin·로컬 fallback 프록시 구현, `VITE_POTENS_PROXY_URL` 및 운영 인증/저장소 필요 | `src/pages/reports/ReportsPage.tsx`, `src/report/**`, `vite.config.ts` |
@@ -33,3 +33,9 @@
 
 - `/` 대시보드의 오른쪽 운영 패널을 최근 활동과 처리 내역을 보여주는 Activity Stream으로 교체했다.
 - 남색 KPI 카드는 담당자 심사 지표 대신 새로운 공지사항·업데이트 요약을 표시하도록 바꿨다.
+
+## 2026-08-04 위험레이더 본문 개편
+
+- 첨부 HTML의 콘텐츠 순서를 참고하되 공통 셸과 안정 경로는 유지하고 `/` 본문만 재구성했다.
+- 예시 데이터는 `src/features/risk-dashboard/riskRadarContent.ts`의 배열을 실제 데이터 어댑터로 교체하는 방식으로 연동한다.
+- 키워드는 현재 페이지의 신규 위험 후보 필터로 연결하며, 상세·종합리포트·탐색 링크는 기존 경로와 쿼리 계약을 사용한다.
