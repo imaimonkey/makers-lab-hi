@@ -63,6 +63,32 @@ export function RiskArticleOverview({
     ...relatedLaws.slice(0, 2).map((law, index) => ({ key: `law-${law.id ?? index}`, kind: '법령·지침', title: law.title ?? '관련 법령·제도 자료', source: law.source ?? '관련 법령', date: law.date ?? risk.updatedAt, url: getSafeSourceUrl(law.sourceUrl ?? null), status: '검증 대기' })),
     ...evidence.slice(0, 2).map((item) => ({ key: item.id, kind: item.type, title: item.title, source: item.sourceName, date: item.publishedAt ?? item.date ?? risk.updatedAt, url: getSafeSourceUrl(item.sourceUrl), status: '원문 확인 필요' })),
   ].filter((item, index, list) => item && list.findIndex((candidate) => candidate?.key === item.key) === index).slice(0, 5)
+  const collectedSamples = risk.id === 'ess-ups-battery-fire' ? [
+    {
+      channel: '보도자료',
+      source: '산업통상자원부·소방청',
+      title: 'ESS 화재사고 원인조사 및 종합안전관리대책',
+      checked: '23개 사고현장 조사에서 충전완료 후 대기 중 14건, 충·방전 중 6건, 설치·시공 중 3건이 확인됐습니다. 보호시스템·운영환경·설치·통합제어 문제가 주요 원인으로 제시됐습니다.',
+      use: '사고 상태와 안전관리 수준을 인수조건으로 구분해야 한다는 판단 근거',
+      url: 'https://www.nfa.go.kr/nfa/news/pressrelease/press/?cntId=525&mode=view&pageIdx=1&searchCondition=all',
+    },
+    {
+      channel: '법령',
+      source: '국가법령정보센터',
+      title: '전기안전관리법 및 시행규칙 정기검사 규정',
+      checked: '자가용전기설비 소유자·점유자는 대상 설비에 대해 정기검사를 받아야 하며, 시행규칙 별표에서 전기저장장치와 무정전전원장치를 검사 대상으로 다룹니다.',
+      use: '정기검사 이력과 법정 안전관리 이행 여부를 계약 심사 항목으로 반영',
+      url: 'https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1016893771',
+    },
+    {
+      channel: '공공 플랫폼',
+      source: '한국전기안전공사 전기안전여기로',
+      title: '전기안전점검 서비스 안내',
+      checked: '전기설비가 전기설비기술기준과 한국전기설비규정에 적합한지 확인하는 점검 업무와 신청 경로를 제공하는 플랫폼입니다.',
+      use: '점검 결과·검사 이력 확보 가능성과 외부 검증 채널 확인',
+      url: 'https://safety.kesco.or.kr/cyber/cr/esc/moveElctySafeChckStep01.do',
+    },
+  ] : []
 
   return (
     <section id="risk-overview" className="risk-brief-report" aria-label="상품개발 사전 브리핑">
@@ -126,7 +152,8 @@ export function RiskArticleOverview({
       </section>
 
       <article id="evidence-materials" className="brief-evidence-panel">
-        <header className="brief-evidence-heading"><div><p className="brief-label">03 · 근거자료</p><h3>검토에 사용한 자료</h3><p>원문을 확인하기 전까지는 AI가 정리한 내용을 상품개발 판단의 확정 근거로 사용하지 않습니다.</p></div><span>{sourceItems.length}건 · 원문 확인 필요</span></header>
+        <header className="brief-evidence-heading"><div><p className="brief-label">03 · 0804 수집 샘플</p><h3>여러 채널에서 확인한 원문 자료</h3><p>API를 연결하지 않고, 원문에서 확인한 핵심 내용만 정적 샘플 데이터로 저장했습니다.</p></div><span>더미데이터 · 원문 {collectedSamples.length}건 확인</span></header>
+        {collectedSamples.length ? <div className="collected-source-grid">{collectedSamples.map((item) => <article key={item.title}><header><span>{item.channel}</span><em>원문 확인 완료</em></header><h4>{item.title}</h4><small>{item.source}</small><dl><div><dt>원문에서 확인한 내용</dt><dd>{item.checked}</dd></div><div><dt>위험 상세 활용</dt><dd>{item.use}</dd></div></dl><footer><span>API 미연결 · 정적 샘플</span><a href={item.url} target="_blank" rel="noreferrer noopener">원문 열기 ↗</a></footer></article>)}</div> : null}
         <div className="brief-evidence-table" role="table" aria-label="판단 근거자료 목록">
           <div className="brief-evidence-row brief-evidence-row--head" role="row"><span>유형</span><span>자료명·출처</span><span>상태</span><span>열기</span></div>
           {sourceItems.length ? sourceItems.map((item) => item && <div className="brief-evidence-row" role="row" key={item.key}><span className="brief-evidence-kind">{item.kind}</span><div><strong>{item.title}</strong><small>{item.source} · {formatDate(item.date)}</small></div><em>{item.status}</em>{item.url ? <a href={item.url} target="_blank" rel="noreferrer noopener">원문 열기 ↗</a> : <button type="button" disabled>검증 대기</button>}</div>) : <p className="brief-evidence-empty">연결된 자료가 없습니다. 후보 원문과 독립 자료를 추가로 확인해야 합니다.</p>}
