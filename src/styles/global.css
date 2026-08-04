@@ -2508,6 +2508,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .risk-screening-detail-topline { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .risk-screening-detail-topline > span { padding: 5px 8px; border-radius: 999px; color: #2563eb; background: #edf4ff; font-size: 9px; font-weight: 800; }
 .risk-screening-detail-topline > small { color: var(--muted); font-size: 9px; }
+.risk-screening-detail-link { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 8px 16px; border: 1px solid #145dcc; border-radius: 8px; color: #fff; background: #145dcc; box-shadow: 0 3px 8px rgba(20, 93, 204, .22); font-size: 9px; font-weight: 800; white-space: nowrap; text-decoration: none; transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease; }
+.risk-screening-detail-link:hover, .risk-screening-detail-link:focus-visible { border-color: #0f4cae; background: #0f4cae; box-shadow: 0 4px 10px rgba(15, 76, 174, .28); }
 .risk-screening-detail-panel h4 { margin: 14px 0 6px; color: var(--ink); font-size: 19px; }
 .risk-screening-detail-description { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .risk-screening-score-summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 15px; padding: 12px; border: 1px solid #dce8f8; border-radius: 10px; background: #f4f8ff; }
@@ -3088,7 +3090,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .risk-exploration-lens .risk-screening-table .screening-metric-cell strong { font-size: 12px; }
 .risk-exploration-lens .risk-screening-table .screening-metric-cell small { font-size: 9px; }
 .risk-exploration-lens .risk-screening-detail-topline > span,
-.risk-exploration-lens .risk-screening-detail-topline > small { font-size: 10px; }
+.risk-exploration-lens .risk-screening-detail-link { font-size: 11px; }
 .risk-exploration-lens .risk-screening-detail-topline > span { padding: 3px 6px; }
 .risk-exploration-lens .risk-screening-detail-panel h4 { font-size: 22px; line-height: 1.3; }
 .risk-exploration-lens .risk-screening-detail-description { font-size: 12px; line-height: 1.6; }

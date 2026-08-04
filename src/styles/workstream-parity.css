@@ -1549,6 +1549,36 @@
   display: none;
 }
 
+/* Keep every risk-exploration detail panel fully visible while the page scrolls. */
+@media (min-width: 901px) {
+  .workspace-seoyeon .catalog-page .risk-screening-detail-panel {
+    position: sticky;
+    top: calc(var(--analyst-topbar-height) + 12px);
+    align-self: start;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* Extend the risk category filter rail to the full catalog content width. */
+.workspace-seoyeon .catalog-page .risk-category-shell {
+  width: 100%;
+  max-width: none;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-tabs {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .workspace-seoyeon .catalog-page .risk-category-tabs {
+    justify-content: flex-start;
+  }
+}
+
 /* Keep the risk-exploration canvas at the same tone as the detail canvas. */
 .workspace-seoyeon,
 .workspace-seoyeon .app-main,
@@ -1589,7 +1619,7 @@
 }
 .workspace-seoyeon .catalog-page .risk-screening-table thead th:last-child::after {
   content: '상품화 종합점수';
-  font-size: 12px;
+  font-size: 10px;
 }
 .workspace-seoyeon .catalog-page .risk-screening-score-wrap > small {
   font-size: 0;

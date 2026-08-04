@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   calculateRiskExplorationScore,
@@ -117,12 +117,14 @@ function renderCandidateSummary(record: RiskExplorationRecord) {
   return <>{firstLine}<br />지하주차장{secondLine}</>
 }
 
+const CATEGORY_TABS_COLLAPSE_DISTANCE = 72
 const CATEGORY_TABS_REVEAL_DISTANCE = 4
 
 function useRiskCategoryTabsVisibility() {
   const [isVisible, setIsVisible] = useState(true)
   const visibilityRef = useRef(true)
   const previousScrollYRef = useRef(0)
+  const downwardScrollDistanceRef = useRef(0)
 
   useEffect(() => {
     const setVisibility = (nextVisibility: boolean) => {
@@ -137,14 +139,22 @@ function useRiskCategoryTabsVisibility() {
       const scrollDelta = currentScrollY - previousScrollYRef.current
       previousScrollYRef.current = currentScrollY
 
+      if (currentScrollY <= 16) {
+        downwardScrollDistanceRef.current = 0
+        setVisibility(true)
+        return
+      }
+
       if (scrollDelta > 0) {
-        // Hide on the first downward scroll event. The previous distance
-        // threshold made the tab appear stuck until the page was touched.
-        setVisibility(false)
+        downwardScrollDistanceRef.current += scrollDelta
+        if (downwardScrollDistanceRef.current >= CATEGORY_TABS_COLLAPSE_DISTANCE) {
+          setVisibility(false)
+        }
         return
       }
 
       if (scrollDelta <= -CATEGORY_TABS_REVEAL_DISTANCE) {
+        downwardScrollDistanceRef.current = 0
         setVisibility(true)
       }
     }
@@ -190,7 +200,7 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
   )
 }
 
-function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExplorationRecord; rank: number; developerMode: boolean }) {
+function RiskCandidateDetail({ record, developerMode }: { record: RiskExplorationRecord; developerMode: boolean }) {
   const candidate = getCandidateViewModelById(record.id)
   const quantification = getRiskCandidateQuantification(record)
   const detailPath = `${developerMode ? '/developer-test' : ''}/risks/${candidate?.detailRiskId ?? record.detailRiskId}`
@@ -287,7 +297,7 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
     <aside className="risk-screening-detail-panel" aria-label={`${record.title} 상세 평가`}>
       <div className="risk-screening-detail-topline">
         <span>{record.secondaryTags[0] ?? '위험 후보'}</span>
-        <small>상품화 우선순위 {rank}위</small>
+        <Link className="risk-screening-detail-link" to={detailPath}>위험 상세 &gt;</Link>
       </div>
       <h4>{record.title}</h4>
       <p className="risk-screening-detail-description">{record.summary}</p>
@@ -307,14 +317,10 @@ function RiskCandidateDetail({ record, rank, developerMode }: { record: RiskExpl
       </section>
       <section className="risk-screening-product-direction"><span>S</span><div><strong>최종 상품 설계 포인트</strong><p>{productDesignDirection}</p></div></section>
       <div className="risk-screening-detail-summary-grid">
-        <section className="risk-screening-strengths"><strong>상품화 강점</strong><ul>{productizationPoints.slice(0, 2).map((point) => <li key={point}>{point}</li>)}</ul></section>
-        <section className="risk-screening-additional-review"><strong>주요 보완 사항</strong><ul>{additionalReviewPoints.slice(0, 4).map((point) => <li key={point}>{point}</li>)}</ul></section>
+        <section className="risk-screening-strengths"><strong>상품화 강점</strong><ul>{productizationPoints.slice(0, 3).map((point) => <li key={point}>{point}</li>)}</ul></section>
+        <section className="risk-screening-additional-review"><strong>주요 보완 사항</strong><ul>{additionalReviewPoints.slice(0, 3).map((point) => <li key={point}>{point}</li>)}</ul></section>
       </div>
       <footer className="risk-screening-source-footer"><strong>주요 출처</strong><span>{evidenceSourceName} · {evidenceSourceDate}</span>{evidenceSourceUrl ? <a href={evidenceSourceUrl} target="_blank" rel="noreferrer">원문 확인 ↗</a> : null}</footer>
-      <div className="risk-screening-detail-actions">
-        <Link to={detailPath}>위험 상세</Link>
-        <Link to={`${developerMode ? '/developer-test' : ''}/reports?sourceRiskId=${encodeURIComponent(candidate?.detailRiskId ?? record.detailRiskId)}`}>종합 리포트</Link>
-      </div>
     </aside>
   )
 }
@@ -347,6 +353,30 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
       else nextSearchParams.set(key, value)
       return nextSearchParams
     }, { replace: true })
+  }
+
+  const selectCategory = (nextCategory: ScreeningCategory) => {
+    setScreeningPage(1)
+    setSelectedRecordId(undefined)
+    updateSearchParam('category', nextCategory, 'all')
+  }
+
+  const handleCategoryKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+    const direction = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault()
+      const targetIndex = event.key === 'Home' ? 0 : categoryFilters.length - 1
+      const target = categoryFilters[targetIndex]
+      selectCategory(target.key)
+      document.getElementById(`risk-category-${target.key}`)?.focus()
+      return
+    }
+    if (!direction) return
+    event.preventDefault()
+    const nextIndex = (index + direction + categoryFilters.length) % categoryFilters.length
+    const target = categoryFilters[nextIndex]
+    selectCategory(target.key)
+    document.getElementById(`risk-category-${target.key}`)?.focus()
   }
 
   const sortedRecords = useMemo(() => {
@@ -389,17 +419,16 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
 
   const actualSources = useMemo(() => [...new Set((sourceRecords ?? []).map((record) => record.sourceName).filter((source): source is string => Boolean(source)))], [sourceRecords])
   const selectedRecord = records.find((record) => record.id === selectedRecordId) ?? records[0]
-  const selectedRank = selectedRecord ? sortedRecords.findIndex((record) => record.id === selectedRecord.id) + 1 : 0
 
   return (
-    <section className="risk-exploration-lens surface-card screening-lens" aria-labelledby={category === 'legal' ? 'risk-exploration-title' : undefined} aria-label={category === 'legal' ? undefined : '신규 위험 타당성 스크리닝'}>
+    <section id="risk-exploration-content" className="risk-exploration-lens surface-card screening-lens" aria-labelledby={category === 'legal' ? 'risk-exploration-title' : undefined} aria-label={category === 'legal' ? undefined : '신규 위험 타당성 스크리닝'}>
       <div className="risk-exploration-filter-row">
         <div className={`risk-category-shell${categoryTabsVisible ? '' : ' is-collapsed'}`}>
           <div className="risk-category-tabs" role="tablist" aria-label="위험 후보 카테고리 필터">
             {categoryFilters.map((filter, index) => (
               <Fragment key={filter.key}>
                 {index === 3 || index === 4 ? <span className="risk-category-divider" aria-hidden="true" /> : null}
-                <button id={`risk-category-${filter.key}`} type="button" role="tab" aria-selected={category === filter.key} className={`risk-category-button ${category === filter.key ? 'active' : ''}`} aria-pressed={category === filter.key} onClick={() => { setScreeningPage(1); setSelectedRecordId(undefined); updateSearchParam('category', filter.key, 'all') }}>
+                <button id={`risk-category-${filter.key}`} type="button" role="tab" aria-selected={category === filter.key} aria-controls="risk-exploration-content" tabIndex={category === filter.key ? 0 : -1} className={`risk-category-button ${category === filter.key ? 'active' : ''}`} aria-pressed={category === filter.key} onClick={() => selectCategory(filter.key)} onKeyDown={(event) => handleCategoryKeyDown(event, index)}>
                   {filter.label}
                 </button>
               </Fragment>
@@ -486,7 +515,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
               </nav>
             ) : null}
           </section>
-          {selectedRecord ? <RiskCandidateDetail record={selectedRecord} rank={selectedRank} developerMode={developerMode} /> : null}
+          {selectedRecord ? <RiskCandidateDetail record={selectedRecord} developerMode={developerMode} /> : null}
         </div>
       ) : <div className="risk-candidate-empty">{developerMode ? <><strong>선택 조건에 맞는 원문 기반 후보가 없습니다.</strong><br />현재 {developerData?.counts.articles ?? 0}건의 원문은 본문 구조화 더미 결과로 준비되어 있습니다.{onRunDeveloperStep2 ? <button type="button" onClick={onRunDeveloperStep2} disabled={developerRunning}>{developerRunning ? 'Step 2 분석 중…' : '실제 Step 2 전체 실행'}</button> : null}</> : '조건에 맞는 위험 후보가 없습니다.'}</div>}
       </> : null}
