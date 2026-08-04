@@ -30234,3 +30234,121 @@
     line-height: 1.5;
   }
 }
+
+/*
+ * 종합 브리핑 의사결정 위계
+ *
+ * 최종 결론·핵심 판단 근거·핵심 정량 지표만 강조색을 사용합니다.
+ * 나머지 요약 카드는 중성 표면으로 낮춰 세 영역이 먼저 읽히도록 합니다.
+ */
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+  border: 1px solid #d7e4ef;
+  border-left: 5px solid var(--report-navy);
+  background: linear-gradient(112deg, #f3f8fd 0%, #ffffff 76%);
+  box-shadow: 0 8px 24px rgba(24, 58, 91, 0.09);
+}
+
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-head h3 {
+  color: var(--report-navy);
+  font-size: clamp(24px, 2.2vw, 30px);
+  letter-spacing: -0.02em;
+}
+
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-section--core-judgments > .report-page__ai-summary-block {
+  padding: 22px 22px 20px;
+  border: 1px solid #f0d8bd;
+  border-radius: 12px;
+  background: #fffaf5;
+  box-shadow: 0 8px 24px rgba(151, 91, 34, 0.08);
+}
+
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-section--core-judgments .report-page__ai-summary-core-card {
+  border: 1px solid #f1d7ba;
+  border-top: 4px solid var(--report-orange);
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(151, 91, 34, 0.07);
+}
+
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-section--core-judgments .report-page__ai-summary-decision-title {
+  color: var(--report-orange-ink);
+}
+
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance {
+  padding: 20px 22px 22px;
+  border: 1px solid #f0d8bd;
+  border-top: 4px solid var(--report-orange);
+  border-left: 1px solid #f0d8bd;
+  border-radius: 12px;
+  background: #fffaf5;
+  box-shadow: 0 8px 24px rgba(151, 91, 34, 0.08);
+}
+
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card {
+  border: 1px solid #f1d7ba;
+  border-top: 3px solid var(--report-orange);
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(151, 91, 34, 0.07);
+}
+
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card strong,
+#report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--confirmed strong {
+  color: var(--report-orange-ink);
+}
+
+/* 핵심 검토 결과·추천 구조·문구 미리보기는 강조 영역을 보조하므로 주황색을 제거합니다. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card {
+  border: 1px solid #e2e9f0;
+  border-top: 1px solid #e2e9f0;
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-core-card-result {
+  border-bottom-color: #d8e3ec;
+  color: var(--report-navy);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-product-head > div {
+  border: 1px solid #e2e9f0;
+  border-top: 1px solid #e2e9f0;
+  border-left: 3px solid #c5dced;
+  background: #f8fafc;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-wording-preview {
+  border: 1px solid #e2e9f0;
+  border-left: 3px solid #c5dced;
+  background: #f8fafc;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__briefing-icon-link {
+  border-color: #d5e0e8;
+  color: #60788b !important;
+  background: #f7fafc;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__briefing-icon-link:hover {
+  border-color: #aebfcd;
+  color: var(--report-navy) !important;
+  background: #edf4f8;
+}
+
+@media screen and (max-width: 680px) {
+  #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-section--core-judgments > .report-page__ai-summary-block,
+  #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance {
+    padding: 16px;
+  }
+
+  #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    border-left-width: 4px;
+  }
+}
+
+@media print {
+  #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion,
+  #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-section--core-judgments > .report-page__ai-summary-block,
+  #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance {
+    box-shadow: none;
+  }
+}
