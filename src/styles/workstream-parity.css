@@ -1537,6 +1537,102 @@
   }
 }
 
+/* Keep the risk category rail aligned with the catalog page edges. */
+.workspace-seoyeon .catalog-page .risk-category-shell,
+.workspace-seoyeon .catalog-page .risk-category-tabs {
+  width: 100%;
+  max-width: none;
+}
+
+/* The detail page no longer exposes a second in-page navigation rail. */
+.workspace-sh .risk-anchor-tabs {
+  display: none;
+}
+
+/* Keep the risk-exploration canvas at the same tone as the detail canvas. */
+.workspace-seoyeon,
+.workspace-seoyeon .app-main,
+.workspace-seoyeon .app-content,
+.workspace-seoyeon .seoyeon-visual {
+  background: #f3f6fa;
+}
+
+/* Extend the category rail to the same working width as the catalog surface. */
+.workspace-seoyeon .catalog-page .risk-category-tabs {
+  width: min(1400px, calc(100% - 44px));
+  max-width: none;
+  margin-inline: auto;
+}
+
+/* Dividers are independent elements, so an active tab never paints over them. */
+.workspace-seoyeon .catalog-page .risk-category-button::before {
+  display: none !important;
+}
+.workspace-seoyeon .catalog-page .risk-category-divider {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 28px;
+  margin-inline: 8px;
+  background: #dce3ea;
+}
+
+@media (max-width: 720px) {
+  .workspace-seoyeon .catalog-page .risk-category-tabs {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* The screening table keeps only market, PML, and the productization total. */
+.workspace-seoyeon .catalog-page .risk-screening-table thead th:last-child {
+  font-size: 0;
+}
+.workspace-seoyeon .catalog-page .risk-screening-table thead th:last-child::after {
+  content: '상품화 종합점수';
+  font-size: 12px;
+}
+.workspace-seoyeon .catalog-page .risk-screening-score-wrap > small {
+  font-size: 0;
+}
+.workspace-seoyeon .catalog-page .risk-screening-score-wrap > small::after {
+  content: '상품화 종합점수 · 5점 기준';
+  font-size: 9px;
+}
+.workspace-seoyeon .catalog-page .risk-screening-toolbar option[value='fortuity'] {
+  display: none;
+}
+
+/* Give the candidate copy a fixed, narrower lane and distribute the remaining metrics evenly. */
+.workspace-seoyeon .catalog-page .risk-screening-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.workspace-seoyeon .catalog-page .risk-screening-table th:nth-child(1) { width: 6%; }
+.workspace-seoyeon .catalog-page .risk-screening-table th:nth-child(2) { width: 32%; }
+.workspace-seoyeon .catalog-page .risk-screening-table th:nth-child(3),
+.workspace-seoyeon .catalog-page .risk-screening-table th:nth-child(4),
+.workspace-seoyeon .catalog-page .risk-screening-table th:nth-child(5) { width: 20.67%; }
+.workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+.workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > strong,
+.workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > small {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > span {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Dividers belong to the gaps between tabs, never to an active tab. */
+.workspace-seoyeon .catalog-page .risk-category-button.active::before {
+  display: none;
+}
+
 .workspace-hyoje .topbar,
 .workspace-seoyeon .topbar,
 .workspace-sh .topbar,
@@ -1813,4 +1909,8 @@
   .workspace-sh .risk-anchor-tabs {
     top: 64px;
   }
+}
+
+.workspace-sh .risk-anchor-tabs {
+  display: none;
 }

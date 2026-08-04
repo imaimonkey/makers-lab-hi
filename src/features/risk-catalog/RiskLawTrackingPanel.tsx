@@ -104,18 +104,6 @@ function collectOfficialLawFields(payload: Record<string, unknown>) {
   return rows.filter(([key, value]) => !/메시지|resultCode|totalCnt|page|display/i.test(key) && value.length < 900)
 }
 
-const riskLabels: Record<LawTrackingRiskLevel, string> = {
-  high: '🔥 리스크 High',
-  medium: '⚠️ 리스크 Medium',
-  low: '리스크 Low',
-}
-
-const riskClassNames: Record<LawTrackingRiskLevel, string> = {
-  high: 'is-high',
-  medium: 'is-medium',
-  low: 'is-low',
-}
-
 function TrackingTimeline({ item }: { item: RiskLawTrackingItem }) {
   return (
     <div className="risk-law-timeline" aria-label="입법 또는 개정 진행 단계">
@@ -308,7 +296,7 @@ export function RiskLawTrackingPanel({ category, developerLaws, onRunDeveloperSt
         <div className="risk-law-list" aria-label="법령·규제 목록">
           {items.length ? items.map((item) => (
             <button type="button" className={`risk-law-list-item ${selected?.id === item.id ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}>
-              <span className="risk-law-list-meta"><b>{item.typeLabel}</b><em className={riskClassNames[item.riskLevel]}>{developerMode ? '확인 필요' : riskLabels[item.riskLevel]}</em></span>
+              <span className="risk-law-list-meta"><b>{item.typeLabel}</b></span>
               <strong>{item.title}</strong>
               <small>{item.summary}</small>
               {item.insuranceMandate ? <span className="risk-law-list-priority">보험 가입 의무 · 우선 {lawProductizationPriority(item).toFixed(1)}/5</span> : null}

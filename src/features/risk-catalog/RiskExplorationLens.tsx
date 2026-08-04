@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   calculateRiskExplorationScore,
@@ -91,7 +91,7 @@ function removeDetailMetricLabel(text: string) {
     .trim()
 }
 
-const screeningColumns: RiskCandidateQuantificationKey[] = ['market', 'fortuity', 'pml']
+const screeningColumns: RiskCandidateQuantificationKey[] = ['market', 'pml']
 
 function screeningScoreFor(record: RiskExplorationRecord, developerMode: boolean) {
   return developerMode ? calculateRiskExplorationScore(record.metricScores) : getCandidateViewModelById(record.id)?.screeningScore.value ?? null
@@ -396,10 +396,13 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
       <div className="risk-exploration-filter-row">
         <div className={`risk-category-shell${categoryTabsVisible ? '' : ' is-collapsed'}`}>
           <div className="risk-category-tabs" role="tablist" aria-label="위험 후보 카테고리 필터">
-            {categoryFilters.map((filter) => (
-              <button id={`risk-category-${filter.key}`} type="button" role="tab" aria-selected={category === filter.key} className={`risk-category-button ${category === filter.key ? 'active' : ''}`} key={filter.key} aria-pressed={category === filter.key} onClick={() => { setScreeningPage(1); setSelectedRecordId(undefined); updateSearchParam('category', filter.key, 'all') }}>
-                {filter.label}
-              </button>
+            {categoryFilters.map((filter, index) => (
+              <Fragment key={filter.key}>
+                {index === 3 || index === 4 ? <span className="risk-category-divider" aria-hidden="true" /> : null}
+                <button id={`risk-category-${filter.key}`} type="button" role="tab" aria-selected={category === filter.key} className={`risk-category-button ${category === filter.key ? 'active' : ''}`} aria-pressed={category === filter.key} onClick={() => { setScreeningPage(1); setSelectedRecordId(undefined); updateSearchParam('category', filter.key, 'all') }}>
+                  {filter.label}
+                </button>
+              </Fragment>
             ))}
           </div>
         </div>
@@ -414,6 +417,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
 
       {category === 'legal' ? <RiskLawTrackingPanel category={category} developerLaws={developerMode ? (developerLaws ?? []) : undefined} onRunDeveloperStep2={developerMode ? onRunDeveloperStep2 : undefined} developerRunning={developerRunning} /> : null}
 
+      {category !== 'legal' ? <>
       <div className="screening-table-heading">
         <div><p className="eyebrow">AI-ASSISTED SCREENING</p><h3>신규 위험 타당성 스크리닝</h3></div>
         <div className="screening-table-heading-side">
@@ -485,6 +489,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
           {selectedRecord ? <RiskCandidateDetail record={selectedRecord} rank={selectedRank} developerMode={developerMode} /> : null}
         </div>
       ) : <div className="risk-candidate-empty">{developerMode ? <><strong>선택 조건에 맞는 원문 기반 후보가 없습니다.</strong><br />현재 {developerData?.counts.articles ?? 0}건의 원문은 본문 구조화 더미 결과로 준비되어 있습니다.{onRunDeveloperStep2 ? <button type="button" onClick={onRunDeveloperStep2} disabled={developerRunning}>{developerRunning ? 'Step 2 분석 중…' : '실제 Step 2 전체 실행'}</button> : null}</> : '조건에 맞는 위험 후보가 없습니다.'}</div>}
+      </> : null}
 
     </section>
   )

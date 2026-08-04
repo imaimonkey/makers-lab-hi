@@ -15,6 +15,7 @@ import { riskRadarApi } from '../../features/risk-dashboard/riskRadarApi'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 import type { SavedStep3AnalysisRow } from '../../features/llm-util/util-3'
+import { RiskContextFlow } from '../../features/risk-detail/RiskContextFlow'
 
 export function RiskDetailPage({ data, developerMode = false, step3Results = [] }: { data?: { risk: SampleRiskCandidate; detail: SampleRiskDetail; articleId: string }; developerMode?: boolean; step3Results?: SavedStep3AnalysisRow[] } = {}) {
   const { riskId } = useParams()
@@ -102,6 +103,14 @@ export function RiskDetailPage({ data, developerMode = false, step3Results = [] 
           <div><strong>요청한 위험 ID: {riskId}</strong><p>샘플 후보 목록으로 돌아가 유효한 검토 대상을 선택할 수 있습니다.</p></div>
           <Link to={catalogPath} className="secondary-action">위험 후보로 돌아가기 <AppIcon name="arrow" size={17} /></Link>
         </section>
+      </div>
+    )
+  }
+
+  if (risk.id === 'generative-ai-copyright') {
+    return (
+      <div className="page detail-page sh-visual">
+        <RiskContextFlow catalogPath={catalogPath} />
       </div>
     )
   }
