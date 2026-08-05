@@ -30373,7 +30373,7 @@
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
 }
 
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card {
@@ -30454,16 +30454,22 @@
 }
 
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li::before {
-  flex: 0 0 8px;
-  color: #94a3b8;
-  content: '•';
-  font-weight: 700;
+  display: none;
 }
 
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li.is-confirmed,
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li.is-follow-up,
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li.is-additional-check {
   color: #475569;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li > .report-page__quantitative-metric-item-marker {
+  flex: 0 0 14px;
+  color: #708399;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-align: center;
 }
 
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details {
@@ -31895,7 +31901,23 @@
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-kicker {
-  display: none;
+  display: block;
+  margin: 0 0 5px;
+  color: #647b91;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  line-height: 1.2;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-evaluation-status .report-page__decision-briefing-kicker {
+  display: block;
+  margin: 0 0 6px;
+  color: #647b91;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  line-height: 1.2;
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-section-head h3 {
@@ -32585,7 +32607,7 @@
 
 /* Executive briefing: a visual summary board that keeps the conclusion and its evidence together. */
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
-  padding: 28px 32px 30px;
+  padding: 24px 26px 26px;
   border: 1px solid #dce7f0;
   border-radius: 16px;
   background: #ffffff;
@@ -32593,7 +32615,7 @@
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head {
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head .report-page__decision-briefing-kicker {
@@ -32613,9 +32635,9 @@
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(460px, .92fr);
-  gap: 30px;
+  gap: 24px;
   align-items: center;
-  padding: 24px 26px;
+  padding: 20px 22px;
   border: 1px solid #d8e5f1;
   border-radius: 14px;
   background: linear-gradient(110deg, #f4f9ff 0%, #fafcff 57%, #ffffff 100%);
@@ -32625,15 +32647,15 @@
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-lead {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   min-width: 0;
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-icon {
   display: inline-flex;
-  width: 122px;
-  height: 122px;
-  flex: 0 0 122px;
+  width: 104px;
+  height: 104px;
+  flex: 0 0 104px;
   align-items: center;
   justify-content: center;
   border: 1px solid #d7e6f7;
@@ -32676,8 +32698,8 @@
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group {
   min-width: 0;
-  min-height: 164px;
-  padding: 18px 18px 16px;
+  min-height: 144px;
+  padding: 15px 16px 14px;
   border: 1px solid #dfe8f1;
   border-radius: 11px;
   background: rgba(255, 255, 255, .9);
@@ -32691,14 +32713,14 @@
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group-head > span {
   display: inline-flex;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: #174f91;
-  color: #ffffff;
+  border-radius: 0;
+  background: transparent;
+  color: #315d88;
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group h4 {
@@ -32710,8 +32732,8 @@
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group ul {
   display: grid;
-  gap: 11px;
-  margin: 16px 0 0;
+  gap: 8px;
+  margin: 12px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -32733,7 +32755,7 @@
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-section--core-judgments {
-  margin: 24px 0 0;
+  margin: 18px 0 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -32741,11 +32763,12 @@
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-judgment-cards {
-  padding: 25px 26px 24px;
-  border: 1px solid #dce6f0;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(31, 63, 96, .045);
+  padding: 18px 0 0;
+  border: 0;
+  border-top: 1px solid #dce6f0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading {
@@ -32754,7 +32777,7 @@
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading .report-page__eyebrow {
   margin: 0 0 7px;
-  color: var(--report-orange);
+  color: #71869a;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: .1em;
@@ -32764,16 +32787,16 @@
   display: inline-block;
   margin: 0;
   color: var(--report-navy);
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 750;
   letter-spacing: -.035em;
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-subtitle {
   display: inline-block;
-  margin: 0 0 0 20px;
+  margin: 0 0 0 14px;
   color: #63768a;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -32784,9 +32807,9 @@
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
   display: flex;
-  min-height: 240px;
+  min-height: 204px;
   flex-direction: column;
-  padding: 21px 23px;
+  padding: 17px 18px;
   border: 1px solid #dce6ef;
   border-radius: 11px;
   background: #ffffff;
@@ -32836,7 +32859,7 @@
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-decision-title {
-  margin: 20px 0 0;
+  margin: 15px 0 0;
   color: var(--report-navy);
   font-size: 24px;
   font-weight: 750;
@@ -32858,12 +32881,12 @@
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-evidence summary {
-  padding-top: 14px;
+  padding-top: 10px;
   color: #4d6681;
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance {
-  margin-top: 24px;
+  margin-top: 18px;
   padding: 0;
   border: 0;
 }
@@ -32877,7 +32900,7 @@
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-summary {
   gap: 14px;
-  margin-top: 15px;
+  margin-top: 11px;
 }
 
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card,
@@ -32887,8 +32910,8 @@
   grid-template-columns: 62px minmax(0, 1fr);
   align-items: center;
   gap: 16px;
-  min-height: 142px;
-  padding: 18px;
+  min-height: 128px;
+  padding: 14px 16px;
   border: 1px solid #dce6ef;
   border-radius: 11px;
   background: #ffffff;
@@ -32983,7 +33006,7 @@
   }
 
   :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-judgment-cards {
-    padding: 20px 16px;
+    padding: 16px 0 0;
   }
 
   :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading h3,
@@ -32998,7 +33021,7 @@
 
   :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
   :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
-    min-height: 220px;
+    min-height: 204px;
     padding: 19px;
   }
 
@@ -33133,7 +33156,7 @@
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart span:nth-child(4) { height: 92%; background: linear-gradient(180deg, #89b9ff 0%, #e7f1ff 100%); }
 
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics {
-  margin-top: 24px;
+  margin-top: 12px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -33155,6 +33178,7 @@
 :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+  align-items: start;
   margin-top: 16px;
 }
 
@@ -33237,3 +33261,1219 @@
 }
 
 @media print { :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual { display: none; } }
+
+/* Wording review reference layout: a calm risk hero, icon-led proposal cards, and a framed wording quote. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-main-flow {
+    gap: 42px;
+    margin-top: 30px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 300px;
+    padding: 32px 34px 26px;
+    border: 1px solid #d5e3f2;
+    border-left: 1px solid #d5e3f2;
+    border-radius: 16px;
+    background: linear-gradient(112deg, #f6faff 0%, #ffffff 74%);
+    box-shadow: 0 8px 24px rgba(28, 67, 104, .07);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card::before {
+    position: absolute;
+    top: -80px;
+    right: 3%;
+    width: 43%;
+    height: 270px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(197, 220, 247, .5) 0%, rgba(232, 241, 251, .16) 52%, transparent 72%);
+    content: '';
+    pointer-events: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-label {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    margin: 0;
+    padding: 7px 11px;
+    border-radius: 7px;
+    color: #315d88;
+    background: #e9f1fc;
+    font-size: 13px;
+    font-weight: 750;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card h3 {
+    position: relative;
+    z-index: 1;
+    max-width: 68%;
+    margin: 18px 0 0;
+    color: #123b66;
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 800;
+    letter-spacing: -.045em;
+    line-height: 1.25;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-description {
+    position: relative;
+    z-index: 1;
+    max-width: 66%;
+    margin: 16px 0 0;
+    color: #3f5872;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual {
+    position: absolute;
+    z-index: 0;
+    top: 24px;
+    right: 28px;
+    width: 31%;
+    height: 150px;
+    color: #4f78a8;
+    opacity: .9;
+    pointer-events: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual > svg {
+    position: absolute;
+    top: 8px;
+    left: 23%;
+    filter: drop-shadow(0 7px 7px rgba(71, 117, 166, .12));
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual-bars {
+    position: absolute;
+    right: 0;
+    bottom: 8px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    width: 74%;
+    height: 94px;
+    padding: 0 4px;
+    border-bottom: 1px solid #a8c5e8;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual-bars span {
+    display: block;
+    width: 18px;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, #c5dcfb 0%, #eef5ff 100%);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual-bars span:nth-child(1) { height: 34%; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual-bars span:nth-child(2) { height: 52%; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual-bars span:nth-child(3) { height: 71%; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual-bars span:nth-child(4) { height: 92%; background: linear-gradient(180deg, #8ebafa 0%, #e6f0ff 100%); }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta {
+    position: relative;
+    z-index: 1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    margin-top: 27px;
+    padding-top: 19px;
+    border-top-color: #d4e1ee;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div {
+    display: grid;
+    grid-template-columns: 25px minmax(0, 1fr);
+    column-gap: 10px;
+    min-width: 0;
+    padding: 0 18px;
+    border-right: 1px solid #d6e2ee;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div:first-child { padding-left: 0; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div:last-child { padding-right: 0; border-right: 0; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta-icon {
+    grid-row: 1 / span 2;
+    display: inline-flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 1px;
+    color: #6482a5;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta dt { margin-bottom: 5px; color: #70849a; font-size: 11px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta dd { color: #173b63; font-size: 13px; font-weight: 700; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-heading {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-heading h3,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-zone-heading h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0;
+    color: #173b63;
+    font-size: 25px;
+    font-weight: 800;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-heading-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    color: #1d4f86;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-grid {
+    gap: 21px;
+    margin-top: 20px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card {
+    position: relative;
+    min-height: 286px;
+    padding: 20px 24px 22px;
+    border: 1px solid #d8e3ef;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 5px 16px rgba(29, 66, 103, .06);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card:hover,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card:focus-visible {
+    border-color: #9eb8d2;
+    background: #ffffff;
+    box-shadow: 0 8px 18px rgba(29, 66, 103, .1);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card.is-selected {
+    border: 2px solid #f27622;
+    background: linear-gradient(145deg, #fffaf5 0%, #ffffff 88%);
+    box-shadow: 0 8px 20px rgba(242, 118, 34, .12);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-number {
+    display: inline-flex;
+    width: 39px;
+    height: 39px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d9e3ee;
+    border-radius: 50%;
+    color: #36577d;
+    background: #f3f7fb;
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-number {
+    border-color: #f6c69f;
+    color: #d96216;
+    background: #fff3e8;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card-icon {
+    display: inline-flex;
+    width: 54px;
+    height: 54px;
+    align-items: center;
+    justify-content: center;
+    margin: 2px 0 6px;
+    border: 1px solid #dce8f5;
+    border-radius: 50%;
+    color: #4c75a6;
+    background: #eef4fc;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-icon {
+    border-color: #ffd2ae;
+    color: #ec6a17;
+    background: #fff3e8;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card-title strong {
+    color: #173b63;
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-title strong { color: #bd4f0d; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-title em {
+    top: 20px;
+    right: 20px;
+    padding: 7px 10px;
+    border: 1px solid #f6c79f;
+    border-radius: 999px;
+    color: #c75a0c;
+    background: #fff3e8;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card > small { color: #405a76; font-size: 13px; line-height: 1.6; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-reason { padding-top: 13px; color: #637890; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-reason b { color: #173b63; font-size: 12px; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy {
+    padding: 25px 28px 28px;
+    border: 1px solid #d8e3ef;
+    border-radius: 15px;
+    background: #f7f9fb;
+    box-shadow: 0 6px 18px rgba(29, 66, 103, .05);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-actions { margin-top: 0; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__button { display: inline-flex; align-items: center; gap: 8px; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote {
+    position: relative;
+    margin: 20px 0 0;
+    padding: 23px 28px;
+    border: 1px solid #f0c399;
+    border-left: 3px solid #f27622;
+    border-radius: 8px;
+    color: #1f3d5c;
+    background: linear-gradient(110deg, #fffaf5 0%, #ffffff 100%);
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote::before,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote::after {
+    position: absolute;
+    color: #d8d2cc;
+    font-family: Georgia, serif;
+    font-size: 40px;
+    line-height: 1;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote::before { top: 8px; left: 13px; content: '“'; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote::after { right: 13px; bottom: -3px; content: '”'; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote > * { position: relative; z-index: 1; }
+}
+
+@media screen and (max-width: 900px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card h3,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-description { max-width: 100%; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual { display: none; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 0; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div:nth-child(2) { border-right: 0; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div:nth-child(3) { padding-left: 0; }
+}
+
+@media screen and (max-width: 640px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-main-flow { gap: 32px; margin-top: 24px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card { min-height: 0; padding: 24px 20px 22px; border-radius: 13px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card h3 { font-size: 29px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta { grid-template-columns: 1fr; gap: 12px; margin-top: 22px; padding-top: 16px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div:nth-child(3) { padding: 0; border-right: 0; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card { min-height: 0; padding: 18px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy { padding: 20px 16px 22px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote { padding: 20px 18px; font-size: 14px; }
+}
+
+/* The quantitative summary stays intentionally quiet so the core judgments lead the page. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card {
+    display: block;
+    min-height: 112px;
+    padding: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div {
+    min-width: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-icon {
+    display: none;
+  }
+}
+
+/* Wording review reference layout: spacious intro, text-led cards, and a neutral draft quote. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-section > .report-page__section-heading {
+    margin-bottom: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-section > .report-page__section-heading .report-page__section-number {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-section > .report-page__section-heading h2 {
+    font-size: clamp(30px, 3.2vw, 40px);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-lead {
+    max-width: 1000px;
+    margin: 14px 0 0;
+    color: #334b65;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.7;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-main-flow {
+    gap: 34px;
+    margin-top: 30px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card {
+    min-height: 0;
+    padding: 27px 34px 23px;
+    border: 1px solid #d5e3f2;
+    border-left: 1px solid #d5e3f2;
+    border-radius: 15px;
+    background: linear-gradient(112deg, #f8fbff 0%, #ffffff 74%);
+    box-shadow: 0 7px 20px rgba(28, 67, 104, .06);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card::before,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-visual { display: none; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card h3,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-description {
+    max-width: 100%;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card h3 {
+    margin-top: 17px;
+    color: #123b66;
+    font-size: clamp(29px, 3vw, 38px);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-description {
+    max-width: 820px;
+    margin-top: 12px;
+    color: #405a74;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    margin-top: 25px;
+    padding-top: 17px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div {
+    grid-template-columns: 27px minmax(0, 1fr);
+    column-gap: 10px;
+    padding-inline: 18px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta-icon { color: #4b75a5; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta dt { color: #71849a; font-size: 11px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta dd { color: #173b63; font-size: 14px; line-height: 1.5; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-heading {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-heading h3 {
+    gap: 8px;
+    color: #173b63;
+    font-size: 24px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-heading-icon {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    color: #173b63;
+    font-size: inherit;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-heading-icon::before {
+    display: none;
+    content: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-grid {
+    gap: 22px;
+    margin-top: 20px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card {
+    grid-template-columns: 48px minmax(0, 1fr);
+    column-gap: 13px;
+    row-gap: 15px;
+    min-height: 270px;
+    padding: 25px 24px 22px;
+    border: 1px solid #d8e3ef;
+    border-radius: 13px;
+    background: #ffffff;
+    box-shadow: 0 4px 13px rgba(29, 66, 103, .045);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card:hover,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card:focus-visible {
+    border-color: #9eb8d2;
+    background: #ffffff;
+    box-shadow: 0 7px 17px rgba(29, 66, 103, .09);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card.is-selected {
+    border: 2px solid #f27622;
+    background: linear-gradient(145deg, #fffaf5 0%, #ffffff 88%);
+    box-shadow: 0 7px 18px rgba(242, 118, 34, .1);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card-icon { display: none; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-number {
+    display: inline-flex;
+    width: 39px;
+    height: 39px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #b8cce7;
+    border-radius: 50%;
+    color: #315d88;
+    background: #f5f8fc;
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-number {
+    border-color: #f6c69f;
+    color: #d96216;
+    background: #fff3e8;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card-title {
+    min-width: 0;
+    align-self: center;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card-title strong {
+    color: #173b63;
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-title strong { color: #bd4f0d; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card > small,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-reason {
+    grid-column: 1 / -1;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card > small {
+    margin-top: 0;
+    color: #405a76;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-reason {
+    padding-top: 16px;
+    color: #637890;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-reason b {
+    display: inline-flex;
+    margin: 0 0 7px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: #315d88;
+    background: #edf4fd;
+    font-size: 12px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-reason b {
+    color: #d96216;
+    background: #fff0e3;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy {
+    padding: 26px 28px 28px;
+    border: 1px solid #d8e3ef;
+    border-radius: 14px;
+    background: #f7f9fb;
+    box-shadow: 0 5px 15px rgba(29, 66, 103, .045);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-zone-heading h3 {
+    color: #173b63;
+    font-size: 24px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote {
+    margin-top: 18px;
+    padding: 23px 28px;
+    border: 1px solid #d7e1ea;
+    border-left: 2px solid #7891a7;
+    border-radius: 8px;
+    color: #173b63;
+    background: #ffffff;
+    font-size: 16px;
+    line-height: 1.85;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote::before,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote::after { color: #d7dee5; }
+}
+
+@media screen and (max-width: 900px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card { padding: 25px 24px 22px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div { padding-inline: 12px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card { min-height: 250px; padding: 22px 20px; }
+}
+
+@media screen and (max-width: 640px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-section > .report-page__section-heading h2 { font-size: 32px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-lead { font-size: 14px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-card { padding: 22px 18px 20px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta { grid-template-columns: 1fr; gap: 12px; margin-top: 21px; padding-top: 14px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-risk-summary-meta > div:first-child { padding: 0; border-right: 0; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card { min-height: 0; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy { padding: 22px 18px 24px; }
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-recommended-copy .report-page__wording-draft-quote { padding: 20px 18px; font-size: 14px; }
+}
+
+/* Open quantitative evidence must grow only its own card, never its grid sibling. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-grid {
+    align-items: start;
+    grid-auto-rows: max-content;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card {
+    height: auto;
+    align-self: start;
+  }
+}
+
+/* Product proposal reference layout: hero first, then the initial pricing view. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section {
+    display: flex;
+    flex-direction: column;
+    max-width: 1240px;
+    padding: 30px 34px 36px;
+    border: 1px solid #dce6ef;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(25, 57, 91, .055);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__section-heading { order: 0; margin: 0 0 22px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-hero { order: 1; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-metrics { order: 2; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-reasons { order: 3; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-roles { order: 4; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-flow { order: 5; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-coverage { order: 6; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-underwriting { order: 7; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-decisions { order: 8; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section > .report-page__proposal-evidence { order: 9; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero {
+    margin: 0;
+    padding: 27px 32px 23px;
+    border: 1px solid #d5e2ef;
+    border-left: 2px solid #1e5a98;
+    border-radius: 15px;
+    background: linear-gradient(112deg, #f8fbff 0%, #ffffff 68%, #f5f9ff 100%);
+    box-shadow: 0 6px 16px rgba(25, 57, 91, .06);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-labels {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-labels .report-page__eyebrow {
+    margin: 0;
+    color: #58728c;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-labels > span {
+    padding: 5px 9px;
+    border: 1px solid #d5e3f1;
+    border-radius: 999px;
+    color: #476887;
+    background: #f2f7fc;
+    font-size: 11px;
+    font-weight: 750;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-copy h3 {
+    margin-top: 13px;
+    color: #123b66;
+    font-size: clamp(30px, 3vw, 38px);
+    letter-spacing: -.045em;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-description {
+    max-width: 940px;
+    margin-top: 10px;
+    color: #294764;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    margin-top: 22px;
+    padding-top: 17px;
+    border-top: 1px solid #d4e1ed !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div:first-child {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 11px;
+    align-items: center;
+    padding: 0 18px !important;
+    border: 0 !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div:first-child { padding-left: 0 !important; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div + div { border-left: 1px solid #d4e1ed !important; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-fact-icon {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d5e3f1;
+    border-radius: 50%;
+    color: #315f91;
+    background: #ffffff;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts dt { color: #58728c; font-size: 11px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts dd { margin-top: 4px; color: #123b66; font-size: 14px; line-height: 1.45; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-related-insurance {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 17px;
+    padding-top: 14px;
+    border-top: 1px solid #d4e1ed;
+    color: #476887;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-related-insurance > svg { color: #315f91; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metrics {
+    margin-top: 34px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metrics .report-page__proposal-section-heading { margin-bottom: 17px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 19px; align-items: start; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    align-items: start;
+    column-gap: 14px;
+    min-height: 243px;
+    padding: 20px 20px 17px;
+    border: 1px solid #d7e3ee;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(25, 57, 91, .055);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--limits { grid-column: span 2; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-icon {
+    display: inline-flex;
+    width: 56px;
+    height: 56px;
+    grid-row: 1 / span 3;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d7e5f3;
+    border-radius: 50%;
+    color: #315f91;
+    background: #f1f6fc;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric h4 {
+    margin: 2px 0 0;
+    padding: 0;
+    color: #123b66;
+    background: transparent;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-value { margin-top: 9px; color: #123b66; font-size: 29px; line-height: 1.2; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--pml .report-page__proposal-metric-value,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--premium .report-page__proposal-metric-value,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-scenario-values div.is-base strong { color: #e86616; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-subvalue { margin-top: 4px; color: #47617c; font-size: 13px; line-height: 1.5; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-scenario-values {
+    grid-column: 1 / -1;
+    width: 100%;
+    gap: 8px;
+    margin-top: 17px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-scenario-values div { padding: 8px 7px; border-color: #dce6ef; border-radius: 8px; background: #ffffff; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-scenario-values div.is-base { border-color: #f3b27e; background: #fff8f1; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-scenario-values strong { color: #123b66; font-size: 15px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-source { grid-column: 1 / -1; margin-top: 12px; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-details {
+    grid-column: 1 / -1;
+    margin-top: 14px;
+    border-top-color: #dce6ef;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-details > summary { padding-top: 12px; color: #315f91; }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-reasons,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-roles,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-flow,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-underwriting,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-decisions,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-evidence { width: 100%; }
+}
+
+@media screen and (max-width: 900px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section { padding: 26px 24px 30px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div:first-child { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; padding-inline: 12px !important; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-fact-icon { width: 36px; height: 36px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media screen and (max-width: 560px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-section { padding: 22px 15px 26px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero { padding: 22px 18px 20px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-labels { align-items: flex-start; flex-direction: column; gap: 6px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-copy h3 { font-size: 29px; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts { grid-template-columns: 1fr !important; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div:first-child { grid-template-columns: 36px minmax(0, 1fr); padding: 9px 0 !important; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-facts > div + div { border-top: 1px solid #d4e1ed !important; border-left: 0 !important; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-grid { grid-template-columns: 1fr; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--limits { grid-column: auto; }
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric { min-height: 0; padding: 18px 16px 16px; }
+}
+
+/* Keep the briefing finance card content in the full card width after the icon removal. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card {
+    display: block;
+    grid-template-columns: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > span,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > strong,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > small,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > em {
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+}
+
+/* Final guard: no hidden icon column may constrain the finance card content. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+  width: auto;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > strong {
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+/* Compact, text-led selection cards for the three AI coverage proposals only. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card {
+    display: grid !important;
+    grid-template-columns: 39px minmax(0, 1fr);
+    grid-template-areas:
+      'number title'
+      'description description'
+      'reason reason';
+    align-content: start;
+    align-items: center;
+    justify-items: stretch;
+    column-gap: 12px;
+    row-gap: 0;
+    min-height: 0 !important;
+    height: auto !important;
+    align-self: stretch;
+    padding: 20px 20px 21px;
+    border: 1px solid #d8e3ef;
+    border-radius: 11px;
+    color: #405a76;
+    background: #ffffff;
+    box-shadow: none;
+    text-align: left !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card:hover,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-proposal-card:focus-visible {
+    border-color: #9eb8d2;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(29, 66, 103, .07);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected {
+    border: 1.5px solid #f27622;
+    background: #fffaf5;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card-icon { display: none !important; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-number {
+    display: inline-flex;
+    grid-area: number;
+    width: 39px;
+    height: 39px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #b8cce7;
+    border-radius: 50%;
+    color: #315d88;
+    background: #f7faff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-number {
+    border-color: #f6c69f;
+    color: #d96216;
+    background: #fff3e8;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card-title {
+    display: flex;
+    grid-area: title;
+    min-width: 0;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card-title strong {
+    display: block;
+    min-width: 0;
+    color: #173b63;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-title {
+    padding-right: 64px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-title strong { color: #bd4f0d; }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-title em {
+    top: 20px;
+    right: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 4px 7px;
+    border: 1px solid #f4c69f;
+    border-radius: 999px;
+    color: #c75a0c;
+    background: #fff3e8;
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-card-title em::before {
+    display: inline-grid;
+    width: 13px;
+    height: 13px;
+    place-items: center;
+    border-radius: 50%;
+    color: #ffffff;
+    background: #f27622;
+    content: '✓';
+    font-size: 9px;
+    font-weight: 800;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card > small {
+    display: block;
+    grid-area: description;
+    margin-top: 12px;
+    color: #5f7891;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-reason {
+    display: block;
+    grid-area: reason;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #e2e9f0;
+    color: #607991;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-reason b {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 7px 0 0;
+    padding: 3px 7px;
+    border: 0;
+    border-radius: 5px;
+    color: #315d88;
+    background: #edf4fd;
+    font-size: 11px;
+    font-weight: 750;
+    line-height: 1.35;
+    vertical-align: baseline;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-card.is-selected .report-page__wording-proposal-reason b {
+    color: #d96216;
+    background: #fff0e3;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-a .report-page__wording-proposal-grid { grid-template-columns: 1fr; }
+}
+
+/* Pricing cards share a row height even when one card has an extra source line. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-grid {
+    align-items: stretch;
+    grid-auto-rows: 1fr;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric {
+    height: 100%;
+    align-self: stretch;
+    align-content: start;
+    grid-auto-rows: max-content;
+  }
+}
+
+/* Keep the headline number anchored to the title block beside its icon. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-copy {
+    display: flex;
+    min-width: 0;
+    grid-column: 2;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: start;
+    text-align: left;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-copy h4 {
+    width: 100%;
+    margin: 2px 0 0;
+    line-height: 1.3;
+    text-align: left;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-copy .report-page__proposal-metric-value {
+    display: block;
+    margin-top: 3px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-copy .report-page__proposal-metric-subvalue {
+    margin-top: 4px;
+    text-align: left;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-icon {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-related-insurance {
+    width: 100%;
+    max-width: none !important;
+  }
+}
+
+/* Core judgment cards use a consistent left reading edge. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-topline {
+    width: 100%;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-label,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-decision-title,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-metric-value {
+    width: 100%;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+}
+
+/* Product pricing cards use an explicit vertical flow to prevent grid rows from creating gaps. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-hero-copy {
+    width: 100%;
+    min-width: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric {
+    display: flex !important;
+    grid-template-columns: none !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: auto !important;
+    flex-direction: column;
+    align-content: normal;
+    align-items: stretch;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-icon {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-copy {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-subvalue {
+    min-height: 0;
+    margin: 4px 0 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--pml .report-page__proposal-metric-value {
+    color: #123b66;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--limits .report-page__proposal-metric-copy h4 {
+    font-size: 14px;
+    letter-spacing: -.025em;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--limits .report-page__proposal-metric-subvalue {
+    font-size: 12px;
+    letter-spacing: -.015em;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-scenario-values {
+    flex: 0 0 auto;
+    margin-top: 8px;
+    padding-top: 10px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-source {
+    flex: 0 0 auto;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-details {
+    width: 100%;
+    margin-top: auto;
+    flex: 0 0 auto;
+  }
+}
+
+/* Keep every pricing card the same width while centering the two-card second row. */
+@media screen and (min-width: 901px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric {
+    grid-column: span 2;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--loss-ratio {
+    grid-column: 2 / span 2;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--limits {
+    grid-column: 4 / span 2;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--limits {
+    grid-column: auto;
+  }
+}
