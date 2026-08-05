@@ -15,7 +15,7 @@ import { PolicyDraftModal } from './ReportAssistPanels'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { AppIcon, type IconName } from '../../shared/components/AppIcon'
 import { createPortal } from 'react-dom'
-import { ArrowUpRight, ChevronDown, CircleChevronDown, CircleChevronUp } from 'lucide-react'
+import { ArrowUpRight, BarChart3, Check, ChevronDown, CircleChevronDown, CircleChevronUp, ClipboardCheck, Clock3, Crosshair, FileSearch, FileText, GitBranch, PieChart, Search, Shield, ShieldAlert, ShieldCheck, Star, TriangleAlert, Umbrella, UsersRound, Zap } from 'lucide-react'
 import { createBriefingContent } from '../services/briefing-content'
 import { pushPreservingHistoryState, type ReportNavigation } from '../services/browser-history'
 import { WORDING_ANALYSIS_RISK } from '../data/wording-review-mock'
@@ -23,7 +23,7 @@ import { aiFullPolicyDraftMock, buildFullPolicyCopyText, type PolicyArticle, typ
 import { FEASIBILITY_PML_DATA, type FeasibilityPmlScenarioId } from '../data/product-feasibility-mock'
 import { PROPOSAL_CALCULATION_EVIDENCE, PROPOSAL_CLAIM_FLOW_DISPLAY, PROPOSAL_CONTRACT_ROLE_SUMMARY, PROPOSAL_COVERAGE_SUMMARY, PROPOSAL_DECISIONS, PROPOSAL_HERO_FACTS, PROPOSAL_PRICING_SCENARIO_OUTPUTS, PROPOSAL_RECOMMENDATION_DETAIL_BLOCKS, PROPOSAL_RECOMMENDATION_DISPLAY, PROPOSAL_UNDERWRITING_AI_SUMMARY, PROPOSAL_UNDERWRITING_DISPLAY, type ProposalPricingScenarioOutput } from '../data/product-proposal-mock'
 import { createFinancialEstimate, PRODUCT_FINANCIAL_ESTIMATE, type EstimateConfidence, type FinancialEstimate } from '../data/financial-estimate-mock'
-import { COVERAGE_GAP_ANALYSIS_PREMISE, COVERAGE_GAP_ASSUMPTIONS, COVERAGE_GAP_CATEGORY_SUMMARY, COVERAGE_GAP_LIMITATION, COVERAGE_GAP_PRODUCT_INPUTS, COVERAGE_GAP_RESULT_CARDS } from '../data/coverage-gap-mock'
+import { COVERAGE_GAP_ANALYSIS_PREMISE, COVERAGE_GAP_ASSUMPTIONS, COVERAGE_GAP_CATEGORY_SUMMARY, COVERAGE_GAP_LIMITATION, COVERAGE_GAP_PRODUCT_INPUTS } from '../data/coverage-gap-mock'
 import { PRODUCT_REVIEW_SUMMARY_COPY } from '../data/product-review-summary-mock'
 import type { NoveltyAnalysis } from '../../domain/product/similarProduct'
 import { normalizeNoveltyAnalysis, noveltyAnalysisStatusLabels, noveltyAnalysisTypeLabels, noveltySourceTypeLabels, similarProductTypeLabels, similarityTypeLabels, NOVELTY_OFFICIAL_SOURCES } from '../services/similar-product-research'
@@ -476,6 +476,7 @@ function createProductReviewSummaryInsights(report: ReportView) {
 
 function SummaryCoreJudgmentsSection({ report, printMode = false }: { report: ReportView; printMode?: boolean }) {
   const { coreJudgmentCards } = createProductReviewSummaryInsights(report)
+  const coreJudgmentIcons = [UsersRound, Shield, Star] as const
 
   return (
     <section className="report-page__ai-summary-section report-page__ai-summary-section--compact report-page__ai-summary-section--integrated report-page__ai-summary-section--core-judgments">
@@ -494,8 +495,8 @@ function SummaryCoreJudgmentsSection({ report, printMode = false }: { report: Re
           </table>
         ) : (
           <div className="report-page__ai-summary-core-grid report-page__ai-summary-core-grid--three">
-            {coreJudgmentCards.map((card, index) => <article className={`report-page__ai-summary-core-card report-page__ai-summary-core-card--${card.id}`} key={card.id}>
-              <span className="report-page__ai-summary-card-label"><span className="report-page__ai-summary-card-index">{String(index + 1).padStart(2, '0')}</span>{card.label}</span>
+            {coreJudgmentCards.map((card, index) => { const Icon = coreJudgmentIcons[index % coreJudgmentIcons.length]; return <article className={`report-page__ai-summary-core-card report-page__ai-summary-core-card--${card.id}`} key={card.id}>
+              <div className="report-page__ai-summary-card-topline"><span className="report-page__ai-summary-card-label"><span className="report-page__ai-summary-card-index">{String(index + 1).padStart(2, '0')}</span>{card.label}</span><span className="report-page__ai-summary-card-icon" aria-hidden="true"><Icon size={23} strokeWidth={1.8} /></span></div>
               <h4 className="report-page__ai-summary-decision-title">{card.title}</h4>
               <strong className="report-page__ai-summary-metric-value">{card.metric}</strong>
               <details className="report-page__ai-summary-card-evidence" open={printMode || undefined}>
@@ -504,7 +505,7 @@ function SummaryCoreJudgmentsSection({ report, printMode = false }: { report: Re
                   {card.bullets.map((bullet) => <li key={bullet}><span className="report-page__ai-summary-card-bullet-icon" aria-hidden="true">•</span><span className="report-page__ai-summary-card-bullet-text">{bullet}</span></li>)}
                 </ul>
               </details>
-            </article>)}
+            </article> })}
           </div>
         )}
       </section>
@@ -776,26 +777,15 @@ function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: 
   const damageCount = coverageRows.length || data.damageTypes?.length || 0
   const partialCoverageCount = coverageRows.filter((item) => Boolean(item.possibleCoverage?.trim())).length
   const gapCount = coverageRows.filter((item) => getCoverageGapBullets(item).length > 0).length
+  const coreCoverageGaps = sourceGaps.length
+    ? sourceGaps.slice(0, 4).map((gap) => ({ id: gap.id, title: gap.title, description: gap.description }))
+    : coverageRows
+      .filter((item) => Boolean(item.remainingGap?.trim()))
+      .slice(0, 4)
+      .map((item) => ({ id: item.id, title: item.damage ?? item.coverageName, description: item.remainingGap }))
+  const coreCoverageGapIcons = [Clock3, ShieldAlert, GitBranch, FileSearch] as const
   void onNavigateTab
   void printMode
-
-  const resultCardCopy = {
-    'gap-status': {
-      title: '보장 공백',
-      conclusion: '보장 공백 확인됨',
-      bullets: ['기존 보험은 일부 손해만 보장', '책임·가입·보상한도 조건에서 직접손해 공백 발생'],
-    },
-    'gap-significance': {
-      title: '상품개발 검토 가치',
-      conclusion: '검토 가치 있음',
-      bullets: ['다수 차량과 시설에 동시 손해 발생 가능', '기존 보험만으로 보완하기 어려운 직접손해 존재'],
-    },
-    'next-evaluation': {
-      title: '다음 검토 단계',
-      conclusion: '상품화 종합평가 진행',
-      bullets: ['시장성·우연성·도덕적 해이·최대가능손해 평가', '평가 결과를 바탕으로 상품개발 진행 여부 검토'],
-    },
-  } as const
 
   const productInputCopy = [
     { title: '기존 보험금 차감 기준', description: '기존 보험에서 지급된 금액을 제외한 직접손해만 보장합니다.' },
@@ -812,11 +802,13 @@ function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: 
 
       <section className="report-page__coverage-gap-results" aria-labelledby="coverage-gap-results-title">
         <div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">COVERAGE GAP SUMMARY</p><h3 id="coverage-gap-results-title">보장 공백 분석 요약</h3></div></div>
-        <div className="report-page__coverage-gap-judgment-copy"><p>기존 보험 적용 후에도 <strong>직접손해 보장 공백이 확인되었습니다.</strong></p><p>보장 공백이 확인되어 상품개발 검토 가치가 있으며, 다음 단계에서 시장성·우연성·도덕적 해이·최대가능손해를 종합적으로 평가합니다.</p></div>
-        <div className="report-page__coverage-gap-result-grid">{COVERAGE_GAP_RESULT_CARDS.map((card) => { const copy = resultCardCopy[card.id]; return <article className={`report-page__coverage-gap-result-card report-page__coverage-gap-result-card--${card.tone}`} key={card.id}><div className="report-page__coverage-gap-result-head"><h4>{copy.title}</h4></div><p className="report-page__coverage-gap-result-conclusion">{copy.conclusion}</p><ul>{copy.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></article> })}</div>
+        <div className="report-page__coverage-gap-judgment-copy report-page__coverage-gap-alert"><ShieldAlert aria-hidden="true" size={27} strokeWidth={1.9} /><p>기존 보험 적용 후에도 <strong>직접손해 보장 공백이 확인되었습니다.</strong></p></div>
+        <div className="report-page__coverage-gap-key-findings" aria-labelledby="coverage-gap-key-findings-title">
+          <h4 id="coverage-gap-key-findings-title">핵심 보장 공백</h4>
+          <ul>{coreCoverageGaps.map((gap, index) => { const Icon = coreCoverageGapIcons[index % coreCoverageGapIcons.length]; return <li key={gap.id}><span className="report-page__coverage-gap-key-icon" aria-hidden="true"><Icon size={33} strokeWidth={1.7} /></span><div><div className="report-page__coverage-gap-key-heading"><span aria-hidden="true">{index + 1}</span><strong>{gap.title}</strong></div>{gap.description ? <p>{gap.description}</p> : null}</div></li> })}</ul>
+        </div>
+        <p className="report-page__coverage-gap-analysis-note"><span className="report-page__coverage-gap-analysis-icon" aria-hidden="true"><Crosshair size={21} strokeWidth={1.8} /></span><strong>분석 범위</strong><span className="report-page__coverage-gap-analysis-text">{COVERAGE_GAP_ANALYSIS_PREMISE}</span></p>
       </section>
-
-      <section className="report-page__coverage-gap-premise" aria-labelledby="coverage-gap-premise-title"><div className="report-page__coverage-gap-scope"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">ANALYSIS SCOPE</p><h3 id="coverage-gap-premise-title">분석 범위</h3></div></div><p>{COVERAGE_GAP_ANALYSIS_PREMISE}</p></div></section>
 
       <section className="report-page__coverage-gap-comparison" aria-labelledby="coverage-gap-comparison-title">
         <div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">COMPARISON EVIDENCE</p><h3 id="coverage-gap-comparison-title">기존 보험의 보장 범위와 공백 비교표</h3></div></div>
@@ -1168,6 +1160,10 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
   const mandatoryCritical = mandatory.filter((criterion) => noveltyCriterionDecision(criterion, noveltyAnalysis) === 'unfulfilled').length
   const noveltyCriterion = criteria.find(isNoveltyCriterion)
   const noveltyDecision = noveltyCriterion ? noveltyCriterionDecision(noveltyCriterion, noveltyAnalysis) : 'fulfilled'
+  const productDecision = mandatoryCritical
+    ? { title: '상품화 가능성 재검토 필요', action: '추가 검토 필요' }
+    : { title: '상품화 가능성 높음', action: '상품 개발 검토 권고' }
+  const feasibilityMetricIcons = [BarChart3, UsersRound, Zap, TriangleAlert] as const
   const groupCounts = (group: FeasibilityDisplayGroup) => group.criterionIds.reduce<Record<CommercializationCriterionStatus, number>>((result, id) => {
     const criterion = findCriterion(id)
     if (criterion) {
@@ -1198,21 +1194,22 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
       <section className="report-page__product-decision-hero" aria-labelledby="product-decision-title">
         <div className="report-page__product-decision-copy">
           <h2 id="product-decision-title">상품화 종합판정</h2>
-          <strong className="report-page__product-decision-title">{mandatoryCritical ? '상품화 가능성 재검토 필요' : '상품화 가능성 높음 · 상품 개발 검토 권고'}</strong>
+          <div className="report-page__product-decision-title-row"><strong className="report-page__product-decision-title">{productDecision.title}</strong><span className="report-page__product-decision-action">{productDecision.action}</span></div>
           <ul className="report-page__product-decision-bullets">
-            <li className="is-satisfied"><span aria-hidden="true">✓</span><span>보험성 필수 기준 {mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</span></li>
-            <li className={noveltyDecision === 'fulfilled' ? 'is-satisfied' : 'is-follow-up'}><span aria-hidden="true">{noveltyDecision === 'fulfilled' ? '✓' : '–'}</span><span>국내 유사상품 비교 및 차별화 가능성 확인</span></li>
-            {mandatoryCritical === 0 ? <li className="is-satisfied"><span aria-hidden="true">✓</span><span>확인된 검토 중단 사유 없음</span></li> : null}
+            <li className="is-satisfied"><Check aria-hidden="true" size={18} strokeWidth={2.4} /><span>보험성 필수 기준 {mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</span></li>
+            <li className={noveltyDecision === 'fulfilled' ? 'is-satisfied' : 'is-follow-up'}>{noveltyDecision === 'fulfilled' ? <Check aria-hidden="true" size={18} strokeWidth={2.4} /> : <span aria-hidden="true">–</span>}<span>국내 유사상품 비교 및 차별화 가능성 확인</span></li>
+            {mandatoryCritical === 0 ? <li className="is-satisfied"><Check aria-hidden="true" size={18} strokeWidth={2.4} /><span>확인된 검토 중단 사유 없음</span></li> : null}
           </ul>
         </div>
+        <div className="report-page__product-decision-visual" aria-hidden="true"><div className="report-page__product-decision-chart"><span /><span /><span /><span /></div><ShieldCheck size={82} strokeWidth={1.55} /></div>
       </section>
 
       <section className="report-page__quantitative-metrics report-page__feasibility-subsection" aria-labelledby="quantitative-metrics-title">
         <div className="report-page__feasibility-subsection-heading">
           <div><p className="report-page__quantitative-metric-eyebrow">상품화 판단 핵심 지표</p><h3 id="quantitative-metrics-title">핵심 정량지표</h3></div>
         </div>
-        <div className="report-page__quantitative-metric-grid">{FEASIBILITY_METRIC_DISPLAY.map((metric) => <article className={`report-page__quantitative-metric-card report-page__quantitative-metric-card--${metric.id}`} key={metric.id}>
-          <header><h4>{metric.title}</h4><span className={`report-page__quantitative-metric-status report-page__quantitative-metric-status--${FEASIBILITY_METRIC_STATUS[metric.id]}`}>{FEASIBILITY_METRIC_STATUS_LABEL[metric.id]}</span></header>
+        <div className="report-page__quantitative-metric-grid">{FEASIBILITY_METRIC_DISPLAY.map((metric, index) => { const Icon = feasibilityMetricIcons[index % feasibilityMetricIcons.length]; return <article className={`report-page__quantitative-metric-card report-page__quantitative-metric-card--${metric.id}`} key={metric.id}>
+          <header><span className="report-page__quantitative-metric-icon" aria-hidden="true"><Icon size={28} strokeWidth={1.75} /></span><h4>{metric.title}</h4><span className={`report-page__quantitative-metric-status report-page__quantitative-metric-status--${FEASIBILITY_METRIC_STATUS[metric.id]}`}>{FEASIBILITY_METRIC_STATUS_LABEL[metric.id]}</span></header>
           <strong className="report-page__quantitative-metric-value">{metric.value}</strong>
           <p className="report-page__quantitative-metric-subvalue">{metric.subvalue}</p>
           <ul>{metric.items.map((item, index) => <li className={`is-${item.tone}`} key={`${metric.id}-${index}`}>{item.text}</li>)}</ul>
@@ -1224,7 +1221,7 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
             </div>
           </details>
           <p className="report-page__quantitative-metric-print-note">{metric.printNote}</p>
-        </article>)}</div>
+        </article> })}</div>
       </section>
 
       <NoveltyAnalysisSection analysis={noveltyAnalysis} initialOpenAccordion={noveltyAccordionRequest} onInitialOpenHandled={onNoveltyAccordionRequestHandled} printMode={printMode} />
@@ -3221,6 +3218,26 @@ function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
   }
 }
 
+function DecisionBriefingFinancialIndicators({ metrics, printMode }: { metrics: ExecutiveBriefingModel['metrics']; printMode: boolean }) {
+  const financialIcons = [BarChart3, Umbrella, FileText, PieChart] as const
+  return (
+    <section className="report-page__decision-briefing-section report-page__decision-briefing-finance" aria-labelledby="decision-briefing-finance-title">
+      <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">KEY FINANCIAL INDICATORS</p><h3 id="decision-briefing-finance-title">핵심 정량 지표</h3></div></div>
+      {printMode ? (
+        <table className="report-page__decision-briefing-finance-table">
+          <caption>핵심 정량 지표</caption>
+          <thead><tr><th scope="col">지표</th><th scope="col">기준 값</th><th scope="col">범위·보조 설명</th><th scope="col">신뢰도</th></tr></thead>
+          <tbody>{metrics.map((metric) => <tr key={metric.id}><th scope="row">{metric.label}</th><td>{metric.value}</td><td>{metric.supporting}</td><td>{metric.confidence} · 1차 추정</td></tr>)}</tbody>
+        </table>
+      ) : (
+        <div className="report-page__decision-briefing-finance-summary">
+          {metrics.map((metric, index) => { const Icon = financialIcons[index % financialIcons.length]; return <article className={`report-page__decision-briefing-finance-card report-page__decision-briefing-finance-card--${metric.tone} report-page__decision-briefing-finance-card--${metric.id}`} key={metric.id}><span className="report-page__decision-briefing-finance-icon" aria-hidden="true"><Icon size={25} strokeWidth={1.75} /></span><div><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.supporting}</small><em>{metric.confidence} · 1차 추정</em></div></article> })}
+        </div>
+      )}
+    </section>
+  )
+}
+
 function ExecutiveBriefingSection({
   report,
   onNavigateTab,
@@ -3231,6 +3248,10 @@ function ExecutiveBriefingSection({
   printMode?: boolean
 }) {
   const briefing = createExecutiveBriefing(report)
+  const conclusionGroups = [
+    { title: '확인된 판단', icon: ClipboardCheck, points: briefing.conclusionPoints.slice(0, 2) },
+    { title: '후속 확인', icon: Search, points: briefing.conclusionPoints.slice(2, 4) },
+  ] as const
 
   return (
     <section className="report-page__section report-page__briefing report-page__briefing--decision" aria-label="종합 브리핑">
@@ -3242,31 +3263,22 @@ function ExecutiveBriefingSection({
         </div>
 
         <section className="report-page__decision-briefing-conclusion" aria-labelledby="decision-briefing-conclusion-title">
-          <div className="report-page__decision-briefing-conclusion-head">
+          <div className="report-page__decision-briefing-conclusion-lead">
+            <span className="report-page__decision-briefing-conclusion-icon" aria-hidden="true"><ShieldCheck size={58} strokeWidth={1.65} /></span>
+            <div className="report-page__decision-briefing-conclusion-head">
             <div><p className="report-page__decision-briefing-kicker">최종 검토 결론</p><h3 id="decision-briefing-conclusion-title">{briefing.conclusion}</h3></div>
+            </div>
           </div>
           <div className="report-page__decision-briefing-conclusion-points">
-            <div className="report-page__decision-briefing-conclusion-group">
-              <h4>확인된 판단</h4>
-              <ul>{briefing.conclusionPoints.slice(0, 2).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}</ul>
-            </div>
-            <div className="report-page__decision-briefing-conclusion-group">
-              <h4>후속 확인</h4>
-              <ul>{briefing.conclusionPoints.slice(2, 4).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}</ul>
-            </div>
+            {conclusionGroups.map((group) => { const Icon = group.icon; return <div className="report-page__decision-briefing-conclusion-group" key={group.title}>
+              <div className="report-page__decision-briefing-conclusion-group-head"><span aria-hidden="true"><Icon size={20} strokeWidth={1.8} /></span><h4>{group.title}</h4></div>
+              <ul>{group.points.map((point) => <li key={point}><Check aria-hidden="true" size={15} strokeWidth={2.1} />{point}</li>)}</ul>
+            </div> })}
           </div>
         </section>
 
         <SummaryCoreJudgmentsSection report={report} printMode={printMode} />
-      </section>
-
-      <section className="report-page__decision-briefing-section report-page__decision-briefing-risk-context" aria-labelledby="decision-briefing-risk-context-title">
-        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">RISK OVERVIEW</p><h3 id="decision-briefing-risk-context-title">검토 대상 위험</h3></div></div>
-        <dl className="report-page__decision-briefing-risk-context-list">
-          <div><dt>분석 대상 위험</dt><dd>{briefing.riskContext.target}</dd></div>
-          <div><dt>주요 피해 대상</dt><dd>{briefing.riskContext.affected}</dd></div>
-          <div><dt>상품개발 검토 배경</dt><dd>{briefing.riskContext.background}</dd></div>
-        </dl>
+        <DecisionBriefingFinancialIndicators metrics={briefing.metrics} printMode={printMode} />
       </section>
 
       <section id="decision-briefing-core-results" className="report-page__decision-briefing-section report-page__decision-briefing-core-results" aria-labelledby="decision-briefing-core-title">
@@ -3308,19 +3320,13 @@ function ExecutiveBriefingSection({
         )}
       </section>
 
-      <section className="report-page__decision-briefing-section report-page__decision-briefing-finance" aria-labelledby="decision-briefing-finance-title">
-        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">KEY FINANCIAL INDICATORS</p><h3 id="decision-briefing-finance-title">핵심 정량 지표</h3></div></div>
-        {printMode ? (
-          <table className="report-page__decision-briefing-finance-table">
-            <caption>핵심 정량 지표</caption>
-            <thead><tr><th scope="col">지표</th><th scope="col">기준 값</th><th scope="col">범위·보조 설명</th><th scope="col">신뢰도</th></tr></thead>
-            <tbody>{briefing.metrics.map((metric) => <tr key={metric.id}><th scope="row">{metric.label}</th><td>{metric.value}</td><td>{metric.supporting}</td><td>{metric.confidence} · 1차 추정</td></tr>)}</tbody>
-          </table>
-        ) : (
-          <div className="report-page__decision-briefing-finance-summary">
-            {briefing.metrics.map((metric) => <article className={`report-page__decision-briefing-finance-card report-page__decision-briefing-finance-card--${metric.tone} report-page__decision-briefing-finance-card--${metric.id}`} key={metric.id}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.supporting}</small><em>{metric.confidence} · 1차 추정</em></article>)}
-          </div>
-        )}
+      <section className="report-page__decision-briefing-section report-page__decision-briefing-risk-context" aria-labelledby="decision-briefing-risk-context-title">
+        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">RISK OVERVIEW</p><h3 id="decision-briefing-risk-context-title">검토 대상 위험</h3></div></div>
+        <dl className="report-page__decision-briefing-risk-context-list">
+          <div><dt>분석 대상 위험</dt><dd>{briefing.riskContext.target}</dd></div>
+          <div><dt>주요 피해 대상</dt><dd>{briefing.riskContext.affected}</dd></div>
+          <div><dt>상품개발 검토 배경</dt><dd>{briefing.riskContext.background}</dd></div>
+        </dl>
       </section>
 
       <SummaryEvaluationStatusSection report={report} printMode={printMode} />

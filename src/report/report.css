@@ -14609,7 +14609,7 @@
 .report-page__quantitative-metric-card strong { display: block; margin-top: 10px; color: var(--report-primary-navy); font-size: 20px; line-height: 1.25; overflow-wrap: anywhere; }
 .report-page__quantitative-metric-card p { margin: 8px 0 0; color: var(--report-ink); font-size: 12px; line-height: 1.55; }
 .report-page__quantitative-metric-card small { display: block; margin-top: 9px; color: var(--report-muted); font-size: 11px; line-height: 1.45; }
-.report-page__feasibility-visible-groups { display: grid; gap: 20px; }
+.report-page__feasibility-visible-groups { display: grid; gap: 12px; }
 .report-page__feasibility-visible-group { min-width: 0; padding: 20px; border: 1px solid #dce5ec; border-radius: 8px; background: #fff; }
 .report-page__feasibility-visible-group--insurance-gate { border-top: 3px solid #2f806c; }
 .report-page__feasibility-visible-group--core-judgment { border-top: 3px solid var(--report-orange); }
@@ -18324,8 +18324,8 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 18px;
-  margin: 28px 0 14px;
-  padding-bottom: 12px;
+  margin: 20px 0 0;
+  padding-bottom: 9px;
   border-bottom: 1px solid #dbe4ee;
 }
 
@@ -18344,7 +18344,7 @@
 
 .report-page__feasibility-redesign .report-page__feasibility-visible-groups {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .report-page__feasibility-redesign .report-page__feasibility-visible-group {
@@ -23883,7 +23883,7 @@
 .report-page__feasibility-filter-toolbar {
   display: grid;
   gap: 11px;
-  margin: 14px 0 17px;
+  margin: 0 0 14px;
   padding: 12px 13px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -26992,8 +26992,9 @@
 }
 
 .report-page__feasibility-redesign .report-page__novelty-summary-judgment h4 {
-  max-width: 32ch;
+  max-width: none;
   line-height: 1.4;
+  white-space: nowrap;
 }
 
 .report-page__feasibility-redesign .report-page__novelty-summary-judgment p {
@@ -27052,6 +27053,10 @@
     grid-template-columns: 1fr;
     gap: 16px;
     padding: 16px;
+  }
+
+  .report-page__feasibility-redesign .report-page__novelty-summary-judgment h4 {
+    white-space: normal;
   }
 
   .report-page__feasibility-redesign .report-page__novelty-counts {
@@ -31877,3 +31882,1358 @@
     min-height: 0;
   }
 }
+
+/* The quantitative values follow the judgments as a quiet supporting row. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance {
+  margin-top: 16px;
+  padding: 16px 0 0;
+  border: 0;
+  border-top: 1px solid #e5edf3;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-kicker {
+  display: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-section-head h3 {
+  color: var(--report-navy);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--confirmed,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--attention {
+  min-height: 0;
+  padding: 13px 14px;
+  border: 1px solid #dfe7ee;
+  border-top: 1px solid #dfe7ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card > span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card strong,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--confirmed strong,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--attention strong {
+  margin-top: 7px;
+  color: var(--report-navy) !important;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card small,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card em {
+  color: #718096;
+  font-size: 10px;
+  font-style: normal;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Tighten the briefing composition: the data needs less stage than the reference hero. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
+  padding: 24px 26px 26px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head {
+  margin-bottom: 16px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head h3 {
+  font-size: 25px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+  grid-template-columns: minmax(0, 1.02fr) minmax(430px, .98fr);
+  gap: 20px;
+  padding: 18px 20px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-lead {
+  gap: 18px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-icon {
+  width: 88px;
+  height: 88px;
+  flex-basis: 88px;
+  box-shadow: inset 0 0 0 6px rgba(255, 255, 255, .64);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-icon svg {
+  width: 46px;
+  height: 46px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-head .report-page__decision-briefing-kicker {
+  margin-bottom: 8px;
+  padding: 5px 9px;
+  font-size: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-head h3 {
+  font-size: clamp(28px, 2.1vw, 34px);
+  letter-spacing: -.045em;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+  gap: 10px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group {
+  min-height: 116px;
+  padding: 13px 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group-head {
+  gap: 8px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group-head > span {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group-head > span svg {
+  width: 17px;
+  height: 17px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group h4 {
+  font-size: 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group ul {
+  gap: 7px;
+  margin-top: 10px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group li {
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-section--core-judgments {
+  margin-top: 18px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-judgment-cards {
+  padding: 20px;
+  border: 0;
+  border-radius: 13px;
+  background: #f6f8fb;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading {
+  margin-bottom: 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading .report-page__eyebrow {
+  margin-bottom: 5px;
+  font-size: 11px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading h3 {
+  font-size: 23px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-subtitle {
+  margin-left: 14px;
+  font-size: 13px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three {
+  gap: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+  min-height: 188px;
+  padding: 17px 19px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-label {
+  font-size: 13px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-index {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-icon {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-decision-title {
+  margin-top: 15px;
+  font-size: 21px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-metric-value {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-evidence summary {
+  padding-top: 11px;
+  font-size: 10px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance {
+  margin-top: 18px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-section-head h3 {
+  font-size: 21px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-summary {
+  gap: 12px;
+  margin-top: 11px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--confirmed,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--attention {
+  grid-template-columns: 50px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 112px;
+  padding: 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-icon {
+  width: 50px;
+  height: 50px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card > div > span {
+  font-size: 11px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card strong,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--confirmed strong,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--attention strong {
+  margin-top: 5px;
+  font-size: 21px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card small,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card em {
+  font-size: 9px;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
+    padding: 18px 14px 20px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    padding: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-icon {
+    width: 70px;
+    height: 70px;
+    flex-basis: 70px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-judgment-cards {
+    padding: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+    min-height: 176px;
+    padding: 16px;
+  }
+}
+
+/* Keep the risk context after the four review-result cards, not above the summary board. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__decision-briefing-summary {
+  order: 1;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__decision-briefing-core-results {
+  order: 2;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__decision-briefing-risk-context {
+  order: 3;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__ai-summary-section {
+  order: 4;
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance {
+    margin-top: 4mm;
+    padding-top: 3mm;
+  }
+}
+
+/* Coverage gap: keep the finding and its analysis scope in one concise summary. */
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-judgment-copy {
+  margin-bottom: 15px;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings {
+  padding-top: 14px;
+  border-top: 1px solid #e1e9ef;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings h4 {
+  margin: 0;
+  color: var(--report-navy);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 24px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li {
+  position: relative;
+  min-width: 0;
+  padding-left: 10px;
+  color: var(--report-ink);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li::before {
+  position: absolute;
+  top: .68em;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #6f899d;
+  content: '';
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings strong {
+  margin-right: 6px;
+  color: var(--report-navy);
+  font-weight: 750;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li span {
+  color: var(--report-ink);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-note {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #e1e9ef;
+  color: var(--report-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-note > span {
+  flex: 0 0 auto;
+  color: var(--report-navy);
+  font-weight: 700;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-comparison {
+  margin-top: 24px;
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings ul {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-note {
+    display: block;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-note > span {
+    display: block;
+    margin-bottom: 3px;
+  }
+}
+
+/* Coverage-gap summary board: conclusion, four gaps, then the analysis scope. */
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results {
+  margin-top: 26px;
+  padding: 34px 42px 26px;
+  border: 1px solid #e1e9f0;
+  border-left: 1px solid #e1e9f0;
+  border-radius: 16px;
+  background: linear-gradient(140deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 12px 28px rgba(24, 54, 84, .07);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results .report-page__coverage-gap-section-heading {
+  margin-bottom: 20px;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results .report-page__coverage-gap-section-heading .report-page__eyebrow {
+  color: #557d9b;
+  letter-spacing: .1em;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results .report-page__coverage-gap-section-heading h3 {
+  color: var(--report-navy);
+  font-size: 30px;
+  font-weight: 750;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 0 0 20px;
+  padding: 19px 24px;
+  border: 1px solid #f5d7bd;
+  border-radius: 14px;
+  background: linear-gradient(100deg, #fff8ef 0%, #fffdf8 100%);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert > svg {
+  box-sizing: content-box;
+  flex: 0 0 auto;
+  padding: 12px;
+  border-radius: 50%;
+  background: var(--report-orange);
+  color: #ffffff;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert p,
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert p:first-child {
+  margin: 0;
+  color: var(--report-navy);
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert p strong {
+  color: var(--report-orange);
+  font-weight: 800;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings {
+  padding: 0;
+  border: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings h4 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  min-height: 142px;
+  padding: 20px 23px;
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(28, 55, 84, .055);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li::before {
+  display: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-icon {
+  display: inline-flex;
+  width: 88px;
+  height: 88px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eef5ff;
+  color: var(--report-navy);
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-heading > span {
+  display: inline-flex;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--report-navy);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings strong {
+  margin: 0;
+  color: var(--report-navy);
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li p {
+  margin: 8px 0 0;
+  color: #425a72;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-note {
+  display: grid;
+  grid-template-columns: 42px max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0 0;
+  padding: 13px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #f4f7fb;
+  color: #526678;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-icon {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e8f1fd;
+  color: #557f9d;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-note > strong {
+  padding-right: 14px;
+  border-right: 1px solid #d7e1eb;
+  color: var(--report-navy);
+  font-size: 14px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+:is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-text {
+  color: #526678;
+}
+
+@media screen and (max-width: 900px) {
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results {
+    padding: 28px 24px 22px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li {
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 16px;
+    min-height: 128px;
+    padding: 18px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-icon {
+    width: 68px;
+    height: 68px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results {
+    padding: 22px 16px 18px;
+    border-radius: 12px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-results .report-page__coverage-gap-section-heading h3 {
+    font-size: 24px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert {
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert > svg {
+    padding: 9px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert p,
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-alert p:first-child {
+    font-size: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings ul {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li {
+    grid-template-columns: 58px minmax(0, 1fr);
+    min-height: 0;
+    padding: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-icon {
+    width: 58px;
+    height: 58px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-icon svg {
+    width: 27px;
+    height: 27px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings strong {
+    font-size: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-key-findings li p {
+    font-size: 13px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-note {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 8px 10px;
+    padding: 12px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-note > strong {
+    padding: 0;
+    border: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-coverage-gap .report-page__coverage-gap-analysis-text {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Executive briefing: a visual summary board that keeps the conclusion and its evidence together. */
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
+  padding: 28px 32px 30px;
+  border: 1px solid #dce7f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(24, 53, 84, .055);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head {
+  margin-bottom: 22px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head .report-page__decision-briefing-kicker {
+  color: #647b91;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .11em;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head h3 {
+  color: var(--report-navy);
+  font-size: 27px;
+  font-weight: 750;
+  letter-spacing: -.035em;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(460px, .92fr);
+  gap: 30px;
+  align-items: center;
+  padding: 24px 26px;
+  border: 1px solid #d8e5f1;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #f4f9ff 0%, #fafcff 57%, #ffffff 100%);
+  box-shadow: 0 6px 18px rgba(33, 68, 104, .05);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-lead {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-icon {
+  display: inline-flex;
+  width: 122px;
+  height: 122px;
+  flex: 0 0 122px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d7e6f7;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #ffffff 0%, #edf5ff 64%, #ddeafa 100%);
+  box-shadow: inset 0 0 0 8px rgba(255, 255, 255, .64);
+  color: #174f91;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-head {
+  min-width: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-head .report-page__decision-briefing-kicker {
+  display: inline-flex;
+  margin: 0 0 12px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  background: #dceafa;
+  color: #285a8f;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-head h3 {
+  margin: 0;
+  color: var(--report-navy);
+  font-size: clamp(30px, 2.55vw, 42px);
+  font-weight: 800;
+  letter-spacing: -.05em;
+  line-height: 1.18;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-points {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group {
+  min-width: 0;
+  min-height: 164px;
+  padding: 18px 18px 16px;
+  border: 1px solid #dfe8f1;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .9);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group-head > span {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #174f91;
+  color: #ffffff;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group h4 {
+  margin: 0;
+  color: var(--report-navy);
+  font-size: 16px;
+  font-weight: 750;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group ul {
+  display: grid;
+  gap: 11px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #36506a;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group li svg {
+  width: 15px;
+  flex: 0 0 15px;
+  margin-top: 2px;
+  color: #118d84;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-section--core-judgments {
+  margin: 24px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-judgment-cards {
+  padding: 25px 26px 24px;
+  border: 1px solid #dce6f0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(31, 63, 96, .045);
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading {
+  margin-bottom: 18px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading .report-page__eyebrow {
+  margin: 0 0 7px;
+  color: var(--report-orange);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading h3 {
+  display: inline-block;
+  margin: 0;
+  color: var(--report-navy);
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -.035em;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-subtitle {
+  display: inline-block;
+  margin: 0 0 0 20px;
+  color: #63768a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three {
+  gap: 14px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+  display: flex;
+  min-height: 240px;
+  flex-direction: column;
+  padding: 21px 23px;
+  border: 1px solid #dce6ef;
+  border-radius: 11px;
+  background: #ffffff;
+  box-shadow: none;
+  text-align: left;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-label {
+  justify-content: flex-start;
+  color: #4e6680;
+  font-size: 14px;
+  font-weight: 750;
+  text-align: left;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-index {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--report-orange);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-icon {
+  display: inline-flex;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eef5ff;
+  color: #1f5596;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-decision-title {
+  margin: 20px 0 0;
+  color: var(--report-navy);
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -.04em;
+  line-height: 1.32;
+  text-align: left;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-metric-value {
+  margin-top: 12px;
+  color: #07877d;
+  font-size: 16px;
+  font-weight: 750;
+  text-align: left;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-evidence {
+  margin-top: auto;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-card-evidence summary {
+  padding-top: 14px;
+  color: #4d6681;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance {
+  margin-top: 24px;
+  padding: 0;
+  border: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-section-head h3 {
+  color: var(--report-navy);
+  font-size: 23px;
+  font-weight: 750;
+  letter-spacing: -.03em;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-summary {
+  gap: 14px;
+  margin-top: 15px;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--confirmed,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--attention {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 142px;
+  padding: 18px;
+  border: 1px solid #dce6ef;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-icon {
+  display: inline-flex;
+  width: 62px;
+  height: 62px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eef5ff;
+  color: #174f91;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card > div > span {
+  display: block;
+  color: #61748a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card strong,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--confirmed strong,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--attention strong {
+  margin-top: 7px;
+  color: var(--report-navy) !important;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1.2;
+}
+
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card small,
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card em {
+  color: #708197;
+  font-size: 11px;
+}
+
+@media screen and (max-width: 1120px) {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    grid-template-columns: 1fr;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
+    padding: 20px 16px;
+    border-radius: 12px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head h3 {
+    font-size: 24px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    gap: 18px;
+    padding: 18px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-lead {
+    gap: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-icon {
+    width: 78px;
+    height: 78px;
+    flex-basis: 78px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-icon svg {
+    width: 42px;
+    height: 42px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-head h3 {
+    font-size: 28px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-points,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-summary {
+    grid-template-columns: 1fr;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group {
+    min-height: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-judgment-cards {
+    padding: 20px 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-heading h3,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-subtitle {
+    display: block;
+    margin-left: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-block-subtitle {
+    margin-top: 7px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+    min-height: 220px;
+    padding: 19px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-decision-title {
+    font-size: 21px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--confirmed,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-card--attention {
+    min-height: 0;
+  }
+}
+
+/* Feasibility dashboard overrides live below the report-wide briefing rules. */
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 238px;
+  gap: 32px;
+  align-items: center;
+  min-height: 218px;
+  padding: 30px 34px 24px;
+  overflow: hidden;
+  border: 1px solid #dce8f3;
+  border-radius: 16px;
+  background: linear-gradient(110deg, #ffffff 0%, #f8fbff 66%, #f3f8ff 100%);
+  box-shadow: 0 9px 24px rgba(21, 61, 104, .07);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-copy { min-width: 0; }
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-copy h2 {
+  margin: 0;
+  color: #335f89;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-title {
+  margin: 0;
+  color: var(--report-navy);
+  font-size: clamp(36px, 4vw, 54px);
+  font-weight: 800;
+  letter-spacing: -.06em;
+  line-height: 1.14;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 7px 15px;
+  border: 1.5px solid var(--report-orange);
+  border-radius: 999px;
+  color: var(--report-orange);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  margin: 22px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid #dce7f0;
+  list-style: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  color: #34516c;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li:first-child { padding-left: 0; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li + li { border-left: 1px solid #dce7f0; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li svg { flex: 0 0 auto; color: #069a96; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li.is-follow-up > span:first-child { color: #a96a1f; font-size: 18px; font-weight: 800; }
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual {
+  position: relative;
+  height: 154px;
+  min-width: 0;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual > svg {
+  position: absolute;
+  z-index: 2;
+  top: 15px;
+  left: 54px;
+  color: #2f6ff0;
+  filter: drop-shadow(0 5px 5px rgba(47, 111, 240, .12));
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  left: 30px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 9px;
+  height: 108px;
+  padding: 0 5px 0 78px;
+  border-bottom: 2px solid #b8d5fb;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart span { width: 19px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, #c9ddff 0%, #f0f6ff 100%); }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart span:nth-child(1) { height: 35%; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart span:nth-child(2) { height: 52%; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart span:nth-child(3) { height: 70%; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart span:nth-child(4) { height: 92%; background: linear-gradient(180deg, #89b9ff 0%, #e7f1ff 100%); }
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics {
+  margin-top: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading { margin: 0; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-eyebrow { margin: 0 0 5px; color: #59758e; font-size: 12px; font-weight: 800; letter-spacing: .1em; }
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading h3 {
+  color: var(--report-navy);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -.04em;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading h3::after { display: none; }
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card {
+  min-height: 284px;
+  padding: 20px 24px 17px;
+  border: 1px solid #dce6f0;
+  border-top: 1px solid #dce6f0;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 5px 16px rgba(25, 57, 91, .055);
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > header {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 62px;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-icon {
+  display: inline-flex;
+  width: 62px;
+  height: 62px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d7e8ff;
+  border-radius: 50%;
+  background: #edf5ff;
+  color: #1765ca;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card--tam .report-page__quantitative-metric-icon { border-color: #cceceb; background: #edfafa; color: #078e8b; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card--frequency .report-page__quantitative-metric-icon { border-color: #e1dcff; background: #f4f1ff; color: #6547d7; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card--pml .report-page__quantitative-metric-icon { border-color: #ffd5d7; background: #fff2f2; color: #e34a50; }
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > header h4 { color: var(--report-navy); font-size: 16px; font-weight: 750; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-status { min-width: 54px; padding: 5px 10px; border-radius: 6px; font-size: 13px; font-weight: 800; text-align: center; }
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-value {
+  margin-top: 18px;
+  color: var(--report-navy) !important;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -.05em;
+  line-height: 1.2;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-subvalue { margin-top: 7px; color: #58708a; font-size: 14px; font-weight: 650; }
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul {
+  gap: 6px;
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid #e4ebf2;
+}
+
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card > ul li { color: #3e5871; font-size: 12px; line-height: 1.45; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details { margin-top: auto; padding-top: 11px; border-top: 1px solid #e4ebf2; }
+:is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-details summary { color: #204d83; font-size: 13px; font-weight: 750; }
+
+@media screen and (max-width: 900px) {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero { grid-template-columns: 1fr; gap: 16px; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual { display: none; }
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-hero { min-height: 0; padding: 22px 18px 18px; border-radius: 12px; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-title { font-size: 32px; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-action { min-height: 34px; padding: 5px 10px; font-size: 12px; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets { display: grid; gap: 8px; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li,
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li:first-child { padding: 0; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-bullets li + li { border-left: 0; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metrics .report-page__feasibility-subsection-heading h3 { font-size: 25px; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-grid { grid-template-columns: 1fr; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-card { min-height: 0; padding: 17px; }
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__quantitative-metric-value { font-size: 28px; }
+}
+
+@media print { :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual { display: none; } }
