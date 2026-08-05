@@ -60,7 +60,6 @@ type ReportView = {
     reportId?: string
     sourceRiskId: string
     sourceAsOf?: string | null
-    analysisMode?: string
     title: string
     riskTitle?: string
     riskCategories?: string[]
@@ -71,12 +70,6 @@ type ReportView = {
     dataStatus?: string
     badges?: string[]
     disclaimer?: string
-    articleTopic?: string
-    relatedDocumentCount?: number
-    relatedDocumentTitles?: string[]
-    marketScore?: number
-    pmlScore?: number
-    productizationScore?: number
   }
   aiSummary: {
     decisionLabel?: string
@@ -171,7 +164,6 @@ type ReportView = {
       topStrengths: string[]
       topRisks: string[]
       priorityActions: string[]
-      aiProductJudgment?: string
       criteria: CommercializationCriterion[]
       discoveryContext?: {
         discoveryType: string
@@ -3700,21 +3692,21 @@ function ReportPdfDocument({
       ) : null}
       <div className="report-page__pdf-sections">
         {includes('ai-judgment') ? (
-          <div className="report-page__pdf-section" data-pdf-section="ai-judgment">{isArticleDerivedReport(report) ? <ArticleDerivedBriefingSection report={report} /> : <ExecutiveBriefingSection report={report} printMode />}</div>
+          <div className="report-page__pdf-section" data-pdf-section="ai-judgment"><ExecutiveBriefingSection report={report} printMode /></div>
         ) : null}
         {includes('feasibility') ? (
-          <div className="report-page__pdf-section" data-pdf-section="feasibility">{isArticleDerivedReport(report) ? <ArticleDerivedFeasibilitySection report={report} /> : <FeasibilitySection report={report} printMode />}</div>
+          <div className="report-page__pdf-section" data-pdf-section="feasibility"><FeasibilitySection report={report} printMode /></div>
         ) : null}
         {includes('coverage-gap') ? (
-          <div className="report-page__pdf-section" data-pdf-section="coverage-gap">{isArticleDerivedReport(report) ? <ArticleDerivedRiskGapSection report={report} /> : <RiskGapSection report={report} printMode />}</div>
+          <div className="report-page__pdf-section" data-pdf-section="coverage-gap"><RiskGapSection report={report} printMode /></div>
         ) : null}
         {includes('wording') ? (
           <div className="report-page__pdf-section" data-pdf-section="wording">
-            {isArticleDerivedReport(report) ? <ArticleDerivedWordingSection report={report} /> : <FullWordingSection report={report} onOpenPolicyDraft={() => undefined} printMode />}
+            <FullWordingSection report={report} onOpenPolicyDraft={() => undefined} printMode />
           </div>
         ) : null}
         {includes('proposal') ? (
-          <div className="report-page__pdf-section" data-pdf-section="proposal">{isArticleDerivedReport(report) ? <ArticleDerivedProposalSection report={report} /> : <ProductProposalSection report={report} printMode />}</div>
+          <div className="report-page__pdf-section" data-pdf-section="proposal"><ProductProposalSection report={report} printMode /></div>
         ) : null}
         {includes('evidence') ? (
           <div className="report-page__pdf-section" data-pdf-section="evidence">
@@ -3810,111 +3802,6 @@ function createDefaultPdfRequest(): PdfPrintRequest {
     filename: createPdfFilename('all'),
     createdAt: new Date().toISOString(),
   }
-}
-
-const isArticleDerivedReport = (report: ReportView) => report.meta.analysisMode === 'article-derived-v1'
-
-const articleScoreText = (value?: number) => `${typeof value === 'number' ? value.toFixed(1) : '확인 필요'} / 5점`
-const articleJudgmentLabel = (value?: string) => {
-  if (value === 'fulfilled') return '상품화 가능성 확인'
-  if (value === 'conditional') return '조건부 검토'
-  if (value === 'additional_check_required') return '추가 근거 확인'
-  return value ?? '추가 근거 확인'
-}
-
-function ArticleDerivedBriefingSection({ report }: { report: ReportView }) {
-  const cards = report.aiSummary.cards ?? []
-  const coverage = report.riskGapSummary
-  const sourceTitles = report.meta.relatedDocumentTitles ?? []
-  return (
-    <section className="report-page__section report-page__briefing--decision" aria-labelledby="article-briefing-title">
-      <SectionHeading number="01" eyebrow="RISK DECISION BRIEFING" title="문서 기반 종합 브리핑" />
-      <p className="report-page__section-intro" id="article-briefing-title">분류된 위험 그룹의 원문 근거, 손해 구조, 상품화 점수와 다음 검토 과제를 한 화면에서 연결합니다.</p>
-      <div className="report-page__ai-summary-conclusion">
-        <span className="report-page__badge report-page__badge--success">{report.aiSummary.decisionLabel ?? '원문 기반 검토'}</span>
-        <h3>{report.meta.riskTitle ?? report.meta.title}</h3>
-        <p>{report.aiSummary.primaryConclusionReason ?? report.meta.disclaimer}</p>
-        <small>분류 · {report.meta.articleTopic ?? '문서 기반 위험'} · 연결 원문 {report.meta.relatedDocumentCount ?? (sourceTitles.length || 1)}건</small>
-      </div>
-      <div className="report-page__ai-summary-core-grid report-page__ai-summary-core-grid--three">
-        {cards.slice(0, 3).map((card) => (
-          <article className="report-page__ai-summary-core-card" key={card.id}>
-            <span className="report-page__ai-summary-card-label">{card.label}</span>
-            <h4>{card.result}</h4>
-            <p>{card.detail}</p>
-            <small>{card.shortReason}</small>
-          </article>
-        ))}
-      </div>
-      <div className="report-page__decision-briefing-metric-grid">
-        <article><span>시장성</span><strong>{articleScoreText(report.meta.marketScore)}</strong><small>문서의 수요·성장·시장 연결성</small></article>
-        <article><span>PML</span><strong>{articleScoreText(report.meta.pmlScore)}</strong><small>사고 심도·집적 가능성·손해 누적</small></article>
-        <article><span>상품화 종합점수</span><strong>{articleScoreText(report.meta.productizationScore)}</strong><small>시장성·PML·관리 가능성·법률·근거 종합</small></article>
-      </div>
-      <div className="report-page__decision-briefing-two-column">
-        <article><h3>위험 그룹의 핵심 변화</h3><ul>{(coverage.whyNow ?? []).slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul></article>
-        <article><h3>영향 대상과 손해</h3><ul>{[...(coverage.affectedParties ?? []), ...(coverage.damageTypes ?? []).map((item) => item.name)].filter(Boolean).slice(0, 8).map((item) => <li key={item}>{item}</li>)}</ul></article>
-      </div>
-      <div className="report-page__decision-briefing-follow-up"><h3>다음 검토 과제</h3><ol>{(report.aiSummary.nextActions ?? []).slice(0, 4).map((item, index) => <li key={item.id}><b>{String(index + 1).padStart(2, '0')}</b><span><strong>{item.action}</strong><small>{item.reason}</small></span></li>)}</ol></div>
-    </section>
-  )
-}
-
-function ArticleDerivedFeasibilitySection({ report }: { report: ReportView }) {
-  const criteria = report.productFeasibility.assessment?.criteria ?? []
-  const assessment = report.productFeasibility.assessment
-  return (
-    <section className="report-page__section report-page__feasibility-redesign" aria-labelledby="article-feasibility-title">
-      <SectionHeading number="02" eyebrow="PRODUCTIZATION ASSESSMENT" title="상품화 검토 종합평가" />
-      <p className="report-page__section-intro" id="article-feasibility-title">{report.productFeasibility.interpretation ?? '문서 근거와 위험 구조를 기준으로 상품화 가능성을 평가합니다.'}</p>
-      <div className="report-page__ai-summary-conclusion"><span className="report-page__badge report-page__badge--warning">{articleJudgmentLabel(assessment?.aiProductJudgment ?? report.productFeasibility.overallStatus)}</span><h3>{assessment?.overallSummary ?? report.productFeasibility.overallAssessment?.conclusion ?? '상품화 검토 결과'}</h3><p>{assessment?.overallReason ?? report.productFeasibility.overallAssessment?.conclusion ?? '문서 근거와 추가 자료를 함께 확인해야 합니다.'}</p></div>
-      <div className="report-page__decision-briefing-metric-grid"><article><span>시장성</span><strong>{articleScoreText(report.meta.marketScore)}</strong></article><article><span>PML</span><strong>{articleScoreText(report.meta.pmlScore)}</strong></article><article><span>종합점수</span><strong>{articleScoreText(report.meta.productizationScore)}</strong></article></div>
-      <div className="report-page__evaluation-cards">{criteria.map((criterion) => <article className="report-page__evaluation-card" key={criterion.id}><header><span>{criterion.category}</span><h3>{criterion.title}</h3><strong>{criterion.status}</strong></header><p>{criterion.summary}</p><div><b>판단 근거</b><p>{criterion.rationale}</p></div>{criterion.missingInformation.length ? <div><b>추가 자료</b><ul>{criterion.missingInformation.slice(0, 3).map((item) => <li key={item}>{item}</li>)}</ul></div> : null}{criterion.evidence.length ? <small>연결 근거 · {criterion.evidence.slice(0, 2).map((item) => item.title).join(' · ')}</small> : null}</article>)}</div>
-    </section>
-  )
-}
-
-function ArticleDerivedRiskGapSection({ report }: { report: ReportView }) {
-  const data = report.riskGapSummary
-  const rows = data.existingCoverageMap ?? []
-  return (
-    <section className="report-page__section report-page__coverage-gap-section" aria-labelledby="article-gap-title">
-      <SectionHeading number="03" eyebrow="RISK & COVERAGE GAP" title="기존 보장 범위와 위험 공백" />
-      <div className="report-page__coverage-gap-judgment-copy"><p><strong>{data.definition ?? '문서에서 연결한 위험 공백'}</strong></p><p>{(data.whyNow ?? []).slice(0, 2).join(' · ')}</p></div>
-      <section className="report-page__coverage-gap-premise"><h3 id="article-gap-title">분석 대상</h3><p>{data.definition}</p><div className="report-page__decision-briefing-two-column"><article><h4>영향 대상</h4><ul>{(data.affectedParties ?? []).map((item) => <li key={item}>{item}</li>)}</ul></article><article><h4>손해 유형</h4><ul>{(data.damageTypes ?? []).map((item) => <li key={item.id}>{item.name}</li>)}</ul></article></div></section>
-      <section className="report-page__coverage-gap-comparison"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">COMPARISON EVIDENCE</p><h3>기존 보장과 공백 연결</h3></div></div><div className="report-page__table-wrap"><table className="report-page__gap-table"><thead><tr><th>발생 가능한 손해</th><th>기존 보장과의 관계</th><th>남은 공백</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td><strong>{row.damage ?? '주요 손해'}</strong></td><td><strong>{row.coverageName}</strong><p>{row.possibleCoverage}</p></td><td><p>{row.remainingGap ?? '추가 확인 필요'}</p><span>{row.status}</span></td></tr>)}</tbody></table></div></section>
-      <section className="report-page__coverage-gap-inputs"><h3>상품개발 입력값</h3><ul>{(report.productProposal.unresolvedItems ?? []).slice(0, 6).map((item, index) => <li key={item}><b>{String(index + 1).padStart(2, '0')}</b><span>{item}</span></li>)}</ul></section>
-    </section>
-  )
-}
-
-function ArticleDerivedWordingSection({ report }: { report: ReportView }) {
-  const wording = report.wordingFeasibility
-  const asText = (value: unknown) => typeof value === 'string' ? value : ''
-  return (
-    <section className="report-page__section report-page__wording-section" aria-labelledby="article-wording-title">
-      <SectionHeading number="04" eyebrow="WORDING REVIEW" title="약관화 검토" />
-      <div className="report-page__wording-risk-summary-card"><p className="report-page__wording-risk-summary-label">분석 대상 위험</p><h3 id="article-wording-title">{report.meta.riskTitle}</h3><p>{wording.label}</p><dl className="report-page__wording-risk-summary-meta"><div><dt>분류</dt><dd>{report.meta.articleTopic}</dd></div><div><dt>검토 상태</dt><dd>{wording.status}</dd></div></dl></div>
-      <section className="report-page__wording-main-zone"><h3>검토용 보장 정의</h3><blockquote className="report-page__wording-draft-quote">{wording.coverageDraft ?? '문서에서 확인한 위험 사건과 손해 유형을 보장 정의 후보로 정리합니다.'}</blockquote><p>{wording.alternativeLiabilityDraft}</p></section>
-      <div className="report-page__wording-loss-grid"><article className="report-page__wording-loss-card report-page__wording-loss-card--covered"><h4>지급 조건</h4><ul>{(wording.paymentConditions ?? []).map((item) => <li key={String(item.id)}>{asText(item.text)}<small>{asText(item.verification)}</small></li>)}</ul></article><article className="report-page__wording-loss-card report-page__wording-loss-card--excluded"><h4>제외 검토 후보</h4><ul>{(wording.exclusionCandidates ?? []).map((item) => <li key={String(item.id)}>{asText(item.text)}<small>{asText(item.reason)}</small></li>)}</ul></article></div>
-      <section className="report-page__wording-main-zone"><h3>핵심 용어와 불명확성</h3><div className="report-page__wording-term-columns">{(wording.definitions ?? []).slice(0, 8).map((item, index) => <p key={`${item.term}-${index}`}><strong>{asText(item.term)}</strong><span>{asText(item.draftDefinition)}</span></p>)}{(wording.ambiguities ?? []).slice(0, 4).map((item) => <p key={String(item.id)}><strong>확인 항목</strong><span>{asText(item.issue)} · {asText(item.question)}</span></p>)}</div></section>
-    </section>
-  )
-}
-
-function ArticleDerivedProposalSection({ report }: { report: ReportView }) {
-  const proposal = report.productProposal
-  const target = report.targetSuitability
-  const fields: Array<[string, string | undefined]> = [['추천 구조', proposal.recommendedForm], ['예상 계약자', proposal.expectedPolicyholder?.join(' · ')], ['예상 피보험자', proposal.expectedInsured], ['보장 대상', proposal.coveredObject], ['보장 사건', proposal.coveredEvent], ['대상 손해', proposal.coveredLoss], ['기존 보험과의 관계', proposal.existingInsuranceRelationship], ['보험금 산정 방향', proposal.settlementDirection]]
-  return (
-    <section className="report-page__section report-page__proposal-section" aria-labelledby="article-proposal-title">
-      <SectionHeading number="05" eyebrow="PRODUCT STRUCTURE" title="상품 구조 추천" />
-      <div className="report-page__proposal-hero"><p className="report-page__eyebrow">ARTICLE-DERIVED PROPOSAL</p><h3 id="article-proposal-title">{proposal.workingName}</h3><p>{proposal.recommendationReason}</p></div>
-      <div className="report-page__proposal-facts">{fields.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value || '추가 확인 필요'}</dd></div>)}</div>
-      <section className="report-page__proposal-main-zone"><h3>대상 적합성</h3><p>{target.recommendationLabel ?? target.recommendation}</p><div className="report-page__proposal-role-table-wrap"><table className="report-page__proposal-role-table"><thead><tr><th>대상</th><th>적합성</th><th>근거</th></tr></thead><tbody>{(target.options ?? []).map((item) => <tr key={item.id}><th>{item.target}</th><td>{item.suitability}</td><td>{item.reason}</td></tr>)}</tbody></table></div></section>
-      <section className="report-page__proposal-main-zone"><h3>인수·운영 시 결정할 항목</h3><ul>{[...(proposal.underwritingCandidates ?? []), ...(proposal.unresolvedItems ?? [])].slice(0, 10).map((item) => <li key={item}>{item}</li>)}</ul></section>
-    </section>
-  )
 }
 
 export function ReportSections({
@@ -4203,18 +4090,18 @@ export function ReportSections({
       <ReportTabs activeTab={activeTab} onChange={handleTabChange} />
       <div className="report-page__tab-panels">
         <ReportTabPanel id="report-panel-ai-judgment" tabId="ai-judgment" index={0} active={activeTab === 'ai-judgment'} onChange={handleTabChange}>
-          {editorMode && activeTab === 'ai-judgment' ? <ReportEditorPanel activeTab="briefing" report={draftReport} onChange={handleDraftChange} /> : isArticleDerivedReport(report) ? <ArticleDerivedBriefingSection report={report} /> : <ExecutiveBriefingSection report={report} onNavigateTab={handleTabChange} />}
+          {editorMode && activeTab === 'ai-judgment' ? <ReportEditorPanel activeTab="briefing" report={draftReport} onChange={handleDraftChange} /> : <ExecutiveBriefingSection report={report} onNavigateTab={handleTabChange} />}
         </ReportTabPanel>
         <ReportTabPanel id="report-panel-feasibility" tabId="feasibility" index={1} active={activeTab === 'feasibility'} onChange={handleTabChange}>
-          {editorMode && activeTab === 'feasibility' ? <ReportEditorPanel activeTab="feasibility" report={draftReport} onChange={handleDraftChange} openCriterionId={feasibilityOpenId} onOpenCriterion={setFeasibilityOpenId} /> : isArticleDerivedReport(report) ? <ArticleDerivedFeasibilitySection report={report} /> : <FeasibilitySection report={report} openCriterionId={feasibilityOpenId} onOpenCriterion={setFeasibilityOpenId} onNavigateTab={handleTabChange} noveltyAccordionRequest={noveltyAccordionRequest} onNoveltyAccordionRequestHandled={() => setNoveltyAccordionRequest(null)} />}
+          {editorMode && activeTab === 'feasibility' ? <ReportEditorPanel activeTab="feasibility" report={draftReport} onChange={handleDraftChange} openCriterionId={feasibilityOpenId} onOpenCriterion={setFeasibilityOpenId} /> : <FeasibilitySection report={report} openCriterionId={feasibilityOpenId} onOpenCriterion={setFeasibilityOpenId} onNavigateTab={handleTabChange} noveltyAccordionRequest={noveltyAccordionRequest} onNoveltyAccordionRequestHandled={() => setNoveltyAccordionRequest(null)} />}
         </ReportTabPanel>
 
         <ReportTabPanel id="report-panel-coverage-gap" tabId="coverage-gap" index={2} active={activeTab === 'coverage-gap'} onChange={handleTabChange}>
-          {editorMode && activeTab === 'coverage-gap' ? <ReportEditorPanel activeTab="coverage-gap" report={draftReport} onChange={handleDraftChange} /> : isArticleDerivedReport(report) ? <ArticleDerivedRiskGapSection report={report} /> : <RiskGapSection report={report} onNavigateTab={handleTabChange} />}
+          {editorMode && activeTab === 'coverage-gap' ? <ReportEditorPanel activeTab="coverage-gap" report={draftReport} onChange={handleDraftChange} /> : <RiskGapSection report={report} onNavigateTab={handleTabChange} />}
         </ReportTabPanel>
         <ReportTabPanel id="report-panel-wording" tabId="wording" index={3} active={activeTab === 'wording'} onChange={handleTabChange}>
           {editorMode && activeTab === 'wording' ? <ReportEditorPanel activeTab="wording" report={draftReport} onChange={handleDraftChange} /> : (
-            isArticleDerivedReport(report) ? <ArticleDerivedWordingSection report={report} /> : <FullWordingSection
+            <FullWordingSection
               report={report}
               onOpenPolicyDraft={() => setPolicyDraftOpen(true)}
               onNavigateTab={handleTabChange}
@@ -4222,7 +4109,7 @@ export function ReportSections({
           )}
         </ReportTabPanel>
         <ReportTabPanel id="report-panel-proposal" tabId="proposal" index={4} active={activeTab === 'proposal'} onChange={handleTabChange}>
-          {editorMode && activeTab === 'proposal' ? <ReportEditorPanel activeTab="proposal" report={draftReport} onChange={handleDraftChange} /> : isArticleDerivedReport(report) ? <ArticleDerivedProposalSection report={report} /> : <ProductProposalSection report={report} onNavigateTab={handleTabChange} />}
+          {editorMode && activeTab === 'proposal' ? <ReportEditorPanel activeTab="proposal" report={draftReport} onChange={handleDraftChange} /> : <ProductProposalSection report={report} onNavigateTab={handleTabChange} />}
         </ReportTabPanel>
         <ReportTabPanel id="report-panel-evidence" tabId="evidence" index={5} active={activeTab === 'evidence'} onChange={handleTabChange}>
           {editorMode && activeTab === 'evidence' ? <ReportEditorPanel activeTab="evidence" report={draftReport} onChange={handleDraftChange} /> : (
