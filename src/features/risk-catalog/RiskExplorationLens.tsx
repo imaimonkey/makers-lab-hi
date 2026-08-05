@@ -16,6 +16,7 @@ import { riskCandidateEvidenceSnapshots } from '../../domain/risk/riskCandidateE
 import { PRODUCT_FINANCIAL_ESTIMATE } from '../../report/data/financial-estimate-mock'
 import { RiskLawTrackingPanel } from './RiskLawTrackingPanel'
 import type { DeveloperLawQueueItem, DeveloperRiskCatalogViewData } from './developerStep2Adapter'
+import { calculateProductizationScores } from './productizationScore'
 
 const categoryFilters: Array<{ key: ScreeningCategory; label: string }> = [
   { key: 'all', label: '전체' },
@@ -146,6 +147,7 @@ function removeDetailMetricLabel(text: string) {
 const screeningColumns: RiskCandidateQuantificationKey[] = ['market', 'pml']
 
 function screeningScoreFor(record: RiskExplorationRecord, developerMode: boolean) {
+  if (record.articleId || record.id.startsWith('developer-')) return calculateProductizationScores(record.metricScores).total
   return developerMode ? calculateRiskExplorationScore(record.metricScores) : getCandidateViewModelById(record.id)?.screeningScore.value ?? null
 }
 
@@ -383,7 +385,7 @@ function RiskCandidateDetail({ record, developerMode }: { record: RiskExploratio
   )
 }
 
-export function RiskExplorationLens({ sourceRecords, developerMode = false, developerLaws, developerData, onRunDeveloperStep2, developerRunning = false }: { sourceRecords?: RiskExplorationRecord[]; developerMode?: boolean; developerLaws?: DeveloperLawQueueItem[]; developerData?: DeveloperRiskCatalogViewData; onRunDeveloperStep2?: () => void; developerRunning?: boolean } = {}) {
+export function RiskExplorationLens({ sourceRecords, developerMode = false, developerLaws, developerData }: { sourceRecords?: RiskExplorationRecord[]; developerMode?: boolean; developerLaws?: DeveloperLawQueueItem[]; developerData?: DeveloperRiskCatalogViewData } = {}) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [queryInput, setQueryInput] = useState(() => searchParams.get('q') ?? '')
   const [period, setPeriod] = useState<'all' | '7' | '30' | '90'>('all')
@@ -502,7 +504,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
         </div>
       </div> : null}
 
-      {category === 'legal' ? <RiskLawTrackingPanel category={category} developerLaws={developerMode ? (developerLaws ?? []) : undefined} onRunDeveloperStep2={developerMode ? onRunDeveloperStep2 : undefined} developerRunning={developerRunning} /> : null}
+      {category === 'legal' ? <RiskLawTrackingPanel category={category} localLaws={developerLaws ?? []} /> : null}
 
       {category !== 'legal' ? <>
       <div className="screening-table-heading">
@@ -575,7 +577,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
           </section>
           {selectedRecord ? <RiskCandidateDetail record={selectedRecord} developerMode={developerMode} /> : null}
         </div>
-      ) : <div className="risk-candidate-empty">{developerMode ? <><strong>선택 조건에 맞는 원문 기반 후보가 없습니다.</strong><br />현재 {developerData?.counts.articles ?? 0}건의 원문은 본문 구조화 더미 결과로 준비되어 있습니다.{onRunDeveloperStep2 ? <button type="button" onClick={onRunDeveloperStep2} disabled={developerRunning}>{developerRunning ? 'Step 2 분석 중…' : '실제 Step 2 전체 실행'}</button> : null}</> : '조건에 맞는 위험 후보가 없습니다.'}</div>}
+      ) : <div className="risk-candidate-empty">{developerMode ? <><strong>선택 조건에 맞는 원문 기반 후보가 없습니다.</strong><br />현재 연결된 {developerData?.counts.articles ?? 0}건의 문서에서 조건에 맞는 후보가 없습니다.</> : '조건에 맞는 위험 후보가 없습니다.'}</div>}
       </> : null}
 
     </section>

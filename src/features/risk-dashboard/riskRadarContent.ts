@@ -15,6 +15,7 @@ export type RiskRadarPriorityRisk = {
   detailRiskId: string
   title: string
   marketGrade: 'S' | 'A'
+  category?: string
   score: number
   summary: string
   detectionSummary: string

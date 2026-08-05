@@ -1,4 +1,5 @@
 import type { RiskExplorationRecord } from './riskExplorationDemo'
+import { calculateProductizationScores } from '../../features/risk-catalog/productizationScore'
 
 export const riskCandidateQuantificationKeys = ['market', 'fortuity', 'legalExposure', 'pml'] as const
 export type RiskCandidateQuantificationKey = (typeof riskCandidateQuantificationKeys)[number]
@@ -124,8 +125,9 @@ export function getRiskCandidateQuantification(record: RiskExplorationRecord): R
   const evidenceText = (evidence?: { quotes: string[]; reasons: string[] }) => evidence?.quotes?.length ? evidence.quotes : evidence?.reasons ?? []
   const reference = attachmentPrototypeMetrics[record.id]
   const hasPrototypeReference = Boolean(reference)
-  const marketScore = reference?.marketScore ?? Math.round(record.metricScores.demand * 20)
-  const marketGrade = marketScore >= 90 ? 'S' : marketScore >= 75 ? 'A' : marketScore >= 60 ? 'B' : 'C'
+  const articleScore = record.articleId ? calculateProductizationScores(record.metricScores) : null
+  const marketScore = articleScore?.market ?? reference?.marketScore ?? Math.round(record.metricScores.demand * 20)
+  const marketGrade = articleScore ? (marketScore >= 4.3 ? 'S' : marketScore >= 3.5 ? 'A' : 'B') : marketScore >= 90 ? 'S' : marketScore >= 75 ? 'A' : marketScore >= 60 ? 'B' : 'C'
   const fortuityEvidence = record.metricEvidence?.fortuity
   const legalExposureEvidence = record.metricEvidence?.legalExposure
   const normalizeFivePointScore = (score: number) => Number.isFinite(score) && score > 0 ? Math.round(score * 10) / 10 : null
@@ -136,15 +138,15 @@ export function getRiskCandidateQuantification(record: RiskExplorationRecord): R
     market: {
       key: 'market',
       label: '시장성',
-      value: `${marketGrade} · ${marketScore}점`,
+      value: articleScore ? `${marketGrade} · ${marketScore.toFixed(1)} / 5` : `${marketGrade} · ${marketScore}점`,
       sub: '상품화 종합평가 시장성 기준',
       color: 'orange',
       official: evidenceText(demandEvidence).length ? evidenceText(demandEvidence) : ['기사의 수요·확산 신호'],
       assumption: demandEvidence?.uncertainty?.length ? demandEvidence.uncertainty : ['공개 시장자료 미연결', '운영 판단 전 독립 출처 확인 필요'],
       formula: [demandEvidence?.scoreRationale || '시장 성장성 + 실제 시장 수요·제도 필요성 + 상품화 검증 + 구매 접근성'],
-      result: `${marketScore}/100 · ${marketGrade}등급`,
+      result: articleScore ? `${marketScore.toFixed(1)} / 5 · ${marketGrade}등급` : `${marketScore}/100 · ${marketGrade}등급`,
       numericValue: marketScore,
-      unit: '/100',
+      unit: articleScore ? '/5' : '/100',
       confidence: '기사 기반',
       evidenceIds: demandEvidence?.sourceIds ?? record.evidenceIds ?? [],
       uncertainty: demandEvidence?.uncertainty ?? ['독립 출처 확인 필요'],
@@ -161,7 +163,11 @@ export function getRiskCandidateQuantification(record: RiskExplorationRecord): R
       assumption: legalExposureEvidence?.uncertainty?.length ? legalExposureEvidence.uncertainty : ['법령 원문·책임 주체·개정 가능성 확인 필요'],
       formula: [legalExposureEvidence?.scoreRationale || '법률·규제 노출 수준 + 책임주체 명확성 + 약관·보장조건 확인 필요성'], result: `${fivePointValue(legalExposureScore)} · 법률·규제 원문 확인 필요`, numericValue: legalExposureScore, unit: '/5', confidence: legalExposureScore === null ? '확인 필요' : '기사 기반', evidenceIds: legalExposureEvidence?.sourceIds ?? record.evidenceIds ?? [], uncertainty: legalExposureEvidence?.uncertainty ?? ['법률·규제 리스크의 공식 근거 확인 필요'],
     },
-    pml: hasPrototypeReference ? {
+    pml: articleScore ? {
+      key: 'pml', label: 'PML', value: `${articleScore.pml.toFixed(1)} / 5`, sub: 'PML 위험점수 · 상품화 종합평가', color: 'red',
+      official: record.metricEvidence?.accumulation?.quotes ?? [], assumption: ['심각성·누적성·보장 공백 지표를 5점 척도로 환산'],
+      formula: ['PML = 심각성 × 45% + 누적성 × 35% + 보장 공백 × 20%'], result: `${articleScore.pml.toFixed(1)} / 5 · 문서 지표 기반`, numericValue: articleScore.pml, unit: '/5', confidence: '기사 기반', evidenceIds: record.evidenceIds ?? [], uncertainty: ['실제 손해액·누적 범위가 연결되면 재산정'],
+    } : hasPrototypeReference ? {
       key: 'pml', label: 'PML', value: reference?.pml ?? '확인 필요', sub: 'PML 기준 · 상품화 종합평가', color: 'red',
       official: ['후보별 공개 사고사례·손해 범위'], assumption: ['단일사고·누적·시설/긴급대응 손해는 첨부 프로토타입 가정'],
       formula: ['단일사고 손해 + 동시다발 누적손해 + 시설·긴급대응 비용'], result: `${reference?.pml ?? '확인 필요'} · 보수·기준·확대 시나리오 확인 필요`, numericValue: Number(reference?.pml.replace(/[^0-9.]/g, '') ?? 0), unit: '억원', confidence: '기사 기반', evidenceIds: record.evidenceIds ?? [], uncertainty: ['실제 손해액·누적 범위 확인 필요'],

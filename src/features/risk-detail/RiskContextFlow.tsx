@@ -52,8 +52,8 @@ function buildMetrics(risk: SampleRiskCandidate, detail: SampleRiskDetail): Metr
       name,
       ...status,
       reason: assessment?.note || `${risk.title}의 ${name}에 대한 세부 근거와 실제 손해자료를 추가 확인해야 합니다.`,
-      evidence: linkedEvidence.length ? linkedEvidence.map((item) => ({ title: item.sourceName || '연결 원문', body: item.excerpt || item.sourceType || `${risk.title} 관련 원문 자료입니다.`, url: item.sourceUrl ?? undefined })) : [{ title: '연결 원문 확인 필요', body: '현재 상세 화면에 연결된 공식 원문 자료가 없습니다.' }],
-      missing: checks.slice(0, 3).length ? checks.slice(0, 3) : ['국내 실제 손해·청구자료', '기존 약관의 보장·면책 범위', '업종별 인수조건과 통제 기준'],
+      evidence: linkedEvidence.length ? linkedEvidence.map((item) => ({ title: item.sourceName || '연결 원문', body: assessment?.evidenceQuotes?.[0] || item.excerpt || item.sourceType || `${risk.title} 관련 원문 자료입니다.`, url: item.sourceUrl ?? undefined })) : [{ title: '연결 원문 확인 필요', body: '현재 상세 화면에 연결된 공식 원문 자료가 없습니다.' }],
+      missing: assessment?.uncertainty?.length ? assessment.uncertainty.slice(0, 3) : (checks.slice(0, 3).length ? checks.slice(0, 3) : ['국내 실제 손해·청구자료', '기존 약관의 보장·면책 범위', '업종별 인수조건과 통제 기준']),
     }
   })
 }

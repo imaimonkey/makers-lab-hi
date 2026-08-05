@@ -1,10 +1,13 @@
 import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { resolveSampleRiskId, sampleRiskCandidates, sampleRiskDetails } from '../../domain/risk/sampleData'
 import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { RiskContextFlow } from '../../features/risk-detail/RiskContextFlow'
 import { GenerativeAiCopyrightDetail } from '../../features/risk-detail/GenerativeAiCopyrightDetail'
+import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
+import { buildDeveloperRiskDetailData, type DeveloperRiskDetailData } from '../../features/risk-catalog/developerStep2Adapter'
 
 type RiskDetailPageProps = {
   data?: { risk: SampleRiskCandidate; detail: SampleRiskDetail; articleId: string }
@@ -14,9 +17,20 @@ type RiskDetailPageProps = {
 
 export function RiskDetailPage({ data, developerMode = false }: RiskDetailPageProps = {}) {
   const { riskId } = useParams()
+  const [articleData, setArticleData] = useState<DeveloperRiskDetailData>()
+  useEffect(() => {
+    const articleId = riskId?.replace(/^developer-/, '').replace(/^article-/, '')
+    if (!articleId || data) return
+    let cancelled = false
+    void loadArticleSourceRecords().then((articles) => {
+      const article = articles.find((item) => item.id === articleId)
+      if (article && !cancelled) setArticleData(buildDeveloperRiskDetailData(article, []))
+    }).catch((error) => console.error(error))
+    return () => { cancelled = true }
+  }, [data, riskId])
   const resolvedRiskId = resolveSampleRiskId(riskId)
-  const risk = data?.risk ?? sampleRiskCandidates.find((item) => item.id === resolvedRiskId)
-  const detail = data?.detail ?? (resolvedRiskId ? sampleRiskDetails[resolvedRiskId] : undefined)
+  const risk = data?.risk ?? articleData?.risk ?? sampleRiskCandidates.find((item) => item.id === resolvedRiskId)
+  const detail = data?.detail ?? articleData?.detail ?? (resolvedRiskId ? sampleRiskDetails[resolvedRiskId] : undefined)
   const catalogPath = developerMode ? '/developer-test/risks' : '/risks'
 
   if (!risk || !detail) {

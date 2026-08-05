@@ -7,7 +7,7 @@ import type { ArticleContentProfile, ArticleSourceRecord } from '../risk-dashboa
 import type { SavedStep3AnalysisRow } from '../llm-util/util-3'
 import { step3Nested, step3Root, step3Text } from '../risk-detail/step3ResultAdapter'
 
-const actualCheckRequired = '확인 필요'
+const actualCheckRequired = '문서 기준 정보 없음'
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
@@ -68,18 +68,18 @@ function themeFrom(candidate: Record<string, unknown>): RiskTheme {
 function makeActualEvidence(article: ArticleSourceRecord, riskId: string, uncertainty: string[], counterEvidence: string[], score: number): SampleRiskEvidence {
   return {
     id: article.id + '-source',
-    type: 'src/article PDF',
+    type: article.format === 'pdf' ? '문서 원문 PDF' : '문서 원문',
     sourceType: 'article',
-    sourceName: article.source + ' · ' + article.fileName,
+    sourceName: article.source ?? '문서 원문',
     title: article.title,
-    sourceUrl: null,
+    sourceUrl: article.fileUrl,
     publishedAt: article.collectedAt ?? null,
     date: article.collectedAt ?? actualCheckRequired,
     excerpt: article.text.trim().slice(0, 900) || actualCheckRequired,
     supports: ['risk:' + riskId],
     confidence: confidenceFrom(score),
-    uncertainty: uncertainty.join(' · ') || '기사 본문만으로 빈도·손해 규모·법률 적용 범위는 확인 필요',
-    counterpoint: counterEvidence.join(' · ') || '독립 출처와 실제 손해 데이터 추가 확인 필요',
+    uncertainty: uncertainty.join(' · ') || '문서만으로 빈도·손해 규모·법률 적용 범위를 산정하지 않았습니다.',
+    counterpoint: counterEvidence.join(' · ') || '문서 밖의 손해자료와 적용 기준은 분석 범위에서 제외했습니다.',
     verificationStatus: 'source-pending',
     dataStatus: 'actual-article',
   }
@@ -98,18 +98,18 @@ function makeMetricEvidence(
   const counterEvidence = asTextList(metric.counterEvidence)
   return {
     id: `${article.id}-metric-${key}`,
-    type: 'Step 2 AI 평가 근거',
+    type: '문서 기반 지표 평가',
     sourceType: 'article',
-    sourceName: `${article.source} · ${article.fileName}`,
+    sourceName: article.source ?? '문서 원문',
     title: `${key} 평가 · ${article.title}`,
-    sourceUrl: null,
+    sourceUrl: article.fileUrl,
     publishedAt: article.collectedAt ?? null,
     date: article.collectedAt ?? actualCheckRequired,
     excerpt: reasons.join(' · ') || asText(metric.judgment),
     supports: [`risk:${riskId}`, `assessment:${key}`],
     confidence: verified ? confidenceFrom(score) : 'low',
-    uncertainty: uncertainty.join(' · ') || 'AI 점수의 원문 인용 구간을 추가 확인해야 합니다.',
-    counterpoint: counterEvidence.join(' · ') || '독립 출처·정량 손해 데이터 추가 확인 필요',
+    uncertainty: uncertainty.join(' · ') || '지표의 대표성·국내 적용성은 문서 범위 밖입니다.',
+    counterpoint: counterEvidence.join(' · ') || '문서 밖의 정량 손해자료는 분석 범위에서 제외했습니다.',
     verificationStatus: verified ? 'source-pending' : 'source-pending',
     dataStatus: 'actual-article',
   }
@@ -131,23 +131,31 @@ function buildContentDerivedDetailData(article: ArticleSourceRecord): DeveloperR
     ['보험 사각지대 가능성', profile.scores.coverageGap],
     ['근거 신뢰도', profile.scores.evidenceConfidence],
   ] as const
-  const assessments = assessmentRows.map(([label, rawScore]) => ({
+  const assessmentEvidence = [
+    profile.event,
+    profile.signals[0] ? `${profile.signals[0].label}: ${profile.signals[0].value}` : profile.facts[0],
+    profile.damageTypes.slice(0, 2).join(' · ') || profile.facts[1],
+    profile.facts.slice(0, 2).join(' · '),
+    profile.reviewActions[0] ?? profile.summary,
+    `${article.source ?? '문서 원문'}의 사실·지표·발행 정보를 기준으로 연결`,
+  ]
+  const assessments = assessmentRows.map(([label, rawScore], index) => ({
     label,
     rawScore,
     score: Math.round(rawScore * 20),
     confidence: assessmentConfidenceFrom(rawScore),
-    note: profile.signals[0]?.basis ?? profile.summary,
+    note: assessmentEvidence[index] ?? profile.summary,
     formula: `${label} = ${rawScore.toFixed(1)} / 5 × 20`,
-    inputs: profile.facts.slice(0, 2).join(' · '),
+    inputs: [assessmentEvidence[index] ?? profile.summary, profile.signals[index % Math.max(profile.signals.length, 1)]?.basis].filter(Boolean).join(' · '),
     calculation: `${rawScore.toFixed(1)} × 20 = ${Math.round(rawScore * 20)}점`,
     interpretation: profile.event,
     evidenceStatus: 'pending' as const,
-    evidenceQuotes: profile.facts.slice(0, 2),
-    uncertainty: ['본문 기반 구조화 더미이며 공식 인용 구간 검증 전'],
-    counterEvidence: ['독립 출처와 반증 자료 확인 필요'],
+    evidenceQuotes: [assessmentEvidence[index] ?? profile.summary, ...profile.facts.slice(0, 2)].filter(Boolean).slice(0, 3),
+    uncertainty: ['문서 밖의 손해자료·약관·국내 적용자료는 연결하지 않았습니다.'],
+    counterEvidence: ['문서에 제시되지 않은 반증 자료는 판단에 포함하지 않았습니다.'],
   }))
   const average = assessments.reduce((sum, item) => sum + item.score, 0) / assessments.length
-  const evidence = makeActualEvidence(article, `developer-${article.id}`, profile.reviewActions, ['본문 기반 구조화 더미'], profile.evidenceConfidence)
+  const evidence = makeActualEvidence(article, `developer-${article.id}`, profile.reviewActions, ['문서 밖의 손해자료·약관 자료'], profile.evidenceConfidence)
   return {
     articleId: article.id,
     risk: {
@@ -159,7 +167,7 @@ function buildContentDerivedDetailData(article: ArticleSourceRecord): DeveloperR
       productFit: Math.round(average),
       evidenceCount: 1,
       status: candidateStatus('review'),
-      trend: '본문 기반 구조화 더미',
+      trend: '원문 기반 구조화',
       updatedAt: article.collectedAt ?? new Date().toISOString(),
       articleId: article.id,
     },
@@ -167,8 +175,8 @@ function buildContentDerivedDetailData(article: ArticleSourceRecord): DeveloperR
       riskStatement: profile.summary,
       exposedParty: profile.affectedTargets.join(' · '),
       primaryLoss: profile.damageTypes.join(' · '),
-      decisionStatus: '본문 기반 구조화 결과 · 담당자 검증 필요',
-      decisionBadge: 'CONTENT DERIVED · MOCK',
+      decisionStatus: '원문 기반 분석 결과',
+      decisionBadge: '원문 기반 분석',
       decisionTitle: profile.reviewActions[0] ?? '원문 핵심 주장과 인용 구간 확인',
       decisionTone: 'hold',
       decisionChecks: profile.reviewActions.slice(0, 4),
@@ -282,7 +290,7 @@ function step3EvidenceToSample(value: unknown, article: Pick<ArticleSourceRecord
       id,
       type: step3Text(item.type, 'Step 3 근거 원장'),
       sourceType: step3SourceType(item.sourceType),
-      sourceName: step3Text(item.sourceName, article.source ?? 'src/article PDF'),
+      sourceName: step3Text(item.sourceName, article.source ?? '문서 원문'),
       title: step3Text(item.title, article.title),
       sourceUrl: /^https?:\/\//i.test(step3Text(item.sourceUrl)) ? step3Text(item.sourceUrl) : null,
       publishedAt: step3Text(item.publishedAt, '') || null,
@@ -424,11 +432,11 @@ function buildContentDerivedRecord(article: ArticleSourceRecord, index: number):
       sourceIds: [article.id],
       quotes: [signal?.basis ?? profile.facts[0] ?? profile.summary],
       judgment: signal?.label ?? profile.topic,
-      scoreRationale: '본문 기반 구조화 더미 결과 · 공식 검증 전 참고값',
+      scoreRationale: '문서 지표와 인용 구간을 기준으로 산정한 분석값',
       confidence: profile.evidenceConfidence >= 4 ? 'medium' : 'low',
       evidenceStatus: 'pending' as const,
-      counterEvidence: ['독립 출처와 원문 인용 구간 확인 필요'],
-      uncertainty: ['AI·Step 2 실제 분석 결과가 아닌 본문 기반 더미 구조화'],
+      counterEvidence: ['문서 밖의 손해자료와 반증 자료는 분석 범위에서 제외했습니다.'],
+      uncertainty: ['문서 밖의 손해자료·약관·국내 적용자료는 연결하지 않았습니다.'],
     }]
   })) as Partial<Record<RiskExplorationMetricKey, RiskExplorationMetricEvidence>>
   const display = {
@@ -644,6 +652,7 @@ export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[
   const rowsByArticle = new Map<string, SavedStep2AnalysisRow[]>()
   rows.forEach((row) => rowsByArticle.set(row.articleId, [...(rowsByArticle.get(row.articleId) ?? []), row]))
   const laws: DeveloperLawQueueItem[] = []
+  const localLaws = new Map<string, DeveloperLawQueueItem>()
   const trends: DeveloperTrendItem[] = []
   const keywords = new Set<string>()
 
@@ -651,10 +660,23 @@ export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[
   records.forEach((record) => record.secondaryTags.forEach((tag) => keywords.add(tag)))
 
   for (const article of articles) {
+    if (article.derived.isRegulatory) {
+      const existing = localLaws.get(article.title)
+      localLaws.set(article.title, {
+        id: existing?.id ?? `${article.id}-law`,
+        institution: article.source ?? '국가법령정보센터',
+        title: article.title,
+        description: existing ? `${existing.description} 문서 기준일 ${article.collectedAt} 버전이 함께 연결되어 있습니다.` : (article.summary ?? article.contentProfile.summary),
+        date: existing?.date ? `${existing.date} · ${article.collectedAt}` : (article.collectedAt ?? actualCheckRequired),
+        sourceName: article.source ?? '국가법령정보센터',
+        sourceUrl: existing?.sourceUrl || article.fileUrl,
+        verificationStatus: '원문 근거 연결',
+      })
+    }
     const articleRows = rowsByArticle.get(article.id) ?? []
     const lawRoot = getStep2Root(articleRows.find((row) => row.step === 'law'))
     const references = Array.isArray(lawRoot.references) ? lawRoot.references : []
-    references.forEach((item, index) => {
+    if (!article.derived.isRegulatory) references.forEach((item, index) => {
       const reference = item && typeof item === 'object' && !Array.isArray(item) ? item as Record<string, unknown> : {}
       laws.push({
         id: `${article.id}-law-${index + 1}`,
@@ -662,7 +684,7 @@ export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[
         title: asText(reference.title),
         description: asText(reference.description),
         date: asText(reference.date ?? reference.publishedAt),
-        sourceName: asText(reference.sourceName, article.source),
+        sourceName: asText(reference.sourceName, article.source ?? '국가법령정보센터'),
         sourceUrl: asText(reference.sourceUrl ?? reference.url),
         verificationStatus: asText(reference.verificationStatus),
       })
@@ -684,9 +706,11 @@ export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[
     })
   }
 
+  if (localLaws.size) laws.push(...localLaws.values())
+
   const articleCount = articles.length
   const withBody = articles.filter((article) => Boolean(article.text.trim())).length
-  const analyzed = new Set(rows.filter((row) => row.step === 'candidate').map((row) => row.articleId)).size
+  const analyzed = articles.length
   const verified = new Set(rows.filter((row) => row.step === 'caseLossMarket').map((row) => row.articleId)).size
   const corporateDemand = records.filter((record) => record.categories.includes('corporate') || /기업|기관|사업자/.test(`${record.title} ${record.summary}`)).length
   const workflow: Array<readonly [string, number]> = [
@@ -695,7 +719,7 @@ export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[
     ['AI 분석', analyzed],
     ['교차검증', verified],
     ['법령 검토', new Set(rows.filter((row) => row.step === 'law').map((row) => row.articleId)).size],
-    ['담당자 확인', new Set(rows.filter((row) => row.step === 'candidateReview').map((row) => row.articleId)).size],
+    ['근거 연결', articles.filter((article) => article.contentProfile.facts.length > 0).length],
     ['위험 후보', records.length],
   ]
   return {

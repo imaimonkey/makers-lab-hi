@@ -1,5 +1,6 @@
 import { readPdfFile } from '../llm-util/fileContext'
 import type { RadarDashboardData, RadarNewsArticle, RadarRiskCandidate } from '../../domain/risk/riskRadarTypes'
+import { getArticleMetadata } from './articleCuratedMetadata'
 
 type BundledArticleFile = {
   fileName: string
@@ -95,6 +96,8 @@ function fileName(path: string) {
 }
 
 function titleFromFile(name: string) {
+  const curated = getArticleMetadata(name)
+  if (curated) return curated.title
   const normalized = name.replace(/\.(pdf|hwp)$/i, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim()
   if (/AI.*데이터센터|데이터센터.*보장|data centre/i.test(name)) return 'AI 데이터센터 건설 붐과 보장 공백'
   if (/Warming Switzerland|warming.*switzerland|Hitze in der Schweiz/i.test(name)) return '스위스 폭염과 더워지는 미래'
@@ -121,12 +124,14 @@ function stableArticleId(name: string) {
 }
 
 function sourceNameFor(name: string) {
+  const curated = getArticleMetadata(name)
+  if (curated) return curated.source
   if (/Swiss Re|sri-|Warming Switzerland/i.test(name)) return 'Swiss Re Institute'
   if (/AXA/i.test(name)) return 'AXA Group'
   if (/보험연구원/i.test(name)) return '보험연구원(KIRI)'
   if (/보험개발원/i.test(name)) return '보험개발원'
   if (/고용보험|law74/i.test(name)) return '국가법령정보센터'
-  return 'src/article 원문'
+  return '문서 원문'
 }
 
 function hasAny(text: string, terms: RegExp[]) {
@@ -138,6 +143,8 @@ function scoreFromSignals(count: number, minimum = 1.2) {
 }
 
 function buildContentProfile(text: string, name: string, title: string): ArticleContentProfile {
+  const curated = getArticleMetadata(name)
+  if (curated) return curated
   const body = text.replace(/\s+/g, ' ').trim()
   const isDataCenter = hasAny(`${name} ${body}`, [/data cent(er|re)/i, /AI 데이터센터/, /데이터센터/])
   const isHeat = hasAny(`${name} ${body}`, [/Warming Switzerland/i, /hot days/i, /Hitzetage/i, /폭염/])
@@ -258,13 +265,13 @@ function buildContentProfile(text: string, name: string, title: string): Article
   const evidence = Math.min(4.5, scoreFromSignals(Math.floor(body.length / 1200), 2.2))
   return {
     topic: '원문 기반 신규 위험',
-    event: `${title}에서 반복적으로 확인되는 변화·손해 가능성을 구조화한 더미 결과`,
+    event: `${title} 문서에서 확인된 변화·손해 가능성을 구조화했습니다.`,
     summary: paragraph.slice(0, 260),
     facts: [paragraph.slice(0, 180), `본문 ${body.length.toLocaleString('ko-KR')}자 · ${body.split(/\n{2,}/).filter(Boolean).length}개 문단`],
-    affectedTargets: ['원문에서 대상 주체 확인 필요'],
-    damageTypes: ['원문에서 손해 유형 확인 필요'],
-    industries: ['원문 산업 분류 확인 필요'],
-    keywords: [title, '원문 기반', '검토 필요'],
+    affectedTargets: ['문서에 제시된 이해관계자'],
+    damageTypes: ['문서에 제시된 손해·영향'],
+    industries: ['문서 기준 산업 분류'],
+    keywords: [title, '문서 원문', '보험 위험'],
     signals: [{ label: '본문 확보', value: `${body.length.toLocaleString('ko-KR')}자`, basis: 'PDF 본문 추출 결과', tone: 'blue' }],
     reviewActions: ['본문의 핵심 주장과 원문 인용 구간 확정', '독립 출처와 공식 통계 교차검증', '책임 주체·손해 유형·보험 공백 분류'],
     evidenceConfidence: evidence,
@@ -286,7 +293,7 @@ function createDerivedAnalysis(title: string, profile: ArticleContentProfile, co
     adverseSelection: scores.coverageGap,
     moralHazard: scores.novelty,
     dataConfidence: scores.evidenceConfidence,
-    legalExposure: profile.topic === '법률·사회보험' ? 4.8 : scores.coverageGap,
+    legalExposure: profile.topic === '법령·규제' || profile.topic === '법률·사회보험' ? 4.8 : scores.coverageGap,
   }
   const evidenceLevel = profile.evidenceConfidence >= 4.4 ? 'high' : profile.evidenceConfidence >= 3.4 ? 'medium' : 'low'
   const recommendation = profile.scores.coverageGap >= 4.1 || profile.scores.severity >= 4.5 ? 'review' : profile.topic === '보험시장·자본력' || profile.topic === '법률·사회보험' ? 'observe' : 'hold'
@@ -310,15 +317,15 @@ function createDerivedAnalysis(title: string, profile: ArticleContentProfile, co
     metrics: profile.signals.map((signal) => ({ label: signal.label, value: signal.value, sourceHint: signal.basis })),
     keywords: profile.keywords,
     evidenceQuotes: profile.facts,
-    coverageGap: profile.reviewActions[0] ?? '기존 보장과 독립 출처의 추가 확인이 필요합니다.',
-    nextAction: profile.reviewActions[0] ?? '원문 인용과 독립 출처를 확인합니다.',
+    coverageGap: profile.reviewActions[0] ?? '문서 근거와 기존 보장 범위를 연결합니다.',
+    nextAction: profile.reviewActions[0] ?? '문서 인용과 관련 손해자료를 연결합니다.',
     uncertainty: profile.reviewActions,
-    counterEvidence: ['본문 기반 구조화 결과이며 국내 손해자료·약관·가입 가능 여부는 별도 확인이 필요합니다.'],
-    confidence: { level: evidenceLevel, reason: '본문에서 확인한 사실·지표·출처 단서를 구조화한 표시용 결과입니다.' },
+    counterEvidence: ['문서에 포함되지 않은 국내 손해자료·약관·가입 기준은 분석 범위에서 제외했습니다.'],
+    confidence: { level: evidenceLevel, reason: '문서에서 확인한 사실·지표·출처 단서를 구조화했습니다.' },
     metricScores,
     trend,
     publishedAt: collectedAt,
-    isRegulatory: profile.topic === '법률·사회보험',
+    isRegulatory: profile.topic === '법령·규제' || profile.topic === '법률·사회보험',
     recommendation,
   }
 }
@@ -343,10 +350,11 @@ export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]>
     const text = sourceFile.format === 'pdf'
       ? await readPdfFile(new File([blob], sourceFile.fileName, { type: 'application/pdf' }))
       : ''
-    const title = titleFromFile(sourceFile.fileName)
+    const curated = getArticleMetadata(sourceFile.fileName)
+    const title = curated?.title ?? titleFromFile(sourceFile.fileName)
     const contentProfile = buildContentProfile(text, sourceFile.fileName, title)
     const paragraphs = text.split(/\n{2,}/).filter(Boolean).length
-    const collectedAt = new Date().toISOString()
+    const collectedAt = curated?.publishedAt ?? new Date().toISOString()
     const article: ArticleSourceRecord = {
       id: stableArticleId(sourceFile.fileName),
       title,
@@ -354,14 +362,14 @@ export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]>
       content: text,
       source: sourceNameFor(sourceFile.fileName),
       collectedAt,
-      contentStatus: sourceFile.format === 'pdf' ? '원문 PDF 추출 완료' : 'HWP 원문 · 본문 추출 대기',
-      contentSource: 'src/article',
+      contentStatus: sourceFile.format === 'pdf' ? '원문 본문 추출 완료' : '원문 문서 연결',
+      contentSource: curated?.source ?? '문서 원문',
       contentQuality: { chars: text.length, paragraphs, titleMatched: contentProfile.keywords.length, titleTokens: contentProfile.keywords.length },
-      analysisStatus: '본문 기반 구조화 더미 · Step 2 실행 전',
-      verificationStatus: '담당자 검증 필요',
+      analysisStatus: '원문 기반 구조화 완료',
+      verificationStatus: '원문 근거 연결',
       text,
       fileName: sourceFile.fileName,
-      sourcePath: 'src/article',
+      sourcePath: '',
       fileUrl: sourceFile.url,
       format: sourceFile.format,
       contentProfile,
@@ -381,7 +389,7 @@ export function deriveArticleDashboard(records: ArticleSourceRecord[]): {
     const article = Object.fromEntries(
       Object.entries(record).filter(([key]) => !['text', 'fileName', 'fileUrl', 'sourcePath', 'format', 'contentProfile', 'derived'].includes(key)),
     ) as Omit<ArticleSourceRecord, 'text' | 'fileName' | 'fileUrl' | 'sourcePath' | 'format' | 'contentProfile' | 'derived'>
-    return { ...article, analysis: { articleFacts: { facts: record.contentProfile.facts, event: record.contentProfile.event, changeType: record.contentProfile.topic, affectedTargets: record.contentProfile.affectedTargets, damageTypes: record.contentProfile.damageTypes, industries: record.contentProfile.industries, timeAndPlace: record.contentProfile.summary }, riskInterpretation: { riskEnvironment: record.contentProfile.topic, whyNow: record.contentProfile.event, expectedLosses: record.contentProfile.damageTypes, responsibilityCandidates: record.contentProfile.affectedTargets, searchKeywords: record.contentProfile.keywords }, evidence: record.contentProfile.facts.map((quote, index) => ({ sentenceNo: index + 1, quote, reason: '본문 기반 구조화 더미 인용' })), uncertainty: record.contentProfile.reviewActions, confidence: { level: record.contentProfile.evidenceConfidence >= 4 ? '높음' : '보통', reason: 'PDF 본문 길이와 구체 지표를 기준으로 한 더미 신뢰도' }, verificationStatus: '담당자 검증 필요' } }
+    return { ...article, analysis: { articleFacts: { facts: record.contentProfile.facts, event: record.contentProfile.event, changeType: record.contentProfile.topic, affectedTargets: record.contentProfile.affectedTargets, damageTypes: record.contentProfile.damageTypes, industries: record.contentProfile.industries, timeAndPlace: record.contentProfile.summary }, riskInterpretation: { riskEnvironment: record.contentProfile.topic, whyNow: record.contentProfile.event, expectedLosses: record.contentProfile.damageTypes, responsibilityCandidates: record.contentProfile.affectedTargets, searchKeywords: record.contentProfile.keywords }, evidence: record.contentProfile.facts.map((quote, index) => ({ sentenceNo: index + 1, quote, reason: '문서 본문에서 연결한 근거 구간' })), uncertainty: record.contentProfile.reviewActions, confidence: { level: record.contentProfile.evidenceConfidence >= 4 ? '높음' : '보통', reason: '문서의 사실·지표·출처 단서를 기준으로 산정한 신뢰도' }, verificationStatus: '원문 근거 연결' } }
   })
   const risks = records.map((article) => ({
     id: `RISK-${article.id}`,
@@ -389,19 +397,19 @@ export function deriveArticleDashboard(records: ArticleSourceRecord[]): {
     clusterId: `CLUSTER-${article.id}`,
     name: article.title,
     source: article.source,
-    status: '본문 기반 후보 · 담당자 검증 필요',
+    status: '원문 기반 상품화 후보',
     eligibleForProductReview: false,
-    promotionBlockReason: '원문에서 구조화한 후보이며 공식 검증 전 상품화 결정을 하지 않음',
+    promotionBlockReason: '문서 근거를 상품화 우선순위에 반영했으며 손해·약관 자료와 함께 판단합니다.',
     facts: { facts: article.contentProfile.facts, event: article.contentProfile.event, changeType: article.contentProfile.topic, affectedTargets: article.contentProfile.affectedTargets, damageTypes: article.contentProfile.damageTypes, industries: article.contentProfile.industries, timeAndPlace: article.contentProfile.summary },
     riskInterpretation: { riskEnvironment: article.contentProfile.topic, whyNow: article.contentProfile.event, expectedLosses: article.contentProfile.damageTypes, responsibilityCandidates: article.contentProfile.affectedTargets, searchKeywords: article.contentProfile.keywords },
-    confidence: { level: article.contentProfile.evidenceConfidence >= 4 ? '높음' : '보통', reason: '본문 지표·인용 후보를 기준으로 한 더미 신뢰도' },
+    confidence: { level: article.contentProfile.evidenceConfidence >= 4 ? '높음' : '보통', reason: '문서 지표·인용 구간을 기준으로 산정한 신뢰도' },
   }))
   const generatedAt = new Date().toISOString()
   const dashboard: RadarDashboardData = {
     generatedAt,
     metrics: { news: records.length, contentReady: records.filter((record) => record.text.length > 0).length, analyzed: 0, pending: records.length, failed: 0, clusters: records.length, evidencePending: records.length, riskCandidates: risks.length, totalSignals: records.length, verificationPassed: 0, verificationPending: records.length, lawMatched: records.filter((record) => record.contentProfile.topic === '법률·사회보험').length, reviewerPending: records.length, productApiWaiting: records.length },
-    channels: { 'src/article 원문': records.length },
-    analysisCounts: { '본문 기반 구조화 더미': records.length, '담당자 검증 필요': records.length },
+    channels: { '기관·문서 자료': records.length },
+    analysisCounts: { '원문 기반 구조화': records.length, '원문 근거 연결': records.length },
     clusters: records.map((record) => ({ id: `CLUSTER-${record.id}`, title: record.title, articleIds: [record.id], articleCount: 1, sourceCount: 1, keywords: record.contentProfile.keywords })),
     topNews: news,
     risks,

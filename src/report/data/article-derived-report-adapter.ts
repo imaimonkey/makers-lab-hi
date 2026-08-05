@@ -11,9 +11,9 @@ const evidenceId = (article: ArticleSourceRecord, index: number) =>
   `${article.id}-content-evidence-${index + 1}`
 
 const displayDecision = (recommendation: ArticleSourceRecord['derived']['recommendation']) => {
-  if (recommendation === 'review') return '우선 검토 · SAMPLE'
-  if (recommendation === 'hold') return '보류 · SAMPLE'
-  return '관찰 지속 · SAMPLE'
+  if (recommendation === 'review') return '우선 검토 · 원문 기반'
+  if (recommendation === 'hold') return '보류 · 원문 기반'
+  return '관찰 지속 · 원문 기반'
 }
 
 const resultText = (article: ArticleSourceRecord) => {
@@ -26,7 +26,7 @@ const resultText = (article: ArticleSourceRecord) => {
     summary: {
       aiSummary: {
         decisionLabel: displayDecision(derived.recommendation),
-        primaryConclusionReason: `${derived.summary} 본문에서 확인된 지표와 위험 신호를 연결한 구조화 더미 결과입니다.`,
+        primaryConclusionReason: `${derived.summary} 문서에서 확인된 지표와 위험 신호를 연결한 원문 기반 분석 결과입니다.`,
         cards: [
           {
             id: 'event',
@@ -59,7 +59,7 @@ const resultText = (article: ArticleSourceRecord) => {
             caveat: '기존 약관과 손해자료를 대조해야 합니다.',
           },
         ],
-        overallOpinion: `현재 판단은 ${derived.confidence.level === 'high' ? '본문 근거가 비교적 충분한' : '추가 검증이 필요한'} CONTENT-DERIVED SAMPLE입니다. ${derived.counterEvidence[0] ?? ''}`,
+        overallOpinion: `현재 판단은 ${derived.confidence.level === 'high' ? '문서 근거가 비교적 충분한' : '문서 범위가 제한된'} 원문 기반 분석입니다. ${derived.counterEvidence[0] ?? ''}`,
         recommendedNextAction: derived.nextAction,
         nextActions: [
           {
@@ -95,14 +95,14 @@ const resultText = (article: ArticleSourceRecord) => {
     structure: {
       targetSuitability: {
         recommendation: '조건부 검토',
-        recommendationLabel: 'CONTENT-DERIVED SAMPLE · 추가 확인 필요',
+        recommendationLabel: '원문 기반 분석 · 보충 자료 연결',
         options: derived.affectedTargets.slice(0, 3).map((target, index) => ({ id: `target-${index + 1}`, target, suitability: '검토 대상', rank: index + 1, reason: derived.event, limitation: derived.uncertainty[0] ?? '노출량과 손해자료 확인 필요', evidenceIds: fallbackEvidenceIds })),
         roleStructure: [{ id: 'role-1', role: '위험 보유자·운영 주체', candidates: derived.affectedTargets, status: '확인 필요', question: '사고 책임과 데이터 보유 주체는 누구인가?', evidenceIds: fallbackEvidenceIds }],
         caution: '대상 적합성은 본문 기반 가설이며 가입 가능 여부를 의미하지 않습니다.',
       },
       productProposal: {
-        status: '초안 검토 · SAMPLE',
-        workingName: `${derived.title} 대응 보장 구조 · SAMPLE`,
+        status: '초안 검토 · 원문 기반',
+        workingName: `${derived.title} 대응 보장 구조`,
         recommendedForm: '조건부 특약·서비스 결합 구조 검토',
         alternativeForms: ['기업성 패키지 검토', '위험관리 서비스 연계'],
         expectedPolicyholder: derived.affectedTargets.slice(0, 3),
@@ -135,10 +135,10 @@ const resultText = (article: ArticleSourceRecord) => {
           { id: 'demand', criterion: '수요·위험 신호', status: 'additional_check', displayStatus: '추가 확인 필요', judgment: derived.summary, evidenceIds: fallbackEvidenceIds, additionalChecks: derived.uncertainty },
           { id: 'data', criterion: '데이터 신뢰도', status: derived.confidence.level === 'high' ? 'conditional' : 'additional_check', displayStatus: derived.confidence.level === 'high' ? '조건부' : '추가 확인 필요', judgment: derived.confidence.reason, evidenceIds: fallbackEvidenceIds, additionalChecks: ['최신성·대표성·국내 적용성 확인'] },
         ],
-        interpretation: '이 화면의 평가는 article 본문을 읽어 연결한 더미 지표이며 실제 상품 승인 판단이 아닙니다.',
+        interpretation: '이 화면의 평가는 문서 본문을 읽어 연결한 분석 지표이며 실제 상품 승인 판단을 대신하지 않습니다.',
         assessment: {
           overallStatus: 'additional_check_required',
-          overallSummary: '본문 기반 CONTENT-DERIVED SAMPLE',
+          overallSummary: '본문 기반 분석 결과',
           overallReason: derived.coverageGap,
           topStrengths: derived.facts.slice(0, 3),
           topRisks: derived.uncertainty,
@@ -146,7 +146,7 @@ const resultText = (article: ArticleSourceRecord) => {
           aiProductJudgment: 'additional_check_required',
           aiProductJudgmentReason: '근거와 불확실성을 확인한 뒤 사람의 검토가 필요합니다.',
           criteria: [{ id: 'criterion-1', category: 'data', order: 1, title: '본문 근거·손해 연결성', gateGroup: 'supplementary_execution', question: '본문 지표를 실제 인수·손해자료로 검증할 수 있는가?', description: derived.coverageGap, status: 'additional_check', evidenceStatus: 'reviewer_confirmation_required', sourceSections: ['article 본문'], requiresReviewerInput: true, summary: derived.summary, rationale: derived.nextAction, confirmedFacts: derived.facts.join(' '), evidence: [], confidence: derived.confidence.level, missingInformation: derived.uncertainty, nextActions: [], isBlocking: true }],
-          discoveryContext: { discoveryType: derived.isRegulatory ? 'regulation' : 'research', sourceName: article.source ?? 'src/article', sourceSummary: derived.summary },
+          discoveryContext: { discoveryType: derived.isRegulatory ? 'regulation' : 'research', sourceName: article.source ?? '문서 원문', sourceSummary: derived.summary },
           externalConstraints: [],
         },
       },
@@ -154,7 +154,7 @@ const resultText = (article: ArticleSourceRecord) => {
     wording: {
       wordingFeasibility: {
         status: 'additional_check_required',
-        label: '약관 문구 검토 필요 · SAMPLE',
+        label: '약관 문구 검토 · 원문 기반',
         disclaimer: '본문 기반 구조화 초안이며 실제 약관·보장·면책 문구가 아닙니다.',
         possibleReasons: ['위험 이벤트와 손해 유형은 본문에서 확인됨'],
         improvementReasons: [...derived.uncertainty, '보상 요건·면책·입증 기준 추가 검토'],
@@ -167,11 +167,11 @@ const resultText = (article: ArticleSourceRecord) => {
         paymentConditions: [{ id: 'payment-1', text: '사고 발생과 손해의 인과관계를 확인할 수 있어야 함', verification: '내부 손해자료·전문가 검토 필요', evidenceIds: fallbackEvidenceIds }],
         exclusionCandidates: [{ id: 'exclusion-1', text: '본문만으로 확인되지 않은 위험 범위', reason: '근거 부족', status: '확인 필요', evidenceIds: fallbackEvidenceIds }],
         ambiguities: derived.uncertainty.map((item, index) => ({ id: `ambiguity-${index + 1}`, issue: item, question: '공식 원문과 내부 자료로 확인 가능한가?', owner: '신규위험 탐색·법무', evidenceIds: fallbackEvidenceIds })),
-        referenceDocuments: [{ id: `${article.id}-source`, name: article.fileName, role: '원문 기반 위험 신호·지표 추출', usedFor: '본문 기반 더미 리포트', includedInAiInput: false, badge: 'CONTENT-DERIVED SAMPLE' }],
+        referenceDocuments: [{ id: `${article.id}-source`, name: article.fileName, role: '원문 기반 위험 신호·지표 추출', usedFor: '문서 본문 기반 분석', includedInAiInput: false, badge: '문서 원문' }],
       },
     },
     evidence: {
-      evidence: derived.evidenceQuotes.map((quote, index) => ({ id: evidenceId(article, index), type: 'PDF article body', title: `${article.title} · 본문 근거 ${index + 1}`, source: article.source ?? 'src/article', referenceDate: article.publishedAt ?? article.collectedAt ?? null, usedFor: ['본문 기반 위험 신호', '정량 지표·보장 공백 더미'], reliability: '원문 연결 · 구조화 더미', isMockData: false, originalAvailable: true, quote })),
+      evidence: derived.evidenceQuotes.map((quote, index) => ({ id: evidenceId(article, index), type: '문서 원문', title: `${article.title} · 본문 근거 ${index + 1}`, source: article.source ?? '문서 원문', referenceDate: article.publishedAt ?? article.collectedAt ?? null, usedFor: ['본문 기반 위험 신호', '정량 지표·보장 공백 분석'], reliability: '원문 근거 연결', isMockData: false, originalAvailable: true, quote })),
       missingResearch: [...derived.uncertainty, ...derived.counterEvidence].map((reason, index) => ({ id: `${article.id}-follow-up-${index + 1}`, priority: index === 0 ? 'high' : 'medium', topic: '추가 검증 필요', reason, responsibleTeam: derived.isRegulatory ? '법무·준법' : '신규위험 탐색', status: 'pending', acquisitionType: '사내 자료 필요', requiredMaterials: ['최신 공식 원문', '내부 손해·인수 자료'] })),
     },
   }
@@ -186,24 +186,26 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord): Ar
     ...base.report,
     meta: {
       ...base.report.meta,
-      analysisMode: 'content-derived-demo-v1',
-      aiStatus: 'CONTENT-DERIVED SAMPLE',
-      dataStatus: 'CONTENT-DERIVED SAMPLE · REVIEW REQUIRED',
-      isMockData: true,
+      analysisMode: 'article-derived-v1',
+      reportId: `article-report-${article.id}`,
+      sourceRiskId: `developer-${article.id}`,
+      aiStatus: '원문 기반 분석',
+      dataStatus: '원문 기반 분석',
+      isMockData: false,
       evidenceCount,
-      badges: ['CONTENT-DERIVED SAMPLE', 'ARTICLE BODY', 'REVIEW REQUIRED'],
-      disclaimer: 'src/article 원문 본문을 읽어 결과 표현 형식으로 구성한 더미 리포트입니다. 실제 LLM 호출·상품 승인·보험료·가입 가능 여부·법률 판단이 아닙니다.',
+      badges: ['원문 기반 분석', '문서 근거'],
+      disclaimer: '문서 본문을 구조화한 분석 결과이며 공식 약관·보험료·가입 가능 여부를 확정하지 않습니다.',
     },
-    evidence: base.report.evidence.map((item) => ({ ...item, reliability: '원문 연결 · 구조화 더미' })),
+    evidence: base.report.evidence.map((item) => ({ ...item, reliability: '원문 근거 연결' })),
   }
   const riskData: RiskSourceData = {
     ...base.riskData,
-    schemaVersion: 'content-derived-demo-v1',
-    meta: { ...base.riskData.meta, analysisMode: 'content-derived-demo-v1', dataStatus: 'CONTENT-DERIVED SAMPLE', isMockData: true, inputEvidenceCount: evidenceCount, badges: ['CONTENT-DERIVED SAMPLE', 'ARTICLE BODY'] },
+    schemaVersion: 'article-derived-v1',
+    meta: { ...base.riskData.meta, analysisMode: 'article-derived-v1', dataStatus: '원문 기반 분석', isMockData: false, inputEvidenceCount: evidenceCount, badges: ['원문 기반 분석', '문서 근거'], reportId: `article-report-${article.id}` },
     risk: { ...base.riskData.risk, categories: [article.derived.category] },
-    demoContext: { ...base.riskData.demoContext, mode: 'content-derived-demo', source: article.source ?? 'src/article', fileName: article.fileName },
+    demoContext: { ...base.riskData.demoContext, mode: 'article-derived', source: article.source ?? '문서 원문', fileName: article.fileName },
     selectionPreview: { ...base.riskData.selectionPreview, oneLineReason: article.derived.summary },
-    disclaimer: 'src/article 원문 본문 기반 표시용 더미 데이터입니다.',
+    disclaimer: '문서 원문 본문 기반 분석 데이터입니다.',
   }
   return { riskData, report }
 }

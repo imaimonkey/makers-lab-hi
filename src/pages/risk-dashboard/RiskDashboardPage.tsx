@@ -1,22 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { browserReportListPreferences, type ReportListPreferences } from '../../report/services/report-list-preferences'
 import { AppIcon } from '../../shared/components/AppIcon'
 import {
-  riskRadarCandidates,
-  riskRadarKpis,
-  riskRadarKeywords,
-  globalInsuranceInsights,
-  exclusiveRights,
-  marketUpdates,
-  recentInsuranceProducts,
-  riskRadarPriorityRisks,
-  riskRadarRegulations,
-  riskRadarScraps,
-  riskRadarSourceShares,
-  riskRadarTopPriority,
+  riskRadarCandidates as staticRiskRadarCandidates,
+  riskRadarKpis as staticRiskRadarKpis,
+  riskRadarKeywords as staticRiskRadarKeywords,
+  globalInsuranceInsights as staticGlobalInsuranceInsights,
+  exclusiveRights as staticExclusiveRights,
+  marketUpdates as staticMarketUpdates,
+  recentInsuranceProducts as staticRecentInsuranceProducts,
+  riskRadarPriorityRisks as staticRiskRadarPriorityRisks,
+  riskRadarRegulations as staticRiskRadarRegulations,
+  riskRadarScraps as staticRiskRadarScraps,
+  riskRadarSourceShares as staticRiskRadarSourceShares,
+  riskRadarTopPriority as staticRiskRadarTopPriority,
 } from '../../features/risk-dashboard/riskRadarContent'
 import type { ExclusiveRight, GlobalInsuranceInsight, MarketUpdate, RecentInsuranceProduct, RiskRadarPriorityRisk } from '../../features/risk-dashboard/riskRadarContent'
+import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
+import { buildLocalArticleRadarView } from '../../features/risk-dashboard/localArticleRadarView'
 import './riskDashboardPage.css'
 
 function buildDeveloperPath(path: string, developerMode: boolean) {
@@ -240,6 +242,25 @@ function GlobalInsightItem({ item }: { item: GlobalInsuranceInsight }) {
 export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'developer' }) {
   const developerMode = mode === 'developer'
   const navigate = useNavigate()
+  const [articleView, setArticleView] = useState(() => buildLocalArticleRadarView([]))
+  useEffect(() => {
+    let cancelled = false
+    void loadArticleSourceRecords().then((records) => { if (!cancelled) setArticleView(buildLocalArticleRadarView(records)) }).catch((error) => console.error(error))
+    return () => { cancelled = true }
+  }, [])
+  const riskRadarKpis = articleView.kpis.length ? articleView.kpis : staticRiskRadarKpis
+  const riskRadarCandidates = articleView.candidates.length ? articleView.candidates : staticRiskRadarCandidates
+  const riskRadarKeywords = articleView.keywords.length ? articleView.keywords : staticRiskRadarKeywords
+  const globalInsuranceInsights = articleView.globalInsights.length ? articleView.globalInsights : staticGlobalInsuranceInsights
+  const exclusiveRights = articleView.exclusiveRights.length ? articleView.exclusiveRights : staticExclusiveRights
+  const marketUpdates = articleView.marketUpdates.length ? articleView.marketUpdates : staticMarketUpdates
+  const recentInsuranceProducts = articleView.recentProducts.length ? articleView.recentProducts : staticRecentInsuranceProducts
+  const riskRadarPriorityRisks = articleView.priorityRisks.length ? articleView.priorityRisks : staticRiskRadarPriorityRisks
+  const riskRadarRegulations = articleView.regulations.length ? articleView.regulations : staticRiskRadarRegulations
+  const riskRadarScraps = articleView.scraps.length ? articleView.scraps : staticRiskRadarScraps
+  const riskRadarSourceShares = articleView.sourceShares.length ? articleView.sourceShares : staticRiskRadarSourceShares
+  const riskRadarTopPriority = articleView.priorityRisks.length ? articleView.topPriority : staticRiskRadarTopPriority
+  const sourceShareLabel = riskRadarSourceShares.map((source) => `${source.label} ${source.share}%`).join(', ')
   const [scrapPreferences, setScrapPreferences] = useState<ReportListPreferences>(() => browserReportListPreferences.load())
   const [priorityIndex, setPriorityIndex] = useState(0)
   const handlePreviousPriority = () => setPriorityIndex((current) => (current - 1 + riskRadarPriorityRisks.length) % riskRadarPriorityRisks.length)
@@ -304,7 +325,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
                     <span className="bar-rank">{index + 1}</span>
                     <div className="bar-name-wrap">
                       <div className="bar-name">{risk.title}</div>
-                      <span className="grade">시장성 {risk.marketGrade}</span>
+                      <span className="grade">시장성 {risk.marketGrade}{risk.category ? ` · ${risk.category}` : ''}</span>
                     </div>
                     <div className="bar-track"><div className={`bar-fill${index === 0 ? ' is-top' : ''}`} style={{ width: `${(risk.score / 5) * 100}%` }} /></div>
                     <div className="bar-score">{risk.score.toFixed(1)}</div>
@@ -388,7 +409,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
 
         <article className="panel" id="regulation-panel">
           <div className="panel-head">
-            <div><h2 className="panel-title">주요 법·규제 변화</h2><div className="panel-desc">최근 30일 동안 확인한 법·규제 연계 이슈 3건입니다.</div></div>
+            <div><h2 className="panel-title">주요 법·규제 변화</h2><div className="panel-desc">연결 문서에서 법률명 기준으로 묶은 법·규제 연계 이슈 {riskRadarRegulations.length}건입니다.</div></div>
             <Link className="text-link" to={buildCatalogFilterPath('법·규제 변화', developerMode, 'legal')}>전체 보기 →</Link>
           </div>
           <div className="event-list">
@@ -509,8 +530,8 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
           <div className="source-body">
             <div className="source-visual">
               <div className="donut-wrap">
-                <div className="source-donut" role="img" aria-label="해외 보험·재보험 30%, 보험 전문연구 25%, 법령·감독자료 35%, 뉴스·공식자료 10%">
-                  <div className="donut-center">분석 자료<strong>4개</strong>유형</div>
+                <div className="source-donut" role="img" aria-label={sourceShareLabel}>
+                  <div className="donut-center">분석 자료<strong>{riskRadarSourceShares.length}개</strong>유형</div>
                 </div>
                 <div className="donut-caption">위험 후보 도출에 활용된<br />자료 유형별 구성비</div>
               </div>
