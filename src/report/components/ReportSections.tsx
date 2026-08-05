@@ -19,7 +19,7 @@ import { ArrowUpRight, ChevronDown, CircleChevronDown, CircleChevronUp } from 'l
 import { createBriefingContent } from '../services/briefing-content'
 import { pushPreservingHistoryState, type ReportNavigation } from '../services/browser-history'
 import { WORDING_ANALYSIS_RISK } from '../data/wording-review-mock'
-import { aiFullPolicyDraftMock, buildFullPolicyCopyText, type PolicyArticle, type PolicyArticleItem, type SpecialClause } from '../data/aiFullPolicyDraftMock'
+import { aiFullPolicyDraftMock, buildFullPolicyCopyText, type FullPolicyDraft, type PolicyArticle, type PolicyArticleItem, type SpecialClause } from '../data/aiFullPolicyDraftMock'
 import { FEASIBILITY_PML_DATA, type FeasibilityPmlScenarioId } from '../data/product-feasibility-mock'
 import { PROPOSAL_CALCULATION_EVIDENCE, PROPOSAL_CLAIM_FLOW_DISPLAY, PROPOSAL_CONTRACT_ROLE_SUMMARY, PROPOSAL_COVERAGE_SUMMARY, PROPOSAL_DECISIONS, PROPOSAL_HERO_FACTS, PROPOSAL_PRICING_SCENARIO_OUTPUTS, PROPOSAL_RECOMMENDATION_DETAIL_BLOCKS, PROPOSAL_RECOMMENDATION_DISPLAY, PROPOSAL_UNDERWRITING_AI_SUMMARY, PROPOSAL_UNDERWRITING_DISPLAY, type ProposalPricingScenarioOutput } from '../data/product-proposal-mock'
 import { createFinancialEstimate, PRODUCT_FINANCIAL_ESTIMATE, type EstimateConfidence, type FinancialEstimate } from '../data/financial-estimate-mock'
@@ -60,6 +60,7 @@ type ReportView = {
     reportId?: string
     sourceRiskId: string
     sourceAsOf?: string | null
+    analysisMode?: string
     title: string
     riskTitle?: string
     riskCategories?: string[]
@@ -70,6 +71,12 @@ type ReportView = {
     dataStatus?: string
     badges?: string[]
     disclaimer?: string
+    articleTopic?: string
+    relatedDocumentCount?: number
+    relatedDocumentTitles?: string[]
+    marketScore?: number
+    pmlScore?: number
+    productizationScore?: number
   }
   aiSummary: {
     decisionLabel?: string
@@ -296,6 +303,8 @@ function displayReportTitle(title: string) {
   return riskTitle || title
 }
 
+const isArticleDerivedReport = (report: Pick<ReportView, 'meta'>) => report.meta.analysisMode === 'article-derived-v1'
+
 function displayDate(value?: string | null, includeTime = false) {
   if (!value) return '확인 필요'
   const date = new Date(value)
@@ -437,6 +446,7 @@ function ReportHeader({
 
 function createProductReviewSummaryInsights(report: ReportView) {
   const copy = PRODUCT_REVIEW_SUMMARY_COPY
+  const articleReport = isArticleDerivedReport(report)
   const criteria = report.productFeasibility.assessment?.criteria ?? []
   const mandatoryCriteria = criteria.filter((criterion) => criterion.gateGroup === 'insurance_gate')
   const insuranceTotal = mandatoryCriteria.length || copy.criteria.groups[0].criterionIds.length
@@ -450,10 +460,19 @@ function createProductReviewSummaryInsights(report: ReportView) {
   })
   const marketGrade = financialEstimate.marketGrade
   const marketScore = financialEstimate.marketScore
-  const marketBullets = copy.coreJudgments.marketability.summaryBullets
-  const insuranceBullets = copy.coreJudgments.insurability.summaryBullets
+  const articleCards = report.aiSummary.cards ?? []
+  const articleCard = (id: string) => articleCards.find((card) => card.id === id)
+  const articleScore = typeof report.meta.marketScore === 'number' ? `${report.meta.marketScore.toFixed(1)}/5점` : '확인 필요'
+  const marketBullets = articleReport
+    ? [articleCard('event')?.detail, articleCard('event')?.shortReason, articleCard('metrics')?.detail].filter((item): item is string => Boolean(item?.trim())).slice(0, 3)
+    : copy.coreJudgments.marketability.summaryBullets
+  const insuranceBullets = articleReport
+    ? [articleCard('gap')?.result, ...criteria.slice(0, 2).map((criterion) => criterion.rationale)].filter((item): item is string => Boolean(item?.trim())).slice(0, 3)
+    : copy.coreJudgments.insurability.summaryBullets
   const noveltyCardBullets = noveltyAnalysis.summaryBullets?.length ? noveltyAnalysis.summaryBullets.slice(0, 2) : noveltyAnalysis.judgmentReasons.slice(0, 2)
-  const noveltyMetric = noveltyAnalysis.analysisStatus === 'completed'
+  const noveltyMetric = articleReport
+    ? `연결 원문 ${report.meta.relatedDocumentCount ?? 1}건 · 문서 기반`
+    : noveltyAnalysis.analysisStatus === 'completed'
     ? `${noveltyAnalysis.noveltyType ? noveltyAnalysisTypeLabels[noveltyAnalysis.noveltyType] : '검토'} · 통합보장 차별화 필요`
     : noveltyAnalysis.analysisStatus === 'pending'
       ? '최종 위험 후보 확정 후 분석 예정'
@@ -462,11 +481,17 @@ function createProductReviewSummaryInsights(report: ReportView) {
     ? criteria.map((criterion) => criterion.title)
     : copy.criteria.groups.flatMap((group) => group.itemLabels)
   const evaluationTotal = evaluationCriteriaNames.length
-  const coreJudgmentCards = [
-    { id: 'marketability', label: '보장 공백·시장성', title: copy.coreJudgments.marketability.result, metric: `시장성 ${marketScore}점 · ${marketGrade}등급`, bullets: marketBullets },
-    { id: 'insurability', label: '보험성', title: copy.coreJudgments.insurability.result, metric: `필수 기준 ${insuranceSatisfied}/${insuranceTotal} 충족`, bullets: insuranceBullets },
-    { id: 'similar-product', label: '국내 출시 현황·신규성', title: noveltyAnalysis.summaryCardHeadline ?? noveltyAnalysis.noveltyHeadline, metric: noveltyMetric, bullets: noveltyCardBullets },
-  ] as const
+  const coreJudgmentCards = articleReport
+    ? [
+      { id: 'marketability', label: '문서 근거·시장성', title: articleCard('event')?.result ?? '문서 기반 위험 이벤트', metric: `시장성 ${articleScore}`, bullets: marketBullets },
+      { id: 'insurability', label: '보험성·손해 구조', title: articleCard('gap')?.result ?? '보장 공백 분석', metric: `PML ${typeof report.meta.pmlScore === 'number' ? report.meta.pmlScore.toFixed(1) : '확인 필요'}/5점`, bullets: insuranceBullets },
+      { id: 'similar-product', label: '상품화 종합점수', title: report.meta.articleTopic ?? '문서 기반 상품화 검토', metric: `${typeof report.meta.productizationScore === 'number' ? report.meta.productizationScore.toFixed(1) : '확인 필요'}/5점`, bullets: noveltyCardBullets },
+    ] as const
+    : [
+      { id: 'marketability', label: '보장 공백·시장성', title: copy.coreJudgments.marketability.result, metric: `시장성 ${marketScore}점 · ${marketGrade}등급`, bullets: marketBullets },
+      { id: 'insurability', label: '보험성', title: copy.coreJudgments.insurability.result, metric: `필수 기준 ${insuranceSatisfied}/${insuranceTotal} 충족`, bullets: insuranceBullets },
+      { id: 'similar-product', label: '국내 출시 현황·신규성', title: noveltyAnalysis.summaryCardHeadline ?? noveltyAnalysis.noveltyHeadline, metric: noveltyMetric, bullets: noveltyCardBullets },
+    ] as const
   const evaluationStatuses = [
     { id: 'pass', label: '충족', count: evaluationTotal, tone: 'pass', names: evaluationCriteriaNames },
     { id: 'critical', label: '불충족', count: 0, tone: 'critical', names: [] as string[] },
@@ -752,25 +777,32 @@ function CoverageGapEvidenceContent({
   coverageRows,
   data,
   sourceGaps,
+  articleReport = false,
 }: {
   coverageRows: NonNullable<ReportView['riskGapSummary']['existingCoverageMap']>
   data: ReportView['riskGapSummary']
   sourceGaps: NonNullable<ReportView['riskGapSummary']['keyCoverageGaps']>
+  articleReport?: boolean
 }) {
+  const assumptions = articleReport
+    ? [...(data.affectedParties ?? []).slice(0, 3), ...(data.damageTypes ?? []).slice(0, 3).map((item) => item.name)]
+    : COVERAGE_GAP_ASSUMPTIONS
+  const limitation = articleReport ? '문서에서 확인된 위험 구조와 손해 유형을 연결한 결과이며, 실제 계약·손해자료 연결에 따라 공백의 범위가 달라질 수 있습니다.' : COVERAGE_GAP_LIMITATION
   return (
     <div className="report-page__coverage-gap-evidence-content">
       <div className="report-page__coverage-gap-evidence-grid">
         <article><h4>AI 판단 근거</h4><ul>{coverageRows.map((item, index) => <li key={item.id}><strong>{getCoverageDamageLabel(item, data, index)}</strong><span>{item.coverageName}의 부분 적용 가능성 및 조건부 공백</span></li>)}</ul></article>
-        <article><h4>적용 가정</h4><ul>{COVERAGE_GAP_ASSUMPTIONS.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul></article>
-        <article><h4>신뢰도와 한계</h4><p><strong>신뢰도 · 보통</strong></p><p>{COVERAGE_GAP_LIMITATION}</p><p>보정 대상 · 공백의 범위, 손해 유형별 중요도, 지급절차와 한도 공백의 우선순위</p></article>
+        <article><h4>적용 가정</h4><ul>{assumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul></article>
+        <article><h4>신뢰도와 한계</h4><p><strong>신뢰도 · {articleReport ? '문서 기반' : '보통'}</strong></p><p>{limitation}</p><p>{articleReport ? '보정 대상 · 원문 손해자료와 기존 보장 범위의 연결 수준' : '보정 대상 · 공백의 범위, 손해 유형별 중요도, 지급절차와 한도 공백의 우선순위'}</p></article>
       </div>
-      <p className="report-page__coverage-gap-source-count">기존 mock 핵심 공백 원자료 {sourceGaps.length}건과 현재 비교표 {coverageRows.length}건을 연결해 표시했습니다.</p>
+      <p className="report-page__coverage-gap-source-count">{articleReport ? `연결 원문 ${sourceGaps.length}건과 현재 비교표 ${coverageRows.length}건을 표시했습니다.` : `기존 핵심 공백 원자료 ${sourceGaps.length}건과 현재 비교표 ${coverageRows.length}건을 연결해 표시했습니다.`}</p>
     </div>
   )
 }
 
 function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: ReportView; onNavigateTab?: (id: ReportTabId) => void; printMode?: boolean }) {
   const data = report.riskGapSummary
+  const articleReport = isArticleDerivedReport(report)
   const coverageRows = data.existingCoverageMap ?? []
   const sourceGaps = data.keyCoverageGaps ?? []
   const damageCount = coverageRows.length || data.damageTypes?.length || 0
@@ -779,7 +811,23 @@ function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: 
   void onNavigateTab
   void printMode
 
-  const resultCardCopy = {
+  const resultCardCopy = articleReport ? {
+    'gap-status': {
+      title: '문서에서 확인된 보장 공백',
+      conclusion: coverageRows.length ? '비교 대상과 공백 연결됨' : '공백 자료 추가 필요',
+      bullets: [data.definition ?? '문서에서 확인된 위험 공백', ...(data.damageTypes ?? []).slice(0, 2).map((item) => item.name)],
+    },
+    'gap-significance': {
+      title: '상품개발 검토 가치',
+      conclusion: '문서 근거 기반 검토',
+      bullets: [(data.whyNow ?? [])[0] ?? '위험 변화 신호 확인', (data.affectedParties ?? []).slice(0, 2).join(' · ') || '영향 대상 확인 필요'],
+    },
+    'next-evaluation': {
+      title: '다음 분석 연결',
+      conclusion: '상품화 종합평가 연결',
+      bullets: ['시장성·PML·보험성 기준으로 평가', (report.productProposal.unresolvedItems ?? [])[0] ?? '원문 근거와 손해자료 연결'],
+    },
+  } : {
     'gap-status': {
       title: '보장 공백',
       conclusion: '보장 공백 확인됨',
@@ -797,7 +845,14 @@ function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: 
     },
   } as const
 
-  const productInputCopy = [
+  const productInputCopy = articleReport ? [
+    { title: '보장 대상과 책임 주체', description: report.productProposal.expectedInsured ?? '문서의 영향 대상과 손해 부담 주체를 연결합니다.' },
+    { title: '보장 사건의 인정 기준', description: report.productProposal.coveredEvent ?? '사고 발생과 손해의 인과관계를 확인하는 기준을 정합니다.' },
+    { title: '대상 손해와 PML', description: report.productProposal.coveredLoss ?? '손해 유형과 사고당·누적 손해를 분리해 산정합니다.' },
+    { title: '기존 보장과의 관계', description: report.productProposal.existingInsuranceRelationship ?? '기존 보험과 중복·공백을 대조합니다.' },
+    { title: '지급·산정 기준', description: report.productProposal.settlementDirection ?? '손해 정의와 입증 기준을 먼저 설계합니다.' },
+    { title: '자료 연결 범위', description: (report.productProposal.unresolvedItems ?? [])[0] ?? '원문 지표와 내부 손해자료의 연결 범위를 정합니다.' },
+  ] : [
     { title: '기존 보험금 차감 기준', description: '기존 보험에서 지급된 금액을 제외한 직접손해만 보장합니다.' },
     { title: '책임 확정 전 지급 여부', description: '책임 조사 중에도 보험금을 지급할지, 지급 조건과 한도를 정해야 합니다.' },
     { title: '사고당 보상한도', description: '다수 차량과 시설에 발생한 동시 손해를 하나의 사고 한도에 반영합니다.' },
@@ -812,21 +867,21 @@ function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: 
 
       <section className="report-page__coverage-gap-results" aria-labelledby="coverage-gap-results-title">
         <div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">COVERAGE GAP SUMMARY</p><h3 id="coverage-gap-results-title">보장 공백 분석 요약</h3></div></div>
-        <div className="report-page__coverage-gap-judgment-copy"><p>기존 보험 적용 후에도 <strong>직접손해 보장 공백이 확인되었습니다.</strong></p><p>보장 공백이 확인되어 상품개발 검토 가치가 있으며, 다음 단계에서 시장성·우연성·도덕적 해이·최대가능손해를 종합적으로 평가합니다.</p></div>
+        <div className="report-page__coverage-gap-judgment-copy"><p>{articleReport ? <strong>{data.definition ?? '문서에서 연결한 위험 공백'}</strong> : <>기존 보험 적용 후에도 <strong>직접손해 보장 공백이 확인되었습니다.</strong></>}</p><p>{articleReport ? (data.whyNow ?? []).slice(0, 2).join(' · ') : '보장 공백이 확인되어 상품개발 검토 가치가 있으며, 다음 단계에서 시장성·우연성·도덕적 해이·최대가능손해를 종합적으로 평가합니다.'}</p></div>
         <div className="report-page__coverage-gap-result-grid">{COVERAGE_GAP_RESULT_CARDS.map((card) => { const copy = resultCardCopy[card.id]; return <article className={`report-page__coverage-gap-result-card report-page__coverage-gap-result-card--${card.tone}`} key={card.id}><div className="report-page__coverage-gap-result-head"><h4>{copy.title}</h4></div><p className="report-page__coverage-gap-result-conclusion">{copy.conclusion}</p><ul>{copy.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></article> })}</div>
       </section>
 
-      <section className="report-page__coverage-gap-premise" aria-labelledby="coverage-gap-premise-title"><div className="report-page__coverage-gap-scope"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">ANALYSIS SCOPE</p><h3 id="coverage-gap-premise-title">분석 범위</h3></div></div><p>{COVERAGE_GAP_ANALYSIS_PREMISE}</p></div></section>
+      <section className="report-page__coverage-gap-premise" aria-labelledby="coverage-gap-premise-title"><div className="report-page__coverage-gap-scope"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">ANALYSIS SCOPE</p><h3 id="coverage-gap-premise-title">분석 범위</h3></div></div><p>{articleReport ? `${data.definition ?? '문서 기반 위험 공백'} · 영향 대상 ${(data.affectedParties ?? []).join(' · ')} · 손해 유형 ${(data.damageTypes ?? []).map((item) => item.name).join(' · ')}` : COVERAGE_GAP_ANALYSIS_PREMISE}</p></div></section>
 
       <section className="report-page__coverage-gap-comparison" aria-labelledby="coverage-gap-comparison-title">
         <div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">COMPARISON EVIDENCE</p><h3 id="coverage-gap-comparison-title">기존 보험의 보장 범위와 공백 비교표</h3></div></div>
-        <p className="report-page__coverage-gap-summary-line"><span>{damageCount}개 손해 유형 분석</span><span>· 기존 보험 부분 적용 {partialCoverageCount}건</span><strong>· 보장 공백 {gapCount}건</strong><span>· 주요 공백 유형 {COVERAGE_GAP_CATEGORY_SUMMARY.length}종</span></p>
+        <p className="report-page__coverage-gap-summary-line"><span>{damageCount}개 손해 유형 분석</span><span>· 기존 보험 부분 적용 {partialCoverageCount}건</span><strong>· 보장 공백 {gapCount}건</strong><span>· 주요 공백 유형 {articleReport ? (data.keyCoverageGaps?.length ?? 0) : COVERAGE_GAP_CATEGORY_SUMMARY.length}종</span></p>
         <div className="report-page__table-wrap"><table className="report-page__gap-table"><thead><tr><th><span aria-hidden="true">①</span> 발생 가능한 손해</th><th><span aria-hidden="true">②</span> 기존 보험의 보장 가능 범위</th><th><span aria-hidden="true">③</span> 보장 공백</th></tr></thead><tbody>{coverageRows.map((item, index) => <tr key={item.id}><td><strong>{getCoverageDamageLabel(item, data, index)}</strong></td><td><strong>{item.coverageName}</strong><p>{item.possibleCoverage}</p></td><td className="report-page__gap-cell"><ul className="report-page__gap-bullets">{getCoverageGapBullets(item).map((bullet) => <li key={`${bullet.prefix}-${bullet.emphasis ?? ''}`}>{bullet.prefix}{bullet.emphasis ? <strong>{bullet.emphasis}</strong> : null}{bullet.suffix ?? ''}</li>)}</ul></td></tr>)}</tbody></table></div>
       </section>
 
       <section className="report-page__coverage-gap-inputs" aria-labelledby="coverage-gap-inputs-title"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">PRODUCT DEVELOPMENT INPUTS</p><h3 id="coverage-gap-inputs-title">상품개발 시 정해야 할 사항</h3><p>보장 공백을 실제 상품에 반영하기 위해 아래 기준을 먼저 정해야 합니다.</p></div></div><ul>{COVERAGE_GAP_PRODUCT_INPUTS.slice(0, 6).map((input, index) => { const copy = productInputCopy[index] ?? { title: input.condition, description: input.reason }; return <li key={input.id}><span className="report-page__coverage-gap-input-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><div><div className="report-page__coverage-gap-input-title"><strong>{copy.title}</strong></div><p>{copy.description}</p></div></li> })}</ul></section>
 
-      <section className="report-page__coverage-gap-evidence-print-only" aria-labelledby="coverage-gap-evidence-print-title"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">REASONING & ASSUMPTIONS</p><h3 id="coverage-gap-evidence-print-title">분석 근거 및 적용 가정</h3></div></div><CoverageGapEvidenceContent coverageRows={coverageRows} data={data} sourceGaps={sourceGaps} /></section>
+      <section className="report-page__coverage-gap-evidence-print-only" aria-labelledby="coverage-gap-evidence-print-title"><div className="report-page__coverage-gap-section-heading"><div><p className="report-page__eyebrow">REASONING & ASSUMPTIONS</p><h3 id="coverage-gap-evidence-print-title">분석 근거 및 적용 가정</h3></div></div><CoverageGapEvidenceContent coverageRows={coverageRows} data={data} sourceGaps={sourceGaps} articleReport={articleReport} /></section>
     </section>
   )
 }
@@ -914,6 +969,9 @@ const NOVELTY_CRITERION_TITLE = '국내 출시 현황 및 차별화 가능성'
 const NOVELTY_CRITERION_DESCRIPTION = '국내 출시 현황을 확인하고, 기존 상품과 구분되는 보장 공백·차별화 요소가 있는지 검토합니다.'
 const isNoveltyCriterion = (criterion: CommercializationCriterion): boolean => criterion.id === 'actual_market_demand' || /실제 상품화|국내 출시|신규성/.test(criterion.title)
 const feasibilityCriterionDisplay = (criterion: CommercializationCriterion, noveltyAnalysis?: NoveltyAnalysis): FeasibilityCriterionDisplay => {
+  if (criterion.sourceSections?.includes('article')) {
+    return { title: criterion.title, description: criterion.description || compactCriterionText(criterionSummary(criterion), 140) }
+  }
   if (isNoveltyCriterion(criterion)) {
     return { title: NOVELTY_CRITERION_TITLE, description: noveltyAnalysis?.noveltySummary || NOVELTY_CRITERION_DESCRIPTION }
   }
@@ -1155,6 +1213,7 @@ function FeasibilityCriterionDetail({ criterion, onNavigateTab }: { criterion: C
 
 function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCriterionId, onOpenCriterion, onNavigateTab, printMode = false, noveltyAccordionRequest, onNoveltyAccordionRequestHandled }: { report: ReportView; openCriterionId?: string | null; onOpenCriterion?: (id: string | null) => void; onNavigateTab?: (id: ReportTabId) => void; printMode?: boolean; noveltyAccordionRequest?: NoveltyAccordionKey | null; onNoveltyAccordionRequestHandled?: () => void }) {
   const assessment = report.productFeasibility.assessment
+  const articleReport = isArticleDerivedReport(report)
   const criteria = assessment?.criteria ?? []
   const noveltyAnalysis = normalizeNoveltyAnalysis(report.productProposal.noveltyAnalysis)
   const [internalOpenCriterionId, setInternalOpenCriterionId] = useState<string | null>(null)
@@ -1193,15 +1252,36 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
     const visible = printMode ? groupCriteria : groupCriteria.filter(matchesFilters)
     return visible
   }
+  const articleMetrics: FeasibilityMetricDisplay[] = [
+    {
+      id: 'market', title: '시장성', value: typeof report.meta.marketScore === 'number' ? `${report.meta.marketScore.toFixed(1)}/5점` : '확인 필요', subvalue: '문서의 수요·성장·시장 연결성',
+      items: (report.aiSummary.cards ?? []).slice(0, 2).map((card) => ({ tone: 'confirmed' as const, text: card.detail || card.result })),
+      details: [{ label: '근거', items: (report.aiSummary.cards ?? []).slice(0, 2).map((card) => card.result) }, { label: '연결 문서', value: `${report.meta.relatedDocumentCount ?? 1}건` }], printNote: '문서에서 확인한 시장·수요 신호를 5점 척도로 표시',
+    },
+    {
+      id: 'tam', title: '상품화 종합점수', value: typeof report.meta.productizationScore === 'number' ? `${report.meta.productizationScore.toFixed(1)}/5점` : '확인 필요', subvalue: '시장성·PML·관리 가능성·법률·근거 종합',
+      items: [(report.aiSummary.cards ?? []).find((card) => card.id === 'gap')?.result, report.productFeasibility.assessment?.overallReason].filter((item): item is string => Boolean(item?.trim())).map((text) => ({ tone: 'follow-up' as const, text })),
+      details: [{ label: '산정 기준', value: '시장성·PML·보험성·법률·근거' }, { label: '해석', value: report.productFeasibility.assessment?.overallSummary ?? '문서 기반 종합평가' }], printNote: '문서 그룹별 상품화 종합점수',
+    },
+    {
+      id: 'frequency', title: '연결 원문', value: `${report.meta.relatedDocumentCount ?? report.evidence.length}건`, subvalue: report.meta.articleTopic ?? '문서 분류 기준',
+      items: report.evidence.slice(0, 3).map((item) => ({ tone: 'confirmed' as const, text: item.title })), details: [{ label: '주요 근거', items: report.evidence.slice(0, 4).map((item) => item.source) }], printNote: '위험 그룹에 연결된 문서·법령 근거 수',
+    },
+    {
+      id: 'pml', title: 'PML', value: typeof report.meta.pmlScore === 'number' ? `${report.meta.pmlScore.toFixed(1)}/5점` : '확인 필요', subvalue: '사고 심도·집적 가능성·손해 누적',
+      items: (report.riskGapSummary.damageTypes ?? []).slice(0, 3).map((item) => ({ tone: 'additional-check' as const, text: item.name })), details: [{ label: '손해 유형', items: (report.riskGapSummary.damageTypes ?? []).map((item) => item.name) }, { label: '영향 대상', items: report.riskGapSummary.affectedParties ?? [] }], printNote: '문서상 손해 구조와 누적 가능성을 5점 척도로 표시',
+    },
+  ]
+  const metricDisplay = articleReport ? articleMetrics : FEASIBILITY_METRIC_DISPLAY
   return (
     <div className="report-page__feasibility-redesign-content">
       <section className="report-page__product-decision-hero" aria-labelledby="product-decision-title">
         <div className="report-page__product-decision-copy">
           <h2 id="product-decision-title">상품화 종합판정</h2>
-          <strong className="report-page__product-decision-title">{mandatoryCritical ? '상품화 가능성 재검토 필요' : '상품화 가능성 높음 · 상품 개발 검토 권고'}</strong>
+          <strong className="report-page__product-decision-title">{articleReport ? (assessment?.overallSummary ?? '문서 기반 상품화 종합평가') : (mandatoryCritical ? '상품화 가능성 재검토 필요' : '상품화 가능성 높음 · 상품 개발 검토 권고')}</strong>
           <ul className="report-page__product-decision-bullets">
             <li className="is-satisfied"><span aria-hidden="true">✓</span><span>보험성 필수 기준 {mandatoryPass}/{FEASIBILITY_DISPLAY_GROUPS[0].criterionIds.length} 충족</span></li>
-            <li className={noveltyDecision === 'fulfilled' ? 'is-satisfied' : 'is-follow-up'}><span aria-hidden="true">{noveltyDecision === 'fulfilled' ? '✓' : '–'}</span><span>국내 유사상품 비교 및 차별화 가능성 확인</span></li>
+            <li className={noveltyDecision === 'fulfilled' ? 'is-satisfied' : 'is-follow-up'}><span aria-hidden="true">{noveltyDecision === 'fulfilled' ? '✓' : '–'}</span><span>{articleReport ? '문서 근거와 위험 구조를 기준으로 비교' : '국내 유사상품 비교 및 차별화 가능성 확인'}</span></li>
             {mandatoryCritical === 0 ? <li className="is-satisfied"><span aria-hidden="true">✓</span><span>확인된 검토 중단 사유 없음</span></li> : null}
           </ul>
         </div>
@@ -1211,7 +1291,7 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
         <div className="report-page__feasibility-subsection-heading">
           <div><p className="report-page__quantitative-metric-eyebrow">상품화 판단 핵심 지표</p><h3 id="quantitative-metrics-title">핵심 정량지표</h3></div>
         </div>
-        <div className="report-page__quantitative-metric-grid">{FEASIBILITY_METRIC_DISPLAY.map((metric) => <article className={`report-page__quantitative-metric-card report-page__quantitative-metric-card--${metric.id}`} key={metric.id}>
+        <div className="report-page__quantitative-metric-grid">{metricDisplay.map((metric) => <article className={`report-page__quantitative-metric-card report-page__quantitative-metric-card--${metric.id}`} key={metric.id}>
           <header><h4>{metric.title}</h4><span className={`report-page__quantitative-metric-status report-page__quantitative-metric-status--${FEASIBILITY_METRIC_STATUS[metric.id]}`}>{FEASIBILITY_METRIC_STATUS_LABEL[metric.id]}</span></header>
           <strong className="report-page__quantitative-metric-value">{metric.value}</strong>
           <p className="report-page__quantitative-metric-subvalue">{metric.subvalue}</p>
@@ -1569,7 +1649,7 @@ const renderPricingEffect = (text: string) => text.split(PRICING_EFFECT_PATTERN)
 ))
 
 function ProductProposalSection({ report, onNavigateTab, printMode = false }: { report: ReportView; onNavigateTab?: (id: ReportTabId) => void; printMode?: boolean }) {
-  void report
+  const articleReport = isArticleDerivedReport(report)
   void onNavigateTab
 
   const basePricing = PROPOSAL_PRICING_SCENARIO_OUTPUTS.find((scenario) => scenario.id === 'base') ?? PROPOSAL_PRICING_SCENARIO_OUTPUTS[0]
@@ -1661,12 +1741,61 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
     },
   ]
 
-  const proposalHeroFacts = [
+  const articleScore = (value?: number) => typeof value === 'number' ? `${value.toFixed(1)}/5점` : '확인 필요'
+  const displayPricingCards: PricingCard[] = articleReport ? [
+    { id: 'article-market', title: '시장성', value: articleScore(report.meta.marketScore), subvalue: '문서의 수요·성장·시장 연결성', values: () => articleScore(report.meta.marketScore), evidence: { formula: '문서에서 확인한 시장·수요 지표를 5점 척도로 정리', assumptions: report.aiSummary.cards?.slice(0, 2).map((card) => card.detail) ?? [], factors: ['문서 수요 신호', '시장 변화', '연결 근거'], references: report.evidence.slice(0, 3).map((item) => item.title) } },
+    { id: 'article-pml', title: 'PML', value: articleScore(report.meta.pmlScore), subvalue: '사고 심도·집적 가능성·손해 누적', values: () => articleScore(report.meta.pmlScore), evidence: { formula: '문서상 손해 유형·영향 대상·동시 손해 가능성을 5점 척도로 정리', assumptions: report.riskGapSummary.damageTypes?.map((item) => item.name) ?? [], factors: ['손해 유형', '영향 대상', '누적 가능성'], references: report.evidence.slice(0, 3).map((item) => item.title) } },
+    { id: 'article-productization', title: '상품화 종합점수', value: articleScore(report.meta.productizationScore), subvalue: '시장성·PML·보험성·법률·근거 종합', values: () => articleScore(report.meta.productizationScore), evidence: { formula: '시장성·PML·관리 가능성·법률·근거를 종합', assumptions: report.productFeasibility.assessment?.topRisks ?? [], factors: ['시장성', 'PML', '보험성', '법률·규제', '근거'], references: report.evidence.slice(0, 3).map((item) => item.title) } },
+    { id: 'article-evidence', title: '연결 원문', value: `${report.meta.relatedDocumentCount ?? report.evidence.length}건`, subvalue: report.meta.articleTopic ?? '문서 분류 기준', values: () => `${report.meta.relatedDocumentCount ?? report.evidence.length}건`, evidence: { formula: '위험 그룹에 연결된 문서와 법령 근거 수', assumptions: report.meta.relatedDocumentTitles ?? [], factors: ['원문 근거', '법령 보충자료', '그룹 연결'], references: report.evidence.slice(0, 3).map((item) => item.source) } },
+  ] : pricingCards
+
+  const recommendationDisplay = articleReport ? [
+    { id: 'source', title: '문서 근거 연결', bullets: [report.meta.relatedDocumentTitles?.slice(0, 2).join(' · ') ?? '연결 원문 확인', report.aiSummary.primaryConclusionReason ?? '원문에서 확인된 위험 신호를 상품 구조에 연결'] },
+    { id: 'gap', title: '보장 공백 구조화', bullets: [report.riskGapSummary.definition ?? '문서 기반 보장 공백', report.productProposal.existingInsuranceRelationship ?? '기존 보장과 중복·공백을 대조'] },
+    { id: 'score', title: '상품화 점수 연결', bullets: [`시장성 ${articleScore(report.meta.marketScore)} · PML ${articleScore(report.meta.pmlScore)}`, `종합 ${articleScore(report.meta.productizationScore)} · 연결 원문 ${report.meta.relatedDocumentCount ?? report.evidence.length}건`] },
+  ] : PROPOSAL_RECOMMENDATION_DISPLAY
+  const recommendationDetailBlocks = articleReport ? [
+    { title: '문서 사실', items: report.aiSummary.cards?.slice(0, 2).map((card) => card.detail || card.result) ?? [] },
+    { title: '손해 구조', items: report.riskGapSummary.damageTypes?.slice(0, 3).map((item) => item.name) ?? [] },
+    { title: '상품화 평가', items: report.productFeasibility.assessment?.criteria.slice(0, 2).map((criterion) => criterion.title) ?? [] },
+    { title: '남은 입력값', items: report.productProposal.unresolvedItems?.slice(0, 2) ?? [] },
+  ] : PROPOSAL_RECOMMENDATION_DETAIL_BLOCKS
+  const roleSummary = articleReport
+    ? (report.targetSuitability.roleStructure ?? []).map((role, index) => ({ id: `article-role-${index}`, title: role.role, proposal: role.candidates?.join(' · ') || '문서에서 확인된 후보 없음', bullets: [role.question ?? '역할과 책임 범위를 구분합니다.'], note: role.status }))
+    : PROPOSAL_CONTRACT_ROLE_SUMMARY
+  const claimFlow = articleReport ? [
+    { id: 'source', label: '원문 사건 확인', bullets: [report.productProposal.coveredEvent ?? report.riskGapSummary.definition ?? '위험 사건 확인'] },
+    { id: 'damage', label: '손해 유형 산정', bullets: [report.productProposal.coveredLoss ?? '문서 손해 유형과 실제 손해자료 대조'] },
+    { id: 'coverage', label: '기존 보장 대조', bullets: [report.productProposal.existingInsuranceRelationship ?? '기존 보험과 중복·공백 대조'] },
+    { id: 'decision', label: '상품 구조 결정', bullets: [report.productProposal.recommendationReason ?? '문서 근거와 점수를 기준으로 구조 검토'] },
+  ] : PROPOSAL_CLAIM_FLOW_DISPLAY
+  const coverageSummary = articleReport ? {
+    basic: (report.riskGapSummary.damageTypes ?? []).slice(0, 3).map((item) => ({ title: item.name, description: item.examples?.join(' · ') ?? item.initialScope ?? '문서에서 확인된 손해 유형' })),
+    optional: { title: '추가 자료 연결 보장', description: report.productProposal.coverageLimitDirection ?? '손해자료 연결 후 한도와 지급조건을 별도 산정합니다.' },
+    excluded: report.wordingFeasibility.exclusionCandidates?.slice(0, 3).map((item) => item.text) ?? ['문서에서 확인되지 않은 손해 범위'],
+  } : PROPOSAL_COVERAGE_SUMMARY
+  const underwritingDisplay = articleReport
+    ? (report.productFeasibility.assessment?.criteria ?? []).slice(0, 4).map((criterion) => ({ id: criterion.id, title: criterion.title, aiAssessment: criterion.summary, criteria: criterion.missingInformation.slice(0, 3), pricingEffects: [criterion.rationale], conditionImpact: report.productProposal.coverageLimitDirection ?? '문서 근거와 손해자료 연결 후 조건 산정' }))
+    : PROPOSAL_UNDERWRITING_DISPLAY
+  const proposalDecisions = articleReport ? (report.productProposal.unresolvedItems ?? []).slice(0, 6).map((text, index) => ({ id: `article-decision-${index}`, text })) : PROPOSAL_DECISIONS
+  const calculationEvidence = articleReport ? {
+    confidence: report.meta.articleTopic ?? '문서 기반',
+    used: report.evidence.slice(0, 4).map((item) => ({ label: item.title, detail: item.source })),
+    methods: [{ label: '점수', detail: '시장성·PML·보험성·법률·근거 종합' }, { label: '손해', detail: report.riskGapSummary.damageTypes?.map((item) => item.name).join(' · ') ?? '문서 손해 유형 연결' }],
+    variables: (report.productProposal.unresolvedItems ?? []).slice(0, 4).map((item) => ({ label: item, impact: '상품 조건·보상 범위에 영향' })),
+    explanation: report.productFeasibility.assessment?.overallReason ?? '문서 근거와 추가 자료 연결 수준에 따라 결과가 달라질 수 있습니다.',
+  } : PROPOSAL_CALCULATION_EVIDENCE
+
+  const proposalHeroFacts = articleReport ? [
+    ['계약자', report.productProposal.expectedPolicyholder?.join(' · ') ?? '영향 대상·운영 주체 확인'],
+    ['개발 형태', report.productProposal.recommendedForm ?? '문서 근거 기반 조건부 구조'],
+    ['보장 범위', report.productProposal.coveredLoss ?? '문서에서 확인된 손해 유형'],
+  ] as const : [
     ['계약자', PROPOSAL_HERO_FACTS.find(([label]) => label === '주요 계약자 후보')?.[1] ?? '주차시설 운영자·건물 소유자'],
     ['개발 형태', '기존 상품 특약'],
     ['보장 범위', '제3자 차량·시설 직접손해'],
   ] as const
-  const proposalRelatedInsurance = PROPOSAL_HERO_FACTS.find(([label]) => label === '연계 보험')?.[1] ?? ''
+  const proposalRelatedInsurance = articleReport ? report.productProposal.existingInsuranceRelationship ?? '' : PROPOSAL_HERO_FACTS.find(([label]) => label === '연계 보험')?.[1] ?? ''
 
   return (
     <section className="report-page__section report-page__proposal-section" aria-label="상품 개발 제안">
@@ -1678,8 +1807,8 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
             <p className="report-page__eyebrow">AI PRODUCT DEVELOPMENT PROPOSAL</p>
             <span>AI 1차 상품개발안</span>
           </div>
-          <h3 id="proposal-hero-title">기업성 일반보험 특약</h3>
-          <p className="report-page__proposal-hero-description">주차시설 운영자가 가입하여, 기존 보험 적용 후 남는 <em>제3자 차량·시설의 직접손해를 보완</em>하는 단체계약형 특약</p>
+          <h3 id="proposal-hero-title">{articleReport ? (report.productProposal.workingName ?? report.meta.riskTitle ?? '문서 기반 상품 구조') : '기업성 일반보험 특약'}</h3>
+          <p className="report-page__proposal-hero-description">{articleReport ? (report.productProposal.recommendationReason ?? report.riskGapSummary.definition ?? '문서 근거와 손해 유형을 연결한 상품 구조 검토안') : <>주차시설 운영자가 가입하여, 기존 보험 적용 후 남는 <em>제3자 차량·시설의 직접손해를 보완</em>하는 단체계약형 특약</>}</p>
           <dl className="report-page__proposal-facts">{proposalHeroFacts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
           {proposalRelatedInsurance ? <p className="report-page__proposal-related-insurance"><span>연계 보험</span> · {proposalRelatedInsurance}</p> : null}
         </div>
@@ -1688,15 +1817,15 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
       <section className="report-page__proposal-reasons" aria-labelledby="proposal-reasons-title">
         <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">WHY THIS FORM</p><h3 id="proposal-reasons-title">우선 추천 이유</h3><p>이 상품 형태를 1차 개발안으로 제안한 핵심 근거입니다.</p></div></div>
         <div className="report-page__proposal-recommendation-grid">
-          <ol>{PROPOSAL_RECOMMENDATION_DISPLAY.map((reason, index) => <li key={reason.id}><div><small>{String(index + 1).padStart(2, '0')}</small><h4>{reason.title}</h4><ul>{reason.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></div></li>)}</ol>
-          <details className="report-page__proposal-recommendation-detail" open={printMode}><summary>추가 근거 상세 보기 <span>4개 영역</span></summary><div className="report-page__proposal-detail-block-grid">{PROPOSAL_RECOMMENDATION_DETAIL_BLOCKS.map((block) => <article key={block.title}><h4>{block.title}</h4><ul>{block.items.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></article>)}</div></details>
+          <ol>{recommendationDisplay.map((reason, index) => <li key={reason.id}><div><small>{String(index + 1).padStart(2, '0')}</small><h4>{reason.title}</h4><ul>{reason.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></div></li>)}</ol>
+          <details className="report-page__proposal-recommendation-detail" open={printMode}><summary>추가 근거 상세 보기 <span>4개 영역</span></summary><div className="report-page__proposal-detail-block-grid">{recommendationDetailBlocks.map((block) => <article key={block.title}><h4>{block.title}</h4><ul>{block.items.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></article>)}</div></details>
         </div>
       </section>
 
       <section className="report-page__proposal-metrics" aria-labelledby="proposal-metrics-title">
-        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">FIRST PRICING VIEW</p><h3 id="proposal-metrics-title">1차 가격·손해지표</h3><p>상품화 종합평가 PML과 명시된 프로토타입 가정을 연결한 1차 산출값입니다.</p></div></div>
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">FIRST PRICING VIEW</p><h3 id="proposal-metrics-title">1차 가격·손해지표</h3><p>{articleReport ? '문서에서 산출한 시장성·PML·상품화 종합점수와 연결 원문을 표시합니다.' : '상품화 종합평가 PML과 명시된 프로토타입 가정을 연결한 1차 산출값입니다.'}</p></div></div>
         <div className="report-page__proposal-metric-grid">
-          {pricingCards.map((card) => (
+          {displayPricingCards.map((card) => (
             <article className={'report-page__proposal-metric report-page__proposal-metric--' + card.id} key={card.id}>
               <h4>{card.title}</h4>
               <strong className="report-page__proposal-metric-value">{card.value}</strong>
@@ -1730,50 +1859,50 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
 
       <section className="report-page__proposal-roles" aria-labelledby="proposal-roles-title">
         <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">CONTRACT & PROTECTION RELATIONSHIP</p><h3 id="proposal-roles-title">계약 및 보호 관계</h3><p>가입·보호·청구 관계를 상품개발 초안 기준으로 구분합니다.</p></div></div>
-        <div className="report-page__proposal-role-grid">{PROPOSAL_CONTRACT_ROLE_SUMMARY.map((role) => <article className="report-page__proposal-role-card" key={role.id}><h4>{role.title}</h4><p className="report-page__proposal-role-proposal">{role.proposal}</p><ul>{role.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>{'note' in role ? <p className="report-page__proposal-condition-note">{role.note}</p> : null}</article>)}</div>
+        <div className="report-page__proposal-role-grid">{roleSummary.map((role) => <article className="report-page__proposal-role-card" key={role.id}><h4>{role.title}</h4><p className="report-page__proposal-role-proposal">{role.proposal}</p><ul>{role.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>{'note' in role && role.note ? <p className="report-page__proposal-condition-note">{role.note}</p> : null}</article>)}</div>
       </section>
 
       <section className="report-page__proposal-flow" aria-labelledby="proposal-flow-title">
         <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">CLAIM FLOW</p><h3 id="proposal-flow-title">보험금 지급 흐름</h3><p>사고 확인부터 지급·구상 검토까지의 기본 절차입니다.</p></div></div>
-        <ol>{PROPOSAL_CLAIM_FLOW_DISPLAY.map((step, index) => <li key={step.id}><div className="report-page__proposal-flow-step-head"><span>{String(index + 1).padStart(2, '0')}</span><h4>{step.label}</h4></div><span className={`report-page__proposal-flow-arrow${index === PROPOSAL_CLAIM_FLOW_DISPLAY.length - 1 ? ' is-empty' : ''}`} aria-hidden="true">→</span><ul>{step.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></li>)}</ol>
+        <ol>{claimFlow.map((step, index) => <li key={step.id}><div className="report-page__proposal-flow-step-head"><span>{String(index + 1).padStart(2, '0')}</span><h4>{step.label}</h4></div><span className={`report-page__proposal-flow-arrow${index === claimFlow.length - 1 ? ' is-empty' : ''}`} aria-hidden="true">→</span><ul>{step.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></li>)}</ol>
         <p className="report-page__proposal-flow-note">기존 보험의 지급액 차감 방식과 책임 확정 전 지급 여부는 약관 초안에서 구체화합니다.</p>
       </section>
 
       <section className="report-page__proposal-coverage" aria-labelledby="proposal-coverage-title">
         <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">COVERAGE STRUCTURE</p><h3 id="proposal-coverage-title">보장 구조 요약</h3><p>기본·선택·제외 범위를 짧게 구분한 1차 보장 구조입니다.</p></div></div>
-        <div className="report-page__proposal-coverage-summary-grid"><article className="is-basic"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">✓</span><small>기본</small></div><h4>기본 담보</h4><ul>{PROPOSAL_COVERAGE_SUMMARY.basic.map((item) => <li key={item.title}><div><strong>{item.title}</strong><p>{item.description}</p></div></li>)}</ul></article><article className="is-optional"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">＋</span><small>선택</small></div><h4>선택 담보</h4><ul><li><div><strong>{PROPOSAL_COVERAGE_SUMMARY.optional.title}</strong><p>{PROPOSAL_COVERAGE_SUMMARY.optional.description}</p></div></li></ul></article><article className="is-excluded"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">−</span><small>제외</small></div><h4>보장 제외</h4><ul>{PROPOSAL_COVERAGE_SUMMARY.excluded.map((item) => <li key={item}><div><strong>{item}</strong></div></li>)}</ul></article></div>
+        <div className="report-page__proposal-coverage-summary-grid"><article className="is-basic"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">✓</span><small>기본</small></div><h4>기본 담보</h4><ul>{coverageSummary.basic.map((item) => <li key={item.title}><div><strong>{item.title}</strong><p>{item.description}</p></div></li>)}</ul></article><article className="is-optional"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">＋</span><small>선택</small></div><h4>선택 담보</h4><ul><li><div><strong>{coverageSummary.optional.title}</strong><p>{coverageSummary.optional.description}</p></div></li></ul></article><article className="is-excluded"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">−</span><small>제외</small></div><h4>보장 제외</h4><ul>{coverageSummary.excluded.map((item) => <li key={item}><div><strong>{item}</strong></div></li>)}</ul></article></div>
       </section>
 
       <section className="report-page__proposal-underwriting" aria-labelledby="proposal-underwriting-title">
         <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">PRICING & LIMIT FACTORS</p><h3 id="proposal-underwriting-title">가격·한도에 반영할 위험요인</h3><p>시설별 위험 차이를 보험료, 보상한도와 자기부담금에 반영하기 위한 핵심 기준입니다.</p></div></div>
         <div className="report-page__proposal-underwriting-judgment"><strong>{PROPOSAL_UNDERWRITING_AI_SUMMARY.label}</strong><p>{PROPOSAL_UNDERWRITING_AI_SUMMARY.prefix}<em className="is-risk">{PROPOSAL_UNDERWRITING_AI_SUMMARY.exposure}</em>{PROPOSAL_UNDERWRITING_AI_SUMMARY.middle}<em className="is-positive">{PROPOSAL_UNDERWRITING_AI_SUMMARY.mitigation}</em>{PROPOSAL_UNDERWRITING_AI_SUMMARY.suffix}</p></div>
-        <div className="report-page__proposal-underwriting-grid">{PROPOSAL_UNDERWRITING_DISPLAY.map((factor, index) => <article className="report-page__proposal-underwriting-card" key={factor.id}><div className="report-page__proposal-underwriting-card-heading"><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><h4>{factor.title}</h4></div><p className="report-page__proposal-underwriting-assessment">{factor.aiAssessment}</p><div className="report-page__proposal-underwriting-block"><h5>확인 요소</h5><ul>{factor.criteria.map((item) => <li key={item}>{item}</li>)}</ul></div><div className="report-page__proposal-underwriting-block report-page__proposal-underwriting-block--pricing"><h5>가격·한도 반영</h5><ul>{factor.pricingEffects.map((item) => <li key={item}>{renderPricingEffect(item)}</li>)}</ul></div>{factor.scenarioReference ? <div className="report-page__proposal-underwriting-scenario"><h5>현재 시나리오 연결</h5><p>상품화 종합평가 PML · Low {formatKrwCompact(factor.scenarioReference.low)} / Base {formatKrwCompact(factor.scenarioReference.base)} / High {formatKrwCompact(factor.scenarioReference.high)}</p></div> : null}</article>)}</div>
-        <div className="report-page__proposal-underwriting-condition-map"><h4>상품 조건 반영 방식</h4><ul>{PROPOSAL_UNDERWRITING_DISPLAY.map((factor) => <li key={factor.id}><strong>{factor.title}</strong><span aria-hidden="true">→</span><em>{factor.conditionImpact}</em></li>)}</ul></div>
-        <p className="report-page__proposal-underwriting-note">프로토타입 시나리오 기준 · 실제 시설정보 연결 시 자동 보정</p>
+        <div className="report-page__proposal-underwriting-grid">{underwritingDisplay.map((factor, index) => <article className="report-page__proposal-underwriting-card" key={factor.id}><div className="report-page__proposal-underwriting-card-heading"><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><h4>{factor.title}</h4></div><p className="report-page__proposal-underwriting-assessment">{factor.aiAssessment}</p><div className="report-page__proposal-underwriting-block"><h5>확인 요소</h5><ul>{factor.criteria.map((item) => <li key={item}>{item}</li>)}</ul></div><div className="report-page__proposal-underwriting-block report-page__proposal-underwriting-block--pricing"><h5>가격·한도 반영</h5><ul>{factor.pricingEffects.map((item) => <li key={item}>{renderPricingEffect(item)}</li>)}</ul></div>{'scenarioReference' in factor && factor.scenarioReference ? <div className="report-page__proposal-underwriting-scenario"><h5>현재 시나리오 연결</h5><p>상품화 종합평가 PML · Low {formatKrwCompact(factor.scenarioReference.low)} / Base {formatKrwCompact(factor.scenarioReference.base)} / High {formatKrwCompact(factor.scenarioReference.high)}</p></div> : null}</article>)}</div>
+        <div className="report-page__proposal-underwriting-condition-map"><h4>상품 조건 반영 방식</h4><ul>{underwritingDisplay.map((factor) => <li key={factor.id}><strong>{factor.title}</strong><span aria-hidden="true">→</span><em>{factor.conditionImpact}</em></li>)}</ul></div>
+        <p className="report-page__proposal-underwriting-note">{articleReport ? '문서 근거와 손해자료 연결 수준에 따라 상품 조건과 산정 결과가 달라질 수 있습니다.' : '프로토타입 시나리오 기준 · 실제 시설정보 연결 시 자동 보정'}</p>
       </section>
 
       <section className="report-page__proposal-decisions" aria-labelledby="proposal-decisions-title">
         <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">PRODUCT DEVELOPMENT DECISIONS</p><h3 id="proposal-decisions-title">상품개발 확정사항</h3><p>실제 상품개발 전 우선 확정하거나 약관 기준으로 설정할 항목입니다.</p></div></div>
-        <ul>{PROPOSAL_DECISIONS.map((decision) => <li key={decision.id}><span className="report-page__proposal-decision-check" aria-hidden="true">•</span><span>{decision.text}</span></li>)}</ul>
+        <ul>{proposalDecisions.map((decision) => <li key={decision.id}><span className="report-page__proposal-decision-check" aria-hidden="true">•</span><span>{decision.text}</span></li>)}</ul>
       </section>
 
       <section className="report-page__proposal-evidence" aria-labelledby="proposal-evidence-title">
-        <div className="report-page__proposal-section-heading"><div><p className="report-page__proposal-evidence-eyebrow report-page__eyebrow">CALCULATION EVIDENCE & CONFIDENCE</p><h3 id="proposal-evidence-title">산출 근거와 신뢰도</h3><p>가격·손해지표에 사용한 근거, 계산 방식과 결과를 바꾸는 핵심 변수를 확인합니다.</p></div><span className="report-page__proposal-evidence-confidence">산출 신뢰도 · {PROPOSAL_CALCULATION_EVIDENCE.confidence}</span></div>
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__proposal-evidence-eyebrow report-page__eyebrow">CALCULATION EVIDENCE & CONFIDENCE</p><h3 id="proposal-evidence-title">산출 근거와 신뢰도</h3><p>가격·손해지표에 사용한 근거, 계산 방식과 결과를 바꾸는 핵심 변수를 확인합니다.</p></div><span className="report-page__proposal-evidence-confidence">산출 신뢰도 · {calculationEvidence.confidence}</span></div>
         <div className="report-page__proposal-evidence-grid">
           <article>
             <h4>사용한 근거</h4>
-            <ul>{PROPOSAL_CALCULATION_EVIDENCE.used.map((item) => <li key={item.label}><strong>{item.label}</strong><span>{item.detail}</span></li>)}</ul>
+            <ul>{calculationEvidence.used.map((item) => <li key={item.label}><strong>{item.label}</strong><span>{item.detail}</span></li>)}</ul>
           </article>
           <article>
             <h4>적용한 산출 방식</h4>
-            <ul>{PROPOSAL_CALCULATION_EVIDENCE.methods.map((item) => <li key={item.label}><strong>{item.label}</strong><span>{item.detail}</span></li>)}</ul>
+            <ul>{calculationEvidence.methods.map((item) => <li key={item.label}><strong>{item.label}</strong><span>{item.detail}</span></li>)}</ul>
           </article>
           <article>
             <h4>결과를 바꾸는 핵심 변수</h4>
-            <ul>{PROPOSAL_CALCULATION_EVIDENCE.variables.map((item) => <li key={item.label}><strong>{item.label}</strong><span className="report-page__proposal-evidence-impact"><span aria-hidden="true">→</span><em>{item.impact}</em></span></li>)}</ul>
+            <ul>{calculationEvidence.variables.map((item) => <li key={item.label}><strong>{item.label}</strong><span className="report-page__proposal-evidence-impact"><span aria-hidden="true">→</span><em>{item.impact}</em></span></li>)}</ul>
           </article>
         </div>
-        <p className="report-page__proposal-evidence-note">{PROPOSAL_CALCULATION_EVIDENCE.explanation}</p>
+        <p className="report-page__proposal-evidence-note">{calculationEvidence.explanation}</p>
       </section>
     </section>
   )
@@ -2456,6 +2585,69 @@ function wordingPolicyTermItems(article: PolicyArticle | undefined): Array<{ ter
   return (article?.items ?? []).filter((item): item is { term: string; definition: string } => typeof item !== 'string')
 }
 
+function createArticlePolicyDraft(report: ReportView): FullPolicyDraft {
+  if (!isArticleDerivedReport(report)) return aiFullPolicyDraftMock
+  const data = report.wordingFeasibility
+  const title = report.meta.riskTitle ?? report.meta.title
+  const targets = report.riskGapSummary.affectedParties ?? []
+  const damages = (report.riskGapSummary.damageTypes ?? []).map((item) => item.name)
+  const definitions: PolicyArticleItem[] = (data.definitions ?? []).slice(0, 8).map((item) => ({ term: String(item.term ?? ''), definition: String(item.draftDefinition ?? '') })).filter((item) => item.term && item.definition)
+  const paymentItems = (data.paymentConditions ?? []).map((item) => item.text).filter((item): item is string => Boolean(item))
+  const exclusionItems = (data.exclusionCandidates ?? []).map((item) => item.text).filter((item): item is string => Boolean(item))
+  const evidenceItems = report.evidence.slice(0, 5).map((item) => `${item.title} · ${item.source}`)
+  const eventText = report.productProposal.coveredEvent ?? report.riskGapSummary.definition ?? title
+  const lossText = (report.productProposal.coveredLoss ?? damages.join(' · ')) || '문서에서 확인된 손해 유형'
+  const commonPolicy = {
+    id: 'article-common-policy',
+    title: `${title} 검토용 보통약관 구조`,
+    sections: [
+      { id: 'article-section-1', title: '제1관 목적 및 용어의 정의', articles: [
+        { number: 1, title: '목적', paragraphs: [data.coverageDraft ?? `${eventText}와 관련된 ${lossText} 손해의 보장 구조를 검토합니다.`] },
+        { number: 2, title: '용어의 정의', paragraphs: ['이 문서에서 사용하는 위험 사건·손해·영향 대상의 의미를 원문 근거에 따라 정리합니다.'], items: definitions },
+      ] },
+      { id: 'article-section-2', title: '제2관 사고와 손해의 확인', articles: [
+        { number: 3, title: '보상하는 손해의 공통 원칙', paragraphs: [eventText, lossText] },
+        { number: 4, title: '손해의 통지 및 조사', paragraphs: paymentItems.length ? paymentItems : ['사고 발생과 손해 규모를 객관적 자료로 확인합니다.'], items: evidenceItems },
+        { number: 5, title: '보상하지 않는 손해의 공통 원칙', paragraphs: ['문서에서 확인되지 않은 손해 범위와 다른 제도에서 이미 보상된 손해는 별도 기준을 정합니다.'], items: exclusionItems },
+      ] },
+    ],
+  }
+  const makeClause = (id: SpecialClause['id'], label: string, target: string) => ({
+    id,
+    title: `${label} 보장 검토안`,
+    shortTitle: `${label} 보장`,
+    summary: `${target || title}와 관련된 ${lossText}를 문서 근거로 검토합니다.`,
+    proposalReason: report.productProposal.recommendationReason ?? data.coverageDraft ?? '문서에서 확인된 위험 사건과 손해 유형을 연결했습니다.',
+    keyTerms: definitions.slice(0, 4).map((item) => typeof item === 'string' ? item : item.term),
+    recommendedCoverageCopy: data.coverageDraft ?? `${eventText}로 인해 발생한 ${lossText}를 약정 범위에서 검토합니다.`,
+    prototypeAssumptions: { perAccidentLimit: '손해자료 연결 후 산정', aggregateLimit: '누적노출 자료 연결 후 산정', deductible: '손해 빈도·통제 수준 확인 후 산정', confidence: '문서 기반', displayLabel: '문서 근거 기반 산정 전제' },
+    decisionItems: [
+      { id: `${id}-event`, question: '보장 사건을 객관적으로 정의할 수 있는가?', recommendation: eventText, rationale: data.coverageDraft ?? eventText, assumptions: data.ambiguities?.slice(0, 2).map((item) => item.issue) ?? [], basis: report.evidence[0]?.title ?? '연결 원문', confidence: report.meta.articleTopic ?? '문서 기반' },
+      { id: `${id}-loss`, question: '손해 범위와 지급요건을 구분할 수 있는가?', recommendation: lossText, rationale: report.riskGapSummary.definition ?? '손해 유형별 지급 기준을 구분합니다.', assumptions: exclusionItems.slice(0, 2), basis: report.evidence[0]?.title ?? '연결 원문', confidence: report.meta.articleTopic ?? '문서 기반' },
+    ],
+    articles: [
+      { number: 1, title: '보장 대상과 보장 사건', paragraphs: [eventText, target || title] },
+      { number: 2, title: '보상하는 손해', paragraphs: [lossText], items: damages },
+      { number: 3, title: '보험금 지급요건', paragraphs: ['다음 요건과 원문 근거를 확인한 손해를 지급 대상으로 검토합니다.'], items: paymentItems.length ? paymentItems : ['사고 발생과 손해의 인과관계를 객관적으로 확인할 수 있어야 합니다.'] },
+      { number: 4, title: '보상하지 않는 손해', paragraphs: ['문서 근거가 부족하거나 다른 보장과 중복되는 범위는 별도 기준으로 구분합니다.'], items: exclusionItems.length ? exclusionItems : ['원문에서 확인되지 않은 손해 범위'] },
+    ],
+  })
+  const specialClauses = [
+    makeClause('adjacent-vehicle', targets[0] ?? '주요 영향 대상', targets[0] ?? title),
+    makeClause('facility-damage', targets[1] ?? '주요 시설·운영 대상', targets[1] ?? title),
+    makeClause('emergency-expense', targets[2] ?? '사고 대응 주체', targets[2] ?? title),
+  ]
+  return {
+    productName: `${title} 대응 보장 구조`,
+    documentTitle: `${title} 검토용 약관 구조`,
+    draftVersion: '원문 기반 검토안',
+    policyForm: report.productProposal.recommendedForm ?? '문서 근거 기반 조건부 구조',
+    commonPolicy,
+    specialClauses,
+    attachments: report.evidence.slice(0, 5).map((item) => ({ title: item.title, description: `${item.source} · ${item.reliability ?? '원문 근거 연결'}` })),
+  }
+}
+
 function wordingPolicyArticle(
   article: PolicyArticle,
   key: string,
@@ -2489,10 +2681,12 @@ function wordingPolicyArticle(
 function WordingPolicyPrintLayout({
   report,
   selectedCoverage,
+  policyDraft,
   createdAt,
 }: {
   report: ReportView
   selectedCoverage: SpecialClause
+  policyDraft: FullPolicyDraft
   createdAt: string
 }) {
   const reportDate = report.meta.analysisBaseDate ?? createdAt
@@ -2511,25 +2705,25 @@ function WordingPolicyPrintLayout({
       <header className="report-page__wording-print-header">
         <p className="report-page__wording-print-eyebrow">INSURANCE WORDING REVIEW</p>
         <h1>AI 전체 약관 초안</h1>
-        <p className="report-page__wording-print-product">{aiFullPolicyDraftMock.productName}</p>
+        <p className="report-page__wording-print-product">{policyDraft.productName}</p>
         <dl className="report-page__wording-print-meta">
           <div><dt>문서 구분</dt><dd>AI 약관 검토 초안</dd></div>
           <div><dt>집중 검토 담보</dt><dd>{selectedCoverage.shortTitle}</dd></div>
           <div><dt>작성 기준일</dt><dd>{displayDate(reportDate)}</dd></div>
-          <div><dt>문서 버전</dt><dd>{aiFullPolicyDraftMock.draftVersion}</dd></div>
-          <div><dt>상품 구조</dt><dd>{aiFullPolicyDraftMock.policyForm}</dd></div>
+          <div><dt>문서 버전</dt><dd>{policyDraft.draftVersion}</dd></div>
+          <div><dt>상품 구조</dt><dd>{policyDraft.policyForm}</dd></div>
         </dl>
       </header>
 
       <main className="report-page__wording-policy-print-content">
         <section className="report-page__wording-policy-print-group" aria-labelledby="wording-print-common-heading">
-          <h2 id="wording-print-common-heading">{aiFullPolicyDraftMock.commonPolicy.title}</h2>
-          {aiFullPolicyDraftMock.commonPolicy.sections.map((section) => <section className="report-page__wording-policy-print-section" key={section.id}><h3>{section.title}</h3>{section.articles.map((article) => policyArticle(article, `common-${section.id}-${article.number}`))}</section>)}
+          <h2 id="wording-print-common-heading">{policyDraft.commonPolicy.title}</h2>
+          {policyDraft.commonPolicy.sections.map((section) => <section className="report-page__wording-policy-print-section" key={section.id}><h3>{section.title}</h3>{section.articles.map((article) => policyArticle(article, `common-${section.id}-${article.number}`))}</section>)}
         </section>
-        {aiFullPolicyDraftMock.specialClauses.map((clause) => <section className="report-page__wording-policy-print-group" key={clause.id} aria-labelledby={`wording-print-${clause.id}-heading`}><h2 id={`wording-print-${clause.id}-heading`}>{clause.title}</h2><p className="report-page__wording-policy-print-recommended"><strong>추천 보장 문구</strong> · {clause.recommendedCoverageCopy}</p>{clause.articles.map((article) => policyArticle(article, `special-${clause.id}-${article.number}`))}</section>)}
-        <section className="report-page__wording-policy-print-group" aria-labelledby="wording-print-attachments-heading"><h2 id="wording-print-attachments-heading">부속 명세</h2><ul className="report-page__wording-print-attachments">{aiFullPolicyDraftMock.attachments.map((item, index) => <li key={item.title}><strong>{index + 1}. {item.title}</strong><span>{item.description}</span></li>)}</ul></section>
+        {policyDraft.specialClauses.map((clause) => <section className="report-page__wording-policy-print-group" key={clause.id} aria-labelledby={`wording-print-${clause.id}-heading`}><h2 id={`wording-print-${clause.id}-heading`}>{clause.title}</h2><p className="report-page__wording-policy-print-recommended"><strong>추천 보장 문구</strong> · {clause.recommendedCoverageCopy}</p>{clause.articles.map((article) => policyArticle(article, `special-${clause.id}-${article.number}`))}</section>)}
+        <section className="report-page__wording-policy-print-group" aria-labelledby="wording-print-attachments-heading"><h2 id="wording-print-attachments-heading">부속 명세</h2><ul className="report-page__wording-print-attachments">{policyDraft.attachments.map((item, index) => <li key={item.title}><strong>{index + 1}. {item.title}</strong><span>{item.description}</span></li>)}</ul></section>
       </main>
-      <footer className="report-page__wording-print-footer">AI 전체 약관 초안 · {aiFullPolicyDraftMock.draftVersion} · 작성 기준일 {displayDate(reportDate)}</footer>
+      <footer className="report-page__wording-print-footer">AI 전체 약관 초안 · {policyDraft.draftVersion} · 작성 기준일 {displayDate(reportDate)}</footer>
       </article>
     </div>
   )
@@ -2547,6 +2741,12 @@ function FullWordingSection({
   printMode?: boolean
 }) {
   const data = report.wordingFeasibility
+  const policyDraft = createArticlePolicyDraft(report)
+  const wordingRiskTitle = isArticleDerivedReport(report) ? (report.meta.riskTitle ?? report.meta.title) : WORDING_RISK_SUMMARY_COPY.title
+  const wordingRiskDescription = isArticleDerivedReport(report) ? (data.coverageDraft ?? report.riskGapSummary.definition ?? WORDING_RISK_SUMMARY_COPY.description) : WORDING_RISK_SUMMARY_COPY.description
+  const wordingInsuranceType = isArticleDerivedReport(report) ? (report.meta.articleTopic ?? '문서 기반 위험') : WORDING_RISK_SUMMARY_COPY.insuranceType
+  const wordingAffected = isArticleDerivedReport(report) ? (report.riskGapSummary.affectedParties ?? []).join(' · ') : WORDING_RISK_SUMMARY_COPY.affected
+  const wordingBasis = isArticleDerivedReport(report) ? (report.meta.relatedDocumentTitles ?? []).slice(0, 2).join(' · ') || WORDING_RISK_SUMMARY_COPY.basis : WORDING_RISK_SUMMARY_COPY.basis
   const [copyMessage, setCopyMessage] = useState('')
   const [selectedCoverageId, setSelectedCoverageId] = useState<SpecialClause['id']>('adjacent-vehicle')
   const [activeArticleKey, setActiveArticleKey] = useState<string | null>('common-section-1-1')
@@ -2557,7 +2757,7 @@ function FullWordingSection({
   const policyDocumentRef = useRef<HTMLDivElement | null>(null)
   const previousPrintTitle = useRef<string | null>(null)
   const dedicatedPrintStarted = useRef(false)
-  const selectedCoverage = aiFullPolicyDraftMock.specialClauses.find((clause) => clause.id === selectedCoverageId) ?? aiFullPolicyDraftMock.specialClauses[0]
+  const selectedCoverage = policyDraft.specialClauses.find((clause) => clause.id === selectedCoverageId) ?? policyDraft.specialClauses[0]
 
   const findSpecialArticle = (title: string) => selectedCoverage.articles.find((article) => article.title === title)
   const paymentArticle = findSpecialArticle('보험금 지급요건')
@@ -2566,7 +2766,7 @@ function FullWordingSection({
   const paymentRequirements = paymentArticle?.items?.filter((item): item is string => typeof item === 'string') ?? paymentArticle?.paragraphs ?? []
   const coveredItems = wordingPolicyItems(coveredArticle)
   const excludedItems = wordingPolicyItems(excludedArticle)
-  const commonTermArticle = aiFullPolicyDraftMock.commonPolicy.sections.flatMap((section) => section.articles).find((article) => article.number === 2)
+  const commonTermArticle = policyDraft.commonPolicy.sections.flatMap((section) => section.articles).find((article) => article.number === 2)
   const selectedTermArticle = selectedCoverage.articles.find((article) => article.number === 2)
   const policyTerms = Array.from(new Map(
     [...wordingPolicyTermItems(commonTermArticle), ...wordingPolicyTermItems(selectedTermArticle)].map((item) => [item.term, item]),
@@ -2587,7 +2787,7 @@ function FullWordingSection({
   }
 
   const copyRecommendedCoverage = () => copyText(selectedCoverage.recommendedCoverageCopy, '보장 문구를 복사했습니다.')
-  const copyFullPolicy = () => copyText(buildFullPolicyCopyText(aiFullPolicyDraftMock), '전체 약관 초안을 복사했습니다.')
+  const copyFullPolicy = () => copyText(buildFullPolicyCopyText(policyDraft), '전체 약관 초안을 복사했습니다.')
 
   const scrollToArticle = (key: string) => {
     setActiveArticleKey(key)
@@ -2602,11 +2802,11 @@ function FullWordingSection({
     })
   }
 
-  const commonTocEntries = aiFullPolicyDraftMock.commonPolicy.sections.flatMap((section) => section.articles.map((article) => ({
+  const commonTocEntries = policyDraft.commonPolicy.sections.flatMap((section) => section.articles.map((article) => ({
     key: 'common-' + section.id + '-' + article.number,
     label: '제' + article.number + '조 ' + article.title,
   })))
-  const specialTocEntries = aiFullPolicyDraftMock.specialClauses.map((clause) => ({
+  const specialTocEntries = policyDraft.specialClauses.map((clause) => ({
     key: 'special-' + clause.id,
     label: clause.shortTitle,
   }))
@@ -2666,13 +2866,13 @@ function FullWordingSection({
         <section className="report-page__wording-risk-summary" aria-labelledby="wording-risk-title">
           <div className="report-page__wording-risk-summary-card">
             <p className="report-page__wording-risk-summary-label">분석 대상 위험</p>
-            <h3 id="wording-risk-title">{WORDING_RISK_SUMMARY_COPY.title}</h3>
-            <p className="report-page__wording-risk-summary-description">{WORDING_RISK_SUMMARY_COPY.description}</p>
+            <h3 id="wording-risk-title">{wordingRiskTitle}</h3>
+            <p className="report-page__wording-risk-summary-description">{wordingRiskDescription}</p>
             <dl className="report-page__wording-risk-summary-meta">
               <div><dt>위험 ID</dt><dd>{WORDING_ANALYSIS_RISK.riskId}</dd></div>
-              <div><dt>보험종목</dt><dd>{WORDING_RISK_SUMMARY_COPY.insuranceType}</dd></div>
-              <div><dt>주요 피해 대상</dt><dd>{WORDING_RISK_SUMMARY_COPY.affected}</dd></div>
-              <div><dt>도출 근거</dt><dd>{WORDING_RISK_SUMMARY_COPY.basis}</dd></div>
+              <div><dt>보험종목</dt><dd>{wordingInsuranceType}</dd></div>
+              <div><dt>주요 피해 대상</dt><dd>{wordingAffected}</dd></div>
+              <div><dt>도출 근거</dt><dd>{wordingBasis}</dd></div>
             </dl>
           </div>
         </section>
@@ -2682,7 +2882,7 @@ function FullWordingSection({
             <div><h3 id="wording-proposal-title">AI 제안 보장 항목</h3><p>보장 항목을 선택하면 선택한 항목의 추천 보장 문구, 지급요건과 약관 초안 전체를 함께 확인할 수 있습니다.</p></div>
           </div>
           <div className="report-page__wording-proposal-grid" role="tablist" aria-label="AI 제안 보장 항목">
-            {aiFullPolicyDraftMock.specialClauses.map((clause, index) => {
+            {policyDraft.specialClauses.map((clause, index) => {
               const isSelected = selectedCoverage.id === clause.id
               return (
                 <button key={clause.id} className={'report-page__wording-proposal-card' + (isSelected ? ' is-selected' : '')} type="button" role="tab" aria-selected={isSelected} onClick={() => setSelectedCoverageId(clause.id)}>
@@ -2724,7 +2924,7 @@ function FullWordingSection({
                       <div><h5>AI 권고안</h5><p>{decision.recommendation}</p></div>
                       <div><h5>판단 근거</h5><p>{decision.rationale}</p><small>{decision.basis}</small></div>
                       <div><h5>적용한 가정</h5><ul>{decision.assumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul></div>
-                      <div className="report-page__wording-decision-confidence"><span>프로토타입 가정치</span><strong>{decision.confidence}</strong></div>
+                      <div className="report-page__wording-decision-confidence"><span>{isArticleDerivedReport(report) ? '문서 근거 신뢰도' : '프로토타입 가정치'}</span><strong>{decision.confidence}</strong></div>
                     </div>
                   </details>
                 ))}
@@ -2772,12 +2972,12 @@ function FullWordingSection({
               </div>
             </nav>
             <div ref={policyDocumentRef} className="report-page__wording-policy-document">
-              <header className="report-page__wording-policy-cover"><span>FULL POLICY DRAFT</span><h4>{aiFullPolicyDraftMock.documentTitle}</h4><p>상품 구조와 세 가지 추천 보장 항목을 함께 반영한 검토용 약관 초안입니다.</p></header>
+              <header className="report-page__wording-policy-cover"><span>FULL POLICY DRAFT</span><h4>{policyDraft.documentTitle}</h4><p>상품 구조와 연결된 추천 보장 항목을 함께 반영한 검토용 약관 구조입니다.</p></header>
               <section className="report-page__wording-policy-common" aria-labelledby="wording-common-policy-title">
-                <h4 id="wording-common-policy-title">{aiFullPolicyDraftMock.commonPolicy.title}</h4>
-                {aiFullPolicyDraftMock.commonPolicy.sections.map((section) => <section className="report-page__wording-policy-section" key={section.id}><h5>{section.title}</h5>{section.articles.map((article) => wordingPolicyArticle(article, 'common-' + section.id + '-' + article.number, activeArticleKey, setActiveArticleKey))}</section>)}
+                <h4 id="wording-common-policy-title">{policyDraft.commonPolicy.title}</h4>
+                {policyDraft.commonPolicy.sections.map((section) => <section className="report-page__wording-policy-section" key={section.id}><h5>{section.title}</h5>{section.articles.map((article) => wordingPolicyArticle(article, 'common-' + section.id + '-' + article.number, activeArticleKey, setActiveArticleKey))}</section>)}
               </section>
-              {aiFullPolicyDraftMock.specialClauses.map((clause) => {
+              {policyDraft.specialClauses.map((clause) => {
                 const clauseKey = 'special-' + clause.id
                 const isSelected = selectedCoverage.id === clause.id
                 return (
@@ -2788,7 +2988,7 @@ function FullWordingSection({
                   </section>
                 )
               })}
-              <section className="report-page__wording-policy-attachments" aria-labelledby="wording-attachments-title"><h4 id="wording-attachments-title">부속 명세</h4><ul>{aiFullPolicyDraftMock.attachments.map((item, index) => <li key={item.title}><strong>{index + 1}. {item.title}</strong><span>{item.description}</span></li>)}</ul></section>
+              <section className="report-page__wording-policy-attachments" aria-labelledby="wording-attachments-title"><h4 id="wording-attachments-title">부속 명세</h4><ul>{policyDraft.attachments.map((item, index) => <li key={item.title}><strong>{index + 1}. {item.title}</strong><span>{item.description}</span></li>)}</ul></section>
             </div>
           </div>
           {copyMessage ? <p className="report-page__copy-message report-page__no-print" role="status">{copyMessage}</p> : null}
@@ -2803,7 +3003,7 @@ function FullWordingSection({
         </section>
       </div>
       </section>
-      {dedicatedPrintRequested && dedicatedPrintCreatedAt && typeof document !== 'undefined' ? createPortal(<WordingPolicyPrintLayout report={report} selectedCoverage={selectedCoverage} createdAt={dedicatedPrintCreatedAt} />, document.body) : null}
+      {dedicatedPrintRequested && dedicatedPrintCreatedAt && typeof document !== 'undefined' ? createPortal(<WordingPolicyPrintLayout report={report} selectedCoverage={selectedCoverage} policyDraft={policyDraft} createdAt={dedicatedPrintCreatedAt} />, document.body) : null}
     </>
   )
 }
@@ -3088,6 +3288,7 @@ const briefingPremiumRange = (range: { min: number; max: number }) => `${briefin
 
 function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
   const storedBriefing = createBriefingContent(report as unknown as ReportResult)
+  const articleReport = isArticleDerivedReport(report)
   const conclusion = ['검토 진행 권고', '검토 가치 있음'].includes(storedBriefing.conclusion) ? '상품 개발 검토 가치 있음' : storedBriefing.conclusion
   const feasibility = report.productFeasibility
   const proposal = report.productProposal
@@ -3102,7 +3303,7 @@ function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
   }
   const coreCards = storedBriefing.coreCards.map((card) => ({
     ...card,
-    status: coreCardResultLabels[card.id] ?? card.status,
+    status: articleReport ? card.status : coreCardResultLabels[card.id] ?? card.status,
     tab: coreCardTabs[card.id] ?? 'feasibility',
     tone: card.id === 'coverage' || /추가|보완|확인 필요/u.test(card.status) ? 'attention' as ExecutiveBriefingStateTone : 'confirmed' as ExecutiveBriefingStateTone,
   }))
@@ -3154,7 +3355,7 @@ function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
     responsibleTeam: '상품개발',
     requiredMaterials: [task.output],
   }))
-  const taskSources = report.meta.dataStatus?.startsWith('ACTUAL ARTICLE') === true
+  const taskSources = articleReport || report.meta.dataStatus?.startsWith('ACTUAL ARTICLE') === true
     ? (missingResearch.length
       ? missingResearch
       : report.aiSummary.nextActions?.map((item) => ({ id: item.id, topic: item.action, reason: item.reason, responsibleTeam: item.responsibleTeams?.[0], requiredMaterials: [] })) ?? [])
@@ -3187,14 +3388,19 @@ function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
     description: storedBriefing.disclaimer,
     conclusion,
     status: storedBriefing.decisionStatus,
-    conclusionBody: report.meta.dataStatus?.startsWith('ACTUAL ARTICLE') === true
+    conclusionBody: articleReport || report.meta.dataStatus?.startsWith('ACTUAL ARTICLE') === true
       ? storedBriefing.checks.join(' ')
       : PRODUCT_REVIEW_SUMMARY_COPY.recommendation.description,
     conclusionPoints: storedBriefing.checks.slice(0, 4),
     states,
     coreCards,
     riskContext,
-    metrics: [
+    metrics: articleReport ? [
+      { id: 'tam', label: '시장성', value: typeof report.meta.marketScore === 'number' ? `${report.meta.marketScore.toFixed(1)}/5점` : '확인 필요', supporting: '문서의 수요·성장·시장 연결성', basis: '원문에서 확인한 시장·수요 지표', confidence, tone: 'confirmed' },
+      { id: 'pml', label: 'PML', value: typeof report.meta.pmlScore === 'number' ? `${report.meta.pmlScore.toFixed(1)}/5점` : '확인 필요', supporting: '사고 심도·집적 가능성·손해 누적', basis: '원문 위험 구조와 손해 유형', confidence, tone: 'attention' },
+      { id: 'premium', label: '상품화 종합점수', value: typeof report.meta.productizationScore === 'number' ? `${report.meta.productizationScore.toFixed(1)}/5점` : '확인 필요', supporting: '시장성·PML·관리 가능성·법률·근거', basis: '문서 기반 종합 산식', confidence, tone: 'attention' },
+      { id: 'loss-ratio', label: '연결 원문', value: `${report.meta.relatedDocumentCount ?? report.evidence.length}건`, supporting: report.meta.articleTopic ?? '문서 분류 기준', basis: '위험 그룹에 연결된 원문 자료', confidence, tone: 'confirmed' },
+    ] : [
       { id: 'tam', label: '총도달가능시장', value: `${financialEstimate.tamRange.base}억 원/년`, supporting: `${financialEstimate.tamRange.min}억~${financialEstimate.tamRange.max}억 원 · ${financialEstimate.marketGrade}등급`, basis: `시장성 ${financialEstimate.marketScore}점 · ${confidence}`, confidence, tone: 'confirmed' },
       { id: 'pml', label: '사고당 PML', value: briefingEokValue(financialEstimate.pmlRange.base), supporting: `추정 범위 ${briefingEokRange(financialEstimate.pmlRange)} · 기준 시나리오`, basis: '상품화 종합평가 PML 산정 결과', confidence, tone: 'attention' },
       { id: 'premium', label: '제안 보험료', value: `연 ${briefingPremium(financialEstimate.premiumRange.base)}`, supporting: `연 ${briefingPremiumRange(financialEstimate.premiumRange)} · 계약당`, basis: '사고 빈도·손해액·사업비·불확실성 가정', confidence, tone: 'attention' },

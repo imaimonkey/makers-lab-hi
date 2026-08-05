@@ -1,5 +1,7 @@
 import { groupArticleSourceRecords, selectArticleGroupRepresentative, type ArticleSourceRecord } from '../../features/risk-dashboard/articleSourceData'
+import { COMMERCIALIZATION_GATE_GROUP_BY_ID } from '../services/commercialization-assessment'
 import { createDeveloperReportData } from './developer-report-adapter'
+import { calculateProductizationScores } from '../../features/risk-catalog/productizationScore'
 import type { ReportResult, RiskSourceData } from '../types'
 
 export type ArticleDerivedReportEntry = {
@@ -15,6 +17,80 @@ const displayDecision = (recommendation: ArticleSourceRecord['derived']['recomme
   if (recommendation === 'hold') return '보류 · 원문 기반'
   return '관찰 지속 · 원문 기반'
 }
+
+const ARTICLE_CRITERIA: Array<[string, string]> = [
+  ['actual_market_demand', '실제 시장 수요'],
+  ['risk_pooling', '위험 분산 가능성'],
+  ['fortuity', '우연성'],
+  ['insurable_interest', '피보험이익'],
+  ['moral_hazard_control', '고의·도덕적 해이 통제'],
+  ['gambling_like_structure', '사행성 배제·실손보상 원칙'],
+  ['loss_verifiability', '손해 확인·산정 가능성'],
+  ['pml_accumulation', '최대가능손해(PML)'],
+  ['liability_clarity', '책임주체 명확성'],
+  ['wording_clarity', '약관·보장조건 명확성'],
+  ['pricing_data_readiness', '위험 데이터 확보 가능성'],
+  ['coverage_gap', '보장 공백·중복 여부'],
+]
+
+const articleCriterionCopy = (article: ArticleSourceRecord, id: string) => {
+  const { derived } = article
+  const targets = derived.affectedTargets.slice(0, 3).join(' · ')
+  const damages = derived.damageTypes.slice(0, 3).join(' · ')
+  const facts = derived.facts.slice(0, 3).join(' ')
+  const metrics = derived.metrics.slice(0, 3).map((metric) => `${metric.label}: ${metric.value}`).join(' · ')
+  const copy: Record<string, { summary: string; rationale: string }> = {
+    actual_market_demand: { summary: derived.summary, rationale: `${targets}를 중심으로 문서에서 확인된 수요·성장 신호를 연결했습니다. ${facts}` },
+    risk_pooling: { summary: `${targets}의 노출을 여러 계약·지역·시설 단위로 나누어 관리할 수 있는지 검토합니다.`, rationale: `문서에서 제시한 영향 대상과 노출 범위를 위험 집단으로 나눌 수 있는지 확인합니다. ${targets}` },
+    fortuity: { summary: derived.event, rationale: `사고 발생 여부와 시점이 사전에 확정되는지, 문서의 사건 구조가 우연한 손해인지 검토합니다. ${derived.changeType}` },
+    insurable_interest: { summary: `${targets}의 경제적 손해와 보험금 수령 주체의 연결을 검토합니다.`, rationale: `피해 대상과 책임 후보를 보험목적·손해 부담 주체와 연결합니다. ${targets}` },
+    moral_hazard_control: { summary: derived.uncertainty[0] ?? '사고 원인·손해 입증과 고의·과다청구 통제 기준을 검토합니다.', rationale: `문서의 손해 유형을 객관적 자료로 확인하고 고의·과다청구 가능성을 분리해야 합니다. ${damages}` },
+    gambling_like_structure: { summary: `${damages}처럼 실제 손해가 확인되는 위험을 기준으로 보상 구조를 검토합니다.`, rationale: `실제 경제적 손해와 위험 사건을 연결해 정액·투자성 구조가 아닌지 확인합니다. ${derived.event}` },
+    loss_verifiability: { summary: `${damages}의 발생 여부와 손해 규모를 객관적으로 확인할 수 있는지 검토합니다.`, rationale: `문서의 사실·지표를 사고 및 손해자료와 연결할 수 있는지 확인합니다. ${facts}` },
+    pml_accumulation: { summary: `${damages}가 한 사고 또는 다수 목적물에 동시에 발생할 때의 최대 손해를 검토합니다.`, rationale: `노출 대상과 손해 유형을 기준으로 사고당 손해와 누적손해를 분리합니다. ${targets} · ${damages}` },
+    liability_clarity: { summary: `${targets} 사이의 책임 주체와 책임 분담 기준을 구분합니다.`, rationale: '사고 원인, 운영, 손해 보유 주체별 역할과 책임을 나누어 확인합니다.' },
+    wording_clarity: { summary: `${derived.event}와 ${damages}를 보장사고·보상손해·면책으로 구분할 수 있는지 검토합니다.`, rationale: '문서의 위험 표현을 사고 정의와 지급요건으로 변환하고 불명확한 범위를 기록합니다.' },
+    pricing_data_readiness: { summary: metrics || '문서에서 확인된 정량 지표와 손해자료 연결 수준을 검토합니다.', rationale: `문서의 지표를 사고 빈도·손해액·노출량 자료로 전환할 수 있는지 확인합니다. ${metrics}` },
+    coverage_gap: { summary: derived.coverageGap, rationale: `기존 보장과 문서에서 확인된 손해 유형 사이의 중복·공백을 구분합니다. ${damages}` },
+  }
+  return copy[id] ?? { summary: derived.summary, rationale: facts }
+}
+
+const articleCriteria = (article: ArticleSourceRecord, evidenceIds: string[]) => ARTICLE_CRITERIA.map(([id, title], index) => {
+  const copy = articleCriterionCopy(article, id)
+  return {
+    id,
+    category: COMMERCIALIZATION_GATE_GROUP_BY_ID[id] === 'insurance_gate' ? 'insurability' : COMMERCIALIZATION_GATE_GROUP_BY_ID[id] === 'productization_gate' ? 'coverage' : 'execution',
+    order: index + 1,
+    title,
+    gateGroup: COMMERCIALIZATION_GATE_GROUP_BY_ID[id] ?? 'supplementary_execution',
+    question: `${title} 기준을 문서 근거와 실제 운영자료로 확인할 수 있는가?`,
+    description: copy.summary,
+    aiDecision: 'fulfilled',
+    reviewStatus: 'pending',
+    status: 'additional_check',
+    evidenceStatus: 'reviewer_confirmation_required',
+    sourceSections: ['article', 'evidence'],
+    requiresReviewerInput: true,
+    summary: copy.summary,
+    rationale: copy.rationale,
+    confirmedFacts: article.derived.facts.join(' '),
+    evidence: [],
+    evidenceIds,
+    confidence: article.derived.confidence.level,
+    missingInformation: article.derived.uncertainty.slice(0, 3),
+    nextActions: [{ id: `${id}-next`, text: article.derived.nextAction, owner: article.derived.isRegulatory ? '법무·준법' : '상품개발·리스크관리', completed: false }],
+    isBlocking: false,
+    analysisDetail: {
+      aiSummary: copy.summary,
+      rationale: [copy.rationale],
+      materials: article.derived.facts.slice(0, 3),
+      assumptions: ['문서에 포함된 사실·지표를 상품화 검토용 근거로 연결'],
+      limitations: article.derived.uncertainty.slice(0, 3),
+      reviewerChecks: [article.derived.nextAction],
+    },
+  }
+})
 
 const resultText = (article: ArticleSourceRecord) => {
   const { derived } = article
@@ -107,7 +183,7 @@ const resultText = (article: ArticleSourceRecord) => {
         alternativeForms: ['기업성 패키지 검토', '위험관리 서비스 연계'],
         expectedPolicyholder: derived.affectedTargets.slice(0, 3),
         expectedInsured: derived.affectedTargets.join(' · '),
-        coveredObject: derived.industries.join(' · '),
+        coveredObject: derived.affectedTargets.join(' · '),
         coveredEvent: derived.event,
         coveredLoss: derived.damageTypes.join(' · '),
         existingInsuranceRelationship: '기존 상품·약관과의 중복 및 공백 확인 필요',
@@ -145,7 +221,7 @@ const resultText = (article: ArticleSourceRecord) => {
           priorityActions: [derived.nextAction],
           aiProductJudgment: 'additional_check_required',
           aiProductJudgmentReason: '근거와 불확실성을 확인한 뒤 사람의 검토가 필요합니다.',
-          criteria: [{ id: 'criterion-1', category: 'data', order: 1, title: '본문 근거·손해 연결성', gateGroup: 'supplementary_execution', question: '본문 지표를 실제 인수·손해자료로 검증할 수 있는가?', description: derived.coverageGap, status: 'additional_check', evidenceStatus: 'reviewer_confirmation_required', sourceSections: ['article 본문'], requiresReviewerInput: true, summary: derived.summary, rationale: derived.nextAction, confirmedFacts: derived.facts.join(' '), evidence: [], confidence: derived.confidence.level, missingInformation: derived.uncertainty, nextActions: [], isBlocking: true }],
+          criteria: articleCriteria(article, fallbackEvidenceIds),
           discoveryContext: { discoveryType: derived.isRegulatory ? 'regulation' : 'research', sourceName: article.source ?? '문서 원문', sourceSummary: derived.summary },
           externalConstraints: [],
         },
@@ -161,7 +237,7 @@ const resultText = (article: ArticleSourceRecord) => {
         assessmentCriteria: [{ id: 'wording-1', question: '사고와 손해를 객관적으로 정의할 수 있는가?', status: '확인 필요', note: derived.coverageGap }],
         structureOptions: [{ id: 'structure-1', title: '조건부 특약 구조', summary: derived.event }],
         selectedDraftType: '본문 기반 검토용 초안',
-        coverageDraft: `${derived.event}로 인해 발생한 ${derived.damageTypes.join(', ')} 손해를 검토 대상으로 정의합니다. 구체적인 보장 범위와 지급 요건은 확인 필요합니다.`,
+        coverageDraft: `${derived.event.replace(/[.!?。！？]+$/u, '')}와 관련해 발생할 수 있는 ${derived.damageTypes.join(', ')} 손해를 검토 대상으로 정의합니다. 구체적인 보장 범위와 지급 요건은 확인 필요합니다.`,
         alternativeLiabilityDraft: '책임 주체와 손해 입증 기준은 공식 자료 및 법무 검토 후 확정합니다.',
         definitions: derived.keywords.slice(0, 5).map((term, index) => ({ id: `definition-${index + 1}`, term, draftDefinition: `${term}의 의미와 적용 범위는 원문·전문가 확인 필요`, status: '확인 필요', evidenceIds: fallbackEvidenceIds })),
         paymentConditions: [{ id: 'payment-1', text: '사고 발생과 손해의 인과관계를 확인할 수 있어야 함', verification: '내부 손해자료·전문가 검토 필요', evidenceIds: fallbackEvidenceIds }],
@@ -211,6 +287,10 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord, rel
       evidenceCount,
       relatedDocumentCount: relatedArticles.length,
       relatedDocumentTitles: relatedArticles.map((relatedArticle) => relatedArticle.title),
+      articleTopic: article.contentProfile.topic,
+      marketScore: calculateProductizationScores(article.derived.metricScores).market,
+      pmlScore: calculateProductizationScores(article.derived.metricScores).pml,
+      productizationScore: calculateProductizationScores(article.derived.metricScores).total,
       badges: ['원문 기반 분석', '문서 근거'],
       disclaimer: '문서 본문을 구조화한 분석 결과이며 공식 약관·보험료·가입 가능 여부를 확정하지 않습니다.',
     },

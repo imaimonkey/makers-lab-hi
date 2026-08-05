@@ -23,7 +23,7 @@ const countStatus = (criteria: CommercializationCriterion[], status: Commerciali
   criteria.filter((criterion) => criterion.status === status).length
 
 const createDefaults = (report: ReportResult): BriefingContent => {
-  const actualArticle = report.meta.dataStatus?.startsWith('ACTUAL ARTICLE') === true
+  const actualArticle = report.meta.analysisMode === 'article-derived-v1' || report.meta.dataStatus?.startsWith('ACTUAL ARTICLE') === true
   const unknown = actualArticle ? '확인 필요' : ''
   const feasibility = report.productFeasibility
   const assessment = feasibility.assessment
