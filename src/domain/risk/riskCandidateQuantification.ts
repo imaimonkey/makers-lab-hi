@@ -61,6 +61,60 @@ const attachmentPrototypeMetrics: Record<string, {
   'platform-worker-transit-accident': { marketScore: 77, pml: '약 12억 원' },
 }
 
+type PmlPrototypeAssumption = {
+  totalLossCount: number
+  totalLossUnitCost: number
+  partialLossCount: number
+  partialLossUnitCost: number
+  facilityEmergencyCost: number
+}
+
+// Same productization formula: total loss + partial loss + facility/emergency response cost.
+// Applied only as a first-pass sample estimate when a non-regulatory candidate lacks PML data.
+const pmlPrototypeAssumptions: Record<string, PmlPrototypeAssumption> = {
+  'ai-voice-investigation': { totalLossCount: 80, totalLossUnitCost: 1_500_000, partialLossCount: 320, partialLossUnitCost: 250_000, facilityEmergencyCost: 200_000_000 },
+  'sns-impersonation-commerce': { totalLossCount: 400, totalLossUnitCost: 800_000, partialLossCount: 1_800, partialLossUnitCost: 150_000, facilityEmergencyCost: 250_000_000 },
+  'ota-delivery-consumer-disputes': { totalLossCount: 120, totalLossUnitCost: 1_000_000, partialLossCount: 650, partialLossUnitCost: 250_000, facilityEmergencyCost: 150_000_000 },
+}
+
+function calculatePmlFromPrototypeAssumption(assumption: PmlPrototypeAssumption) {
+  return assumption.totalLossCount * assumption.totalLossUnitCost
+    + assumption.partialLossCount * assumption.partialLossUnitCost
+    + assumption.facilityEmergencyCost
+}
+
+function prototypePmlMetric(record: RiskExplorationRecord): RiskCandidateQuantificationMetric {
+  const assumption = pmlPrototypeAssumptions[record.id] ?? {
+    totalLossCount: Math.max(20, Math.round(record.metricScores.accumulation * 20)),
+    totalLossUnitCost: 1_000_000,
+    partialLossCount: Math.max(80, Math.round(record.metricScores.accumulation * 120)),
+    partialLossUnitCost: 200_000,
+    facilityEmergencyCost: 100_000_000,
+  }
+  const result = Math.max(1, Math.round(calculatePmlFromPrototypeAssumption(assumption) / 100_000_000))
+
+  return {
+    key: 'pml',
+    label: 'PML',
+    value: `약 ${result}억 원`,
+    sub: 'PML 산정',
+    color: 'red',
+    official: [],
+    assumption: [
+      `전손 ${assumption.totalLossCount}건 × ${assumption.totalLossUnitCost.toLocaleString('ko-KR')}원`,
+      `부분 손해 ${assumption.partialLossCount}건 × ${assumption.partialLossUnitCost.toLocaleString('ko-KR')}원`,
+      `시설·긴급대응 비용 ${assumption.facilityEmergencyCost.toLocaleString('ko-KR')}원`,
+    ],
+    formula: ['PML = 전손 손해 + 부분 손해 + 시설·긴급대응 비용'],
+    result: `약 ${result}억 원 · 상품화 종합평가 산정식 기반 샘플`,
+    numericValue: result,
+    unit: '억원',
+    confidence: '기사 기반',
+    evidenceIds: record.evidenceIds ?? [],
+    uncertainty: ['실제 사고·보험금·시설 규모 자료 연결 후 재산정 필요'],
+  }
+}
+
 /**
  * 위험 후보 카드에 표시하는 1차 수치화 어댑터입니다.
  * 상품화 종합평가 기준 자료가 없는 지표는 임의 추정하지 않고 확인 필요 상태로 남깁니다.
@@ -111,12 +165,12 @@ export function getRiskCandidateQuantification(record: RiskExplorationRecord): R
       key: 'pml', label: 'PML', value: reference?.pml ?? '확인 필요', sub: 'PML 기준 · 상품화 종합평가', color: 'red',
       official: ['후보별 공개 사고사례·손해 범위'], assumption: ['단일사고·누적·시설/긴급대응 손해는 첨부 프로토타입 가정'],
       formula: ['단일사고 손해 + 동시다발 누적손해 + 시설·긴급대응 비용'], result: `${reference?.pml ?? '확인 필요'} · 보수·기준·확대 시나리오 확인 필요`, numericValue: Number(reference?.pml.replace(/[^0-9.]/g, '') ?? 0), unit: '억원', confidence: '기사 기반', evidenceIds: record.evidenceIds ?? [], uncertainty: ['실제 손해액·누적 범위 확인 필요'],
-    } : confirmationMetric(
-      'pml',
-      'PML',
-      'red',
-      '상품화 종합평가 PML 기준',
-      'PML = 단일사고 손해 + 동시다발 누적손해 + 시설·긴급대응 비용',
-    ),
+    } : record.primaryCategory !== 'regulatory' ? prototypePmlMetric(record) : confirmationMetric(
+        'pml',
+        'PML',
+        'red',
+        '상품화 종합평가 PML 기준',
+        'PML = 단일사고 손해 + 동시다발 누적손해 + 시설·긴급대응 비용',
+      ),
   }
 }

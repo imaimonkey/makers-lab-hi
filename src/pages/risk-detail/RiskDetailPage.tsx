@@ -4,6 +4,7 @@ import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sa
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { RiskContextFlow } from '../../features/risk-detail/RiskContextFlow'
+import { GenerativeAiCopyrightDetail } from '../../features/risk-detail/GenerativeAiCopyrightDetail'
 
 type RiskDetailPageProps = {
   data?: { risk: SampleRiskCandidate; detail: SampleRiskDetail; articleId: string }
@@ -33,7 +34,7 @@ export function RiskDetailPage({ data, developerMode = false }: RiskDetailPagePr
 
   return (
     <div className="page detail-page sh-visual">
-      <RiskContextFlow catalogPath={catalogPath} risk={risk} detail={detail} />
+      {risk.id === 'generative-ai-copyright' ? <GenerativeAiCopyrightDetail /> : <RiskContextFlow catalogPath={catalogPath} risk={risk} detail={detail} />}
     </div>
   )
 }

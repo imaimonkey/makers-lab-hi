@@ -13,6 +13,7 @@ import {
 } from '../../domain/risk/riskCandidateQuantification'
 import type { ScreeningCategory } from '../../domain/risk/riskScreeningInsights'
 import { riskCandidateEvidenceSnapshots } from '../../domain/risk/riskCandidateEvidence'
+import { PRODUCT_FINANCIAL_ESTIMATE } from '../../report/data/financial-estimate-mock'
 import { RiskLawTrackingPanel } from './RiskLawTrackingPanel'
 import type { DeveloperLawQueueItem, DeveloperRiskCatalogViewData } from './developerStep2Adapter'
 
@@ -83,6 +84,57 @@ function metricSubLabel(sub: string) {
     .replace(/^상품화 종합평가\s*/, '')
     .replace(/\s*·\s*상품화 종합평가\s*$/, '')
     .trim()
+}
+
+type TamAssumption = {
+  facilityCount: number
+  premiumRange: [number, number, number]
+}
+
+// Prototype assumptions for candidates without a report-specific TAM estimate.
+// All values are calculated with: target facilities × expected annual premium.
+const marketTamAssumptions: Record<string, TamAssumption> = {
+  'ai-transparency-obligation': { facilityCount: 3200, premiumRange: [300000, 550000, 900000] },
+  'mydata-portability-demand': { facilityCount: 1800, premiumRange: [250000, 450000, 750000] },
+  'heatwave-workplace-duty': { facilityCount: 6500, premiumRange: [180000, 320000, 550000] },
+  'kuam-urban-pilot': { facilityCount: 12000, premiumRange: [220000, 400000, 700000] },
+  'ai-voice-investigation': { facilityCount: 2800, premiumRange: [280000, 500000, 850000] },
+  'medical-liability-insurance': { facilityCount: 900, premiumRange: [1200000, 2000000, 3500000] },
+  'sns-impersonation-commerce': { facilityCount: 20000, premiumRange: [30000, 60000, 100000] },
+  'ota-delivery-consumer-disputes': { facilityCount: 5000, premiumRange: [120000, 240000, 400000] },
+  'generative-ai-copyright': { facilityCount: 4200, premiumRange: [300000, 550000, 900000] },
+  'commercial-drone': { facilityCount: 1800, premiumRange: [450000, 800000, 1200000] },
+  'autonomous-level4': { facilityCount: 1200, premiumRange: [1200000, 2200000, 3800000] },
+  'deepfake-phishing': { facilityCount: 60000, premiumRange: [30000, 70000, 120000] },
+  'urban-flooding': { facilityCount: 15000, premiumRange: [800000, 1500000, 2500000] },
+  'enterprise-ransomware': { facilityCount: 7000, premiumRange: [1500000, 3000000, 5000000] },
+  'ess-ups-battery-fire': { facilityCount: 3200, premiumRange: [1500000, 3000000, 5000000] },
+  'heatwave-health-income-loss': { facilityCount: 10000, premiumRange: [100000, 250000, 450000] },
+  'platform-worker-transit-accident': { facilityCount: 300000, premiumRange: [30000, 70000, 120000] },
+}
+
+function tamFromAssumption({ facilityCount, premiumRange }: TamAssumption) {
+  return premiumRange.map((premium) => Math.round(facilityCount * premium / 100_000_000))
+}
+
+function marketTamDisplay(record: RiskExplorationRecord) {
+  if (record.id !== 'ev-battery-fire') {
+    const assumption = marketTamAssumptions[record.id] ?? {
+      facilityCount: Math.max(1000, Math.round(record.metricScores.demand * 10000)),
+      premiumRange: [200000, 400000, 700000] as [number, number, number],
+    }
+    const [min, , max] = tamFromAssumption(assumption)
+    return {
+      label: '총도달가능시장(TAM)',
+      value: `연 ${min}억~${max}억 원`,
+    }
+  }
+
+  const { min, max } = PRODUCT_FINANCIAL_ESTIMATE.tamRange
+  return {
+    label: '총도달가능시장(TAM)',
+    value: `연 ${min}억~${max}억 원`,
+  }
 }
 
 function removeDetailMetricLabel(text: string) {
@@ -181,10 +233,16 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
         </td>
         {screeningColumns.map((key) => {
           const metric = quantification[key]
+          const tam = key === 'market' ? marketTamDisplay(record) : null
           return (
             <td className="screening-metric-cell risk-candidate-metric-cell" key={key}>
               {metricValueIsUnconfirmed(metric.value) ? <span className="risk-metric-badge warning">[{confirmationBadgeLabel(key)}]</span> : <strong className={`risk-metric-value risk-metric-${key}`}>{metric.value}</strong>}
-              <small>{metricSubLabel(metric.sub)}</small>
+              {tam ? (
+                <small className="risk-market-tam" aria-label={`${tam.label}: ${tam.value}`}>
+                  <b>{tam.label}</b>
+                  <span>{tam.value}</span>
+                </small>
+              ) : <small>{metricSubLabel(metric.sub)}</small>}
             </td>
           )
         })}

@@ -3106,6 +3106,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .risk-exploration-lens .risk-screening-source-footer span,
 .risk-exploration-lens .risk-screening-source-footer a { font-size: 10px; }
 .risk-exploration-lens .risk-screening-detail-actions a { font-size: 11px; }
+.risk-exploration-lens .risk-screening-detail-link {
+  min-height: 38px;
+  padding: 8px 18px;
+  border-radius: 9px;
+  font-size: 13px;
+}
 
 @media (max-width: 720px) {
   .risk-exploration-lens .screening-table-heading h3 { font-size: 18px; }

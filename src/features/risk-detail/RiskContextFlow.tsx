@@ -18,14 +18,16 @@ type Metric = {
   missing: string[]
 }
 
-const journey = [
-  ['1', '왜 등장했나', '산업·기술 변화와 배경'],
-  ['2', '왜 보험으로 보나', '비용·책임·보장 공백'],
-  ['3', '어떻게 발생하나', '사고·분쟁의 인과 흐름'],
-  ['4', '누가 손해 보나', '손해 유형과 책임 주체'],
-  ['5', '왜 평가하나', '스크리닝 지표와 원문 근거'],
-  ['6', '무엇을 더 보나', '부족한 자료와 상품화 질문'],
-]
+function buildJourney(risk: SampleRiskCandidate, detail: SampleRiskDetail) {
+  return [
+    ['1', '위험 노출 확대', `${risk.title} 관련 사용·시설·운영 규모가 커집니다.`],
+    ['2', '위험 요인 발생', `${detail.exposedParty}의 운영·이용 과정에서 위험 신호가 나타납니다.`],
+    ['3', '사고·분쟁 발생', detail.riskStatement],
+    ['4', '손해 범위 확대', detail.primaryLoss],
+    ['5', '책임 주체 확인', `${detail.exposedParty}와 계약·운영 관계에 따라 책임을 구분합니다.`],
+    ['6', '보험 보장 검토', detail.decisionChecks[0] || '기존 상품 연결과 보장 공백을 확인합니다.'],
+  ]
+}
 
 const metricNames = ['수요·시장 근거', '손해 측정 가능성', '보험사고 성립성', '책임·법률 구조', '인수·통제 가능성', '손실 규모·집적위험', '데이터 신뢰도', '기존 상품 보장 공백']
 
@@ -115,12 +117,39 @@ function PanelHeading({ number, title, subtitle }: { number: string; title: stri
 
 export function RiskContextFlow({ catalogPath, risk, detail }: RiskContextFlowProps) {
   const [openMetric, setOpenMetric] = useState(0)
+  const journey = buildJourney(risk, detail)
   const contextCards = buildContextCards(risk, detail)
   const flow = buildFlow(risk, detail)
   const damageRows = buildDamageRows(risk, detail)
   const stakeholders = buildStakeholders(detail)
   const coverage = buildCoverage(risk)
   const metrics = buildMetrics(risk, detail)
+  const insuranceLosses = risk.id === 'ev-battery-fire'
+    ? ['발화 차량의 배터리·차체 손해', '인접 차량의 화재·열·그을음·소화수 피해', '천장·기둥·마감재의 열손상', '전기·통신·급수·환기설비 손상', '단전·단수 및 주차장 사용 중단', '입주민 대피와 임시거주 비용', '관리주체의 긴급조치 및 복구 비용']
+    : [`직접 손해: ${detail.primaryLoss}`, '인접 목적물·제3자 손해', '조사·방어·복구 비용', '영업·서비스 중단', '대피·임시조치 비용', '관리주체 긴급조치', '계약·법률상 배상책임']
+  const insuranceReasons = [
+    {
+      title: risk.id === 'ev-battery-fire' ? '하나의 사고가 다수 손해로 확대될 수 있음' : '하나의 사고가 여러 손해로 확대될 수 있음',
+      description: risk.id === 'ev-battery-fire' ? '지하주차장은 차량, 전기설비, 통신시설, 배관, 환기설비 등이 가까이 모여 있어 한 차량의 화재가 여러 피해 대상으로 확산될 수 있습니다.' : `${risk.title}은 사고가 발생하면 ${detail.exposedParty}와 주변 시설·이용자에게 손해가 연쇄적으로 확산될 수 있습니다.`,
+      losses: insuranceLosses,
+      insurance: '서로 다른 보험 목적물과 다수 피해자가 한 사고에 동시에 노출되는 집적위험으로 볼 필요가 있습니다.',
+      ai: '손해 종류만이 아니라 한 사고에서 몇 개의 목적물과 이해관계자가 동시에 영향을 받는지를 확인해야 합니다.',
+    },
+    {
+      title: risk.id === 'ev-battery-fire' ? '발생 빈도보다 사고당 손해 규모가 중요함' : '발생 빈도보다 사고당 손해 규모가 중요함',
+      description: risk.id === 'ev-battery-fire' ? '전기차의 차량당 화재 발생률이 특별히 높다고 단정하기는 어렵지만, 지하주차장에서는 열과 연기가 축적되고 인접 차량과 구조물이 가까워 사고 한 건의 피해 규모가 커질 가능성이 있습니다.' : `${risk.title}은 발생 빈도만으로 판단하기보다 사고 한 건에서 발생할 수 있는 손해 심도와 누적손실을 함께 확인해야 합니다.`,
+      quote: detail.evidence[0]?.excerpt || '사고 빈도와 별도로 사고당 손해심도·누적손해를 구분해 확인해야 합니다.',
+      insurance: '발생 빈도보다 사고당 최대손해와 다수 목적물의 동시 손해 가능성을 함께 봐야 합니다.',
+      ai: `${risk.title}의 손해 규모는 사고 원인뿐 아니라 노출된 목적물과 책임 주체의 범위에 따라 달라질 수 있습니다.`,
+    },
+    {
+      title: risk.id === 'ev-battery-fire' ? '사고 진압 이후에도 손해가 계속될 수 있음' : '사고 이후에도 손해가 계속될 수 있음',
+      description: risk.id === 'ev-battery-fire' ? '전기차 배터리는 차량 하부에 위치해 배터리 팩 내부를 직접 냉각하기 어려울 수 있습니다. 상부 스프링클러는 주변 확산 억제에 효과가 있어도 배터리 내부 열폭주 제어에는 한계가 있을 수 있습니다.' : `${risk.title}은 사고가 종료된 뒤에도 복구, 재발 방지, 영업 재개와 관련된 추가 손해가 이어질 수 있습니다.`,
+      chips: risk.id === 'ev-battery-fire' ? ['진압 시간 장기화', '추가 소방활동 비용', '재발화 감시', '차량 보관', '주차장 폐쇄', '복구비용 증가'] : [detail.decisionChecks[0], detail.decisionChecks[1], detail.primaryLoss].filter(Boolean),
+      insurance: '사고 당시의 직접손해뿐 아니라 사고 이후 관리·복구 비용까지 손해 범위가 넓어질 수 있습니다.',
+      ai: '사고 종료 시점과 보험상 손해 종료 시점이 다를 수 있으므로 후속 비용의 발생 경로를 분리해야 합니다.',
+    },
+  ]
   const linkedEvidence = [
     ...detail.evidence.filter((item) => item.sourceUrl),
     ...detail.evidence.filter((item) => !item.sourceUrl && item.sourceName),
@@ -144,7 +173,18 @@ export function RiskContextFlow({ catalogPath, risk, detail }: RiskContextFlowPr
 
       <div className="rcf-layout"><main className="rcf-content-col">
         <section className="rcf-card rcf-panel" id="context"><PanelHeading number="01" title="이슈의 내용과 맥락" subtitle="상품화 판단 전 위험 자체를 이해하는 단계입니다." /><div className="rcf-context-grid">{contextCards.map(([title, body]) => <article className="rcf-context-card" key={title}><b>{title}</b><p>{body}</p></article>)}</div></section>
-        <section className="rcf-card rcf-panel" id="why-insurance"><PanelHeading number="02" title="왜 보험 관점에서 주목해야 하나?" subtitle="단순한 이슈가 아니라 보험 검토 가치가 있는 이유를 정리합니다." /><div className="rcf-reason-list">{[['손해가 구체적인 비용과 책임으로 전환될 수 있음', `${risk.title}은 사고가 발생하면 직접 손해뿐 아니라 조사·방어·복구·배상 비용으로 구체화될 수 있습니다.`, '직접 손해와 방어비용, 제3자 배상책임을 구분하여 담보 가능성을 검토할 수 있습니다.', '손해액 자체보다 사고가 어떤 비용 항목으로 전환되는지 구조화하는 것이 중요합니다.'], ['기존 보험의 보장 경계가 불명확함', `${risk.title}은 기존 재산·배상책임·사이버·전문직 담보와 일부 연결될 수 있지만 약관의 면책과 사고 정의에서 공백이 생길 수 있습니다.`, '신상품뿐 아니라 기존 약관 개정 또는 특약 확장 가능성도 함께 검토해야 합니다.', '완전히 새로운 위험인지 기존 담보 사이의 복합 보장 공백인지 구분해야 합니다.'], ['기업·운영 주체의 통제 수준에 따라 위험 차이가 큼', '예방·검수·기록·교육·계약 관리 수준에 따라 동일한 위험의 발생 가능성과 손해 규모가 달라질 수 있습니다.', '통제 수준을 인수조건과 자기부담금, 면책 기준에 반영할 여지가 있습니다.', '위험 자체뿐 아니라 관리 가능한 위험인지가 상품화 판단의 핵심입니다.']].map(([title, body, insurance, ai], index) => <article className="rcf-reason" key={title}><div className="rcf-reason-head"><div className="rcf-reason-index">{String(index + 1).padStart(2, '0')}</div><h3>{title}</h3></div><p>{body}</p><div className="rcf-reason-grid"><div className="insurance"><b>보험 관점의 의미</b>{insurance}</div><div className="ai"><b>AI 해석</b>{ai}</div></div></article>)}</div></section>
+        <section className="rcf-card rcf-panel" id="why-insurance"><PanelHeading number="02" title="왜 보험 관점에서 주목해야 하나?" subtitle="단순한 이슈가 아니라 보험 검토 가치가 있는 이유를 정리합니다." />
+          <div className="rcf-reason-list rcf-insurance-reasons">
+            {insuranceReasons.map((reason, index) => <article className="rcf-reason rcf-insurance-reason" key={reason.title}>
+              <div className="rcf-reason-head"><div className="rcf-reason-index">{String(index + 1).padStart(2, '0')}</div><h3>{reason.title}</h3></div>
+              <p>{reason.description}</p>
+              {reason.losses ? <div className="rcf-loss-grid">{reason.losses.map((item) => <span className="rcf-loss-item" key={item}>{item}</span>)}</div> : null}
+              {reason.quote ? <div className="rcf-insurance-quote">{reason.quote}</div> : null}
+              <div className="rcf-reason-grid"><div className="insurance"><b>보험 관점의 의미</b>{reason.insurance}</div><div className="ai"><b>AI 해석</b>{reason.ai}</div></div>
+              {reason.chips ? <div className="rcf-chip-list">{reason.chips.map((item) => <span key={item}>{item}</span>)}</div> : null}
+            </article>)}
+          </div>
+        </section>
         <section className="rcf-card rcf-panel" id="mechanism"><PanelHeading number="03" title="위험 발생 구조" subtitle="업무·서비스 과정에서 사고와 손해로 이어지는 흐름입니다." /><div className="rcf-flow-wrap"><div className="rcf-flow">{flow.map(([title, body]) => <div className="rcf-step" key={title}><strong>{title}</strong><span>{body}</span></div>)}</div><div className="rcf-callout">동일한 위험이라도 노출 규모, 운영 방식, 사전 통제, 계약 관계와 실제 사용 방식에 따라 사고 가능성과 손해 수준이 달라집니다.</div></div></section>
         <section className="rcf-card rcf-panel" id="damage"><PanelHeading number="04" title="손해와 비용의 확산 경로" subtitle="예상 보험금이 아니라 발생 가능한 손해 유형을 구분합니다." /><div className="rcf-damage-list">{damageRows.map(([title, body, tag]) => <div className="rcf-damage-row" key={title}><strong>{title}</strong><p>{body}</p><span>{tag}</span></div>)}</div><div className="rcf-note">금액 표시 원칙: 공개된 판결·합의·실제 비용이 확인되는 경우에만 근거와 함께 표시하며, 예상 보험료·PML은 종합 리포트에서 별도 검토합니다.</div></section>
         <section className="rcf-card rcf-panel" id="stakeholders"><PanelHeading number="05" title="영향 대상과 책임 관계" subtitle="누가 위험을 만들고 이용하며 손해를 부담할 수 있는지 구분합니다." /><div className="rcf-stake-grid">{stakeholders.map(([title, body]) => <article className="rcf-stake-card" key={title}><b>{title}</b><p>{body}</p></article>)}</div></section>

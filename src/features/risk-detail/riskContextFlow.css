@@ -6,3 +6,25 @@
 /* The detail body follows the same page width and gutter as the surrounding screens. */
 .risk-context-flow{width:100%;max-width:none;margin:0;padding:0 0 72px}
 .risk-context-flow .rcf-journey{display:none}
+.risk-context-flow .rcf-journey{display:block}
+
+.rcf-insurance-reasons{gap:14px}
+.rcf-insurance-reason{padding:17px}
+.rcf-loss-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin:13px 0}
+.rcf-loss-item{padding:9px 10px;border:1px solid var(--rcf-line);border-radius:9px;background:#f7f9fc;color:#5f7188;font-size:11px;line-height:1.45}
+.rcf-insurance-quote{margin:13px 0 10px;padding:10px 12px;border-left:3px solid #f07828;background:#fff4eb;color:#30475f;font-size:11px;font-weight:700}
+.rcf-chip-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.rcf-chip-list span{padding:5px 8px;border-radius:999px;background:#eef3f8;color:#687b91;font-size:10px}
+@media(max-width:600px){.rcf-loss-grid{grid-template-columns:1fr}}
+
+.rcf-mechanism-summary{margin:16px 20px 0;padding:14px 16px;border-left:3px solid #f07828;border-radius:0 10px 10px 0;background:#fff6ef;color:#52657d;font-size:12px;line-height:1.65}
+.rcf-mechanism-summary b{color:var(--rcf-navy)}
+.rcf-mechanism-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px 20px 0}
+.rcf-mechanism-stats article{min-height:104px;padding:13px 14px;border:1px solid var(--rcf-line);border-top:2px solid #f07828;border-radius:10px;background:#fff}
+.rcf-mechanism-stats article:nth-child(2){border-top-color:#e24b4b}.rcf-mechanism-stats article:nth-child(3){border-top-color:#7550d6}.rcf-mechanism-stats article:nth-child(4){border-top-color:#058b82}
+.rcf-mechanism-stats span{display:block;color:#708095;font-size:10px;font-weight:800}.rcf-mechanism-stats strong{display:block;margin-top:7px;color:var(--rcf-navy);font-size:17px;line-height:1.2}.rcf-mechanism-stats p{margin:7px 0 0;color:#8090a2;font-size:10px;line-height:1.45}
+.rcf-mechanism-note{margin:14px 20px 0;padding:12px 14px;border:1px solid #f0d49a;border-radius:9px;background:#fff9eb;color:#765f42;font-size:11px;line-height:1.6}.rcf-mechanism-note b{color:#9b650f}
+.rcf-flow-heading{padding:24px 20px 10px}.rcf-flow-heading h3{margin:0;color:var(--rcf-navy);font-size:16px}.rcf-flow-heading p{margin:5px 0 0;color:#8291a4;font-size:11px}
+.rcf-detailed-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:0 20px 16px}.rcf-detailed-flow-step{position:relative;min-height:132px;padding:13px 10px;border:1px solid var(--rcf-line);border-radius:11px;background:#f7f9fc;text-align:center}.rcf-detailed-flow-step:not(:last-child)::after{content:'›';position:absolute;right:-10px;top:50%;z-index:2;color:#f07828;font-size:22px;font-weight:400;transform:translateY(-50%)}.flow-step-number{display:block;color:var(--rcf-blue);font-size:10px;font-weight:900;letter-spacing:.08em}.flow-step-icon{display:grid;place-items:center;height:32px;margin:8px auto 6px;color:#f07828;font-size:21px;font-weight:900}.rcf-detailed-flow-step:nth-child(2) .flow-step-icon{color:#6d9b54}.rcf-detailed-flow-step:nth-child(3) .flow-step-icon{color:#ed5b32}.rcf-detailed-flow-step:nth-child(4) .flow-step-icon{color:#72879d}.rcf-detailed-flow-step:nth-child(5) .flow-step-icon{color:#2563eb}.rcf-detailed-flow-step strong{display:block;color:var(--rcf-navy);font-size:12px}.rcf-detailed-flow-step p{margin:5px 0 0;color:#7a899b;font-size:10px;line-height:1.45}.rcf-mechanism-panel>.rcf-callout{margin:0 20px 18px;border:1px solid #cbdcff;border-left:3px solid var(--rcf-blue);border-radius:9px;background:#f3f7ff;color:#5f7188}.rcf-mechanism-panel>.rcf-callout b{color:#2f5fa9}
+@media(max-width:820px){.rcf-mechanism-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.rcf-detailed-flow{grid-template-columns:repeat(3,minmax(0,1fr))}.rcf-detailed-flow-step:nth-child(3)::after{display:none}}
+@media(max-width:600px){.rcf-mechanism-summary,.rcf-mechanism-note{margin-inline:15px}.rcf-mechanism-stats{grid-template-columns:1fr;padding-inline:15px}.rcf-flow-heading{padding-inline:15px}.rcf-detailed-flow{grid-template-columns:1fr;padding-inline:15px}.rcf-detailed-flow-step:not(:last-child)::after{content:'↓';right:50%;top:auto;bottom:-17px;font-size:18px;transform:translateX(50%)}.rcf-mechanism-panel>.rcf-callout{margin-inline:15px}}
