@@ -303,7 +303,9 @@ function displayReportTitle(title: string) {
   return riskTitle || title
 }
 
-const isArticleDerivedReport = (report: Pick<ReportView, 'meta'>) => report.meta.analysisMode === 'article-derived-v1'
+const isArticleDerivedReport = (report: Pick<ReportView, 'meta'>) => ['article-derived-v1', 'curated-risk-v1'].includes(report.meta.analysisMode ?? '')
+const isReferenceBenchmarkReport = (report: Pick<ReportView, 'meta'>) => report.meta.sourceRiskId === 'RSK-EVFIRE-001' || report.meta.reportId?.startsWith('RPT-EVFIRE') === true
+const displayRiskId = (report: Pick<ReportView, 'meta'>) => (report.meta.sourceRiskId ?? '').replace(/^developer-/u, '')
 
 function displayDate(value?: string | null, includeTime = false) {
   if (!value) return '확인 필요'
@@ -1823,15 +1825,17 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
       </section>
 
       <section className="report-page__proposal-metrics" aria-labelledby="proposal-metrics-title">
-        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">FIRST PRICING VIEW</p><h3 id="proposal-metrics-title">1차 가격·손해지표</h3><p>{articleReport ? '문서에서 산출한 시장성·PML·상품화 종합점수와 연결 원문을 표시합니다.' : '상품화 종합평가 PML과 명시된 프로토타입 가정을 연결한 1차 산출값입니다.'}</p></div></div>
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">FIRST PRICING VIEW</p><h3 id="proposal-metrics-title">{articleReport ? '원문 기반 위험 지표' : '1차 가격·손해지표'}</h3><p>{articleReport ? '문서에서 산출한 시장성·PML·상품화 종합점수와 연결 원문을 표시합니다.' : '상품화 종합평가 PML과 명시된 프로토타입 가정을 연결한 1차 산출값입니다.'}</p></div></div>
         <div className="report-page__proposal-metric-grid">
           {displayPricingCards.map((card) => (
             <article className={'report-page__proposal-metric report-page__proposal-metric--' + card.id} key={card.id}>
               <h4>{card.title}</h4>
               <strong className="report-page__proposal-metric-value">{card.value}</strong>
               <p className="report-page__proposal-metric-subvalue">{card.subvalue}</p>
-              <div className="report-page__proposal-scenario-values" aria-label={card.title + ' 시나리오 값'}>
-                {PROPOSAL_PRICING_SCENARIO_OUTPUTS.map((scenario) => <div className={scenario.id === 'base' ? 'is-base' : undefined} key={scenario.id}><span>{scenario.label}</span><strong>{card.values(scenario)}</strong></div>)}
+              <div className="report-page__proposal-scenario-values" aria-label={articleReport ? card.title + ' 원문 기준 값' : card.title + ' 시나리오 값'}>
+                {articleReport
+                  ? <div className="is-base"><span>원문 기준</span><strong>{card.value}</strong></div>
+                  : PROPOSAL_PRICING_SCENARIO_OUTPUTS.map((scenario) => <div className={scenario.id === 'base' ? 'is-base' : undefined} key={scenario.id}><span>{scenario.label}</span><strong>{card.values(scenario)}</strong></div>)}
               </div>
               {card.id === 'pml' ? <p className="report-page__proposal-metric-source">산출 기준 · 상품화 종합평가 PML</p> : null}
               <details className="report-page__proposal-metric-details" open={printMode}>
@@ -2561,7 +2565,7 @@ function LegacyWordingSection({
 
         <section ref={fullDraftRef} className="report-page__wording-main-zone report-page__wording-zone-d" aria-labelledby="wording-full-draft-title">
           <div className="report-page__wording-zone-heading"><div><h3 id="wording-full-draft-title">보장 특별약관 전체 초안</h3><p>선택한 보장 항목에 대해 AI가 작성한 전체 특별약관 조문을 검토합니다.</p></div></div>
-          <p className="report-page__wording-full-draft-notice">이 초안은 현대해상 기존 약관의 일반적인 조문 구조를 참고하여 작성한 프로토타입용 mock 데이터입니다. 실제 상품 약관이 아니며 법무·준법·계리 검토가 완료되지 않았습니다.</p>
+          <p className="report-page__wording-full-draft-notice">이 초안은 기존 약관의 일반적인 조문 구조와 연결된 근거자료를 참고하여 작성한 검토안입니다. 실제 상품 약관이 아니며 법무·준법·계리 검토가 완료되지 않았습니다.</p>
           <div className="report-page__wording-article-layout"><nav className="report-page__wording-article-toc report-page__no-print" aria-label="조문 목차"><strong>조문 목차</strong><div className="report-page__wording-article-toc-list">{selectedCoverage.fullDraftArticles.map((article) => <button key={article.articleNumber} className={activeArticleNumber === article.articleNumber ? 'is-active' : ''} type="button" onClick={() => scrollToArticle(article.articleNumber)}>제{article.articleNumber}조 {article.title}</button>)}</div><select aria-label="조문 선택" value={activeArticleNumber ?? ''} onChange={(event) => { if (event.target.value) scrollToArticle(Number(event.target.value)) }}><option value="">조문 선택</option>{selectedCoverage.fullDraftArticles.map((article) => <option key={article.articleNumber} value={article.articleNumber}>제{article.articleNumber}조 {article.title}</option>)}</select></nav><div className="report-page__wording-article-list">{selectedCoverage.fullDraftArticles.map((article) => <article className={activeArticleNumber === article.articleNumber ? 'is-active' : ''} key={article.articleNumber} ref={(node) => { articleRefs.current[article.articleNumber] = node }} data-article-number={article.articleNumber}><span className="report-page__wording-article-number">제{article.articleNumber}조</span><h4>{article.title}</h4><p><WordingHighlightedText text={article.content} /></p></article>)}</div></div>
 
           <div ref={detailedReviewRef} className="report-page__wording-detail-toggles">
@@ -2586,56 +2590,195 @@ function wordingPolicyTermItems(article: PolicyArticle | undefined): Array<{ ter
 }
 
 function createArticlePolicyDraft(report: ReportView): FullPolicyDraft {
-  if (!isArticleDerivedReport(report)) return aiFullPolicyDraftMock
+  if (isReferenceBenchmarkReport(report)) return aiFullPolicyDraftMock
   const data = report.wordingFeasibility
   const title = report.meta.riskTitle ?? report.meta.title
   const targets = report.riskGapSummary.affectedParties ?? []
-  const damages = (report.riskGapSummary.damageTypes ?? []).map((item) => item.name)
-  const definitions: PolicyArticleItem[] = (data.definitions ?? []).slice(0, 8).map((item) => ({ term: String(item.term ?? ''), definition: String(item.draftDefinition ?? '') })).filter((item) => item.term && item.definition)
-  const paymentItems = (data.paymentConditions ?? []).map((item) => item.text).filter((item): item is string => Boolean(item))
-  const exclusionItems = (data.exclusionCandidates ?? []).map((item) => item.text).filter((item): item is string => Boolean(item))
-  const evidenceItems = report.evidence.slice(0, 5).map((item) => `${item.title} · ${item.source}`)
+  const damageRows = report.riskGapSummary.damageTypes ?? []
+  const damages = damageRows.map((item) => item.name).filter(Boolean)
+  const compactUnique = (items: Array<string | undefined | null>) => Array.from(new Set(items.map((item) => item?.trim()).filter((item): item is string => Boolean(item))))
+  const definitions: PolicyArticleItem[] = compactUnique((data.definitions ?? []).map((item) => item.term)).slice(0, 11).map((term) => {
+    const source = (data.definitions ?? []).find((item) => item.term === term)
+    return { term, definition: String(source?.draftDefinition ?? `${term}의 범위와 판단 기준을 원문 근거에 따라 확정합니다.`) }
+  })
   const eventText = report.productProposal.coveredEvent ?? report.riskGapSummary.definition ?? title
   const lossText = (report.productProposal.coveredLoss ?? damages.join(' · ')) || '문서에서 확인된 손해 유형'
+  const existingInsuranceText = report.productProposal.existingInsuranceRelationship ?? '기존 보험의 보장 범위와 중복·선보상 관계를 확인합니다.'
+  const targetText = targets.join(' · ') || report.productProposal.expectedInsured || '보험증권에 기재된 피보험자와 이해관계자'
+  const paymentItems = compactUnique([
+    ...(data.paymentConditions ?? []).map((item) => item.text),
+    `${eventText}의 발생 사실과 보장기간·보장지역을 확인할 수 있어야 합니다.`,
+    `${lossText}의 직접성, 발생 규모와 손해액을 객관적 자료로 확인할 수 있어야 합니다.`,
+    `${targetText}의 계약상 지위와 보험금 청구권자를 확인해야 합니다.`,
+    '사고 원인, 손해 발생 과정과 기존 보험의 지급 내역을 확인해야 합니다.',
+  ])
+  const exclusionItems = compactUnique([
+    ...(data.exclusionCandidates ?? []).map((item) => item.text),
+    '원문에서 확인되지 않거나 보장 사건과 직접적인 인과관계가 확인되지 않는 손해',
+    '사고 전부터 존재한 손상, 통상적인 마모·소모와 정상적인 성능 저하',
+    '다른 보험 또는 책임주체로부터 이미 보상받은 금액과 중복되는 손해',
+    '계약자 또는 피보험자의 고의·사기·허위자료 제출로 확대된 손해',
+  ])
+  const evidenceItems = compactUnique(report.evidence.slice(0, 6).map((item) => `${item.title} · ${item.source}`))
+  const coverageRows = (report.riskGapSummary.existingCoverageMap ?? []).map((item) => `${item.damage ?? item.coverageName}: ${item.remainingGap ?? item.possibleCoverage ?? '기존 보장과의 연결 범위를 확인합니다.'}`)
+  const roleItems = (report.targetSuitability.roleStructure ?? []).map((item) => `${item.role}: ${(item.candidates ?? []).join(' · ') || item.question || '역할과 책임 범위를 확인합니다.'}`)
+  const underwritingItems = compactUnique([
+    ...(report.productProposal.underwritingCandidates ?? []),
+    ...roleItems,
+    '보장 대상의 규모·운영방식·위험관리 수준과 사고 이력을 확인합니다.',
+  ])
+  const outOfScopeItems = compactUnique([
+    ...(report.productProposal.outOfScopeCandidates ?? []),
+    ...exclusionItems.slice(-3),
+  ])
+  const ambiguityItems = compactUnique((data.ambiguities ?? []).map((item) => `${item.issue}${item.question ? `: ${item.question}` : ''}`))
+  const criteriaItems = compactUnique((data.assessmentCriteria ?? []).map((item) => `${item.question}: ${item.note ?? item.assumption ?? '확인 필요'}`))
+  const sourceItem = (index: number) => evidenceItems[index] ?? evidenceItems[0] ?? '연결 원문 및 공식 확인자료'
+  const makeArticle = (number: number, articleTitle: string, paragraphs: string[], items: PolicyArticleItem[] = []): PolicyArticle => ({
+    number,
+    title: articleTitle,
+    paragraphs: paragraphs.filter(Boolean),
+    ...(items.length ? { items } : {}),
+  })
+  const definitionItems: PolicyArticleItem[] = [
+    ...definitions,
+    { term: '보장 사건', definition: `${eventText} 중 보험증권과 특별약관에서 보장 대상으로 확정한 사건을 말합니다.` },
+    { term: '직접 손해', definition: `${lossText} 중 보장 사건과 상당인과관계가 있고 객관적 자료로 확인되는 물리적·경제적 손해를 말합니다.` },
+    { term: '보장 대상', definition: `${targetText} 중 보험증권에 기재되거나 계약상 보장 대상으로 특정된 사람·시설·서비스를 말합니다.` },
+  ].filter((item, index, items) => typeof item === 'string' || items.findIndex((candidate) => typeof candidate !== 'string' && candidate.term === item.term) === index).slice(0, 11)
   const commonPolicy = {
     id: 'article-common-policy',
     title: `${title} 검토용 보통약관 구조`,
     sections: [
       { id: 'article-section-1', title: '제1관 목적 및 용어의 정의', articles: [
-        { number: 1, title: '목적', paragraphs: [data.coverageDraft ?? `${eventText}와 관련된 ${lossText} 손해의 보장 구조를 검토합니다.`] },
-        { number: 2, title: '용어의 정의', paragraphs: ['이 문서에서 사용하는 위험 사건·손해·영향 대상의 의미를 원문 근거에 따라 정리합니다.'], items: definitions },
+        makeArticle(1, '목적', [
+          data.coverageDraft ?? `${eventText}와 관련된 ${lossText} 손해를 약관상 보장 사건과 지급요건으로 구분하는 것을 목적으로 합니다.`,
+          `${targetText}의 계약상 지위, 기존 보험의 선행 보상과 책임주체별 부담관계를 확인하여 상품화 전 검토 기준을 마련합니다.`,
+        ]),
+        makeArticle(2, '용어의 정의', [
+          '이 약관에서 사용하는 위험 사건·손해·보장 대상·기존 보험의 의미는 원문과 연결 근거를 기준으로 구체화합니다.',
+        ], definitionItems),
       ] },
-      { id: 'article-section-2', title: '제2관 사고와 손해의 확인', articles: [
-        { number: 3, title: '보상하는 손해의 공통 원칙', paragraphs: [eventText, lossText] },
-        { number: 4, title: '손해의 통지 및 조사', paragraphs: paymentItems.length ? paymentItems : ['사고 발생과 손해 규모를 객관적 자료로 확인합니다.'], items: evidenceItems },
-        { number: 5, title: '보상하지 않는 손해의 공통 원칙', paragraphs: ['문서에서 확인되지 않은 손해 범위와 다른 제도에서 이미 보상된 손해는 별도 기준을 정합니다.'], items: exclusionItems },
+      { id: 'article-section-2', title: '제2관 보험금의 지급', articles: [
+        makeArticle(3, '보상하는 손해', [`${eventText}로 인해 ${targetText}에 발생한 손해 중 ${lossText}과 직접 연결되고 약관에서 정한 요건을 충족하는 범위를 보상 대상으로 검토합니다.`, coverageRows[0] ?? '기존 보험으로 보상되는 범위와 남는 보장 공백을 손해 유형별로 구분합니다.'], damages),
+        makeArticle(4, '보상하지 않는 손해', ['보장 사건과의 인과관계가 부족하거나 다른 제도·보험에서 이미 보상된 손해는 보상 범위와 구분하여 명시합니다.'], exclusionItems),
+        makeArticle(5, '사고발생의 통지', [`${eventText}가 발생하거나 발생 가능성을 알게 된 경우 사고 일시·장소·대상·초기 손해를 확인할 수 있도록 통지 절차를 검토합니다.`, `통지 지연이 ${lossText}의 확대와 조사 가능성에 미친 영향을 별도로 판단합니다.`], paymentItems.slice(0, 3)),
+        makeArticle(6, '사고조사와 손해의 확인', ['사고 원인, 손해 발생 경로, 손해액과 책임주체를 분리해 조사하고 확인 가능한 자료의 범위를 정합니다.', `다음 근거를 기준으로 ${lossText}의 발생 사실과 규모를 대조합니다.`], evidenceItems),
+        makeArticle(7, '손해사정', [`${targetText}의 역할과 손해 유형별 산정방법이 다른 경우 항목별 손해사정 기준과 전문가 확인 절차를 구분합니다.`, '의견이 일치하지 않는 경우 독립된 손해사정인 또는 전문기관의 판단을 참고할 수 있도록 자료 보전 절차를 둡니다.'], [...roleItems, ...criteriaItems.slice(0, 3)]),
+        makeArticle(8, '보험금의 청구', ['피보험자는 사고 사실, 보장 대상, 손해액과 기존 보험의 적용 여부를 확인할 수 있는 자료를 제출하는 방식으로 청구합니다.'], paymentItems.slice(0, 8)),
+        makeArticle(9, '보험금의 지급시기', ['회사는 사고 접수와 필요한 자료가 갖추어진 시점부터 조사·손해확정·지급 여부 판단의 순서를 관리합니다.', '추가 조사가 필요한 경우 확인 중인 쟁점과 예상되는 자료를 안내하고, 일부 손해가 확정된 경우 분할 지급 가능성을 검토합니다.'], evidenceItems.slice(0, 4)),
+        makeArticle(10, '보험금의 지급한도', [report.productProposal.coverageLimitDirection ?? '사고당 한도와 보험기간 중 누적 한도는 손해의 집중도·동시 발생 가능성·가입 대상 규모를 반영해 산정합니다.', `한도 산정에 필요한 위험 노출자료는 ${targetText}의 규모와 운영조건을 기준으로 확인합니다.`], damages.slice(0, 5)),
+        makeArticle(11, '자기부담금', [report.productProposal.deductibleDirection ?? '자기부담금은 손해 빈도·심도와 계약자의 위험관리 수준을 반영해 검토합니다.', '자기부담금 적용 전 손해액, 면책·공제 항목과 기존 보험의 선행 지급액을 구분하여 계산합니다.'], underwritingItems.slice(0, 4)),
+        makeArticle(12, '보험금의 계산', [`보험금은 ${lossText}의 실제 손해액을 기준으로 잔존물·회수액·기존 보험 지급액·자기부담금을 반영하여 계산하는 구조를 검토합니다.`, existingInsuranceText], coverageRows.slice(0, 6)),
+        makeArticle(13, '현물보상', ['수리·복구·교체로 손해를 회복하는 것이 현금 지급보다 적절한 경우 피보험자의 동의, 품질 기준과 추가 손해 방지 여부를 확인합니다.', `${lossText}가 복구 가능한 손해인지, 복구 불가능한 전손인지 판단할 자료를 구분합니다.`], evidenceItems.slice(0, 3)),
+        makeArticle(14, '잔존물', ['보험금 지급 후 잔존물의 소유·처분 권리와 잔존물가액 공제 여부를 손해 유형별로 정합니다.', `${targetText}의 회수·재사용·폐기 책임과 사고 확대 방지 비용을 손해액 계산에서 구분합니다.`], exclusionItems.slice(-4)),
+        makeArticle(15, '대위권', [`회사가 보험금을 지급한 경우 ${eventText}의 원인과 책임주체에 대한 구상 가능성을 지급보험금 범위에서 검토합니다.`, '피보험자는 사고자료, 계약자료와 책임주체 정보를 보전하고 회사의 권리 행사에 협력하는 구조를 확인합니다.'], roleItems.slice(0, 5)),
+        makeArticle(16, '보험금 분담', [existingInsuranceText, '동일 손해에 여러 보험 또는 보상제도가 연결되는 경우 선행 보상, 중복보험 조정, 초과손해와 구상 순서를 약관에 명시합니다.'], coverageRows.slice(0, 5)),
+      ] },
+      { id: 'article-section-3', title: '제3관 계약자의 계약 전·후 알릴 의무', articles: [
+        makeArticle(17, '계약 전 알릴 의무', [`${targetText}의 규모·운영방식·위험관리 수준과 ${eventText} 관련 사고 이력 중 인수 판단에 영향을 주는 사항을 청약 단계에서 확인합니다.`, '질문서와 제출자료의 범위를 명확히 하여 중요한 사항과 단순 참고자료를 구분합니다.'], underwritingItems.slice(0, 6)),
+        makeArticle(18, '계약 후 알릴 의무', [`계약 후 보장 대상, 운영 장소·방식, 위험관리 수준 또는 ${eventText}의 발생 가능성을 높이는 조건이 변경되면 회사에 알리는 절차를 검토합니다.`], [...underwritingItems.slice(0, 4), ...ambiguityItems.slice(0, 2)]),
+        makeArticle(19, '사기에 의한 계약', ['고의적인 허위 자료, 사고 은폐 또는 보험금 수령을 위한 위험 조작이 확인되는 경우 계약의 효력과 보험금 지급 여부를 관계 법령에 따라 검토합니다.', '사실 확인 자료와 단순한 추정·불확실성을 구분하여 판단 기록을 남깁니다.'], [sourceItem(0), ...criteriaItems.slice(0, 2)]),
+        makeArticle(20, '위험조사 협력의무', [`회사는 ${targetText}의 위험 상태와 사고 후 손해를 확인하기 위해 합리적인 범위에서 현장·운영·계약 자료를 조사할 수 있습니다.`, '계약자와 피보험자는 개인정보와 영업비밀의 제공 범위를 확인한 뒤 필요한 조사에 협력합니다.'], underwritingItems.slice(0, 5)),
+      ] },
+      { id: 'article-section-4', title: '제4관 보험계약의 성립과 유지', articles: [
+        makeArticle(21, '보험계약의 성립', [`보험계약은 청약과 승낙으로 성립하며, 보험증권에는 ${targetText}, 보장지역·기간, ${lossText}의 보장 범위와 한도를 특정합니다.`], ['보험증권과 특별약관의 보장 대상 일치 여부 확인', ...criteriaItems.slice(0, 2)]),
+        makeArticle(22, '청약의 철회', ['청약철회 가능 여부와 절차는 계약 유형과 관계 법령을 기준으로 확인하고, 철회가 제한되는 경우 그 사유를 안내합니다.'], ['계약 형태와 보험기간 확인', '철회 신청 방법과 보험료 반환 시점 확인']),
+        makeArticle(23, '약관 교부 및 설명의무', [`${eventText}, ${lossText}, 보상하지 않는 손해, 지급한도·자기부담금과 기존 보험 관계를 계약자가 이해할 수 있도록 설명할 내용을 정합니다.`], criteriaItems.slice(0, 5)),
+        makeArticle(24, '계약의 무효', ['계약 체결 시 이미 사고가 발생했거나 보장 대상이 존재하지 않는 등 계약 목적을 달성할 수 없는 경우의 판단 기준을 검토합니다.', '무효 사유와 사고 발생을 사후에 알게 된 경우를 구분하여 사실 확인 절차를 둡니다.'], ambiguityItems.slice(0, 4)),
+        makeArticle(25, '계약내용의 변경', [`계약자는 ${targetText}, 보장지역·운영조건, 보상한도와 자기부담금 등 위험에 영향을 주는 내용을 회사의 승낙을 받아 변경하는 구조를 검토합니다.`, '변경 전후의 위험 수준과 보험료·보장 범위 변화를 보험증권 또는 전자문서에 기록합니다.'], underwritingItems.slice(0, 6)),
+      ] },
+      { id: 'article-section-5', title: '제5관 보험료의 납입', articles: [
+        makeArticle(26, '제1회 보험료 및 보장개시', ['보장개시 시점은 청약·승낙·제1회 보험료 납입 시점과 보험증권 기재 내용을 기준으로 확인합니다.', `${eventText}가 보장개시 전 발생했는지, 개시 후 발생했는지를 입증할 자료를 정합니다.`], ['보험기간과 보장개시 시점', '사고 접수 시각과 보장 대상 확인', ...evidenceItems.slice(0, 2)]),
+        makeArticle(27, '제2회 이후 보험료의 납입', ['계약자는 보험증권에 기재된 납입기일까지 보험료를 납입하고, 납입 방법과 증빙자료를 확인합니다.'], ['납입주기와 납입기일', '전자결제·계좌이체 등 납입 증빙']),
+        makeArticle(28, '보험료 연체와 계약의 해지', ['보험료 연체 시 납입최고기간, 계약 해지 시점과 해지 전 발생한 사고의 처리 기준을 관계 법령에 따라 확인합니다.', `${lossText}의 사고 접수 시점이 연체·해지 전후 어느 구간에 해당하는지 기록합니다.`], ['연체보험료와 납입최고 안내', '사고 발생일·접수일·해지일의 선후관계']),
+        makeArticle(29, '해지계약의 부활', ['계약이 해지된 후 부활을 청약하는 경우 연체보험료, 위험 변경과 보장개시 시점을 다시 확인하는 절차를 검토합니다.'], underwritingItems.slice(0, 4)),
+        makeArticle(30, '보험료의 산출과 조정', [`보험료는 ${targetText}의 위험 노출, ${eventText}의 발생 가능성, 손해 규모와 기존 보장 관계를 확인한 뒤 계리 검토 대상으로 둡니다.`, '현재 화면에서는 보험료를 확정하지 않고 산출에 필요한 변수와 추가 자료를 구분합니다.'], [...underwritingItems.slice(0, 5), ...criteriaItems.slice(0, 2)]),
+      ] },
+      { id: 'article-section-6', title: '제6관 계약의 해지 및 보험료의 환급', articles: [
+        makeArticle(31, '계약의 해지', ['계약자의 해지와 회사의 해지 사유를 구분하고, 고의·중대한 의무 위반과 단순한 자료 부족을 동일하게 취급하지 않도록 판단 기준을 검토합니다.', `${eventText}와 관련한 위험 변경이 해지 사유에 해당하는지는 실제 변경 사실과 계약 조건을 대조합니다.`], ambiguityItems.slice(0, 4)),
+        makeArticle(32, '위법계약의 해지', ['계약 체결 과정에서 설명·교부·모집 절차의 위반이 주장되는 경우 사실관계와 관계 법령상 해지 요건을 별도로 확인합니다.'], criteriaItems.slice(0, 4)),
+        makeArticle(33, '중대사유로 인한 해지', ['고의 사고, 허위 청구, 자료 위조 또는 사고 후 손해 확대 행위가 확인되는 경우 계약 해지와 보험금 처리의 관계를 검토합니다.', '조사 결과와 입증 정도를 기록하여 정상적인 사고·자료 보완 요청과 구분합니다.'], [...exclusionItems.slice(-4), ...evidenceItems.slice(0, 2)]),
+        makeArticle(34, '회사의 파산과 계약의 해지', ['회사의 지급불능 또는 계약 이전 상황이 발생하는 경우 계약의 존속, 보험금 청구와 보호제도의 적용 여부를 관계 법령에 따라 확인합니다.'], ['계약 이전 또는 보장 지속 여부 확인', '보험금 청구권과 보호제도 적용 범위 확인']),
+        makeArticle(35, '보험료의 환급', ['계약이 무효·효력상실·해지된 경우 책임 있는 사유, 경과기간과 이미 제공된 보장을 반영하여 환급 기준을 검토합니다.', '보장개시 전후와 일부 위험만 변경된 경우의 환급·추가 납입 여부를 구분합니다.'], ['경과기간과 보장 제공 기간', '해지·무효·효력상실 사유', ...criteriaItems.slice(0, 2)]),
+      ] },
+      { id: 'article-section-7', title: '제7관 분쟁의 조정 등', articles: [
+        makeArticle(36, '분쟁의 조정', ['사고 원인, 직접 손해, 기존 보험의 지급 순서 또는 보상한도에 관한 분쟁은 확인된 사실과 미확정 쟁점을 나누어 조정 절차를 검토합니다.'], ambiguityItems.slice(0, 5)),
+        makeArticle(37, '관할법원', ['계약과 보험금 지급에 관한 분쟁의 관할과 민사조정 절차는 관계 법령 및 계약자 보호 기준에 따라 확인합니다.'], ['계약자·피보험자·보험회사의 주소와 관할', '분쟁조정 선행 가능 여부']),
+        makeArticle(38, '소멸시효', ['보험금 청구권, 보험료·환급금 반환청구권의 행사 기간은 관계 법령을 기준으로 확인하고 사고 접수·자료 제출 기록을 보존합니다.'], ['보험금 청구권 발생 시점', '자료 제출 및 보완 요청 이력']),
+        makeArticle(39, '약관의 해석', ['보상하는 손해와 보상하지 않는 손해의 경계가 불명확한 경우 제공된 원문과 계약자에게 설명된 내용을 함께 검토합니다.', '면책·공제·한도 조항은 문언의 범위를 넘어 확대 해석하지 않도록 최종 법무 검토 대상으로 둡니다.'], [...criteriaItems.slice(0, 4), ...ambiguityItems.slice(0, 3)]),
+        makeArticle(40, '설명서 및 안내자료의 효력', ['설명서·상품 안내자료·보험증권·약관 사이의 보장 범위와 용어가 일치하는지 확인하고, 차이가 있는 경우 계약자에게 불리하지 않은 해석 가능성을 검토합니다.'], ['보장 문구와 약관 조문 대조', '영업·설명자료의 버전과 제공 사실 보존', sourceItem(0)]),
+        makeArticle(41, '개인정보와 자료의 보호', [`${eventText}의 사고조사와 ${lossText} 산정에 필요한 자료만 수집하고, 계약 체결·손해사정·구상 목적별 접근권한과 보존기간을 구분합니다.`, '원문·사고자료·영업자료가 결합되는 경우 개인정보와 비밀정보의 처리 근거를 별도로 확인합니다.'], ['사고조사에 필요한 최소 자료', '자료 접근권한·보존기간·파기 기준', ...evidenceItems.slice(0, 2)]),
+        makeArticle(42, '준거법 및 추가 확인사항', ['이 검토안에서 정하지 않은 사항은 관계 법령, 사업방법서와 최종 승인 문서를 기준으로 확인합니다.', `최종 문구 확정 전에는 ${targetText}의 실제 운영자료, ${eventText}의 발생 조건, ${lossText}의 손해 산정자료를 추가 확인합니다.`], [...ambiguityItems, ...outOfScopeItems.slice(0, 3), ...(data.referenceDocuments ?? []).map((item) => `${item.name}: ${item.role ?? item.usedFor ?? '참고 근거'}`)]),
       ] },
     ],
   }
-  const makeClause = (id: SpecialClause['id'], label: string, target: string) => ({
-    id,
-    title: `${label} 보장 검토안`,
-    shortTitle: `${label} 보장`,
-    summary: `${target || title}와 관련된 ${lossText}를 문서 근거로 검토합니다.`,
-    proposalReason: report.productProposal.recommendationReason ?? data.coverageDraft ?? '문서에서 확인된 위험 사건과 손해 유형을 연결했습니다.',
-    keyTerms: definitions.slice(0, 4).map((item) => typeof item === 'string' ? item : item.term),
-    recommendedCoverageCopy: data.coverageDraft ?? `${eventText}로 인해 발생한 ${lossText}를 약정 범위에서 검토합니다.`,
-    prototypeAssumptions: { perAccidentLimit: '손해자료 연결 후 산정', aggregateLimit: '누적노출 자료 연결 후 산정', deductible: '손해 빈도·통제 수준 확인 후 산정', confidence: '문서 기반', displayLabel: '문서 근거 기반 산정 전제' },
-    decisionItems: [
-      { id: `${id}-event`, question: '보장 사건을 객관적으로 정의할 수 있는가?', recommendation: eventText, rationale: data.coverageDraft ?? eventText, assumptions: data.ambiguities?.slice(0, 2).map((item) => item.issue) ?? [], basis: report.evidence[0]?.title ?? '연결 원문', confidence: report.meta.articleTopic ?? '문서 기반' },
-      { id: `${id}-loss`, question: '손해 범위와 지급요건을 구분할 수 있는가?', recommendation: lossText, rationale: report.riskGapSummary.definition ?? '손해 유형별 지급 기준을 구분합니다.', assumptions: exclusionItems.slice(0, 2), basis: report.evidence[0]?.title ?? '연결 원문', confidence: report.meta.articleTopic ?? '문서 기반' },
-    ],
-    articles: [
-      { number: 1, title: '보장 대상과 보장 사건', paragraphs: [eventText, target || title] },
-      { number: 2, title: '보상하는 손해', paragraphs: [lossText], items: damages },
-      { number: 3, title: '보험금 지급요건', paragraphs: ['다음 요건과 원문 근거를 확인한 손해를 지급 대상으로 검토합니다.'], items: paymentItems.length ? paymentItems : ['사고 발생과 손해의 인과관계를 객관적으로 확인할 수 있어야 합니다.'] },
-      { number: 4, title: '보상하지 않는 손해', paragraphs: ['문서 근거가 부족하거나 다른 보장과 중복되는 범위는 별도 기준으로 구분합니다.'], items: exclusionItems.length ? exclusionItems : ['원문에서 확인되지 않은 손해 범위'] },
-    ],
-  })
+  const hasKoreanBatchim = (text: string) => {
+    const lastCharacter = text.trim().slice(-1)
+    if (!lastCharacter) return false
+    const codePoint = lastCharacter.charCodeAt(0)
+    if (codePoint >= 0xac00 && codePoint <= 0xd7a3) return (codePoint - 0xac00) % 28 !== 0
+    return /[0-9A-Z]/u.test(lastCharacter)
+  }
+  const withObjectParticle = (text: string) => `${text.trim()}${hasKoreanBatchim(text) ? '을' : '를'}`
+  const makeClause = (id: SpecialClause['id'], label: string, target: string, lossFocus: string, clauseKind: string, index: number) => {
+    const clauseEvidence = evidenceItems.length ? evidenceItems.slice(index, index + 5).concat(evidenceItems.slice(0, Math.max(0, 5 - evidenceItems.slice(index, index + 5).length))) : [sourceItem(0)]
+    const clauseTerms: PolicyArticleItem[] = [
+      ...definitionItems.slice(0, 6),
+      { term: `${clauseKind} 대상`, definition: `${target || title} 중 보험증권에서 이 ${clauseKind}의 대상으로 특정한 범위를 말합니다.` },
+      { term: `${clauseKind} 손해`, definition: `${lossFocus} 중 ${eventText}와 직접 연결되고 객관적 자료로 확인되는 손해를 말합니다.` },
+    ]
+    const clausePaymentItems = compactUnique([
+      ...paymentItems.slice(index, index + 5),
+      `${target || title}의 계약상 지위와 손해 발생 사실을 확인해야 합니다.`,
+      `${lossFocus}의 발생 경로와 손해액을 객관적 자료로 확인해야 합니다.`,
+      existingInsuranceText,
+    ])
+    const clauseExclusions = compactUnique([
+      ...exclusionItems.slice(index, index + 6),
+      `${lossFocus}와 직접적인 인과관계가 확인되지 않는 손해`,
+      '다른 보험·책임주체·공적 제도에서 이미 보상된 금액',
+    ])
+    const clauseQuestions = compactUnique([
+      ...ambiguityItems.slice(index, index + 4),
+      ...criteriaItems.slice(index, index + 3),
+      `${clauseKind}의 대상·사고 단위·손해 산정 기준을 최종 확정해야 합니다.`,
+    ])
+    const clauseTitle = `${label} ${clauseKind}`
+    return {
+      id,
+      title: `${clauseTitle} 특별약관 검토안`,
+      shortTitle: `${clauseKind} 보장`,
+      summary: `${target || title}에 발생할 수 있는 ${withObjectParticle(lossFocus)} ${clauseKind} 관점에서 보완합니다.`,
+      proposalReason: `${report.productProposal.recommendationReason ?? data.coverageDraft ?? '원문에서 확인된 위험 사건과 손해 유형을 연결했습니다.'} 특히 ${target || title}의 ${lossFocus}에 대한 기존 보험 관계와 지급 기준을 별도로 확인합니다.`,
+      keyTerms: compactUnique(clauseTerms.map((item) => typeof item === 'string' ? item : item.term)).slice(0, 8),
+      recommendedCoverageCopy: `${eventText}로 인해 ${target || title}에 ${lossFocus}가 발생하고 약관에서 정한 입증요건을 충족한 경우, 기존 보험의 선행 보상과 중복 여부를 반영하여 ${clauseKind} 범위에서 보상하는 구조를 검토합니다.`,
+      prototypeAssumptions: { perAccidentLimit: '사고 빈도·손해 심도 자료 확인 후 산정', aggregateLimit: '누적 노출과 동시 손해 자료 확인 후 산정', deductible: '손해 유형·통제 수준·기존 보장 확인 후 산정', confidence: '원문·리포트 근거 기반', displayLabel: '설계 전제' },
+      decisionItems: [
+        { id: `${id}-event`, question: `${clauseKind}의 보장 사건과 발생 시점을 객관적으로 정의할 수 있는가?`, recommendation: eventText, rationale: `${target || title}에 ${eventText}가 발생했는지와 보장기간·보장지역을 함께 확인해야 합니다.`, assumptions: clauseQuestions.slice(0, 2), basis: sourceItem(index), confidence: report.meta.articleTopic ?? '원문·리포트 근거 기반' },
+        { id: `${id}-loss`, question: `${clauseKind}의 손해 범위와 지급요건을 구분할 수 있는가?`, recommendation: lossFocus, rationale: `${lossFocus} 중 직접 손해·복구비·간접손해를 구분하고, 각각의 입증자료와 지급조건을 분리해야 합니다.`, assumptions: clauseExclusions.slice(0, 2), basis: sourceItem(Math.min(index + 1, Math.max(0, evidenceItems.length - 1))), confidence: report.meta.articleTopic ?? '원문·리포트 근거 기반' },
+        { id: `${id}-existing`, question: `${clauseKind}와 기존 보험의 보상 순서·구상관계를 정할 수 있는가?`, recommendation: existingInsuranceText, rationale: `${target || title}의 기존 보험, 책임주체와 공적 보상제도의 선행 지급액을 확인한 뒤 중복·초과손해·구상관계를 확정해야 합니다.`, assumptions: [existingInsuranceText, ...clauseExclusions.slice(0, 1)], basis: sourceItem(0), confidence: report.meta.articleTopic ?? '원문·리포트 근거 기반' },
+      ],
+      articles: [
+        makeArticle(1, '보장 대상과 보장 사건', [`${eventText}가 보험기간·보장지역에서 발생하고 ${target || title}에 ${lossFocus}가 발생한 경우를 이 특별약관의 검토 대상으로 둡니다.`, `사고 원인 또는 책임주체가 확정되기 전에도 객관적으로 확인되는 ${lossFocus}와 추가 손해를 구분해 판단합니다.`], [target || title, eventText, lossFocus]),
+        makeArticle(2, '용어의 정의', [`이 특별약관에서는 ${clauseKind}의 대상·사고·손해·입증자료와 기존 보험의 의미를 공통약관과 구분하여 정리합니다.`], clauseTerms),
+        makeArticle(3, '보상하는 손해', [`${target || title}에 직접 발생한 ${lossFocus} 중 ${eventText}와의 인과관계가 확인되고 보험증권상 한도 안에 있는 손해를 보상 대상으로 검토합니다.`, '직접 물리손해, 합리적인 복구비용, 사고 확대를 막기 위한 비용과 간접손해를 구분하여 각 범위를 명시합니다.'], compactUnique([lossFocus, ...damages, ...coverageRows.slice(0, 2)])),
+        makeArticle(4, '보험금 지급요건', ['다음 요건과 원문 근거를 모두 확인할 수 있는 손해를 지급 대상으로 검토합니다.', `${target || title}의 계약상 지위, 사고 발생 사실, ${lossFocus}의 금액과 기존 보험 지급 내역을 함께 확인합니다.`], clausePaymentItems),
+        makeArticle(5, '보상하지 않는 손해', ['다음 손해는 보장 사건과의 인과관계, 입증 가능성, 다른 보험과의 관계를 확인한 뒤 보상 범위에서 제외하거나 별도 검토 대상으로 둡니다.'], clauseExclusions),
+        makeArticle(6, '손해의 조사와 확정', [`사고 일시·장소·원인·책임주체와 ${lossFocus}의 범위를 객관적인 자료로 확인합니다.`, `다음 근거를 대조하여 ${clauseKind}의 손해액과 사고 단위를 확정합니다.`], clauseEvidence),
+        makeArticle(7, '보험금의 청구와 지급절차', ['사고 통지, 자료 제출, 손해사정, 기존 보험 조회와 지급 순서를 구분하여 청구절차를 검토합니다.', '자료가 일부만 확보된 경우 확정된 손해의 선지급과 추가 손해의 후속 정산 가능성을 별도로 확인합니다.'], clausePaymentItems.slice(0, 6)),
+        makeArticle(8, '보험금의 지급한도와 자기부담금', [report.productProposal.coverageLimitDirection ?? `사고당 한도와 보험기간 중 누적 한도는 ${clauseKind}의 사고 빈도·손해 심도·동시 발생 가능성을 반영해 산정합니다.`, report.productProposal.deductibleDirection ?? '자기부담금은 손해 빈도·심도, 계약자의 통제 수준과 기존 보험의 선행 지급액을 반영해 검토합니다.', `한도와 공제 전 손해액은 ${target || title}의 규모·운영조건과 ${lossFocus}의 산정자료에 연결합니다.`], [...underwritingItems.slice(index, index + 4), ...coverageRows.slice(0, 2)]),
+        makeArticle(9, '다른 보험과의 관계 및 구상', [existingInsuranceText, `동일한 ${lossFocus}에 대해 기존 보험·책임주체·공적 보상제도가 지급한 금액을 확인하고, 선보상·중복·초과손해와 구상 순서를 정합니다.`, '책임주체가 확정되지 않은 상태에서 지급하는 경우에도 사후 구상에 필요한 자료와 권리보전 절차를 둡니다.'], coverageRows.slice(0, 5)),
+        makeArticle(10, '약관 확정 전 실무 확인사항', ['아래 쟁점은 상품·법무·보상·계리 담당자가 원문과 추가자료를 확인한 뒤 최종 문구에 반영합니다.', `${clauseKind}의 실제 가입 대상과 운영 조건이 확인되기 전에는 보장한도·보험료·면책 범위를 확정하지 않습니다.`], clauseQuestions),
+      ],
+    }
+  }
+  const clauseTargets = [targets[0] ?? '우선 영향 대상', targets[1] ?? '시설·운영 대상', targets[2] ?? '사고 대응 주체']
+  const clauseLosses = [damages[0] ?? lossText, damages[1] ?? lossText, damages[2] ?? lossText]
   const specialClauses = [
-    makeClause('adjacent-vehicle', targets[0] ?? '주요 영향 대상', targets[0] ?? title),
-    makeClause('facility-damage', targets[1] ?? '주요 시설·운영 대상', targets[1] ?? title),
-    makeClause('emergency-expense', targets[2] ?? '사고 대응 주체', targets[2] ?? title),
+    makeClause('adjacent-vehicle', clauseTargets[0], clauseTargets[0], clauseLosses[0], '직접 손해', 0),
+    makeClause('facility-damage', clauseTargets[1], clauseTargets[1], clauseLosses[1], '복구·운영 손해', 1),
+    makeClause('emergency-expense', clauseTargets[2], clauseTargets[2], clauseLosses[2], '사고 대응 비용', 2),
   ]
   return {
     productName: `${title} 대응 보장 구조`,
@@ -2742,11 +2885,12 @@ function FullWordingSection({
 }) {
   const data = report.wordingFeasibility
   const policyDraft = createArticlePolicyDraft(report)
-  const wordingRiskTitle = isArticleDerivedReport(report) ? (report.meta.riskTitle ?? report.meta.title) : WORDING_RISK_SUMMARY_COPY.title
-  const wordingRiskDescription = isArticleDerivedReport(report) ? (data.coverageDraft ?? report.riskGapSummary.definition ?? WORDING_RISK_SUMMARY_COPY.description) : WORDING_RISK_SUMMARY_COPY.description
-  const wordingInsuranceType = isArticleDerivedReport(report) ? (report.meta.articleTopic ?? '문서 기반 위험') : WORDING_RISK_SUMMARY_COPY.insuranceType
-  const wordingAffected = isArticleDerivedReport(report) ? (report.riskGapSummary.affectedParties ?? []).join(' · ') : WORDING_RISK_SUMMARY_COPY.affected
-  const wordingBasis = isArticleDerivedReport(report) ? (report.meta.relatedDocumentTitles ?? []).slice(0, 2).join(' · ') || WORDING_RISK_SUMMARY_COPY.basis : WORDING_RISK_SUMMARY_COPY.basis
+  const benchmarkReport = isReferenceBenchmarkReport(report)
+  const wordingRiskTitle = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.title : (report.meta.riskTitle ?? report.meta.title)
+  const wordingRiskDescription = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.description : (data.coverageDraft ?? report.riskGapSummary.definition ?? report.meta.title)
+  const wordingInsuranceType = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.insuranceType : (report.productProposal.recommendedForm ?? report.meta.articleTopic ?? '문서 근거 기반 위험')
+  const wordingAffected = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.affected : (report.riskGapSummary.affectedParties ?? []).join(' · ')
+  const wordingBasis = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.basis : (report.meta.relatedDocumentTitles ?? []).slice(0, 2).join(' · ') || report.evidence.slice(0, 2).map((item) => item.title).join(' · ')
   const [copyMessage, setCopyMessage] = useState('')
   const [selectedCoverageId, setSelectedCoverageId] = useState<SpecialClause['id']>('adjacent-vehicle')
   const [activeArticleKey, setActiveArticleKey] = useState<string | null>('common-section-1-1')
@@ -2869,7 +3013,7 @@ function FullWordingSection({
             <h3 id="wording-risk-title">{wordingRiskTitle}</h3>
             <p className="report-page__wording-risk-summary-description">{wordingRiskDescription}</p>
             <dl className="report-page__wording-risk-summary-meta">
-              <div><dt>위험 ID</dt><dd>{WORDING_ANALYSIS_RISK.riskId}</dd></div>
+              <div><dt>위험 ID</dt><dd>{benchmarkReport ? WORDING_ANALYSIS_RISK.riskId : displayRiskId(report)}</dd></div>
               <div><dt>보험종목</dt><dd>{wordingInsuranceType}</dd></div>
               <div><dt>주요 피해 대상</dt><dd>{wordingAffected}</dd></div>
               <div><dt>도출 근거</dt><dd>{wordingBasis}</dd></div>
@@ -2924,7 +3068,7 @@ function FullWordingSection({
                       <div><h5>AI 권고안</h5><p>{decision.recommendation}</p></div>
                       <div><h5>판단 근거</h5><p>{decision.rationale}</p><small>{decision.basis}</small></div>
                       <div><h5>적용한 가정</h5><ul>{decision.assumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}</ul></div>
-                      <div className="report-page__wording-decision-confidence"><span>{isArticleDerivedReport(report) ? '문서 근거 신뢰도' : '프로토타입 가정치'}</span><strong>{decision.confidence}</strong></div>
+                      <div className="report-page__wording-decision-confidence"><span>{isArticleDerivedReport(report) ? '문서 근거 신뢰도' : '설계 전제'}</span><strong>{decision.confidence}</strong></div>
                     </div>
                   </details>
                 ))}
@@ -2959,7 +3103,7 @@ function FullWordingSection({
 
         <section ref={fullDraftRef} className="report-page__wording-main-zone report-page__wording-full-policy" aria-labelledby="wording-full-policy-title">
           <div className="report-page__wording-zone-heading">
-            <div><h3 id="wording-full-policy-title">AI 전체 약관 초안</h3><p>보통약관, 세 가지 특별약관과 부속 명세를 한 문서 흐름으로 검토합니다.</p></div>
+            <div><h3 id="wording-full-policy-title">AI 전체 약관 초안</h3><p>{benchmarkReport ? '보통약관, 세 가지 특별약관과 부속 명세를 한 문서 흐름으로 검토합니다.' : '공통 약관 구조, 위험별 보장안과 부속 확인자료를 한 문서 흐름으로 검토합니다.'}</p></div>
             <div className="report-page__wording-draft-actions report-page__no-print"><button className="report-page__button report-page__wording-print-action" type="button" onClick={printWordingDocument}><AppIcon name="report" size={15} />약관 검토 PDF 출력</button><button className="report-page__button" type="button" onClick={copyFullPolicy}>전체 약관 복사</button></div>
           </div>
           <div className="report-page__wording-policy-layout">
@@ -3021,7 +3165,16 @@ const evidenceDocumentType = (item: EvidenceItem): string => {
   return item.type || '기타 자료'
 }
 
-const displayEvidenceTitle = (item: EvidenceItem): string => item.title.replace(/프로토타입용\s*|프로토타입\s*|가상\s*/g, '').trim()
+const displayEvidenceTitle = (item: EvidenceItem): string => {
+  const title = item.title.replace(/프로토타입용\s*|프로토타입\s*|가상\s*/g, '').trim()
+  const articleEvidence = title.match(/^.+\s·\s((?:본문|연결) 근거\s+\d+)$/)
+  return articleEvidence?.[1] ?? title
+}
+
+const displayEvidenceReference = (id: string): string => {
+  const reference = id.match(/(?:content-evidence|group-evidence|step4|evidence)[-_](\d+)$/i)
+  return reference ? `근거 ${reference[1]}` : id
+}
 
 const evidenceTypeTone = (type: string): string => {
   if (/뉴스|산업동향/.test(type)) return 'news'
@@ -3103,7 +3256,9 @@ function EvidenceResearchSection({
   const [sectionFilter, setSectionFilter] = useState('all')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
   const visibleEvidence = useMemo(
-    () => report.evidence.filter((item) => !isExcludedEvidenceItem(item)),
+    () => report.evidence
+      .filter((item) => !isExcludedEvidenceItem(item))
+      .filter((item, index, items) => items.findIndex((other) => `${other.title}|${other.source}|${(other as EvidenceItem & { quote?: unknown }).quote ?? ''}` === `${item.title}|${item.source}|${(item as EvidenceItem & { quote?: unknown }).quote ?? ''}`) === index),
     [report.evidence],
   )
   const typeOptions = useMemo(
@@ -3169,7 +3324,7 @@ function EvidenceResearchSection({
               const sourceStatus = displayEvidenceSource(item)
               return (
                 <article key={item.id} className={`report-page__evidence-card report-page__evidence-card--${tone}`} role="listitem">
-                  <div className="report-page__evidence-card-head"><span className={`report-page__evidence-type report-page__evidence-type--${tone}`}><span className="report-page__evidence-type-icon"><AppIcon name={evidenceTypeIcon(type)} size={14} strokeWidth={2} /></span>{type}</span><span className="report-page__evidence-card-meta"><code>{item.id}</code><span className="report-page__evidence-meta-divider" aria-hidden="true">·</span><time className={!item.referenceDate ? 'report-page__evidence-date--missing' : undefined} dateTime={item.referenceDate ?? undefined}>{formatEvidenceDate(item.referenceDate)}</time></span></div>
+                   <div className="report-page__evidence-card-head"><span className={`report-page__evidence-type report-page__evidence-type--${tone}`}><span className="report-page__evidence-type-icon"><AppIcon name={evidenceTypeIcon(type)} size={14} strokeWidth={2} /></span>{type}</span><span className="report-page__evidence-card-meta"><code title={item.id}>{displayEvidenceReference(item.id)}</code><span className="report-page__evidence-meta-divider" aria-hidden="true">·</span><time className={!item.referenceDate ? 'report-page__evidence-date--missing' : undefined} dateTime={item.referenceDate ?? undefined}>{formatEvidenceDate(item.referenceDate)}</time></span></div>
                   <h4>{displayEvidenceTitle(item)}</h4>
                   <p className="report-page__evidence-card-purpose">{evidencePurpose(item)}</p>
                   <div className="report-page__evidence-card-sections"><span>활용 섹션</span>{sections.slice(0, 2).map((key) => <span className="report-page__evidence-section-chip" key={key}>{REPORT_SECTION_LABELS[key]}</span>)}{sections.length > 2 ? <span className="report-page__evidence-section-more">+{sections.length - 2}</span> : null}</div>
@@ -3866,7 +4021,7 @@ function ReportPdfCover({
       <p className="report-page__eyebrow">INSURANCE PRODUCT REVIEW</p>
       <h1>{displayReportTitle(report.meta.title)}</h1>
       <dl className="report-page__pdf-cover-meta">
-        <div><dt>위험 ID</dt><dd>{report.meta.sourceRiskId}</dd></div>
+        <div><dt>위험 ID</dt><dd>{displayRiskId(report)}</dd></div>
         <div><dt>분석 기준일</dt><dd>{displayDate(report.meta.analysisBaseDate)}</dd></div>
         <div><dt>근거자료</dt><dd>{report.evidence.filter((item) => !isExcludedEvidenceItem(item)).length}건</dd></div>
         {includeGeneratedAt ? <div><dt>PDF 생성일시</dt><dd>{displayDate(createdAt, true)}</dd></div> : null}

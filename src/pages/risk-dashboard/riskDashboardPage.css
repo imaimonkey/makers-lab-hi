@@ -1312,18 +1312,18 @@
 
 /* 위험레이더 본문을 기존 공통 쉘의 작업 영역에 맞추는 페이지 전용 보정 */
 .riskRadarPage {
-  width: min(1440px, calc(100% - var(--sidebar-width, 0px)));
+  width: min(1440px, 100%);
   max-width: 1440px;
   min-width: 0;
-  margin: 0 0 0 var(--sidebar-width, 0px);
-  padding: 30px 34px 58px;
+  margin: 0 auto;
+  padding: 36px var(--analyst-content-gutter, 40px) 64px;
   box-sizing: border-box;
 }
 .app-main .app-content .riskRadarPage {
-  width: min(1440px, calc(100% - var(--sidebar-width, 0px)));
+  width: min(1440px, 100%);
   max-width: 1440px;
-  margin-left: var(--sidebar-width, 0px);
-  margin-right: 0;
+  margin-left: auto;
+  margin-right: auto;
 }
 .riskRadarPage .riskRadarIntro {
   display: flex;
@@ -3316,4 +3316,35 @@
 
 .riskRadarPage .radar-evidence-grid {
   gap: 8px;
+}
+
+/* Keep the candidate and regulation panels aligned as one information row. */
+.riskRadarPage .row-grid.secondary {
+  align-items: stretch;
+}
+
+.riskRadarPage .row-grid.secondary > .panel {
+  display: flex;
+  min-height: 438px;
+  height: 438px;
+  flex-direction: column;
+}
+
+.riskRadarPage .row-grid.secondary > .panel .candidate-list,
+.riskRadarPage .row-grid.secondary > .panel .event-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+@media (max-width: 1180px) {
+  .riskRadarPage .row-grid.secondary > .panel {
+    min-height: 0;
+    height: auto;
+  }
+
+  .riskRadarPage .row-grid.secondary > .panel .candidate-list,
+  .riskRadarPage .row-grid.secondary > .panel .event-list {
+    overflow-y: visible;
+  }
 }

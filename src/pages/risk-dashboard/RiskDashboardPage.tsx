@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { browserReportListPreferences, type ReportListPreferences } from '../../report/services/report-list-preferences'
 import { AppIcon } from '../../shared/components/AppIcon'
 import {
-  riskRadarCandidates as staticRiskRadarCandidates,
   riskRadarKpis as staticRiskRadarKpis,
   riskRadarKeywords as staticRiskRadarKeywords,
   globalInsuranceInsights as staticGlobalInsuranceInsights,
@@ -19,6 +18,9 @@ import {
 import type { ExclusiveRight, GlobalInsuranceInsight, MarketUpdate, RecentInsuranceProduct, RiskRadarPriorityRisk } from '../../features/risk-dashboard/riskRadarContent'
 import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
 import { buildLocalArticleRadarView } from '../../features/risk-dashboard/localArticleRadarView'
+import { riskExplorationRecords } from '../../domain/risk/riskExplorationDemo'
+import { sampleRiskCandidates } from '../../domain/risk/sampleData'
+import { riskLawTrackingItems } from '../../domain/risk/riskLawTracking'
 import './riskDashboardPage.css'
 
 function buildDeveloperPath(path: string, developerMode: boolean) {
@@ -32,6 +34,12 @@ function buildCatalogFilterPath(keyword: string, developerMode: boolean, categor
 
 function buildRiskDetailPath(riskId: string, developerMode: boolean) {
   return buildDeveloperPath(`/risks/${riskId}`, developerMode)
+}
+
+function reportIdForRisk(risk: RiskRadarPriorityRisk) {
+  if (risk.detailRiskId === 'ev-battery-fire') return 'RPT-EVFIRE-001-20260228'
+  if (risk.detailRiskId.startsWith('developer-')) return `article-report-${risk.detailRiskId.slice('developer-'.length)}`
+  return `RPT-RISK-${risk.detailRiskId}`
 }
 
 function KpiIcon({ index }: { index: number }) {
@@ -242,27 +250,70 @@ function GlobalInsightItem({ item }: { item: GlobalInsuranceInsight }) {
 export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'developer' }) {
   const developerMode = mode === 'developer'
   const navigate = useNavigate()
-  const [articleView, setArticleView] = useState(() => buildLocalArticleRadarView([]))
+  const [articleView, setArticleView] = useState<ReturnType<typeof buildLocalArticleRadarView> | null>(null)
+  const [articleLoadError, setArticleLoadError] = useState('')
+  const [scrapPreferences, setScrapPreferences] = useState<ReportListPreferences>(() => browserReportListPreferences.load())
+  const [priorityIndex, setPriorityIndex] = useState(0)
   useEffect(() => {
     let cancelled = false
-    void loadArticleSourceRecords().then((records) => { if (!cancelled) setArticleView(buildLocalArticleRadarView(records)) }).catch((error) => console.error(error))
+    void loadArticleSourceRecords().then((records) => {
+      if (cancelled) return
+      setArticleView(buildLocalArticleRadarView(records))
+      setArticleLoadError('')
+    }).catch((error) => {
+      console.error(error)
+      if (!cancelled) setArticleLoadError('src/article 원문을 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.')
+    })
     return () => { cancelled = true }
   }, [])
-  const riskRadarKpis = articleView.kpis.length ? articleView.kpis : staticRiskRadarKpis
-  const riskRadarCandidates = articleView.candidates.length ? articleView.candidates : staticRiskRadarCandidates
+  if (!articleView) {
+    return (
+      <div className="page riskRadarPage">
+        <section className="panel article-source-state" role={articleLoadError ? 'alert' : 'status'}>
+          <p className="eyebrow">ARTICLE SOURCE</p>
+          <h1>{articleLoadError ? '원문 자료를 불러오지 못했습니다' : '원문 자료를 불러오는 중입니다'}</h1>
+          <p>{articleLoadError || 'src/article에 연결된 원문을 기준으로 위험 신호와 검토 후보를 구성하고 있습니다.'}</p>
+        </section>
+      </div>
+    )
+  }
+  const articleKpis = articleView.kpis.length ? articleView.kpis : staticRiskRadarKpis
+  const riskRadarKpis = [
+    { ...articleKpis[0], value: riskExplorationRecords.length + articleKpis[0].value, meta: '큐레이션 후보 + 원문 선별' },
+    { ...articleKpis[1], value: sampleRiskCandidates.length + articleKpis[1].value, meta: '큐레이션 후보 + 원문 선별' },
+    { ...articleKpis[2], value: riskLawTrackingItems.length + articleKpis[2].value, meta: '예시·법령 원문 연결' },
+  ]
+  const curatedCandidates = sampleRiskCandidates.map((candidate) => ({
+    id: `curated-${candidate.id}`,
+    detailRiskId: candidate.id,
+    title: candidate.title,
+    description: `${candidate.themeLabel} · ${candidate.trend}`,
+    tags: [candidate.themeLabel],
+    keywords: [candidate.title, candidate.themeLabel],
+  }))
+  const riskRadarCandidates = [...curatedCandidates, ...articleView.candidates]
+    .filter((candidate, index, candidates) => candidates.findIndex((item) => item.detailRiskId === candidate.detailRiskId) === index)
+  const curatedVehiclePriority = staticRiskRadarPriorityRisks.find((risk) => risk.detailRiskId === 'ev-battery-fire')
+  const priorityRest = [...staticRiskRadarPriorityRisks, ...articleView.priorityRisks]
+    .filter((risk, index, risks) => risks.findIndex((item) => item.detailRiskId === risk.detailRiskId) === index)
+    .filter((risk) => risk.detailRiskId !== 'ev-battery-fire')
+    .sort((left, right) => right.score - left.score)
+  const riskRadarPriorityRisks = [...(curatedVehiclePriority ? [curatedVehiclePriority] : []), ...priorityRest].slice(0, 5)
   const riskRadarKeywords = articleView.keywords.length ? articleView.keywords : staticRiskRadarKeywords
   const globalInsuranceInsights = articleView.globalInsights.length ? articleView.globalInsights : staticGlobalInsuranceInsights
   const exclusiveRights = articleView.exclusiveRights.length ? articleView.exclusiveRights : staticExclusiveRights
   const marketUpdates = articleView.marketUpdates.length ? articleView.marketUpdates : staticMarketUpdates
   const recentInsuranceProducts = articleView.recentProducts.length ? articleView.recentProducts : staticRecentInsuranceProducts
-  const riskRadarPriorityRisks = articleView.priorityRisks.length ? articleView.priorityRisks : staticRiskRadarPriorityRisks
   const riskRadarRegulations = articleView.regulations.length ? articleView.regulations : staticRiskRadarRegulations
-  const riskRadarScraps = articleView.scraps.length ? articleView.scraps : staticRiskRadarScraps
+  const curatedVehicleScrap = staticRiskRadarScraps.find((scrap) => scrap.reportId === 'RPT-EVFIRE-001-20260228')
+  const riskRadarScraps = articleView.scraps.length
+    ? [...(curatedVehicleScrap ? [curatedVehicleScrap] : []), ...articleView.scraps.filter((scrap) => scrap.reportId !== curatedVehicleScrap?.reportId).slice(0, 3)]
+    : staticRiskRadarScraps
   const riskRadarSourceShares = articleView.sourceShares.length ? articleView.sourceShares : staticRiskRadarSourceShares
-  const riskRadarTopPriority = articleView.priorityRisks.length ? articleView.topPriority : staticRiskRadarTopPriority
+  const riskRadarTopPriority = riskRadarPriorityRisks[0]?.detailRiskId === curatedVehiclePriority?.detailRiskId
+    ? staticRiskRadarTopPriority
+    : articleView.priorityRisks.length ? articleView.topPriority : staticRiskRadarTopPriority
   const sourceShareLabel = riskRadarSourceShares.map((source) => `${source.label} ${source.share}%`).join(', ')
-  const [scrapPreferences, setScrapPreferences] = useState<ReportListPreferences>(() => browserReportListPreferences.load())
-  const [priorityIndex, setPriorityIndex] = useState(0)
   const handlePreviousPriority = () => setPriorityIndex((current) => (current - 1 + riskRadarPriorityRisks.length) % riskRadarPriorityRisks.length)
   const handleNextPriority = () => setPriorityIndex((current) => (current + 1) % riskRadarPriorityRisks.length)
 
@@ -310,15 +361,15 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
           <div className="panel-head">
             <div>
               <h2 className="panel-title">상품화 우선 검토 TOP 5</h2>
-              <div className="panel-desc">상품화 검토 후보 8건 중 종합점수가 높은 5건입니다.</div>
+              <div className="panel-desc">상품화 검토 후보 {riskRadarKpis[1].value}건 중 종합점수가 높은 5건입니다.</div>
             </div>
-            <Link className="text-link" to={buildDeveloperPath('/risks', developerMode)}>위험탐색에서 전체 보기 →</Link>
+            <Link className="text-link" to={buildDeveloperPath('/risks', developerMode)}>위험 탐색에서 전체 보기 →</Link>
           </div>
 
           <div className="priority-body">
             <div className="ranking-chart">
               <h3 className="chart-label">상품화 종합점수 상위 5건</h3>
-              <p className="chart-sub">상품화 검토 후보 8건 중 종합점수가 높은 순서입니다.</p>
+              <p className="chart-sub">상품화 검토 후보 {riskRadarKpis[1].value}건 중 종합점수가 높은 순서입니다.</p>
               <div className="bar-list">
                 {riskRadarPriorityRisks.map((risk, index) => (
                   <button className={`bar-row${index === priorityIndex ? ' active' : ''}`} type="button" aria-pressed={index === priorityIndex} onClick={() => setPriorityIndex(index)} key={risk.id}>
@@ -339,9 +390,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
                 <div className="top-risk-track" style={{ transform: `translateX(-${priorityIndex * 100}%)` }}>
                   {riskRadarPriorityRisks.map((risk, index) => {
                     const isTopPriority = index === 0
-                    const reportPath = isTopPriority
-                      ? `${buildDeveloperPath('/reports', developerMode)}?reportId=${encodeURIComponent(riskRadarTopPriority.reportId)}`
-                      : buildDeveloperPath('/reports', developerMode)
+                    const reportPath = `${buildDeveloperPath('/reports', developerMode)}?reportId=${encodeURIComponent(reportIdForRisk(risk))}`
 
                     return (
                       <article className="top-risk" key={risk.id}>
@@ -518,10 +567,10 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
           <div className="panel-head"><div><h2 className="panel-title">핵심 위험 키워드</h2><div className="panel-desc">키워드를 누르면 관련 위험 후보로 이동합니다.</div></div></div>
           <div className="keyword-body">
             <div className="keyword-cloud">
-              {riskRadarKeywords.map((keyword) => <Link className={`keyword-btn ${keyword.tone} ${keyword.size}`} to={buildCatalogFilterPath(keyword.filter, developerMode)} aria-label={`${keyword.label} 키워드로 위험탐색`} key={keyword.label}>{keyword.label}</Link>)}
+              {riskRadarKeywords.map((keyword) => <Link className={`keyword-btn ${keyword.tone} ${keyword.size}`} to={buildCatalogFilterPath(keyword.filter, developerMode)} aria-label={`${keyword.label} 키워드로 위험 탐색`} key={keyword.label}>{keyword.label}</Link>)}
             </div>
             <div className="keyword-legend"><span className="legend-chip"><span className="legend-dot navy" />산업·기술</span><span className="legend-chip"><span className="legend-dot orange" />사고·손해</span><span className="legend-chip"><span className="legend-dot issue" />책임·보험 쟁점</span></div>
-            <div className="keyword-help">선택 시 위험탐색에서 해당 키워드가 검색어로 적용됩니다.</div>
+            <div className="keyword-help">선택 시 위험 탐색에서 해당 키워드가 검색어로 적용됩니다.</div>
           </div>
         </article>
 

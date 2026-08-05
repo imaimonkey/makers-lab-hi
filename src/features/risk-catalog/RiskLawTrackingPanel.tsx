@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { ScreeningCategory } from '../../domain/risk/riskScreeningInsights'
-import type { LawTrackingRiskLevel, RiskLawTrackingItem } from '../../domain/risk/riskLawTracking'
+import { riskLawTrackingItems, type LawTrackingRiskLevel, type RiskLawTrackingItem } from '../../domain/risk/riskLawTracking'
 import type { DeveloperLawQueueItem } from './developerStep2Adapter'
 
 function buildLocalItems(laws: DeveloperLawQueueItem[]): RiskLawTrackingItem[] {
@@ -39,10 +39,16 @@ function TrackingTimeline({ item }: { item: RiskLawTrackingItem }) {
 }
 
 export function RiskLawTrackingPanel({ category, localLaws = [] }: { category: ScreeningCategory; localLaws?: DeveloperLawQueueItem[] }) {
-  const sourceItems = useMemo(() => buildLocalItems(localLaws), [localLaws])
+  const sourceItems = useMemo(() => {
+    const curatedItems = riskLawTrackingItems
+    const articleItems = buildLocalItems(localLaws)
+    const knownIds = new Set(curatedItems.map((item) => item.id))
+    return [...curatedItems, ...articleItems.filter((item) => !knownIds.has(item.id))]
+  }, [localLaws])
   const [query, setQuery] = useState('')
   const [institution, setInstitution] = useState('all')
   const [riskLevel, setRiskLevel] = useState<LawTrackingRiskLevel | 'all'>('all')
+  const [caseTab, setCaseTab] = useState<'precedent' | 'loss'>('precedent')
   const [selectedId, setSelectedId] = useState(sourceItems[0]?.id ?? '')
   const institutions = useMemo(() => Array.from(new Set(sourceItems.map((item) => item.institution))), [sourceItems])
   const items = useMemo(() => {
@@ -70,7 +76,7 @@ export function RiskLawTrackingPanel({ category, localLaws = [] }: { category: S
         <p className="risk-law-priority-summary"><strong>{selected.changeBadge}</strong><span>{selected.summary}</span></p>
         <div className="risk-law-timeline-card"><div className="risk-law-card-heading"><h4>법령 기준 흐름</h4><span>문서 기준일 연결</span></div><TrackingTimeline item={selected} /></div>
         <div className="risk-law-change-grid"><ChangeCard title="문서 기준" changes={selected.beforeChanges} variant="before" /><ChangeCard title="상품화 연결" changes={selected.afterChanges} variant="after" /></div>
-        <section className="risk-law-cases" aria-labelledby="risk-law-cases-title"><div className="risk-law-section-heading"><div><h4 id="risk-law-cases-title">⚖️ 연관 법원 판례 및 실제 손해 사례</h4><span>법령 기준과 연결된 보충 자료</span></div><div className="risk-law-case-tabs" role="tablist" aria-label="연관 사례 유형"><button type="button" role="tab" aria-selected="true" className="active">관련 판례 (0)</button><button type="button" role="tab" aria-selected="false">사고·손해 사례 (0)</button></div></div><p className="risk-law-empty">현재 연결된 판례·손해 사례는 없으며, 법령 원문 기준만 상품화 후보의 보충 근거로 연결되어 있습니다.</p></section>
+        <section className="risk-law-cases" aria-labelledby="risk-law-cases-title"><div className="risk-law-section-heading"><div><h4 id="risk-law-cases-title">⚖️ 연관 법원 판례 및 실제 손해 사례</h4><span>법령 기준과 연결된 보충 자료</span></div><div className="risk-law-case-tabs" role="tablist" aria-label="연관 사례 유형"><button type="button" role="tab" aria-selected={caseTab === 'precedent'} className={caseTab === 'precedent' ? 'active' : ''} onClick={() => setCaseTab('precedent')}>관련 판례 ({selected.relatedCases.length})</button><button type="button" role="tab" aria-selected={caseTab === 'loss'} className={caseTab === 'loss' ? 'active' : ''} onClick={() => setCaseTab('loss')}>사고·손해 사례 ({selected.relatedLossCases.length})</button></div></div>{(caseTab === 'precedent' ? selected.relatedCases : selected.relatedLossCases).length ? <div className="risk-law-case-list">{(caseTab === 'precedent' ? selected.relatedCases : selected.relatedLossCases).map((item) => <article className="risk-law-case-card" key={item.caseNumber}><div className="risk-law-case-meta"><span>{item.type}</span><b>{item.caseNumber}</b><em>{item.badge}</em></div><h5>{item.title}</h5><div className="risk-law-case-summary"><p><b>쟁점</b>{item.issue}</p><p><b>판단</b>{item.judgment}</p></div><div className="risk-law-case-footer"><span>확인 금액</span><strong>{item.award}</strong></div></article>)}</div> : <p className="risk-law-empty">현재 연결된 사례가 없으며, 법령 원문 기준을 상품화 후보의 보충 근거로 연결하고 있습니다.</p>}</section>
         <div className="risk-law-detail-footer"><span>적용 기준일 <strong>{selected.expectedEffectiveDate}</strong></span><span>근거 ID <strong>{selected.evidenceIds[0]}</strong></span>{selected.sourceUrl ? <a href={selected.sourceUrl} target="_blank" rel="noreferrer">원문 확인 ↗</a> : null}</div>
       </article> : <div className="risk-law-detail risk-law-empty">법령 자료를 불러오는 중입니다.</div>}
   </section>

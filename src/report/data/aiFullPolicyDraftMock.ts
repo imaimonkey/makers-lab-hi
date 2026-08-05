@@ -553,7 +553,7 @@ export const aiFullPolicyDraftMock: FullPolicyDraft = {
             "총 보상한도 10억원",
             "자기부담금 손해액의 10%, 최소 100만원"
           ],
-          "basis": "프로토타입 가정값 및 특별약관 제7조 참고",
+            "basis": "설계 전제 및 특별약관 제7조 참고",
           "confidence": "낮음"
         }
       ],
@@ -564,7 +564,7 @@ export const aiFullPolicyDraftMock: FullPolicyDraft = {
         "aggregateLimit": "10억원",
         "deductible": "손해액의 10%, 최소 100만원",
         "confidence": "낮음",
-        "displayLabel": "프로토타입 가정치"
+        "displayLabel": "설계 전제"
       },
       "articles": [
         {
@@ -721,7 +721,7 @@ export const aiFullPolicyDraftMock: FullPolicyDraft = {
             "총 보상한도 20억원",
             "자기부담금 손해액의 1%, 최소 500만원"
           ],
-          "basis": "프로토타입 가정값 및 특별약관 제8조 참고",
+            "basis": "설계 전제 및 특별약관 제8조 참고",
           "confidence": "낮음"
         }
       ],
@@ -732,7 +732,7 @@ export const aiFullPolicyDraftMock: FullPolicyDraft = {
         "aggregateLimit": "20억원",
         "deductible": "손해액의 1%, 최소 500만원",
         "confidence": "낮음",
-        "displayLabel": "프로토타입 가정치"
+        "displayLabel": "설계 전제"
       },
       "articles": [
         {
@@ -898,7 +898,7 @@ export const aiFullPolicyDraftMock: FullPolicyDraft = {
             "보험증권에 한도 기재",
             "자기부담금 손해액의 10%, 최소 50만원"
           ],
-          "basis": "프로토타입 가정값 및 특별약관 제8조 참고",
+            "basis": "설계 전제 및 특별약관 제8조 참고",
           "confidence": "낮음"
         }
       ],
@@ -909,7 +909,7 @@ export const aiFullPolicyDraftMock: FullPolicyDraft = {
         "aggregateLimit": "보험증권에 기재",
         "deductible": "손해액의 10%, 최소 50만원",
         "confidence": "낮음",
-        "displayLabel": "프로토타입 가정치"
+        "displayLabel": "설계 전제"
       },
       "articles": [
         {

@@ -29,8 +29,8 @@ const mockRiskData = {
   },
 
   risk: {
-    title: "전기차 지하주차장 주차·충전 중 화재",
-    shortTitle: "전기차 지하주차장 화재 위험",
+    title: "전기차 배터리 화재",
+    shortTitle: "전기차 배터리 화재",
     formalDefinition:
       "전기차가 지하주차장 등에서 주차 또는 충전 중 화재를 일으켜 주변 차량과 건물에 대규모 제3자 재산손해를 발생시키는 위험",
     categories: ["모빌리티", "화재·재물", "복합위험"],
@@ -617,4 +617,3 @@ if (typeof window !== "undefined") {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = mockRiskData;
 }
-

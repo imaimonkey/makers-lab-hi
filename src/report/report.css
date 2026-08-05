@@ -10393,6 +10393,58 @@
     min-width: 112px;
   }
 }
+
+/* Keep report navigation on the same readable strip as the catalog/detail tabs. */
+.workspace-jh .reports-page .report-page__tabs {
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.workspace-jh .reports-page .report-page__tabs-list {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: var(--analyst-tab-height, 44px);
+  height: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.workspace-jh .reports-page .report-page__tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.workspace-jh .reports-page .report-page__tab {
+  box-sizing: border-box;
+  flex: 0 0 var(--analyst-tab-width, clamp(112px, 12vw, 160px));
+  width: var(--analyst-tab-width, clamp(112px, 12vw, 160px));
+  min-width: var(--analyst-tab-width, clamp(112px, 12vw, 160px));
+  min-height: var(--analyst-tab-height, 44px);
+  padding-inline: 12px;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .workspace-jh .reports-page .report-page__tabs {
+    top: 64px;
+  }
+
+  .workspace-jh .reports-page .report-page__tab {
+    flex-basis: 112px;
+    width: 112px;
+    min-width: 112px;
+  }
+}
 .report-page__wording-group-grid .report-page__condition-list article {
   grid-template-columns: 60px minmax(0, 1fr);
   gap: 10px;
@@ -29786,6 +29838,68 @@
 @media print {
   :is(#report-root, .reports-page) .report-page__report-pagination {
     display: none;
+  }
+}
+
+/* Integration QA: the report home and generated report should share the
+   workspace content axis. The generated view previously added a second
+   width/gutter calculation, making some tabs visibly narrower than the card
+   library. */
+:is(#report-root, .reports-page) .report-page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.reports-page .report-page__generated,
+.reports-page .report-page__report-list {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
+.reports-page .report-page__generated {
+  padding-top: 0;
+}
+
+.reports-page .report-page__report-list-section,
+.reports-page .report-page__report-list-grid,
+.reports-page .report-page__report-card {
+  min-width: 0;
+}
+
+.reports-page .report-page__report-list,
+.reports-page .report-page__report-list-section {
+  overflow-anchor: none;
+}
+
+.reports-page .report-page__report-list-grid {
+  width: 100%;
+}
+
+/* Pagination changes the rendered cards only; it must never create or expose
+   a horizontal scroll lane for the surrounding library section. */
+.reports-page .report-page__report-pagination {
+  position: relative;
+  left: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: clip;
+  overflow-anchor: none;
+}
+
+.reports-page .report-page__report-card-main,
+.reports-page .report-page__report-card-bottom {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .reports-page .report-page__generated,
+  .reports-page .report-page__report-list {
+    padding-inline: 0;
   }
 }
 

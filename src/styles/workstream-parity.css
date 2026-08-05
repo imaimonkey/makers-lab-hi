@@ -1507,7 +1507,21 @@
  * navigation and control roles should occupy the same visual rhythm. Keep
  * this layer intentionally small so editorial detail and dashboard cards
  * remain workstream-specific.
+ *
+ * These shell variables must live on :root as well as the workspace element:
+ * the grid container is the parent of the workspace element and therefore
+ * cannot resolve a custom property declared only on its child.
  */
+:root {
+  --analyst-sidebar-width: 248px;
+  --analyst-topbar-height: 72px;
+  --analyst-content-gutter: clamp(24px, 3vw, 40px);
+  --analyst-content-max: 1440px;
+  --analyst-control-height: 40px;
+  --analyst-tab-height: 44px;
+  --analyst-tab-width: clamp(112px, 12vw, 160px);
+}
+
 .workspace-hyoje,
 .workspace-seoyeon,
 .workspace-sh,
@@ -1635,6 +1649,46 @@
   .workspace-seoyeon .catalog-page .risk-category-tabs {
     width: 100%;
   }
+}
+
+/* Integration QA: keep the analyst workstreams on one content axis. The
+   workstream palettes remain distinct, but their page frame, topbar and
+   controls should not change width or rhythm as users move through the flow. */
+:root {
+  /* Keep the content axis stable when a page changes height, for example when
+     the final report page contains fewer cards than the preceding page. */
+  scrollbar-gutter: stable;
+}
+
+.workspace-hyoje,
+.workspace-seoyeon,
+.workspace-sh,
+.workspace-jh {
+  --sidebar-width: var(--analyst-sidebar-width);
+}
+
+.workspace-hyoje .page,
+.workspace-seoyeon .page,
+.workspace-sh .page,
+.workspace-jh .page {
+  box-sizing: border-box;
+  width: min(var(--analyst-content-max), 100%);
+  max-width: var(--analyst-content-max);
+  min-width: 0;
+  margin-inline: auto;
+  padding-inline: var(--analyst-content-gutter);
+  overflow-x: clip;
+}
+
+.workspace-hyoje .app-content,
+.workspace-seoyeon .app-content,
+.workspace-sh .app-content,
+.workspace-jh .app-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 /* Shared risk workstream palette: keep exploration and detail aligned with radar/report. */
@@ -2658,4 +2712,497 @@
   .workspace-seoyeon .catalog-page .risk-category-tabs {
     width: 100%;
   }
+}
+
+/* Final shared topbar QA: every analyst workspace uses the same chrome
+   geometry. Page-specific colors remain above, while scale and alignment stay
+   stable across the workflow. */
+.workspace-hyoje .topbar,
+.workspace-seoyeon .topbar,
+.workspace-sh .topbar,
+.workspace-jh .topbar {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 420px) auto;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  height: var(--analyst-topbar-height);
+  min-height: var(--analyst-topbar-height);
+  padding-inline: var(--analyst-content-gutter);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.workspace-hyoje .topbar-context,
+.workspace-seoyeon .topbar-context,
+.workspace-sh .topbar-context,
+.workspace-jh .topbar-context {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.workspace-hyoje .topbar-context-icon,
+.workspace-seoyeon .topbar-context-icon,
+.workspace-sh .topbar-context-icon,
+.workspace-jh .topbar-context-icon {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+
+.workspace-hyoje .topbar-context > div,
+.workspace-seoyeon .topbar-context > div,
+.workspace-sh .topbar-context > div,
+.workspace-jh .topbar-context > div {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.workspace-hyoje .topbar-context > div > p,
+.workspace-seoyeon .topbar-context > div > p,
+.workspace-sh .topbar-context > div > p,
+.workspace-jh .topbar-context > div > p {
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  color: #718096;
+  font: 700 10px/1.2 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  letter-spacing: .06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-hyoje .topbar-context > div > strong,
+.workspace-seoyeon .topbar-context > div > strong,
+.workspace-sh .topbar-context > div > strong,
+.workspace-jh .topbar-context > div > strong {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #1f334d;
+  font: 700 15px/1.2 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  letter-spacing: -.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-hyoje .topbar-search,
+.workspace-seoyeon .topbar-search,
+.workspace-sh .topbar-search,
+.workspace-jh .topbar-search {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--analyst-control-height);
+  height: var(--analyst-control-height);
+  margin: 0;
+  padding-inline: 13px;
+  border-radius: 10px;
+}
+
+.workspace-hyoje .topbar-search input,
+.workspace-seoyeon .topbar-search input,
+.workspace-sh .topbar-search input,
+.workspace-jh .topbar-search input {
+  min-width: 0;
+  overflow: hidden;
+  font: 400 12px/1.2 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-hyoje .topbar-actions,
+.workspace-seoyeon .topbar-actions,
+.workspace-sh .topbar-actions,
+.workspace-jh .topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  min-width: max-content;
+}
+
+.workspace-hyoje .mode-menu-trigger,
+.workspace-seoyeon .mode-menu-trigger,
+.workspace-sh .mode-menu-trigger,
+.workspace-jh .mode-menu-trigger {
+  box-sizing: border-box;
+  min-height: var(--analyst-control-height);
+  height: var(--analyst-control-height);
+  padding: 3px 9px 3px 4px;
+  gap: 7px;
+}
+
+.workspace-hyoje .mode-user-icon,
+.workspace-seoyeon .mode-user-icon,
+.workspace-sh .mode-user-icon,
+.workspace-jh .mode-user-icon {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+}
+
+.workspace-hyoje .mode-menu-current,
+.workspace-seoyeon .mode-menu-current,
+.workspace-sh .mode-menu-current,
+.workspace-jh .mode-menu-current {
+  padding-inline: 2px;
+  font: 700 11px/1.2 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) and (min-width: 721px) {
+  .workspace-hyoje .topbar,
+  .workspace-seoyeon .topbar,
+  .workspace-sh .topbar,
+  .workspace-jh .topbar {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 340px) auto;
+    gap: 16px;
+    padding-inline: 24px;
+  }
+}
+
+@media (max-width: 720px) {
+  .workspace-hyoje .topbar,
+  .workspace-seoyeon .topbar,
+  .workspace-sh .topbar,
+  .workspace-jh .topbar {
+    display: flex;
+    height: 64px;
+    min-height: 64px;
+    gap: 12px;
+    padding-inline: 16px;
+  }
+
+  .workspace-hyoje .topbar-context,
+  .workspace-seoyeon .topbar-context,
+  .workspace-sh .topbar-context,
+  .workspace-jh .topbar-context {
+    flex: 1 1 auto;
+    gap: 9px;
+  }
+
+  .workspace-hyoje .topbar-context-icon,
+  .workspace-seoyeon .topbar-context-icon,
+  .workspace-sh .topbar-context-icon,
+  .workspace-jh .topbar-context-icon {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .workspace-hyoje .topbar-context > div > p,
+  .workspace-seoyeon .topbar-context > div > p,
+  .workspace-sh .topbar-context > div > p,
+  .workspace-jh .topbar-context > div > p {
+    display: none;
+  }
+
+  .workspace-hyoje .topbar-context > div > strong,
+  .workspace-seoyeon .topbar-context > div > strong,
+  .workspace-sh .topbar-context > div > strong,
+  .workspace-jh .topbar-context > div > strong {
+    margin-top: 0;
+    font-size: 14px;
+  }
+
+  .workspace-hyoje .topbar-search,
+  .workspace-seoyeon .topbar-search,
+  .workspace-sh .topbar-search,
+  .workspace-jh .topbar-search {
+    display: none;
+  }
+
+  .workspace-hyoje .mode-menu-current,
+  .workspace-seoyeon .mode-menu-current,
+  .workspace-sh .mode-menu-current,
+  .workspace-jh .mode-menu-current {
+    display: none;
+  }
+
+  .workspace-hyoje .mode-menu-trigger,
+  .workspace-seoyeon .mode-menu-trigger,
+  .workspace-sh .mode-menu-trigger,
+  .workspace-jh .mode-menu-trigger {
+    min-height: 36px;
+    height: 36px;
+    padding-right: 4px;
+  }
+
+  .workspace-hyoje .mode-user-icon,
+  .workspace-seoyeon .mode-user-icon,
+  .workspace-sh .mode-user-icon,
+  .workspace-jh .mode-user-icon {
+    flex-basis: 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Final integration overrides: the last layer owns the catalog rail geometry
+   so a legacy fixed-strip rule cannot cover the page heading. */
+.workspace-seoyeon .catalog-page .risk-exploration-filter-row {
+  position: relative;
+  align-items: center;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-shell {
+  position: sticky;
+  top: var(--analyst-topbar-height);
+  right: auto;
+  left: auto;
+  width: 100%;
+  max-width: none;
+  margin: 0 0 20px;
+  padding: 0;
+  border: 1px solid #dce3ea;
+  border-top: 3px solid #ff6b35;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 6px 18px rgba(11, 43, 82, .07);
+  backdrop-filter: blur(12px);
+}
+
+/* The shell already reserves the fixed sidebar in the app grid. Catalog and
+   dashboard pages must never reserve that width a second time. */
+.workspace-seoyeon .catalog-page {
+  box-sizing: border-box;
+  width: min(var(--analyst-content-max), 100%);
+  max-width: var(--analyst-content-max);
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.workspace-seoyeon .catalog-page > .article-source-sync-strip,
+.workspace-seoyeon .catalog-page > .risk-exploration-lens {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin-inline: 0;
+}
+
+.workspace-seoyeon .catalog-page > .article-source-sync-strip {
+  margin-top: 0;
+}
+
+.workspace-seoyeon .catalog-page .risk-exploration-lens,
+.workspace-seoyeon .catalog-page .risk-screening-board,
+.workspace-seoyeon .catalog-page .screening-table-heading {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-tabs {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  max-width: none;
+  min-height: var(--analyst-tab-height);
+  height: auto;
+  gap: 0;
+  padding: 4px;
+  overflow-x: auto;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  box-shadow: none;
+  scrollbar-width: none;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-button {
+  flex: 0 0 var(--analyst-tab-width);
+  width: var(--analyst-tab-width);
+  min-width: var(--analyst-tab-width);
+  min-height: var(--analyst-tab-height);
+  margin: 0;
+  padding-inline: 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px;
+  color: #64748b;
+  background: transparent;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-button:hover,
+.workspace-seoyeon .catalog-page .risk-category-button:focus-visible {
+  border-bottom-color: transparent;
+  color: #1d4ed8;
+  background: #eff6ff;
+  outline: none;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-button.active,
+.workspace-seoyeon .catalog-page .risk-category-button.active:hover,
+.workspace-seoyeon .catalog-page .risk-category-button.active:focus-visible {
+  border-bottom-color: #ff6b35;
+  color: #0f172a;
+  background: #fffaf6;
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .workspace-seoyeon .catalog-page .risk-category-tabs {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .workspace-seoyeon .catalog-page .risk-exploration-filter-row {
+    padding-top: 0;
+  }
+
+  .workspace-seoyeon .catalog-page .risk-category-shell {
+    top: 64px;
+    margin-bottom: 16px;
+  }
+
+  .workspace-seoyeon .catalog-page .risk-category-button {
+    flex-basis: 112px;
+    width: 112px;
+    min-width: 112px;
+  }
+}
+
+/* The live detail page uses .aic-section-nav. Keep it on the same tab
+   contract as the catalog rail; .risk-anchor-tabs is a legacy selector. */
+.workspace-sh .aic-section-nav {
+  box-sizing: border-box;
+  position: sticky;
+  top: var(--analyst-topbar-height);
+  z-index: 20;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  max-width: none;
+  min-height: var(--analyst-tab-height);
+  margin: 0 0 18px;
+  padding: 4px;
+  overflow-x: auto;
+  border: 1px solid #dce3ea;
+  border-top: 3px solid #2563eb;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 6px 18px rgba(11, 43, 82, .07);
+  scrollbar-width: none;
+}
+
+.workspace-sh .aic-section-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.workspace-sh .aic-section-nav a {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 var(--analyst-tab-width);
+  align-items: center;
+  justify-content: center;
+  width: var(--analyst-tab-width);
+  min-width: var(--analyst-tab-width);
+  min-height: var(--analyst-tab-height);
+  margin: 0;
+  padding-inline: 12px;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px;
+  color: #64748b;
+  background: transparent;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.workspace-sh .aic-section-nav a:hover,
+.workspace-sh .aic-section-nav a:focus-visible {
+  border-bottom-color: transparent;
+  color: #1d4ed8;
+  background: #eff6ff;
+  outline: none;
+}
+
+@media (max-width: 1100px) {
+  .workspace-seoyeon .catalog-page .risk-category-tabs,
+  .workspace-sh .aic-section-nav {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .workspace-sh .aic-section-nav {
+    top: 64px;
+    margin-bottom: 16px;
+  }
+
+  .workspace-sh .aic-section-nav a {
+    flex-basis: 112px;
+    width: 112px;
+    min-width: 112px;
+  }
+}
+
+/* The three analyst navigation strips share one geometry contract. Keep the
+   anchor rail scrollable so long labels never reduce the usable page width. */
+.workspace-seoyeon .catalog-page .risk-category-shell,
+.workspace-sh .aic-section-nav {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-tabs,
+.workspace-sh .aic-section-nav {
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+}
+
+.workspace-sh .aic-section-nav a {
+  flex: 0 0 var(--analyst-tab-width);
+  width: var(--analyst-tab-width);
+  min-width: var(--analyst-tab-width);
+}
+
+@media (max-width: 720px) {
+  .workspace-sh .aic-section-nav a {
+    flex-basis: 112px;
+    width: 112px;
+    min-width: 112px;
+  }
+}
+
+/* Ten detail anchors should fill the available rail on wide screens. Once
+   the rail becomes narrower than ten readable tabs, retain the minimum width
+   and allow horizontal scrolling instead of clipping the last anchor. */
+.workspace-sh .aic-section-nav a {
+  flex: 1 1 112px;
+  width: auto;
+  min-width: 112px;
 }

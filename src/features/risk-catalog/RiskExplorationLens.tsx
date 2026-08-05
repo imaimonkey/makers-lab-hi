@@ -119,19 +119,26 @@ function tamFromAssumption({ facilityCount, premiumRange }: TamAssumption) {
 }
 
 function marketTamDisplay(record: RiskExplorationRecord) {
-  if (record.id !== 'ev-battery-fire') {
-    const assumption = marketTamAssumptions[record.id] ?? {
-      facilityCount: Math.max(1000, Math.round(record.metricScores.demand * 10000)),
-      premiumRange: [200000, 400000, 700000] as [number, number, number],
-    }
-    const [min, , max] = tamFromAssumption(assumption)
+  if (record.id === 'ev-battery-fire') {
+    const { min, max } = PRODUCT_FINANCIAL_ESTIMATE.tamRange
     return {
       label: '총도달가능시장(TAM)',
       value: `연 ${min}억~${max}억 원`,
     }
   }
 
-  const { min, max } = PRODUCT_FINANCIAL_ESTIMATE.tamRange
+  if (record.articleId || record.id.startsWith('developer-')) {
+    return {
+      label: '총도달가능시장(TAM)',
+      value: '국내 노출량·보험료 자료 확인 필요',
+    }
+  }
+
+  const assumption = marketTamAssumptions[record.id] ?? {
+    facilityCount: Math.max(1000, Math.round(record.metricScores.demand * 10000)),
+    premiumRange: [200000, 400000, 700000] as [number, number, number],
+  }
+  const [min, , max] = tamFromAssumption(assumption)
   return {
     label: '총도달가능시장(TAM)',
     value: `연 ${min}억~${max}억 원`,
@@ -401,9 +408,20 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
   const categoryTabsVisible = useRiskCategoryTabsVisibility()
 
   useEffect(() => {
-    window.requestAnimationFrame(() => {
-      document.getElementById(`risk-category-${category}`)?.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' })
+    const frame = window.requestAnimationFrame(() => {
+      const tab = document.getElementById(`risk-category-${category}`)
+      const tabList = tab?.closest<HTMLElement>('.risk-category-tabs')
+      if (!tab || !tabList) return
+
+      // Keep category changes from moving the document vertically. Only the
+      // horizontal tab rail should adjust when the selected tab is off-screen.
+      const tabRect = tab.getBoundingClientRect()
+      const tabListRect = tabList.getBoundingClientRect()
+      const offset = tabRect.left - tabListRect.left - (tabListRect.width - tabRect.width) / 2
+      const maxScrollLeft = Math.max(0, tabList.scrollWidth - tabList.clientWidth)
+      tabList.scrollLeft = Math.min(maxScrollLeft, Math.max(0, tabList.scrollLeft + offset))
     })
+    return () => window.cancelAnimationFrame(frame)
   }, [category])
 
   const updateSearchParam = (key: SearchParamKey, value: string, defaultValue = '') => {
@@ -441,16 +459,17 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
 
   const sortedRecords = useMemo(() => {
     const filtered = (developerMode ? (sourceRecords ?? []) : (sourceRecords ?? riskExplorationRecords)).filter((record) => {
+      // `categories` is the canonical multi-select classification. Using
+      // `primaryCategory` here hid mixed-scope risks from the legal,
+      // individual, and corporate tabs even though the record explicitly
+      // belonged to those categories.
       const matchesCategory = category === 'all'
         ? true
-        : category === 'individual'
-          ? record.primaryCategory === 'personal'
-          : category === 'corporate'
-            ? record.primaryCategory === 'corporate'
-            : category === 'legal'
-              ? record.primaryCategory === 'regulatory'
-              : (category === 'department' && record.signalOrigin === 'department-intake')
-              || (category === 'customer' && record.signalOrigin === 'customer-intake')
+        : category === 'department'
+          ? record.categories.includes('department') || record.signalOrigin === 'department-intake'
+          : category === 'customer'
+            ? record.categories.includes('customer') || record.signalOrigin === 'customer-intake'
+            : record.categories.includes(category)
       const matchesSource = sourceFilter === 'all' || record.sourceName === sourceFilter
       const collectedAt = record.collectedAt ? new Date(record.collectedAt).getTime() : Number.NaN
       const matchesPeriod = period === 'all' || (Number.isFinite(collectedAt) && collectedAt >= now - Number(period) * 24 * 60 * 60 * 1000)

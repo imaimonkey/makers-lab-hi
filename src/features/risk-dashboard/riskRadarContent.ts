@@ -457,9 +457,9 @@ export const globalInsuranceInsights: GlobalInsuranceInsight[] = [
 ]
 
 export const riskRadarScraps: RiskRadarScrap[] = [
-  { id: 'scrap-ev-fire', title: '전기차 지하주차장 화재', conclusion: '상품 개발 검토 가치 있음', reportId: 'RPT-EVFIRE-001-20260228' },
-  { id: 'scrap-ai-data-center', title: 'AI 데이터센터 신형 설비 위험', conclusion: '신규 담보 검토 가능', reportId: 'SAMPLE-RPT-DIGITAL-002' },
-  { id: 'scrap-ai-liability', title: '생성형 AI 저작권·배상책임', conclusion: '기업 배상책임 검토', reportId: 'SAMPLE-RPT-WORK-004' },
+  { id: 'scrap-ev-fire', title: '전기차 배터리 화재', conclusion: '상품 개발 검토 가치 있음', reportId: 'RPT-EVFIRE-001-20260228' },
+  { id: 'scrap-ess-battery', title: 'ESS·UPS 배터리 화재', conclusion: '신규 담보 검토 가능', reportId: 'RPT-RISK-ess-ups-battery-fire' },
+  { id: 'scrap-ai-liability', title: '생성형 AI 저작권·배상책임', conclusion: '기업 배상책임 검토', reportId: 'RPT-RISK-generative-ai-copyright' },
 ]
 
 export const riskRadarKeywords: RiskRadarKeyword[] = [

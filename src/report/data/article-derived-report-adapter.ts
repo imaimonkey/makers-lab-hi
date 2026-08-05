@@ -1,7 +1,9 @@
-import { groupArticleSourceRecords, selectArticleGroupRepresentative, type ArticleSourceRecord } from '../../features/risk-dashboard/articleSourceData'
+import { groupArticleSourceRecords, isArticleReportCandidate, selectArticleGroupRepresentative, type ArticleSourceRecord } from '../../features/risk-dashboard/articleSourceData'
 import { COMMERCIALIZATION_GATE_GROUP_BY_ID } from '../services/commercialization-assessment'
 import { createDeveloperReportData } from './developer-report-adapter'
 import { calculateProductizationScores } from '../../features/risk-catalog/productizationScore'
+import type { RiskDetailNarrative } from '../../domain/risk/riskDetailContent'
+import { createArticleReportDepthContext, deepenReport } from './report-depth-adapter'
 import type { ReportResult, RiskSourceData } from '../types'
 
 export type ArticleDerivedReportEntry = {
@@ -66,7 +68,7 @@ const articleCriteria = (article: ArticleSourceRecord, evidenceIds: string[]) =>
     gateGroup: COMMERCIALIZATION_GATE_GROUP_BY_ID[id] ?? 'supplementary_execution',
     question: `${title} 기준을 문서 근거와 실제 운영자료로 확인할 수 있는가?`,
     description: copy.summary,
-    aiDecision: 'fulfilled',
+    aiDecision: 'unfulfilled',
     reviewStatus: 'pending',
     status: 'additional_check',
     evidenceStatus: 'reviewer_confirmation_required',
@@ -94,6 +96,7 @@ const articleCriteria = (article: ArticleSourceRecord, evidenceIds: string[]) =>
 
 const resultText = (article: ArticleSourceRecord) => {
   const { derived } = article
+  const concept = derived.productConcept
   const sourceEvidenceIds = derived.evidenceQuotes.map((_, index) => evidenceId(article, index))
   const fallbackEvidenceIds = sourceEvidenceIds.length ? sourceEvidenceIds : [`${article.id}-source`]
   const metricSummary = derived.metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · ')
@@ -164,8 +167,8 @@ const resultText = (article: ArticleSourceRecord) => {
         whyNow: [derived.event, derived.changeType],
         damageTypes: derived.damageTypes.map((damage, index) => ({ id: `damage-${index + 1}`, name: damage, title: damage, summary: damage })),
         affectedParties: derived.affectedTargets,
-        existingCoverageMap: [{ id: 'current-coverage', damage: derived.damageTypes[0] ?? '주요 손해', coverageName: '기존 보장과의 관계 확인 필요', possibleCoverage: '부분 연결 가능성', remainingGap: derived.coverageGap, status: '확인 필요', evidenceIds: fallbackEvidenceIds }],
-        keyCoverageGaps: [{ id: 'gap-1', title: '본문 기반 보장 공백 가설', description: derived.coverageGap, importance: 'high', evidenceIds: fallbackEvidenceIds }],
+        existingCoverageMap: derived.damageTypes.map((damage, index) => ({ id: `current-coverage-${index + 1}`, damage, coverageName: index === 0 ? '기존 재산·배상책임·기업휴지보험과 대조' : '관련 기존 보험·면책 조항 확인 필요', possibleCoverage: '부분 연결 가능성', remainingGap: derived.coverageGap, status: '확인 필요', evidenceIds: fallbackEvidenceIds })),
+        keyCoverageGaps: [{ id: 'gap-1', title: '원문 기반 보장 공백 가설', description: derived.coverageGap, importance: 'high', evidenceIds: fallbackEvidenceIds }, { id: 'gap-2', title: '손해·책임 연결 공백', description: concept.existingInsuranceRelationship, importance: 'medium', evidenceIds: fallbackEvidenceIds }],
       },
     },
     structure: {
@@ -178,21 +181,21 @@ const resultText = (article: ArticleSourceRecord) => {
       },
       productProposal: {
         status: '초안 검토 · 원문 기반',
-        workingName: `${derived.title} 대응 보장 구조`,
-        recommendedForm: '조건부 특약·서비스 결합 구조 검토',
-        alternativeForms: ['기업성 패키지 검토', '위험관리 서비스 연계'],
-        expectedPolicyholder: derived.affectedTargets.slice(0, 3),
-        expectedInsured: derived.affectedTargets.join(' · '),
-        coveredObject: derived.affectedTargets.join(' · '),
-        coveredEvent: derived.event,
-        coveredLoss: derived.damageTypes.join(' · '),
-        existingInsuranceRelationship: '기존 상품·약관과의 중복 및 공백 확인 필요',
-        settlementDirection: '손해 정의와 입증 기준을 먼저 설계',
-        policyPeriodDirection: '위험 노출 기간과 사고 통지 기준 확인',
-        coverageLimitDirection: '손해자료 확보 후 별도 산정',
-        deductibleDirection: '위험 통제 수준과 손해 빈도 확인 후 검토',
-        underwritingCandidates: derived.affectedTargets,
-        outOfScopeCandidates: ['공식 약관 확정', '보험료 확정', '가입 가능 여부 확정'],
+        workingName: concept.workingName,
+        recommendedForm: concept.form,
+        alternativeForms: ['기업성 패키지와 위험관리 서비스 결합 검토', '재보험·ILS 또는 공공기금 연계 가능성 확인'],
+        expectedPolicyholder: [concept.policyholder],
+        expectedInsured: [concept.insured],
+        coveredObject: [concept.coveredEvent],
+        coveredEvent: concept.coveredEvent,
+        coveredLoss: concept.coveredLoss,
+        existingInsuranceRelationship: concept.existingInsuranceRelationship,
+        settlementDirection: '사고 정의·손해 입증·책임 분담을 먼저 설계한 뒤 실손 보상 범위를 검토',
+        policyPeriodDirection: '건설·운영·사고 대응 단계별 보장 개시·종료와 사고 통지 기준 확인',
+        coverageLimitDirection: `PML·복구기간·누적노출을 반영해 별도 산정 · ${concept.pricingInputs.slice(0, 2).join(' · ')}`,
+        deductibleDirection: `위험 통제 수준과 손해 빈도 확인 후 검토 · ${concept.underwritingInputs.slice(0, 2).join(' · ')}`,
+        underwritingCandidates: concept.underwritingInputs,
+        outOfScopeCandidates: concept.outOfScope,
         recommendationReason: derived.nextAction,
         unresolvedItems: [...derived.uncertainty, ...derived.counterEvidence],
         evidenceIds: fallbackEvidenceIds,
@@ -234,16 +237,21 @@ const resultText = (article: ArticleSourceRecord) => {
         disclaimer: '본문 기반 구조화 초안이며 실제 약관·보장·면책 문구가 아닙니다.',
         possibleReasons: ['위험 이벤트와 손해 유형은 본문에서 확인됨'],
         improvementReasons: [...derived.uncertainty, '보상 요건·면책·입증 기준 추가 검토'],
-        assessmentCriteria: [{ id: 'wording-1', question: '사고와 손해를 객관적으로 정의할 수 있는가?', status: '확인 필요', note: derived.coverageGap }],
-        structureOptions: [{ id: 'structure-1', title: '조건부 특약 구조', summary: derived.event }],
+        assessmentCriteria: [
+          { id: 'wording-1', question: '사고·발동 요건을 객관적으로 정의할 수 있는가?', status: '확인 필요', note: concept.coveredEvent },
+          { id: 'wording-2', question: '보상 손해와 기존 보장의 중복을 구분할 수 있는가?', status: '확인 필요', note: concept.coveredLoss },
+          { id: 'wording-3', question: '책임 주체와 손해 입증 자료를 특정할 수 있는가?', status: '확인 필요', note: concept.existingInsuranceRelationship },
+          { id: 'wording-4', question: '면책·한도·누적손해 기준을 명확히 작성할 수 있는가?', status: '확인 필요', note: concept.outOfScope.join(' · ') },
+        ],
+        structureOptions: [{ id: 'structure-1', title: concept.form, summary: concept.coveredEvent }, { id: 'structure-2', title: '위험관리 서비스 결합 구조', summary: concept.underwritingInputs.join(' · ') }],
         selectedDraftType: '본문 기반 검토용 초안',
-        coverageDraft: `${derived.event.replace(/[.!?。！？]+$/u, '')}와 관련해 발생할 수 있는 ${derived.damageTypes.join(', ')} 손해를 검토 대상으로 정의합니다. 구체적인 보장 범위와 지급 요건은 확인 필요합니다.`,
+        coverageDraft: `${concept.coveredEvent.replace(/[.!?。！？]+$/u, '')}로 발생한 ${concept.coveredLoss}를 검토 대상 손해로 정의합니다. 구체적인 보장 범위·면책·지급 요건은 원문과 내부 손해·약관 자료 확인 후 확정합니다.`,
         alternativeLiabilityDraft: '책임 주체와 손해 입증 기준은 공식 자료 및 법무 검토 후 확정합니다.',
         definitions: derived.keywords.slice(0, 5).map((term, index) => ({ id: `definition-${index + 1}`, term, draftDefinition: `${term}의 의미와 적용 범위는 원문·전문가 확인 필요`, status: '확인 필요', evidenceIds: fallbackEvidenceIds })),
-        paymentConditions: [{ id: 'payment-1', text: '사고 발생과 손해의 인과관계를 확인할 수 있어야 함', verification: '내부 손해자료·전문가 검토 필요', evidenceIds: fallbackEvidenceIds }],
-        exclusionCandidates: [{ id: 'exclusion-1', text: '본문만으로 확인되지 않은 위험 범위', reason: '근거 부족', status: '확인 필요', evidenceIds: fallbackEvidenceIds }],
+        paymentConditions: [{ id: 'payment-1', text: '사고 발생과 손해의 인과관계를 확인할 수 있어야 함', verification: '내부 손해자료·전문가 검토 필요', evidenceIds: fallbackEvidenceIds }, { id: 'payment-2', text: '실제 손해액·복구비·영업중단 기간을 객관적 자료로 확인해야 함', verification: concept.pricingInputs.join(' · '), evidenceIds: fallbackEvidenceIds }],
+        exclusionCandidates: concept.outOfScope.map((item, index) => ({ id: `exclusion-${index + 1}`, text: item, reason: '현재 원문·내부자료만으로 확정 불가', status: '확인 필요', evidenceIds: fallbackEvidenceIds })),
         ambiguities: derived.uncertainty.map((item, index) => ({ id: `ambiguity-${index + 1}`, issue: item, question: '공식 원문과 내부 자료로 확인 가능한가?', owner: '신규위험 탐색·법무', evidenceIds: fallbackEvidenceIds })),
-        referenceDocuments: [{ id: `${article.id}-source`, name: article.fileName, role: '원문 기반 위험 신호·지표 추출', usedFor: '문서 본문 기반 분석', includedInAiInput: false, badge: '문서 원문' }],
+        referenceDocuments: [{ id: `${article.id}-source`, name: `${article.source ?? '문서 원문'} · ${article.title}`, role: '원문 기반 위험 신호·지표 추출', usedFor: '문서 본문 기반 분석', includedInAiInput: false, badge: '문서 원문', sourcePath: article.sourcePath }],
       },
     },
     evidence: {
@@ -253,7 +261,7 @@ const resultText = (article: ArticleSourceRecord) => {
   }
 }
 
-export function createArticleDerivedReportData(article: ArticleSourceRecord, relatedArticles: ArticleSourceRecord[] = [article]): ArticleDerivedReportEntry {
+export function createArticleDerivedReportData(article: ArticleSourceRecord, relatedArticles: ArticleSourceRecord[] = [article], narrative?: RiskDetailNarrative): ArticleDerivedReportEntry {
   const generatedAt = article.collectedAt ?? new Date().toISOString()
   const result = resultText(article)
   const base = createDeveloperReportData(article, Object.fromEntries(Object.entries(result).map(([key, value]) => [key, { text: JSON.stringify(value), generatedAt }])))
@@ -273,18 +281,20 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord, rel
         quote,
       })),
   )
-  const evidenceCount = article.derived.evidenceQuotes.length + relatedEvidence.length || 1
+  const reportEvidence = [...base.report.evidence.map((item) => ({ ...item, reliability: '원문 근거 연결' })), ...relatedEvidence]
+  const depthContext = createArticleReportDepthContext(article, narrative)
+  const reportWithDepth = deepenReport({ ...base.report, evidence: reportEvidence }, depthContext)
   const report: ReportResult = {
-    ...base.report,
+    ...reportWithDepth,
     meta: {
-      ...base.report.meta,
+      ...reportWithDepth.meta,
       analysisMode: 'article-derived-v1',
       reportId: `article-report-${article.id}`,
       sourceRiskId: `developer-${article.id}`,
       aiStatus: '원문 기반 분석',
       dataStatus: '원문 기반 분석',
       isMockData: false,
-      evidenceCount,
+      evidenceCount: reportWithDepth.evidence.length,
       relatedDocumentCount: relatedArticles.length,
       relatedDocumentTitles: relatedArticles.map((relatedArticle) => relatedArticle.title),
       articleTopic: article.contentProfile.topic,
@@ -294,14 +304,14 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord, rel
       badges: ['원문 기반 분석', '문서 근거'],
       disclaimer: '문서 본문을 구조화한 분석 결과이며 공식 약관·보험료·가입 가능 여부를 확정하지 않습니다.',
     },
-    evidence: [...base.report.evidence.map((item) => ({ ...item, reliability: '원문 근거 연결' })), ...relatedEvidence],
+    evidence: reportWithDepth.evidence,
   }
   const riskData: RiskSourceData = {
     ...base.riskData,
     schemaVersion: 'article-derived-v1',
-    meta: { ...base.riskData.meta, analysisMode: 'article-derived-v1', dataStatus: '원문 기반 분석', isMockData: false, inputEvidenceCount: evidenceCount, badges: ['원문 기반 분석', '문서 근거'], reportId: `article-report-${article.id}` },
+    meta: { ...base.riskData.meta, analysisMode: 'article-derived-v1', dataStatus: '원문 기반 분석', isMockData: false, inputEvidenceCount: report.evidence.length, badges: ['원문 기반 분석', '문서 근거'], reportId: `article-report-${article.id}` },
     risk: { ...base.riskData.risk, categories: [article.derived.category] },
-    demoContext: { ...base.riskData.demoContext, mode: 'article-derived', source: article.source ?? '문서 원문', fileName: article.fileName },
+    demoContext: { ...base.riskData.demoContext, mode: 'article-derived', source: article.source ?? '문서 원문', sourceTitle: article.title, sourcePath: article.sourcePath },
     selectionPreview: { ...base.riskData.selectionPreview, oneLineReason: article.derived.summary },
     disclaimer: '문서 원문 본문 기반 분석 데이터입니다.',
   }
@@ -309,7 +319,7 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord, rel
 }
 
 export function createArticleDerivedReportEntries(articles: ArticleSourceRecord[]): ArticleDerivedReportEntry[] {
-  return groupArticleSourceRecords(articles).map((group) => {
+  return groupArticleSourceRecords(articles.filter(isArticleReportCandidate)).map((group) => {
     const representative = selectArticleGroupRepresentative(group)
     return createArticleDerivedReportData(representative, group)
   })

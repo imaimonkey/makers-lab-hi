@@ -4,7 +4,7 @@ const clamp = (value: number) => Math.max(0, Math.min(100, Math.round(value)))
 
 export type ProductizationScores = { market: number; pml: number; manageability: number; legalReadiness: number; evidence: number; total: number }
 
-/** 대시보드·위험탐색·상세가 함께 사용하는 100점 상품화 종합점수 산식입니다. */
+/** 대시보드·위험 탐색·위험 상세가 함께 사용하는 100점 상품화 종합점수 산식입니다. */
 export function calculateProductizationScores(scores: RiskExplorationMetricScores): ProductizationScores {
   const market = clamp((scores.demand * 0.45 + scores.moralHazard * 0.15 + scores.adverseSelection * 0.2 + scores.dataConfidence * 0.2) * 20)
   const pml = clamp((scores.fortuity * 0.45 + scores.accumulation * 0.35 + scores.adverseSelection * 0.2) * 20)

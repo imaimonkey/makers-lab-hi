@@ -1,4 +1,4 @@
-import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import type { GeneratedReportListItem } from '../services/report-list'
 import { browserReportListPreferences, type ReportListPreference, type ReportListPreferences } from '../services/report-list-preferences'
 
@@ -10,11 +10,11 @@ type GeneratedReportListProps = {
 }
 
 type ViewMode = 'grid' | 'list'
-type SortOrder = 'latest' | 'oldest'
+type SortOrder = 'configured' | 'latest' | 'oldest'
 type TargetFilter = 'all' | GeneratedReportListItem['targetType']
 type PriorityFilter = 'all' | GeneratedReportListItem['priority']
 
-const REPORTS_PER_PAGE = 6
+const REPORTS_PER_PAGE = 9
 
 const formatDate = (value: string | null): string => {
   if (!value) return '생성일 확인 필요'
@@ -146,11 +146,13 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
   const [query, setQuery] = useState('')
   const [targetFilter, setTargetFilter] = useState<TargetFilter>('all')
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all')
-  const [sortOrder, setSortOrder] = useState<SortOrder>('latest')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('configured')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [notice, setNotice] = useState('')
   const [preferences, setPreferences] = useState<ReportListPreferences>(() => browserReportListPreferences.load())
   const [currentPage, setCurrentPage] = useState(1)
+  const reportListSectionRef = useRef<HTMLElement>(null)
+  const pendingSectionPositionRef = useRef<{ documentTop: number; left: number } | null>(null)
 
   const summary = useMemo(() => ({ total: reports.length }), [reports.length])
 
@@ -176,6 +178,7 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
       .sort((a, b) => {
         const pinnedDifference = Number(preferences[b.reportId]?.pinned === true) - Number(preferences[a.reportId]?.pinned === true)
         if (pinnedDifference) return pinnedDifference
+        if (sortOrder === 'configured') return 0
         const left = a.generatedAt ? new Date(a.generatedAt).getTime() : 0
         const right = b.generatedAt ? new Date(b.generatedAt).getTime() : 0
         return sortOrder === 'latest' ? right - left : left - right
@@ -189,17 +192,69 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
     return filteredReports.slice(start, start + REPORTS_PER_PAGE)
   }, [activePage, filteredReports])
 
+  const changePage = (nextPage: number) => {
+    const section = reportListSectionRef.current
+    if (section) {
+      const rect = section.getBoundingClientRect()
+      // The next page can be shorter than the current page. Preserve a
+      // reachable document anchor instead of the current viewport position,
+      // which may no longer exist after the card grid shrinks.
+      pendingSectionPositionRef.current = {
+        documentTop: Math.max(0, rect.top + window.scrollY - 16),
+        left: window.scrollX,
+      }
+    }
+    setCurrentPage(nextPage)
+  }
+
+  const preventPaginationFocusScroll = (event: MouseEvent<HTMLButtonElement>) => {
+    // The pagination row moves when the last page has fewer card rows. Do not
+    // let the browser re-scroll to the focused mouse button after that reflow.
+    if (event.button === 0) event.preventDefault()
+  }
+
+  useLayoutEffect(() => {
+    const previousPosition = pendingSectionPositionRef.current
+    if (!previousPosition) return
+
+    const section = reportListSectionRef.current
+    pendingSectionPositionRef.current = null
+    if (!section) return
+
+    const restoreSectionPosition = () => {
+      window.scrollTo({
+        top: previousPosition.documentTop,
+        left: previousPosition.left,
+        behavior: 'auto',
+      })
+    }
+
+    // A pointer click can focus the pagination button after the layout effect
+    // and make the browser scroll once more. Restore on two animation frames
+    // so the section heading remains the stable handoff point after both the
+    // React reflow and focus handling have completed.
+    let secondFrame = 0
+    const firstFrame = window.requestAnimationFrame(() => {
+      restoreSectionPosition()
+      secondFrame = window.requestAnimationFrame(restoreSectionPosition)
+    })
+    return () => {
+      window.cancelAnimationFrame(firstFrame)
+      if (secondFrame) window.cancelAnimationFrame(secondFrame)
+    }
+  }, [activePage])
+
   const resetFilters = () => {
     setQuery('')
     setTargetFilter('all')
     setPriorityFilter('all')
-    setSortOrder('latest')
+    setSortOrder('configured')
     setCurrentPage(1)
   }
 
   return (
     <section className="report-page__report-list" aria-label="생성된 리포트 목록">
-      <section className="report-page__report-list-section" aria-labelledby="report-library-title">
+      <section ref={reportListSectionRef} className="report-page__report-list-section" aria-labelledby="report-library-title">
         <div className="report-page__report-list-section-heading">
           <div>
             <p className="report-page__eyebrow">REPORT LIBRARY</p>
@@ -212,7 +267,7 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
           <label className="report-page__report-search"><span className="sr-only">리포트 검색</span><input value={query} onChange={(event) => { setCurrentPage(1); setQuery(event.target.value) }} placeholder="리포트명 또는 위험 ID 검색" type="search" /></label>
           <label><span className="sr-only">대상 구분</span><select value={targetFilter} onChange={(event) => { setCurrentPage(1); setTargetFilter(event.target.value as TargetFilter) }}><option value="all">전체 대상</option><option value="가계">가계</option><option value="기업">기업</option><option value="혼합">혼합</option></select></label>
           <label><span className="sr-only">우선순위</span><select value={priorityFilter} onChange={(event) => { setCurrentPage(1); setPriorityFilter(event.target.value as PriorityFilter) }}><option value="all">전체 우선순위</option><option value="우선 검토">우선 검토</option><option value="일반">일반</option></select></label>
-          <label><span className="sr-only">정렬</span><select value={sortOrder} onChange={(event) => { setCurrentPage(1); setSortOrder(event.target.value as SortOrder) }}><option value="latest">최신순</option><option value="oldest">오래된순</option></select></label>
+          <label><span className="sr-only">정렬</span><select value={sortOrder} onChange={(event) => { setCurrentPage(1); setSortOrder(event.target.value as SortOrder) }}><option value="configured">구성 순서</option><option value="latest">최신순</option><option value="oldest">오래된순</option></select></label>
           <div className="report-page__report-view-toggle" role="group" aria-label="보기 방식">
             <button type="button" className={viewMode === 'grid' ? 'is-active' : ''} aria-pressed={viewMode === 'grid'} onClick={() => setViewMode('grid')} title="그리드 보기">▦<span className="sr-only">그리드 보기</span></button>
             <button type="button" className={viewMode === 'list' ? 'is-active' : ''} aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')} title="리스트 보기">☷<span className="sr-only">리스트 보기</span></button>
@@ -228,11 +283,11 @@ export function GeneratedReportList({ reports, onOpenReport, onRequestCreate }: 
             </div>
             {pageCount > 1 ? (
               <nav className="report-page__report-pagination" aria-label="리포트 목록 페이지 이동">
-                <button type="button" disabled={activePage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>
+                <button type="button" disabled={activePage === 1} onMouseDown={preventPaginationFocusScroll} onClick={() => changePage(Math.max(1, activePage - 1))}>
                   <span aria-hidden="true">←</span> 이전
                 </button>
                 <strong aria-live="polite">{activePage} / {pageCount}</strong>
-                <button type="button" disabled={activePage === pageCount} onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}>
+                <button type="button" disabled={activePage === pageCount} onMouseDown={preventPaginationFocusScroll} onClick={() => changePage(Math.min(pageCount, activePage + 1))}>
                   다음 <span aria-hidden="true">→</span>
                 </button>
               </nav>

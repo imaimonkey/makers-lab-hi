@@ -3,6 +3,7 @@ import {
   riskExplorationRecords,
   type RiskExplorationRecord,
 } from './riskExplorationDemo'
+import type { RiskDetailNarrative } from './riskDetailContent'
 import type { RiskEvidenceContract, RiskTheme } from './types'
 
 export type SampleRiskCandidate = {
@@ -53,6 +54,8 @@ export type SampleRiskDetail = {
   decisionChecks: string[]
   assessments: SampleRiskAssessment[]
   evidence: SampleRiskEvidence[]
+  /** 원문 기반 상세도 큐레이션 상세와 같은 섹션 구조로 연결합니다. */
+  narrative?: RiskDetailNarrative
 }
 
 type RiskContext = {

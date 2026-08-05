@@ -2,7 +2,9 @@ import { readStep2AnalysisResults, type SavedStep2AnalysisRow } from '../llm-uti
 import { getPrimaryRiskCategory, type RiskExplorationMetricKey, type RiskExplorationMetricEvidence, type RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
 import type { ProductRisk } from '../../domain/risk/riskRadarDemo'
 import type { SampleRiskAssessment, SampleRiskCandidate, SampleRiskDetail, SampleRiskEvidence } from '../../domain/risk/sampleData'
+import type { RiskDetailNarrative } from '../../domain/risk/riskDetailContent'
 import type { RiskTheme } from '../../domain/risk/types'
+import { groupArticleSourceRecords, isMeaningfulRiskCandidate, selectArticleGroupRepresentative } from '../risk-dashboard/articleSourceData'
 import type { ArticleContentProfile, ArticleSourceRecord } from '../risk-dashboard/articleSourceData'
 import type { SavedStep3AnalysisRow } from '../llm-util/util-3'
 import { step3Nested, step3Root, step3Text } from '../risk-detail/step3ResultAdapter'
@@ -121,41 +123,120 @@ export type DeveloperRiskDetailData = {
   articleId: string
 }
 
+function buildArticleNarrative(article: ArticleSourceRecord): RiskDetailNarrative {
+  const { contentProfile: profile, derived } = article
+  const concept = derived.productConcept
+  const facts = profile.facts.filter(Boolean)
+  const targets = profile.affectedTargets.filter(Boolean)
+  const damages = profile.damageTypes.filter(Boolean)
+  const reviewActions = profile.reviewActions.filter(Boolean)
+  const signals = profile.signals.filter(Boolean)
+  const factAt = (index: number, fallback: string) => facts[index] ?? fallback
+  const targetText = targets.join(' · ') || concept.insured
+  const damageText = damages.join(' · ') || concept.coveredLoss
+  const reviewText = reviewActions.join(' · ') || '원문과 추가 손해자료를 연결해 검토해야 합니다.'
+  const sourceText = article.source ?? '연결 원문'
+
+  return {
+    overview: derived.summary,
+    analysisIntro: `${article.title}은 ${derived.event}와 ${derived.coverageGap}를 함께 검토해야 하는 위험입니다. ${sourceText} 원문에서 확인된 사실과 상품화 조건을 분리해 다음 단계 검토 항목으로 연결합니다.`,
+    background: derived.event,
+    mechanism: `${concept.coveredEvent}로 인해 ${damageText}가 발생하거나 확대되는 구조입니다.`,
+    damage: concept.coveredLoss,
+    exposure: targetText,
+    responsibility: `${concept.policyholder}와 ${concept.insured} 사이의 사고 예방·관리·배상 책임을 구분해야 합니다.`,
+    management: reviewText,
+    customerImpact: `${targetText}의 사고 대응과 복구 부담이 ${damageText}로 이어질 수 있어 보장 공백과 접근 가능한 관리 기준을 함께 확인해야 합니다.`,
+    existingInsurance: concept.existingInsuranceRelationship,
+    additionalInsurance: concept.form,
+    productIssue: derived.coverageGap,
+    incident: factAt(0, derived.event),
+    escalation: `${factAt(1, derived.summary)} ${concept.coveredLoss}`,
+    insuranceBoundary: `보장 범위는 ${concept.coveredEvent}에 한정할지, ${concept.coveredLoss}와 운영·복구 비용까지 연결할지 구분해야 합니다.`,
+    insuranceReasons: [
+      ['위험이 보험사고로 전환되는 지점', derived.event, concept.coveredEvent],
+      ['손해가 확산되는 경로', concept.coveredLoss, profile.scores.coverageGap >= 4 ? '보장 공백 검토 우선' : '기존 담보와 연결 여부 검토'],
+      ['실무 검토가 필요한 이유', reviewText, concept.existingInsuranceRelationship],
+    ],
+    lossRows: [
+      ['직접 손해', damageText, '원문 연결'],
+      ['운영·복구 손해', `${factAt(2, derived.summary)} · ${concept.coveredLoss}`, '범위 검토'],
+      ['책임·분쟁 비용', `${concept.insured}의 책임 구조와 ${concept.existingInsuranceRelationship}`, '법무·약관 검토'],
+    ],
+    stakeholders: (targets.length ? targets : [concept.policyholder, concept.insured]).slice(0, 4).map((target, index) => [
+      target,
+      index === 0 ? concept.policyholder : `${target}의 손해·책임·복구 부담을 원문과 계약 구조로 확인해야 합니다.`,
+    ]),
+    coverageRows: [
+      ['기존 보험 연결', concept.existingInsuranceRelationship, '연결 검토'],
+      ['보완 담보 방향', concept.form, '상품 구조 검토'],
+      ['인수·면책 조건', concept.underwritingInputs.join(' · ') || reviewText, '조건 검토'],
+    ],
+    questions: [
+      `사고를 ${concept.coveredEvent}로 정의할 때 객관적으로 확인할 수 있는 증빙은 무엇인가?`,
+      `직접 손해와 운영·복구 손해 중 ${concept.coveredLoss}의 어느 범위까지 담보할 것인가?`,
+      `인수 판단에 필요한 ${concept.underwritingInputs.slice(0, 2).join(' · ') || '위험관리 정보'}를 확보할 수 있는가?`,
+      `보험료와 한도 산출에 필요한 ${concept.pricingInputs.slice(0, 2).join(' · ') || '빈도·심도 자료'}가 원문 밖에서 보완되었는가?`,
+    ],
+    analysisSections: [
+      ['원문에서 확인된 변화', `${derived.event} ${factAt(0, derived.summary)}`],
+      ['손해 구조와 누적성', `${concept.coveredLoss} ${factAt(1, derived.summary)}`],
+      ['상품화 경계', `${concept.existingInsuranceRelationship} ${concept.outOfScope.join(' · ')}`],
+      ['다음 검증 단계', `${reviewText} ${signals.map((signal) => `${signal.label}: ${signal.value}`).join(' · ')}`],
+    ],
+    priorityCover: concept.coveredLoss,
+    underwriting: concept.underwritingInputs.join(' · ') || reviewText,
+    evidenceNeeded: `${sourceText} 원문 밖의 실제 손해·청구·약관 자료와 국내 적용 기준 확인`,
+  }
+}
+
 function buildContentDerivedDetailData(article: ArticleSourceRecord): DeveloperRiskDetailData {
   const profile = article.contentProfile
-  const assessmentRows = [
-    ['신규성', profile.scores.novelty],
-    ['증가성', profile.scores.growth],
-    ['피해 심각성', profile.scores.severity],
-    ['확산 가능성', profile.scores.spread],
-    ['보험 사각지대 가능성', profile.scores.coverageGap],
-    ['근거 신뢰도', profile.scores.evidenceConfidence],
-  ] as const
+  const derived = article.derived
+  const concept = derived.productConcept
+  const metricLabels: Record<keyof ArticleSourceRecord['derived']['metricScores'], string> = {
+    demand: '시장 수요', fortuity: '우연성', accumulation: '누적 위험', measurability: '측정 가능성',
+    adverseSelection: '역선택', moralHazard: '도덕적 해이', dataConfidence: '데이터 신뢰도', legalExposure: '법률·책임 노출',
+  }
+  const metricKeys = Object.keys(derived.metricScores) as Array<keyof ArticleSourceRecord['derived']['metricScores']>
   const assessmentEvidence = [
-    profile.event,
-    profile.signals[0] ? `${profile.signals[0].label}: ${profile.signals[0].value}` : profile.facts[0],
-    profile.damageTypes.slice(0, 2).join(' · ') || profile.facts[1],
-    profile.facts.slice(0, 2).join(' · '),
-    profile.reviewActions[0] ?? profile.summary,
-    `${article.source ?? '문서 원문'}의 사실·지표·발행 정보를 기준으로 연결`,
+    derived.summary,
+    concept.coveredEvent,
+    `${profile.affectedTargets.slice(0, 3).join(' · ')}에 ${profile.damageTypes.slice(0, 3).join(' · ')}가 동시에 발생할 수 있는지 확인`,
+    derived.metrics.map((metric) => `${metric.label}: ${metric.value}`).join(' · '),
+    concept.underwritingInputs.slice(0, 2).join(' · '),
+    concept.pricingInputs.slice(0, 2).join(' · '),
+    `${article.source ?? '문서 원문'}의 발행·본문·인용 정보를 기준으로 연결`,
+    concept.existingInsuranceRelationship,
   ]
-  const assessments = assessmentRows.map(([label, rawScore], index) => ({
+  const assessments = metricKeys.map((key, index) => {
+    const label = metricLabels[key]
+    const rawScore = derived.metricScores[key]
+    return {
     label,
     rawScore,
     score: Math.round(rawScore * 20),
     confidence: assessmentConfidenceFrom(rawScore),
-    note: assessmentEvidence[index] ?? profile.summary,
+    note: assessmentEvidence[index] ?? derived.summary,
     formula: `${label} = ${rawScore.toFixed(1)} / 5 × 20`,
-    inputs: [assessmentEvidence[index] ?? profile.summary, profile.signals[index % Math.max(profile.signals.length, 1)]?.basis].filter(Boolean).join(' · '),
+    inputs: [assessmentEvidence[index] ?? derived.summary, derived.metrics[index % Math.max(derived.metrics.length, 1)]?.sourceHint].filter(Boolean).join(' · '),
     calculation: `${rawScore.toFixed(1)} × 20 = ${Math.round(rawScore * 20)}점`,
-    interpretation: profile.event,
+    interpretation: derived.event,
     evidenceStatus: 'pending' as const,
-    evidenceQuotes: [assessmentEvidence[index] ?? profile.summary, ...profile.facts.slice(0, 2)].filter(Boolean).slice(0, 3),
-    uncertainty: ['문서 밖의 손해자료·약관·국내 적용자료는 연결하지 않았습니다.'],
-    counterEvidence: ['문서에 제시되지 않은 반증 자료는 판단에 포함하지 않았습니다.'],
-  }))
+    evidenceQuotes: [assessmentEvidence[index] ?? derived.summary, ...derived.facts.slice(0, 2)].filter(Boolean).slice(0, 3),
+    uncertainty: derived.uncertainty,
+    counterEvidence: derived.counterEvidence,
+    }
+  })
   const average = assessments.reduce((sum, item) => sum + item.score, 0) / assessments.length
-  const evidence = makeActualEvidence(article, `developer-${article.id}`, profile.reviewActions, ['문서 밖의 손해자료·약관 자료'], profile.evidenceConfidence)
+  const riskId = `developer-${article.id}`
+  const evidence = makeActualEvidence(article, riskId, derived.uncertainty, derived.counterEvidence, profile.evidenceConfidence)
+  const metricEvidence = metricKeys.map((key, index) => makeMetricEvidence(article, riskId, key, {
+    reasons: [assessmentEvidence[index] ?? derived.summary],
+    judgment: metricLabels[key],
+    uncertainty: derived.uncertainty,
+    counterEvidence: derived.counterEvidence,
+  }, derived.metricScores[key], false))
   return {
     articleId: article.id,
     risk: {
@@ -163,25 +244,26 @@ function buildContentDerivedDetailData(article: ArticleSourceRecord): DeveloperR
       title: article.title,
       theme: themeFrom({ theme: profile.topic }),
       themeLabel: profile.topic,
-      signalStrength: Math.round(profile.scores.growth * 20),
-      productFit: Math.round(average),
-      evidenceCount: 1,
-      status: candidateStatus('review'),
+      signalStrength: Math.round(derived.metricScores.demand * 20),
+      productFit: Math.round(average * 20),
+      evidenceCount: 1 + metricEvidence.length,
+      status: candidateStatus(derived.recommendation),
       trend: '원문 기반 구조화',
       updatedAt: article.collectedAt ?? new Date().toISOString(),
       articleId: article.id,
     },
     detail: {
-      riskStatement: profile.summary,
-      exposedParty: profile.affectedTargets.join(' · '),
-      primaryLoss: profile.damageTypes.join(' · '),
-      decisionStatus: '원문 기반 분석 결과',
+      riskStatement: `${derived.summary} ${derived.coverageGap}`,
+      exposedParty: concept.insured,
+      primaryLoss: concept.coveredLoss,
+      decisionStatus: derived.recommendation === 'review' ? '우선 검토 · 추가 확인 필요' : '관찰 지속 · 추가 확인 필요',
       decisionBadge: '원문 기반 분석',
-      decisionTitle: profile.reviewActions[0] ?? '원문 핵심 주장과 인용 구간 확인',
+      decisionTitle: concept.workingName,
       decisionTone: 'hold',
-      decisionChecks: profile.reviewActions.slice(0, 4),
+      decisionChecks: [...profile.reviewActions, ...concept.underwritingInputs.slice(0, 2)].slice(0, 6),
       assessments,
-      evidence: [evidence],
+      evidence: [evidence, ...metricEvidence],
+      narrative: buildArticleNarrative(article),
     },
   }
 }
@@ -253,6 +335,7 @@ export function buildDeveloperRiskDetailData(article: ArticleSourceRecord, rows:
     decisionChecks: [...new Set(checks.length ? checks : [actualCheckRequired])].slice(0, 4),
     assessments,
     evidence: [evidence, ...keys.map((key) => makeMetricEvidence(article, 'developer-' + article.id, key, asRecord(metricEvidence[key]), scores[key], metricHasValidatedEvidence(key)))],
+    narrative: buildArticleNarrative(article),
   }
   return {
     articleId: article.id,
@@ -413,30 +496,31 @@ export function getStep2Root(row?: SavedStep2AnalysisRow): Record<string, unknow
 
 function buildContentDerivedRecord(article: ArticleSourceRecord, index: number): RiskExplorationRecord {
   const profile: ArticleContentProfile = article.contentProfile
-  const scores = {
-    demand: profile.scores.growth,
-    fortuity: profile.scores.severity,
-    accumulation: profile.scores.spread,
-    measurability: profile.scores.evidenceConfidence,
-    adverseSelection: profile.scores.coverageGap,
-    moralHazard: profile.scores.novelty,
-    dataConfidence: profile.scores.evidenceConfidence,
-    legalExposure: profile.scores.coverageGap,
-  }
+  const scores = article.derived.metricScores
   const metricKeys = Object.keys(scores) as RiskExplorationMetricKey[]
   const displayScore = (key: RiskExplorationMetricKey) => `${scores[key].toFixed(1)}/5`
+  const metricCopy: Record<RiskExplorationMetricKey, { reason: string; quote: string; judgment: string }> = {
+    demand: { reason: profile.summary, quote: profile.facts[0] ?? profile.summary, judgment: '시장·노출 변화' },
+    fortuity: { reason: profile.event, quote: profile.damageTypes[0] ?? profile.event, judgment: '사고 발생과 시점의 우연성' },
+    accumulation: { reason: `${profile.affectedTargets.slice(0, 3).join(' · ')}에 손해가 동시에 발생할 가능성을 검토`, quote: profile.facts[1] ?? profile.summary, judgment: '집적·누적 PML' },
+    measurability: { reason: profile.signals.map((signal) => `${signal.label} ${signal.value}`).join(' · '), quote: profile.signals[0]?.basis ?? profile.facts[0] ?? profile.summary, judgment: '지표·손해자료 연결성' },
+    adverseSelection: { reason: `${profile.affectedTargets.join(' · ')}의 위험 차이와 가입 대상 선별 기준을 확인`, quote: profile.reviewActions[0] ?? profile.summary, judgment: '대상별 위험 차이' },
+    moralHazard: { reason: `${profile.damageTypes.join(' · ')}에 대한 사고 원인·관리 로그·손해 입증을 확인`, quote: profile.reviewActions[1] ?? profile.summary, judgment: '고의·과다청구 통제' },
+    dataConfidence: { reason: `${article.source ?? '문서 원문'}에서 확인한 발행 자료와 수치 신뢰도를 검토`, quote: profile.signals.map((signal) => signal.basis).join(' · ') || profile.facts[0] || profile.summary, judgment: '원문·지표 신뢰도' },
+    legalExposure: { reason: article.derived.productConcept.existingInsuranceRelationship, quote: profile.reviewActions.at(-1) ?? profile.summary, judgment: '법령·약관·책임 범위' },
+  }
   const metricEvidence = Object.fromEntries(metricKeys.map((key, metricIndex) => {
-    const signal = profile.signals[metricIndex % Math.max(profile.signals.length, 1)]
+    const copy = metricCopy[key]
     return [key, {
-      reasons: [signal?.value ?? profile.summary],
+      reasons: [copy.reason],
       sourceIds: [article.id],
-      quotes: [signal?.basis ?? profile.facts[0] ?? profile.summary],
-      judgment: signal?.label ?? profile.topic,
-      scoreRationale: '문서 지표와 인용 구간을 기준으로 산정한 분석값',
+      quotes: [copy.quote, article.derived.facts[metricIndex % Math.max(article.derived.facts.length, 1)] ?? profile.summary],
+      judgment: copy.judgment,
+      scoreRationale: `${copy.judgment} 기준으로 원문 사실·지표·추가 확인사항을 함께 검토한 값`,
       confidence: profile.evidenceConfidence >= 4 ? 'medium' : 'low',
       evidenceStatus: 'pending' as const,
-      counterEvidence: ['문서 밖의 손해자료와 반증 자료는 분석 범위에서 제외했습니다.'],
-      uncertainty: ['문서 밖의 손해자료·약관·국내 적용자료는 연결하지 않았습니다.'],
+      counterEvidence: article.derived.counterEvidence,
+      uncertainty: article.derived.uncertainty,
     }]
   })) as Partial<Record<RiskExplorationMetricKey, RiskExplorationMetricEvidence>>
   const display = {
@@ -447,7 +531,8 @@ function buildContentDerivedRecord(article: ArticleSourceRecord, index: number):
     dataVal: `${Math.round(scores.dataConfidence * 20)}%`, dataConfidencePercent: Math.round(scores.dataConfidence * 20),
     riskLabel: displayScore('legalExposure'), riskSub: profile.topic, legalRiskSub: profile.reviewActions[0] ?? '검토 필요',
   }
-  const categories: RiskExplorationRecord['categories'] = profile.topic === '법률·사회보험' ? ['legal', 'corporate'] : ['corporate']
+  const personalExposure = /고령|취약|개인|소비자|근로자|주민|가계|환자|이용자/.test(`${profile.topic} ${profile.affectedTargets.join(' ')} ${profile.damageTypes.join(' ')}`)
+  const categories: RiskExplorationRecord['categories'] = personalExposure ? ['individual', 'corporate'] : ['corporate']
   return {
     id: `developer-${article.id}`,
     detailRiskId: `developer-${article.id}`,
@@ -455,7 +540,7 @@ function buildContentDerivedRecord(article: ArticleSourceRecord, index: number):
     summary: profile.summary,
     tags: profile.keywords.slice(0, 4),
     secondaryTags: profile.keywords.slice(0, 4),
-    primaryCategory: profile.topic === '법률·사회보험' ? 'regulatory' : 'corporate',
+    primaryCategory: personalExposure ? 'personal' : 'corporate',
     categories: [...categories],
     demand: display.demandVal,
     fortuity: display.fortVal,
@@ -479,8 +564,8 @@ function buildContentDerivedRecord(article: ArticleSourceRecord, index: number):
       reviewActions: profile.reviewActions.slice(0, 3),
     },
     display,
-    gap: profile.damageTypes.slice(0, 2).join(' · ') || '보장 공백 확인 필요',
-    nextAction: profile.reviewActions.slice(0, 2).join(' · ') || `원문 ${index + 1}차 검토 필요`,
+    gap: article.derived.coverageGap,
+    nextAction: article.derived.nextAction || `원문 ${index + 1}차 검토 필요`,
   }
 }
 
@@ -647,7 +732,8 @@ export type DeveloperRiskCatalogViewData = {
 }
 
 export function buildDeveloperRiskCatalogViewData(articles: ArticleSourceRecord[], rows: SavedStep2AnalysisRow[]): DeveloperRiskCatalogViewData {
-  const records = buildDeveloperStep2Records(rows, articles)
+  const candidateArticles = groupArticleSourceRecords(articles.filter(isMeaningfulRiskCandidate)).map(selectArticleGroupRepresentative)
+  const records = buildDeveloperStep2Records(rows, candidateArticles)
   const risks = buildDeveloperProductRisks(records)
   const rowsByArticle = new Map<string, SavedStep2AnalysisRow[]>()
   rows.forEach((row) => rowsByArticle.set(row.articleId, [...(rowsByArticle.get(row.articleId) ?? []), row]))

@@ -4,7 +4,7 @@ import type { NoveltyAnalysis } from '../../domain/product/similarProduct'
 export const NOVELTY_ANALYSIS_MOCK: NoveltyAnalysis = {
   analysisStatus: 'completed',
   riskId: 'ev-underground-parking-fire',
-  riskName: '전기차 지하주차장 화재 연쇄피해',
+  riskName: '전기차 배터리 화재',
   noveltyType: 'differentiated',
   summaryCardHeadline: '전기차 관련 보장 4개사 확인',
   noveltyHeadline: '관련 보장은 다수 존재하나 통합 보장 차별화 필요',

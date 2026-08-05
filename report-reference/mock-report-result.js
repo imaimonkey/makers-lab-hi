@@ -22,8 +22,8 @@ const mockReportResult = {
   meta: {
     reportId: "RPT-EVFIRE-001-20260228",
     sourceRiskId: "RSK-EVFIRE-001",
-    title: "전기차 지하주차장 화재 위험 상품화 검토 리포트",
-    riskTitle: "전기차 지하주차장 주차·충전 중 화재",
+    title: "전기차 배터리 화재 상품화 검토 리포트",
+    riskTitle: "전기차 배터리 화재",
     riskCategories: ["모빌리티", "화재·재물", "복합위험"],
     analysisMode: "retrospective-benchmark",
     analysisBaseDate: "2026-02-28",

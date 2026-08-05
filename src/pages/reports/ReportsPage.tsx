@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { ReportPage } from '../../report/ReportPage'
 import type { ReportProxy } from '../../report/api/report-proxy'
 import { createArticleDerivedReportEntries, type ArticleDerivedReportEntry } from '../../report/data/article-derived-report-adapter'
+import { createCuratedReportEntries } from '../../report/data/curated-report-adapter'
+import { getMockReportData } from '../../report/data/mock-data-adapter'
 import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
 import '../../report/report.css'
 
@@ -17,7 +19,28 @@ export function ReportsPage() {
   const [entries, setEntries] = useState<ArticleDerivedReportEntry[] | null>(null)
   useEffect(() => {
     let cancelled = false
-    void loadArticleSourceRecords().then((articles) => { if (!cancelled) setEntries(createArticleDerivedReportEntries(articles)) }).catch((error) => { console.error(error); if (!cancelled) setEntries([]) })
+    void loadArticleSourceRecords().then((articles) => {
+      if (cancelled) return
+      // Keep the curated EV fire report as a first-class workflow artifact.
+      // Article intake records provide the current evidence library, while
+      // this report preserves the detailed product-development output already
+      // used by the radar and risk-detail flows.
+      const curatedVehicleReport = getMockReportData()
+      setEntries([
+        { riskData: curatedVehicleReport.riskData, report: curatedVehicleReport.fallbackReport },
+        ...createCuratedReportEntries(),
+        ...createArticleDerivedReportEntries(articles),
+      ])
+    }).catch((error) => {
+      console.error(error)
+      if (!cancelled) {
+        const curatedVehicleReport = getMockReportData()
+        setEntries([
+          { riskData: curatedVehicleReport.riskData, report: curatedVehicleReport.fallbackReport },
+          ...createCuratedReportEntries(),
+        ])
+      }
+    })
     return () => { cancelled = true }
   }, [])
 
