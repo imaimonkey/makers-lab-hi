@@ -1637,6 +1637,157 @@
   }
 }
 
+/* Shared risk workstream palette: keep exploration and detail aligned with radar/report. */
+.workspace-seoyeon {
+  --workspace-ink: #0f172a;
+  --workspace-muted: #64748b;
+  --workspace-line: #dce3ea;
+  --workspace-blue: #2563eb;
+  --workspace-orange: #ff6b35;
+}
+
+.workspace-sh .risk-context-flow {
+  --rcf-navy: #0f172a;
+  --rcf-muted: #64748b;
+  --rcf-line: #dce3ea;
+  --rcf-line2: #edf2f7;
+  --rcf-blue: #2563eb;
+  --rcf-green: #269660;
+  --rcf-green-bg: #eaf7f0;
+  --rcf-amber: #d99128;
+  --rcf-amber-bg: #fff4df;
+  --rcf-red: #d45757;
+  --rcf-red-bg: #fff0f0;
+}
+
+.workspace-sh .risk-context-flow .rcf-card,
+.workspace-sh .ai-copyright-detail .aic-hero-main,
+.workspace-sh .ai-copyright-detail .aic-hero-summary,
+.workspace-sh .ai-copyright-detail .aic-panel,
+.workspace-sh .ai-copyright-detail .aic-fact,
+.workspace-sh .ai-copyright-detail .aic-aside-card {
+  border-color: #dce3ea;
+  box-shadow: 0 3px 12px rgba(26, 48, 73, .04);
+}
+
+.workspace-sh .ai-copyright-detail {
+  color: #0f172a;
+}
+
+.workspace-sh .ai-copyright-detail .aic-chips span,
+.workspace-sh .ai-copyright-detail .aic-section-nav a:hover,
+.workspace-sh .ai-copyright-detail .aic-paper-list button:hover,
+.workspace-sh .ai-copyright-detail .aic-paper-list button.active,
+.workspace-sh .ai-copyright-detail .aic-context-card,
+.workspace-sh .ai-copyright-detail .aic-quote-box {
+  background: #eff6ff;
+}
+
+.workspace-sh .ai-copyright-detail .aic-chips span,
+.workspace-sh .ai-copyright-detail .aic-panel-title > div > span,
+.workspace-sh .ai-copyright-detail .aic-panel-title > b,
+.workspace-sh .ai-copyright-detail .aic-section-nav a:hover,
+.workspace-sh .ai-copyright-detail .aic-source-btn,
+.workspace-sh .ai-copyright-detail .aic-aside-item > span,
+.workspace-sh .ai-copyright-detail .aic-source-ledger > div > a {
+  color: #2563eb;
+}
+
+.workspace-sh .ai-copyright-detail .aic-definition {
+  border-left-color: #2563eb;
+  background: #eff6ff;
+}
+
+.workspace-sh .ai-copyright-detail .aic-callout,
+.workspace-sh .ai-copyright-detail .aic-amount-note {
+  border-left-color: #ff6b35;
+  background: #fff7ef;
+}
+
+.workspace-sh .ai-copyright-detail .aic-report-button {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+/* Risk category tabs use the same rail treatment and motion language as report tabs. */
+.workspace-seoyeon .catalog-page .risk-category-shell {
+  padding: 0;
+  border: 1px solid #dce3ea;
+  border-top: 3px solid #ff6b35;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 5px 18px rgba(11, 43, 82, .08);
+}
+
+.workspace-seoyeon .catalog-page .risk-category-tabs {
+  display: flex;
+  min-height: 52px;
+  height: auto;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-button {
+  flex: 0 0 auto;
+  min-height: 52px;
+  min-width: 0;
+  padding: 0 22px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  color: #64748b;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-button:hover,
+.workspace-seoyeon .catalog-page .risk-category-button:focus-visible {
+  border-bottom-color: #ffcfb5;
+  color: #0f172a;
+  background: #fff7ef;
+  outline: none;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-button.active,
+.workspace-seoyeon .catalog-page .risk-category-button.active:hover,
+.workspace-seoyeon .catalog-page .risk-category-button.active:focus-visible {
+  border-bottom-color: #ff6b35;
+  color: #0f172a;
+  background: #fffaf6;
+  box-shadow: none;
+}
+
+.workspace-seoyeon .catalog-page .risk-category-divider {
+  align-self: center;
+  flex: 0 0 1px;
+  width: 1px;
+  height: 28px;
+  margin-inline: 0;
+  background: #dce3ea;
+}
+
+@media (min-width: 901px) {
+  .workspace-seoyeon .catalog-page .risk-category-button {
+    flex: 1 0 auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .workspace-seoyeon .catalog-page .risk-category-tabs {
+    min-height: 48px;
+  }
+
+  .workspace-seoyeon .catalog-page .risk-category-button {
+    min-height: 48px;
+    padding-inline: 16px;
+    font-size: 14px;
+  }
+}
+
 /* Keep the category rail in the document flow so it never covers the page
    heading or the candidate/detail panels. It still pins below the topbar
    while scrolling, preserving the existing reveal/hide motion. */
