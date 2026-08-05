@@ -314,15 +314,18 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
               <div><h3 className="market-box-title">시장·글로벌 인사이트</h3><div className="market-box-desc">상품개발에 참고할 국내 정책과 해외 보험산업 자료</div></div>
             </div>
             <div className="insight-content">
-              <h4 className="insight-subtitle">최근 보험시장 업데이트</h4>
-              <div className="update-list">
-                {marketUpdates.map((item) => <MarketUpdateItem item={item} key={item.id} />)}
-              </div>
-              <div className="insight-divider" />
-              <h4 className="insight-subtitle">글로벌 보험 인사이트</h4>
-              <div className="global-insight-list">
-                {globalInsuranceInsights.map((item) => <GlobalInsightItem item={item} developerMode={developerMode} key={item.id} />)}
-              </div>
+              <section className="market-insight-section market-updates-section" aria-labelledby="market-updates-title">
+                <h4 className="insight-subtitle" id="market-updates-title">최근 보험시장 업데이트</h4>
+                <div className="update-list">
+                  {marketUpdates.map((item) => <MarketUpdateItem item={item} key={item.id} />)}
+                </div>
+              </section>
+              <section className="market-insight-section global-insights-section" aria-labelledby="global-insights-title">
+                <h4 className="insight-subtitle" id="global-insights-title">글로벌 보험 인사이트</h4>
+                <div className="global-insight-list">
+                  {globalInsuranceInsights.map((item) => <GlobalInsightItem item={item} developerMode={developerMode} key={item.id} />)}
+                </div>
+              </section>
             </div>
           </section>
         </div>

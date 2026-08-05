@@ -2375,3 +2375,174 @@
   outline-offset: 3px;
   border-radius: 4px;
 }
+
+/* 보험시장 상품개발 동향: 흰색 기반의 컴팩트한 정보 묶음 */
+.riskRadarPage .industry-market-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 20px 20px;
+  background: #fff;
+}
+
+.riskRadarPage .exclusive-section,
+.riskRadarPage .recent-products-section,
+.riskRadarPage .market-insight-section {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.riskRadarPage .exclusive-section,
+.riskRadarPage .recent-products-section,
+.riskRadarPage .market-insights .market-insight-section {
+  padding: 0;
+}
+
+.riskRadarPage .recent-products-section {
+  margin-top: 0;
+  padding-top: 20px;
+  border-top: 1px solid #e7ecf2;
+}
+
+.riskRadarPage .market-subtitle,
+.riskRadarPage .market-insights .insight-subtitle {
+  margin: 0;
+  padding: 16px 0 12px;
+  color: var(--navy-900);
+  font-size: 15.5px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.riskRadarPage .exclusive-rights-grid {
+  gap: 12px;
+}
+
+.riskRadarPage .exclusive-right-card {
+  border: 1px solid rgba(219, 227, 237, .72);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.riskRadarPage .recent-product-item {
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(219, 227, 237, .62);
+}
+
+.riskRadarPage .recent-product-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.riskRadarPage .market-insights .insight-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 20px 20px;
+}
+
+.riskRadarPage .market-updates-section,
+.riskRadarPage .global-insights-section {
+  background: transparent;
+}
+
+.riskRadarPage .market-insights .update-list {
+  padding: 0;
+  background: transparent;
+}
+
+.riskRadarPage .market-insights .domestic-update-item {
+  padding: 7px 0 14px 15px;
+  border-bottom: 0;
+}
+
+.riskRadarPage .market-insights .domestic-update-item + .domestic-update-item {
+  padding-top: 14px;
+  border-top: 1px solid #e7ecf2;
+}
+
+.riskRadarPage .market-insights .domestic-update-item:last-child {
+  padding-bottom: 0;
+}
+
+.riskRadarPage .market-insights .global-insight-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.riskRadarPage .market-insights .global-insight-item {
+  padding: 14px 0;
+}
+
+.riskRadarPage .market-insights .global-insight-item + .global-insight-item {
+  border-top: 1px solid #e7ecf2;
+  border-left: 0;
+}
+
+/* 대응하는 좌우 블록을 같은 Grid 행에 두어 위·아래 높이를 자연스럽게 맞춘다. */
+@media (min-width: 1101px) {
+  .riskRadarPage .market-grid {
+    grid-template-rows: auto auto auto;
+    column-gap: 16px;
+    row-gap: 20px;
+    align-items: stretch;
+  }
+
+  .riskRadarPage .market-grid > .market-box,
+  .riskRadarPage .industry-market-content,
+  .riskRadarPage .market-insights .insight-content {
+    display: contents;
+  }
+
+  .riskRadarPage .industry-market-box .market-box-head {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .riskRadarPage .market-insights .market-box-head {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .riskRadarPage .exclusive-section {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .riskRadarPage .market-updates-section {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .riskRadarPage .recent-products-section {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .riskRadarPage .global-insights-section {
+    grid-column: 2;
+    grid-row: 3;
+  }
+}
+
+@media (max-width: 1100px) {
+  .riskRadarPage .market-grid > .market-box {
+    display: block;
+  }
+
+  .riskRadarPage .industry-market-content,
+  .riskRadarPage .market-insights .insight-content {
+    display: flex;
+  }
+
+  .riskRadarPage .exclusive-section,
+  .riskRadarPage .market-updates-section,
+  .riskRadarPage .recent-products-section,
+  .riskRadarPage .global-insights-section {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
