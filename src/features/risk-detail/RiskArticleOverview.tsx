@@ -129,7 +129,7 @@ export function RiskArticleOverview({
         <header className="brief-evidence-heading"><div><p className="brief-label">03 · 근거자료</p><h3>검토에 사용한 자료</h3><p>원문을 확인하기 전까지는 AI가 정리한 내용을 상품개발 판단의 확정 근거로 사용하지 않습니다.</p></div><span>{sourceItems.length}건 · 원문 확인 필요</span></header>
         <div className="brief-evidence-table" role="table" aria-label="판단 근거자료 목록">
           <div className="brief-evidence-row brief-evidence-row--head" role="row"><span>유형</span><span>자료명·출처</span><span>상태</span><span>열기</span></div>
-          {sourceItems.length ? sourceItems.map((item) => item && <div className="brief-evidence-row" role="row" key={item.key}><span className="brief-evidence-kind">{item.kind}</span><div><strong>{item.title}</strong><small>{item.source} · {formatDate(item.date)}</small></div><em>{item.status}</em>{item.url ? <a href={item.url} target="_blank" rel="noreferrer noopener">원문 열기 ↗</a> : <button type="button" disabled>검증 대기</button>}</div>) : <p className="brief-evidence-empty">연결된 자료가 없습니다. 후보 원문과 독립 자료를 추가로 확인해야 합니다.</p>}
+          {sourceItems.length ? sourceItems.map((item) => item && <div className="brief-evidence-row" role="row" key={item.key}><span className="brief-evidence-kind">{item.kind}</span><div><strong>{item.title}</strong><small>{item.source} · {formatDate(item.date)}</small></div><em>{item.status}</em>{item.url ? <a href={item.url} target="_blank" rel="noreferrer noopener">{item.source} 원문 →</a> : <button type="button" disabled>검증 대기</button>}</div>) : <p className="brief-evidence-empty">연결된 자료가 없습니다. 후보 원문과 독립 자료를 추가로 확인해야 합니다.</p>}
         </div>
       </article>
     </section>
