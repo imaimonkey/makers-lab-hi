@@ -86,7 +86,7 @@ const resultText = (article: ArticleSourceRecord) => {
       riskGapSummary: {
         definition: derived.coverageGap,
         whyNow: [derived.event, derived.changeType],
-        damageTypes: derived.damageTypes.map((damage, index) => ({ id: `damage-${index + 1}`, title: damage, summary: damage })),
+        damageTypes: derived.damageTypes.map((damage, index) => ({ id: `damage-${index + 1}`, name: damage, title: damage, summary: damage })),
         affectedParties: derived.affectedTargets,
         existingCoverageMap: [{ id: 'current-coverage', damage: derived.damageTypes[0] ?? '주요 손해', coverageName: '기존 보장과의 관계 확인 필요', possibleCoverage: '부분 연결 가능성', remainingGap: derived.coverageGap, status: '확인 필요', evidenceIds: fallbackEvidenceIds }],
         keyCoverageGaps: [{ id: 'gap-1', title: '본문 기반 보장 공백 가설', description: derived.coverageGap, importance: 'high', evidenceIds: fallbackEvidenceIds }],

@@ -3074,7 +3074,10 @@ const compactBriefingText = (value: string, maxLength: number) => {
   const normalized = value.replace(/\s+/gu, ' ').trim()
   return normalized.length > maxLength ? `${normalized.slice(0, maxLength).replace(/[ ,·]+$/u, '')}…` : normalized
 }
-const compactRiskDamageLabel = (value: string) => value.replace(/(直接)? ?재산손해| 손해$/u, '').replace(/·주변 시설$/u, '').trim()
+const compactRiskDamageLabel = (value: unknown) => (typeof value === 'string' ? value : '주요 피해 대상 확인 필요')
+  .replace(/(직접)? ?재산손해| 손해$/u, '')
+  .replace(/·주변 시설$/u, '')
+  .trim()
 const briefingConfidenceLabel = (confidence: EstimateConfidence) => ({ high: '높음', medium: '중간', low: '낮음' })[confidence]
 const briefingEokNumber = (value: number) => Number.isInteger(value) ? value.toLocaleString('ko-KR') : value.toFixed(1).replace(/\.0$/u, '')
 const briefingEokValue = (value: number) => `${briefingEokNumber(value)}억 원`
