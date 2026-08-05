@@ -1,6 +1,7 @@
 import { readPdfFile } from '../llm-util/fileContext'
 import type { RadarDashboardData, RadarNewsArticle, RadarRiskCandidate } from '../../domain/risk/riskRadarTypes'
 import { getArticleMetadata } from './articleCuratedMetadata'
+import { calculateProductizationScores } from '../risk-catalog/productizationScore'
 
 type BundledArticleFile = {
   fileName: string
@@ -79,6 +80,28 @@ export type ArticleSourceRecord = RadarNewsArticle & {
   derived: ArticleDerivedAnalysis
 }
 
+export function articleGroupKey(article: ArticleSourceRecord) {
+  return article.derived.isRegulatory
+    ? `law:${article.title}`
+    : `topic:${article.contentProfile.topic}`
+}
+
+export function groupArticleSourceRecords(records: ArticleSourceRecord[]) {
+  const groups = new Map<string, ArticleSourceRecord[]>()
+  records.forEach((article) => {
+    const key = articleGroupKey(article)
+    groups.set(key, [...(groups.get(key) ?? []), article])
+  })
+  return [...groups.values()]
+}
+
+export function selectArticleGroupRepresentative(group: ArticleSourceRecord[]) {
+  return [...group].sort((left, right) => (
+    calculateProductizationScores(right.derived.metricScores).total
+    - calculateProductizationScores(left.derived.metricScores).total
+  ))[0] ?? group[0]
+}
+
 const sourcePdfModules = import.meta.glob('/src/article/*.pdf', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 const sourceHwpModules = import.meta.glob('/src/article/*.hwp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 
@@ -108,11 +131,23 @@ function titleFromFile(name: string) {
 }
 
 function stableArticleId(name: string) {
+  const lawDocumentMatch = /고용보험|21472|law74/i.test(name)
+  if (lawDocumentMatch) {
+    const lawNumber = name.match(/제(\d+)호/)?.[1] ?? '21472'
+    const effectiveDate = name.match(/(\d{8})/)?.[1] ?? 'unknown'
+    const fileSlug = name
+      .replace(/\.(pdf|hwp)$/i, '')
+      .replace(/\s*\(\d+\)$/, '')
+      .replace(/[^a-zA-Z0-9가-힣]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(-24)
+
+    return `ARTICLE-004-${lawNumber}-${effectiveDate}-${fileSlug || 'law'}`
+  }
   const legacyIds: Array<[RegExp, string]> = [
     [/Warming Switzerland/i, 'ARTICLE-001'],
     [/sri-2026-06-warming/i, 'ARTICLE-002'],
     [/AXA_PR/i, 'ARTICLE-003'],
-    [/고용보험|21472/, 'ARTICLE-004'],
     [/보험개발원.*신기술/i, 'ARTICLE-005'],
     [/보험연구원.*AI|데이터센터.*보장/i, 'ARTICLE-006'],
   ]
@@ -339,22 +374,66 @@ function listBundledFiles(): BundledArticleFile[] {
   return fallbackArticleFiles.map(({ fileName: name, url, format }) => ({ fileName: name, url, format }))
 }
 
+function curatedSourceText(profile: ReturnType<typeof getArticleMetadata>) {
+  if (!profile) return ''
+  return [
+    `[문서 분석 요약] ${profile.title}`,
+    profile.event,
+    profile.summary,
+    '[문서에서 연결한 핵심 사실]',
+    ...profile.facts.map((fact, index) => `${index + 1}. ${fact}`),
+    '[문서 지표]',
+    ...profile.signals.map((signal) => `${signal.label}: ${signal.value} · ${signal.basis}`),
+  ].join('\n\n')
+}
+
 let recordsPromise: Promise<ArticleSourceRecord[]> | null = null
 
 export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]> {
   if (recordsPromise) return recordsPromise
   recordsPromise = Promise.allSettled(listBundledFiles().map(async (sourceFile) => {
+    const curated = getArticleMetadata(sourceFile.fileName)
+    // The bundled documents have already been classified into structured
+    // profiles. Use that local analysis immediately; full PDF extraction is
+    // reserved for an unclassified document so the report route does not wait
+    // for every long legal PDF before it can render.
+    const curatedText = curatedSourceText(curated)
+    if (curated) {
+      const title = curated.title
+      const contentProfile = buildContentProfile(curatedText, sourceFile.fileName, title)
+      const paragraphs = curatedText.split(/\n{2,}/).filter(Boolean).length
+      const collectedAt = curated.publishedAt ?? new Date().toISOString()
+      return {
+        id: stableArticleId(sourceFile.fileName),
+        title,
+        summary: contentProfile.summary,
+        content: curatedText,
+        source: sourceNameFor(sourceFile.fileName),
+        collectedAt,
+        contentStatus: '원문 기반 구조화 완료',
+        contentSource: curated.source,
+        contentQuality: { chars: curatedText.length, paragraphs, titleMatched: contentProfile.keywords.length, titleTokens: contentProfile.keywords.length },
+        analysisStatus: '원문 기반 구조화 완료',
+        verificationStatus: '원문 근거 연결',
+        text: curatedText,
+        fileName: sourceFile.fileName,
+        sourcePath: '',
+        fileUrl: sourceFile.url,
+        format: sourceFile.format,
+        contentProfile,
+        derived: createDerivedAnalysis(title, contentProfile, collectedAt),
+      } satisfies ArticleSourceRecord
+    }
     const response = await fetch(sourceFile.url)
     if (!response.ok) throw new Error(`${sourceFile.fileName}: 원문 파일을 읽지 못했습니다.`)
     const blob = await response.blob()
     const text = sourceFile.format === 'pdf'
       ? await readPdfFile(new File([blob], sourceFile.fileName, { type: 'application/pdf' }))
       : ''
-    const curated = getArticleMetadata(sourceFile.fileName)
-    const title = curated?.title ?? titleFromFile(sourceFile.fileName)
+    const title = titleFromFile(sourceFile.fileName)
     const contentProfile = buildContentProfile(text, sourceFile.fileName, title)
     const paragraphs = text.split(/\n{2,}/).filter(Boolean).length
-    const collectedAt = curated?.publishedAt ?? new Date().toISOString()
+    const collectedAt = new Date().toISOString()
     const article: ArticleSourceRecord = {
       id: stableArticleId(sourceFile.fileName),
       title,
@@ -363,7 +442,7 @@ export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]>
       source: sourceNameFor(sourceFile.fileName),
       collectedAt,
       contentStatus: sourceFile.format === 'pdf' ? '원문 본문 추출 완료' : '원문 문서 연결',
-      contentSource: curated?.source ?? '문서 원문',
+      contentSource: '문서 원문',
       contentQuality: { chars: text.length, paragraphs, titleMatched: contentProfile.keywords.length, titleTokens: contentProfile.keywords.length },
       analysisStatus: '원문 기반 구조화 완료',
       verificationStatus: '원문 근거 연결',
@@ -377,10 +456,18 @@ export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]>
     }
     return article
   })).then((results) => {
+    const seenIds = new Set<string>()
     const records = results.flatMap((result) => {
       if (result.status === 'fulfilled') return [result.value]
       console.warn('[article-source] 문서 하나를 건너뛰었습니다.', result.reason)
       return []
+    }).filter((record) => {
+      if (seenIds.has(record.id)) {
+        console.warn('[article-source] 중복 문서 ID를 건너뛰었습니다.', record.id, record.fileName)
+        return false
+      }
+      seenIds.add(record.id)
+      return true
     })
     if (!records.length) throw new Error('연결된 문서에서 리포트 자료를 불러오지 못했습니다.')
     return records

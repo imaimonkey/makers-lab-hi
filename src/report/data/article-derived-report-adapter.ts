@@ -1,5 +1,4 @@
-import type { ArticleSourceRecord } from '../../features/risk-dashboard/articleSourceData'
-import { calculateProductizationScores } from '../../features/risk-catalog/productizationScore'
+import { groupArticleSourceRecords, selectArticleGroupRepresentative, type ArticleSourceRecord } from '../../features/risk-dashboard/articleSourceData'
 import { createDeveloperReportData } from './developer-report-adapter'
 import type { ReportResult, RiskSourceData } from '../types'
 
@@ -230,18 +229,8 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord, rel
 }
 
 export function createArticleDerivedReportEntries(articles: ArticleSourceRecord[]): ArticleDerivedReportEntry[] {
-  const groups = new Map<string, ArticleSourceRecord[]>()
-  articles.forEach((article) => {
-    const key = article.derived.isRegulatory
-      ? `law:${article.title}`
-      : `topic:${article.contentProfile.topic}`
-    groups.set(key, [...(groups.get(key) ?? []), article])
-  })
-  return [...groups.values()].map((group) => {
-    const orderedGroup = [...group].sort((left, right) => (
-      calculateProductizationScores(right.derived.metricScores).total
-      - calculateProductizationScores(left.derived.metricScores).total
-    ))
-    return createArticleDerivedReportData(orderedGroup[0], orderedGroup)
+  return groupArticleSourceRecords(articles).map((group) => {
+    const representative = selectArticleGroupRepresentative(group)
+    return createArticleDerivedReportData(representative, group)
   })
 }

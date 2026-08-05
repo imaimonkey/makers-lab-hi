@@ -1,4 +1,4 @@
-import type { ArticleSourceRecord } from './articleSourceData'
+import { groupArticleSourceRecords, selectArticleGroupRepresentative, type ArticleSourceRecord } from './articleSourceData'
 import type { ExclusiveRight, GlobalInsuranceInsight, MarketUpdate, RecentInsuranceProduct, RiskRadarCandidate, RiskRadarKpi, RiskRadarKeyword, RiskRadarPriorityRisk, RiskRadarRegulation, RiskRadarScrap, RiskRadarSourceShare } from './riskRadarContent'
 import { calculateProductizationScores } from '../risk-catalog/productizationScore'
 
@@ -24,22 +24,6 @@ function scores(article: ArticleSourceRecord) {
   return { market: calculated.market, pml: calculated.pml, productization: calculated.total }
 }
 
-function displayKey(article: ArticleSourceRecord) {
-  return article.derived.isRegulatory
-    ? `law:${article.title}`
-    : `topic:${article.contentProfile.topic}`
-}
-
-function compactDisplayRecords(records: ArticleSourceRecord[]) {
-  const seen = new Set<string>()
-  return records.filter((article) => {
-    const key = displayKey(article)
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-}
-
 function priority(article: ArticleSourceRecord): RiskRadarPriorityRisk {
   const score = scores(article)
   const source = article.source ?? '문서 원문'
@@ -58,17 +42,16 @@ function priority(article: ArticleSourceRecord): RiskRadarPriorityRisk {
 
 export function buildLocalArticleRadarView(records: ArticleSourceRecord[]): LocalArticleRadarView {
   const ordered = [...records].sort((a, b) => scores(b).productization - scores(a).productization)
-  const displayOrdered = compactDisplayRecords(ordered)
+  const displayOrdered = groupArticleSourceRecords(ordered).map(selectArticleGroupRepresentative)
   const priorities = displayOrdered.slice(0, 5).map(priority)
   const first = displayOrdered[0]
   const firstScores = first ? scores(first) : { market: 0, pml: 0, productization: 0 }
   const firstPriority = priorities[0]
   const candidates = displayOrdered.slice(0, 8).map((article) => ({ id: article.id, detailRiskId: `developer-${article.id}`, title: article.title, description: `[${article.contentProfile.topic}] ${article.summary}`, tags: [article.contentProfile.topic, ...article.contentProfile.keywords.slice(0, 2)], keywords: [article.contentProfile.topic, ...article.contentProfile.keywords] }))
   const legalArticles = records.filter((article) => article.derived.isRegulatory)
-  const legalGroups = new Map<string, ArticleSourceRecord[]>()
-  legalArticles.forEach((article) => legalGroups.set(article.title, [...(legalGroups.get(article.title) ?? []), article]))
-  const regulations = [...legalGroups.values()].map((group) => {
-    const article = group[0]
+  const legalGroups = groupArticleSourceRecords(legalArticles)
+  const regulations = legalGroups.map((group) => {
+    const article = selectArticleGroupRepresentative(group)
     const dates = [...new Set(group.map((item) => dateLabel(item.collectedAt)))]
     const industries = [...new Set(group.flatMap((item) => item.contentProfile.industries))].slice(0, 3)
     return { id: `regulation-${article.id}`, source: article.source ?? '국가법령정보센터', title: article.title, description: `${article.summary} 연결 문서 기준일 ${dates.join(' · ')}.`, relatedRisk: industries.join(' · '), detailRiskId: `developer-${article.id}` }
@@ -88,7 +71,7 @@ export function buildLocalArticleRadarView(records: ArticleSourceRecord[]): Loca
   if (sourceShares.length) sourceShares[sourceShares.length - 1].share += 100 - sourceShares.reduce((sum, item) => sum + item.share, 0)
 
   return {
-    kpis: [{ label: '신규 위험 후보', value: displayOrdered.length, unit: '건', description: '중복 문서를 묶어 화면에 표시한 위험 후보', meta: `원문 ${records.length}건 연결`, icon: 'radar', tone: 'orange' }, { label: '상품화 검토 후보', value: Math.min(displayOrdered.length, 8), unit: '건', description: '시장성·PML·근거 수준을 함께 계산한 후보', meta: '종합점수 기준', icon: 'report', tone: 'navy' }, { label: '법·규제 연계 위험', value: legalGroups.size, unit: '건', description: '개정본을 법률명 단위로 묶은 규제 위험', meta: `원문 ${legalArticles.length}건 연결`, icon: 'shield', tone: 'blue' }],
+    kpis: [{ label: '신규 위험 후보', value: displayOrdered.length, unit: '건', description: '중복 문서를 묶어 화면에 표시한 위험 후보', meta: `원문 ${records.length}건 연결`, icon: 'radar', tone: 'orange' }, { label: '상품화 검토 후보', value: Math.min(displayOrdered.length, 8), unit: '건', description: '시장성·PML·근거 수준을 함께 계산한 후보', meta: '종합점수 기준', icon: 'report', tone: 'navy' }, { label: '법·규제 연계 위험', value: legalGroups.length, unit: '건', description: '개정본을 법률명 단위로 묶은 규제 위험', meta: `원문 ${legalArticles.length}건 연결`, icon: 'shield', tone: 'blue' }],
     priorityRisks: priorities,
     topPriority: firstPriority ? { detailRiskId: firstPriority.detailRiskId, reportId: `article-report-${first?.id ?? ''}`, title: firstPriority.title, summary: firstPriority.summary, marketScore: `시장성 ${firstScores.market.toFixed(1)} / 5점`, totalScore: `${firstScores.productization.toFixed(1)} / 5점` } : { detailRiskId: '', reportId: '', title: '연결된 문서 없음', summary: '연결된 문서에서 분석 자료를 준비하고 있습니다.', marketScore: '시장성 0.0 / 5점', totalScore: '0.0 / 5점' },
     candidates, regulations, exclusiveRights, recentProducts, marketUpdates, globalInsights, scraps, keywords, sourceShares,
