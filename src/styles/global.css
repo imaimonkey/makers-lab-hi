@@ -61,7 +61,7 @@
 }
 
 * { box-sizing: border-box; }
-html { min-width: 320px; scroll-behavior: smooth; }
+html { min-width: 320px; overflow-x: hidden; overflow-y: scroll; scroll-behavior: smooth; scrollbar-gutter: auto; }
 body {
   margin: 0;
   min-width: 320px;

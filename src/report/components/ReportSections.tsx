@@ -15,7 +15,7 @@ import { PolicyDraftModal } from './ReportAssistPanels'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { AppIcon, type IconName } from '../../shared/components/AppIcon'
 import { createPortal } from 'react-dom'
-import { ArrowUpRight, BarChart3, Check, ChevronDown, CircleChevronDown, CircleChevronUp, ClipboardCheck, Clock3, Crosshair, FileSearch, FileText, GitBranch, Search, ShieldAlert, ShieldCheck, Sparkles, TriangleAlert, UsersRound, Zap } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, CircleChevronDown, CircleChevronUp } from 'lucide-react'
 import { createBriefingContent } from '../services/briefing-content'
 import { pushPreservingHistoryState, type ReportNavigation } from '../services/browser-history'
 import { WORDING_ANALYSIS_RISK } from '../data/wording-review-mock'
@@ -23,7 +23,7 @@ import { aiFullPolicyDraftMock, buildFullPolicyCopyText, type FullPolicyDraft, t
 import { FEASIBILITY_PML_DATA, type FeasibilityPmlScenarioId } from '../data/product-feasibility-mock'
 import { PROPOSAL_CALCULATION_EVIDENCE, PROPOSAL_CLAIM_FLOW_DISPLAY, PROPOSAL_CONTRACT_ROLE_SUMMARY, PROPOSAL_COVERAGE_SUMMARY, PROPOSAL_DECISIONS, PROPOSAL_HERO_FACTS, PROPOSAL_PRICING_SCENARIO_OUTPUTS, PROPOSAL_RECOMMENDATION_DETAIL_BLOCKS, PROPOSAL_RECOMMENDATION_DISPLAY, PROPOSAL_UNDERWRITING_AI_SUMMARY, PROPOSAL_UNDERWRITING_DISPLAY, type ProposalPricingScenarioOutput } from '../data/product-proposal-mock'
 import { createFinancialEstimate, PRODUCT_FINANCIAL_ESTIMATE, type EstimateConfidence, type FinancialEstimate } from '../data/financial-estimate-mock'
-import { COVERAGE_GAP_ANALYSIS_PREMISE, COVERAGE_GAP_ASSUMPTIONS, COVERAGE_GAP_CATEGORY_SUMMARY, COVERAGE_GAP_LIMITATION, COVERAGE_GAP_PRODUCT_INPUTS } from '../data/coverage-gap-mock'
+import { COVERAGE_GAP_ANALYSIS_PREMISE, COVERAGE_GAP_ASSUMPTIONS, COVERAGE_GAP_CATEGORY_SUMMARY, COVERAGE_GAP_LIMITATION, COVERAGE_GAP_PRODUCT_INPUTS, COVERAGE_GAP_RESULT_CARDS } from '../data/coverage-gap-mock'
 import { PRODUCT_REVIEW_SUMMARY_COPY } from '../data/product-review-summary-mock'
 import type { NoveltyAnalysis } from '../../domain/product/similarProduct'
 import { normalizeNoveltyAnalysis, noveltyAnalysisStatusLabels, noveltyAnalysisTypeLabels, noveltySourceTypeLabels, similarProductTypeLabels, similarityTypeLabels, NOVELTY_OFFICIAL_SOURCES } from '../services/similar-product-research'
@@ -520,7 +520,7 @@ function SummaryCoreJudgmentsSection({ report, printMode = false }: { report: Re
         ) : (
           <div className="report-page__ai-summary-core-grid report-page__ai-summary-core-grid--three">
             {coreJudgmentCards.map((card, index) => <article className={`report-page__ai-summary-core-card report-page__ai-summary-core-card--${card.id}`} key={card.id}>
-              <div className="report-page__ai-summary-card-topline"><span className="report-page__ai-summary-card-label"><span className="report-page__ai-summary-card-index">{String(index + 1).padStart(2, '0')}</span>{card.label}</span></div>
+              <span className="report-page__ai-summary-card-label"><span className="report-page__ai-summary-card-index">{String(index + 1).padStart(2, '0')}</span>{card.label}</span>
               <h4 className="report-page__ai-summary-decision-title">{card.title}</h4>
               <strong className="report-page__ai-summary-metric-value">{card.metric}</strong>
               <details className="report-page__ai-summary-card-evidence" open={printMode || undefined}>
@@ -562,10 +562,7 @@ function SummaryEvaluationStatusSection({ report, printMode = false }: { report:
     <section className="report-page__ai-summary-section report-page__ai-summary-section--compact report-page__ai-summary-section--integrated">
       <section className="report-page__ai-summary-block report-page__ai-summary-evaluation-status" aria-labelledby="ai-summary-evaluation-title">
         <div className="report-page__ai-summary-block-heading">
-          <div>
-            <p className="report-page__decision-briefing-kicker">PRODUCTIZATION EVALUATION STATUS</p>
-            <h3 id="ai-summary-evaluation-title">상품화 평가 현황</h3>
-          </div>
+          <div><h3 id="ai-summary-evaluation-title">상품화 평가 현황</h3></div>
           <div className="report-page__ai-summary-evaluation-heading-actions"><span>현재 평가 데이터 기준</span></div>
         </div>
         <div className="report-page__ai-summary-evaluation-summary"><strong>상품화 평가 기준</strong><span>{evaluationTotal}/{evaluationTotal} 충족</span></div>
@@ -811,13 +808,6 @@ function RiskGapSection({ report, onNavigateTab, printMode = false }: { report: 
   const damageCount = coverageRows.length || data.damageTypes?.length || 0
   const partialCoverageCount = coverageRows.filter((item) => Boolean(item.possibleCoverage?.trim())).length
   const gapCount = coverageRows.filter((item) => getCoverageGapBullets(item).length > 0).length
-  const coreCoverageGaps = sourceGaps.length
-    ? sourceGaps.slice(0, 4).map((gap) => ({ id: gap.id, title: gap.title, description: gap.description }))
-    : coverageRows
-      .filter((item) => Boolean(item.remainingGap?.trim()))
-      .slice(0, 4)
-      .map((item) => ({ id: item.id, title: item.damage ?? item.coverageName, description: item.remainingGap }))
-  const coreCoverageGapIcons = [Clock3, ShieldAlert, GitBranch, FileSearch] as const
   void onNavigateTab
   void printMode
 
@@ -1227,7 +1217,6 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
   const criteria = assessment?.criteria ?? []
   const noveltyAnalysis = normalizeNoveltyAnalysis(report.productProposal.noveltyAnalysis)
   const [internalOpenCriterionId, setInternalOpenCriterionId] = useState<string | null>(null)
-  const [openMetricId, setOpenMetricId] = useState<string | null>(null)
   const [groupFilter, setGroupFilter] = useState<FeasibilityGroupFilter>('all')
   const [aiFilter, setAiFilter] = useState<FeasibilityAiFilter>('all')
   const openCriterionId = controlledOpenCriterionId ?? internalOpenCriterionId
@@ -1238,10 +1227,6 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
   const mandatoryCritical = mandatory.filter((criterion) => noveltyCriterionDecision(criterion, noveltyAnalysis) === 'unfulfilled').length
   const noveltyCriterion = criteria.find(isNoveltyCriterion)
   const noveltyDecision = noveltyCriterion ? noveltyCriterionDecision(noveltyCriterion, noveltyAnalysis) : 'fulfilled'
-  const productDecision = mandatoryCritical
-    ? { title: '상품화 가능성 재검토 필요', action: '추가 검토 필요' }
-    : { title: '상품화 가능성 높음', action: '상품 개발 검토 권고' }
-  const feasibilityMetricIcons = [BarChart3, UsersRound, Zap, TriangleAlert] as const
   const groupCounts = (group: FeasibilityDisplayGroup) => group.criterionIds.reduce<Record<CommercializationCriterionStatus, number>>((result, id) => {
     const criterion = findCriterion(id)
     if (criterion) {
@@ -1300,19 +1285,18 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
             {mandatoryCritical === 0 ? <li className="is-satisfied"><span aria-hidden="true">✓</span><span>확인된 검토 중단 사유 없음</span></li> : null}
           </ul>
         </div>
-        <div className="report-page__product-decision-visual" aria-hidden="true"><div className="report-page__product-decision-chart"><span /><span /><span /><span /></div><ShieldCheck size={82} strokeWidth={1.55} /></div>
       </section>
 
       <section className="report-page__quantitative-metrics report-page__feasibility-subsection" aria-labelledby="quantitative-metrics-title">
         <div className="report-page__feasibility-subsection-heading">
-          <div><p className="report-page__quantitative-metric-eyebrow">KEY FINANCIAL INDICATORS</p><h3 id="quantitative-metrics-title">핵심 정량지표</h3></div>
+          <div><p className="report-page__quantitative-metric-eyebrow">상품화 판단 핵심 지표</p><h3 id="quantitative-metrics-title">핵심 정량지표</h3></div>
         </div>
         <div className="report-page__quantitative-metric-grid">{metricDisplay.map((metric) => <article className={`report-page__quantitative-metric-card report-page__quantitative-metric-card--${metric.id}`} key={metric.id}>
           <header><h4>{metric.title}</h4><span className={`report-page__quantitative-metric-status report-page__quantitative-metric-status--${FEASIBILITY_METRIC_STATUS[metric.id]}`}>{FEASIBILITY_METRIC_STATUS_LABEL[metric.id]}</span></header>
           <strong className="report-page__quantitative-metric-value">{metric.value}</strong>
           <p className="report-page__quantitative-metric-subvalue">{metric.subvalue}</p>
-          <ul>{metric.items.map((item, index) => <li className={`is-${item.tone}`} key={`${metric.id}-${index}`}><span className="report-page__quantitative-metric-item-marker" aria-hidden="true">•</span><span>{item.text}</span></li>)}</ul>
-          <details className="report-page__quantitative-metric-details" open={printMode || openMetricId === metric.id} onToggle={(event) => { if (!printMode) setOpenMetricId(event.currentTarget.open ? metric.id : null) }}>
+          <ul>{metric.items.map((item, index) => <li className={`is-${item.tone}`} key={`${metric.id}-${index}`}>{item.text}</li>)}</ul>
+          <details className="report-page__quantitative-metric-details">
             <summary><span className="report-page__quantitative-detail-label"><span className="is-closed">산정 근거 보기</span><span className="is-open">산정 근거 닫기</span></span></summary>
             <div className="report-page__quantitative-metric-detail-body">
               <dl>{metric.details.map((detail) => <div key={detail.label}><dt>{detail.label}</dt><dd>{detail.items ? <ul>{detail.items.map((item) => <li key={item}>{item}</li>)}</ul> : detail.value}</dd></div>)}</dl>
@@ -1320,7 +1304,7 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
             </div>
           </details>
           <p className="report-page__quantitative-metric-print-note">{metric.printNote}</p>
-        </article> })}</div>
+        </article>)}</div>
       </section>
 
       <NoveltyAnalysisSection analysis={noveltyAnalysis} initialOpenAccordion={noveltyAccordionRequest} onInitialOpenHandled={onNoveltyAccordionRequestHandled} printMode={printMode} />
@@ -1363,6 +1347,14 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
         })}
       </div>
 
+      <section className="report-page__follow-up-actions report-page__feasibility-subsection" aria-labelledby="follow-up-actions-title">
+        <div className="report-page__feasibility-subsection-heading"><div><h3 id="follow-up-actions-title">최종 확인 필요</h3></div></div>
+        <ol className="report-page__follow-up-summary" aria-label="최종 확인 필요 항목">
+          <li><span aria-hidden="true">1</span><strong>실제 계약 수요 검증</strong></li>
+          <li><span aria-hidden="true">2</span><strong>PML·보험료·인수조건 검증</strong></li>
+          <li><span aria-hidden="true">3</span><strong>보장 범위·보험금 지급 기준 확정</strong></li>
+        </ol>
+      </section>
     </div>
   )
 }
@@ -1835,14 +1827,9 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
         <div className="report-page__proposal-metric-grid">
           {displayPricingCards.map((card) => (
             <article className={'report-page__proposal-metric report-page__proposal-metric--' + card.id} key={card.id}>
-              <div className="report-page__proposal-metric-head">
-                <span className="report-page__proposal-metric-icon" aria-hidden="true"><Icon size={21} strokeWidth={1.8} /></span>
-                <div className="report-page__proposal-metric-copy">
-                  <h4>{card.title}</h4>
-                  <strong className="report-page__proposal-metric-value">{card.value}</strong>
-                  <p className="report-page__proposal-metric-subvalue">{card.subvalue}</p>
-                </div>
-              </div>
+              <h4>{card.title}</h4>
+              <strong className="report-page__proposal-metric-value">{card.value}</strong>
+              <p className="report-page__proposal-metric-subvalue">{card.subvalue}</p>
               <div className="report-page__proposal-scenario-values" aria-label={card.title + ' 시나리오 값'}>
                 {PROPOSAL_PRICING_SCENARIO_OUTPUTS.map((scenario) => <div className={scenario.id === 'base' ? 'is-base' : undefined} key={scenario.id}><span>{scenario.label}</span><strong>{card.values(scenario)}</strong></div>)}
               </div>
@@ -1866,8 +1853,7 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
                 </dl>
               </details>
             </article>
-            )
-          })}
+          ))}
         </div>
       </section>
 
@@ -2825,8 +2811,6 @@ function FullWordingSection({
     label: clause.shortTitle,
   }))
 
-  const wordingProposalIcons = [Crosshair, ShieldCheck, ShieldAlert] as const
-
   useEffect(() => {
     if (typeof window === 'undefined' || !fullDraftRef.current || !policyDocumentRef.current || printMode) return
     const policyDocument = policyDocumentRef.current
@@ -2877,7 +2861,6 @@ function FullWordingSection({
     <>
       <section ref={wordingComponentsRef} className={'report-page__section report-page__wording-section' + (dedicatedPrintRequested ? ' report-page__wording-section--dedicated-print' : '')} aria-label="약관화 검토">
       <SectionHeading number="04" eyebrow="" title="약관화 검토" />
-      <p className="report-page__wording-lead" id="wording-title">보험 약관 관점에서 보장 범위·면책 사유·용어 정의 등 약관화를 위한 주요 항목을 검토합니다.</p>
 
       <div className="report-page__wording-main-flow">
         <section className="report-page__wording-risk-summary" aria-labelledby="wording-risk-title">
@@ -2896,15 +2879,13 @@ function FullWordingSection({
 
         <section className="report-page__wording-main-zone report-page__wording-zone-a" aria-labelledby="wording-proposal-title">
           <div className="report-page__wording-zone-heading report-page__wording-proposal-heading">
-            <div><h3 id="wording-proposal-title"><span className="report-page__wording-heading-icon" aria-hidden="true"><Sparkles size={20} strokeWidth={1.8} /></span>AI 제안 보장 항목</h3><p>보장 항목을 선택하면 선택한 항목의 추천 보장 문구, 지급요건과 약관 초안 전체를 함께 확인할 수 있습니다.</p></div>
+            <div><h3 id="wording-proposal-title">AI 제안 보장 항목</h3><p>보장 항목을 선택하면 선택한 항목의 추천 보장 문구, 지급요건과 약관 초안 전체를 함께 확인할 수 있습니다.</p></div>
           </div>
           <div className="report-page__wording-proposal-grid" role="tablist" aria-label="AI 제안 보장 항목">
             {policyDraft.specialClauses.map((clause, index) => {
               const isSelected = selectedCoverage.id === clause.id
-              const ProposalIcon = wordingProposalIcons[index % wordingProposalIcons.length]
               return (
                 <button key={clause.id} className={'report-page__wording-proposal-card' + (isSelected ? ' is-selected' : '')} type="button" role="tab" aria-selected={isSelected} onClick={() => setSelectedCoverageId(clause.id)}>
-                  <span className="report-page__wording-proposal-card-icon" aria-hidden="true"><ProposalIcon size={24} strokeWidth={1.7} /></span>
                   <span className="report-page__wording-proposal-number">{String(index + 1).padStart(2, '0')}</span>
                   <span className="report-page__wording-proposal-card-title"><strong>{clause.shortTitle}</strong>{isSelected ? <em>선택됨</em> : null}</span>
                   <small>{clause.summary}</small>
@@ -2917,8 +2898,8 @@ function FullWordingSection({
 
         <section className="report-page__wording-main-zone report-page__wording-recommended-copy" aria-labelledby="wording-recommended-title">
           <div className="report-page__wording-zone-heading">
-            <div><h3 id="wording-recommended-title"><span className="report-page__wording-heading-icon" aria-hidden="true"><FileText size={22} strokeWidth={1.7} /></span>추천 보장 문구</h3><p>선택한 보장 항목에 적용할 핵심 문구를 확인합니다.</p></div>
-            <div className="report-page__wording-draft-actions report-page__no-print"><button className="report-page__button" type="button" onClick={copyRecommendedCoverage}><ClipboardCheck size={16} strokeWidth={1.8} />보장 문구 복사</button></div>
+            <div><h3 id="wording-recommended-title">추천 보장 문구</h3><p>선택한 보장 항목에 적용할 핵심 문구를 확인합니다.</p></div>
+            <div className="report-page__wording-draft-actions report-page__no-print"><button className="report-page__button" type="button" onClick={copyRecommendedCoverage}>보장 문구 복사</button></div>
           </div>
           <blockquote className="report-page__wording-draft-quote"><WordingHighlightedText text={selectedCoverage.recommendedCoverageCopy} /></blockquote>
           {copyMessage ? <p className="report-page__copy-message report-page__no-print" role="status">{copyMessage}</p> : null}
@@ -3449,25 +3430,6 @@ function createExecutiveBriefing(report: ReportView): ExecutiveBriefingModel {
   }
 }
 
-function DecisionBriefingFinancialIndicators({ metrics, printMode }: { metrics: ExecutiveBriefingModel['metrics']; printMode: boolean }) {
-  return (
-    <section className="report-page__decision-briefing-section report-page__decision-briefing-finance" aria-labelledby="decision-briefing-finance-title">
-      <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">KEY FINANCIAL INDICATORS</p><h3 id="decision-briefing-finance-title">핵심 정량 지표</h3></div></div>
-      {printMode ? (
-        <table className="report-page__decision-briefing-finance-table">
-          <caption>핵심 정량 지표</caption>
-          <thead><tr><th scope="col">지표</th><th scope="col">기준 값</th><th scope="col">범위·보조 설명</th><th scope="col">신뢰도</th></tr></thead>
-          <tbody>{metrics.map((metric) => <tr key={metric.id}><th scope="row">{metric.label}</th><td>{metric.value}</td><td>{metric.supporting}</td><td>{metric.confidence} · 1차 추정</td></tr>)}</tbody>
-        </table>
-      ) : (
-        <div className="report-page__decision-briefing-finance-summary">
-          {metrics.map((metric) => <article className={`report-page__decision-briefing-finance-card report-page__decision-briefing-finance-card--${metric.tone} report-page__decision-briefing-finance-card--${metric.id}`} key={metric.id}><div><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.supporting}</small><em>{metric.confidence} · 1차 추정</em></div></article>)}
-        </div>
-      )}
-    </section>
-  )
-}
-
 function ExecutiveBriefingSection({
   report,
   onNavigateTab,
@@ -3478,10 +3440,6 @@ function ExecutiveBriefingSection({
   printMode?: boolean
 }) {
   const briefing = createExecutiveBriefing(report)
-  const conclusionGroups = [
-    { title: '확인된 판단', icon: ClipboardCheck, points: briefing.conclusionPoints.slice(0, 2) },
-    { title: '후속 확인', icon: Search, points: briefing.conclusionPoints.slice(2, 4) },
-  ] as const
 
   return (
     <section className="report-page__section report-page__briefing report-page__briefing--decision" aria-label="종합 브리핑">
@@ -3493,22 +3451,31 @@ function ExecutiveBriefingSection({
         </div>
 
         <section className="report-page__decision-briefing-conclusion" aria-labelledby="decision-briefing-conclusion-title">
-          <div className="report-page__decision-briefing-conclusion-lead">
-            <span className="report-page__decision-briefing-conclusion-icon" aria-hidden="true"><ShieldCheck size={58} strokeWidth={1.65} /></span>
-            <div className="report-page__decision-briefing-conclusion-head">
+          <div className="report-page__decision-briefing-conclusion-head">
             <div><p className="report-page__decision-briefing-kicker">최종 검토 결론</p><h3 id="decision-briefing-conclusion-title">{briefing.conclusion}</h3></div>
-            </div>
           </div>
           <div className="report-page__decision-briefing-conclusion-points">
-            {conclusionGroups.map((group) => { const Icon = group.icon; return <div className="report-page__decision-briefing-conclusion-group" key={group.title}>
-              <div className="report-page__decision-briefing-conclusion-group-head"><span aria-hidden="true"><Icon size={20} strokeWidth={1.8} /></span><h4>{group.title}</h4></div>
-              <ul>{group.points.map((point) => <li key={point}><Check aria-hidden="true" size={15} strokeWidth={2.1} />{point}</li>)}</ul>
-            </div> })}
+            <div className="report-page__decision-briefing-conclusion-group">
+              <h4>확인된 판단</h4>
+              <ul>{briefing.conclusionPoints.slice(0, 2).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}</ul>
+            </div>
+            <div className="report-page__decision-briefing-conclusion-group">
+              <h4>후속 확인</h4>
+              <ul>{briefing.conclusionPoints.slice(2, 4).map((point) => <li key={point}><span aria-hidden="true">✓</span>{point}</li>)}</ul>
+            </div>
           </div>
         </section>
 
         <SummaryCoreJudgmentsSection report={report} printMode={printMode} />
-        <DecisionBriefingFinancialIndicators metrics={briefing.metrics} printMode={printMode} />
+      </section>
+
+      <section className="report-page__decision-briefing-section report-page__decision-briefing-risk-context" aria-labelledby="decision-briefing-risk-context-title">
+        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">RISK OVERVIEW</p><h3 id="decision-briefing-risk-context-title">검토 대상 위험</h3></div></div>
+        <dl className="report-page__decision-briefing-risk-context-list">
+          <div><dt>분석 대상 위험</dt><dd>{briefing.riskContext.target}</dd></div>
+          <div><dt>주요 피해 대상</dt><dd>{briefing.riskContext.affected}</dd></div>
+          <div><dt>상품개발 검토 배경</dt><dd>{briefing.riskContext.background}</dd></div>
+        </dl>
       </section>
 
       <section id="decision-briefing-core-results" className="report-page__decision-briefing-section report-page__decision-briefing-core-results" aria-labelledby="decision-briefing-core-title">
@@ -3550,13 +3517,19 @@ function ExecutiveBriefingSection({
         )}
       </section>
 
-      <section className="report-page__decision-briefing-section report-page__decision-briefing-risk-context" aria-labelledby="decision-briefing-risk-context-title">
-        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">RISK OVERVIEW</p><h3 id="decision-briefing-risk-context-title">검토 대상 위험</h3></div></div>
-        <dl className="report-page__decision-briefing-risk-context-list">
-          <div><dt>분석 대상 위험</dt><dd>{briefing.riskContext.target}</dd></div>
-          <div><dt>주요 피해 대상</dt><dd>{briefing.riskContext.affected}</dd></div>
-          <div><dt>상품개발 검토 배경</dt><dd>{briefing.riskContext.background}</dd></div>
-        </dl>
+      <section className="report-page__decision-briefing-section report-page__decision-briefing-finance" aria-labelledby="decision-briefing-finance-title">
+        <div className="report-page__decision-briefing-section-head"><div><p className="report-page__decision-briefing-kicker">KEY FINANCIAL INDICATORS</p><h3 id="decision-briefing-finance-title">핵심 정량 지표</h3></div></div>
+        {printMode ? (
+          <table className="report-page__decision-briefing-finance-table">
+            <caption>핵심 정량 지표</caption>
+            <thead><tr><th scope="col">지표</th><th scope="col">기준 값</th><th scope="col">범위·보조 설명</th><th scope="col">신뢰도</th></tr></thead>
+            <tbody>{briefing.metrics.map((metric) => <tr key={metric.id}><th scope="row">{metric.label}</th><td>{metric.value}</td><td>{metric.supporting}</td><td>{metric.confidence} · 1차 추정</td></tr>)}</tbody>
+          </table>
+        ) : (
+          <div className="report-page__decision-briefing-finance-summary">
+            {briefing.metrics.map((metric) => <article className={`report-page__decision-briefing-finance-card report-page__decision-briefing-finance-card--${metric.tone} report-page__decision-briefing-finance-card--${metric.id}`} key={metric.id}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.supporting}</small><em>{metric.confidence} · 1차 추정</em></article>)}
+          </div>
+        )}
       </section>
 
       <SummaryEvaluationStatusSection report={report} printMode={printMode} />

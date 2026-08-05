@@ -2165,6 +2165,73 @@
   background: #fff;
 }
 
+/* 긴 원문 목록이 주변 카드의 높이를 밀어내지 않도록 카드 높이와
+ * 내부 읽기 영역을 분리합니다. 화면의 기존 카드 비율은 유지하고,
+ * 국내·글로벌·법규 목록만 독립적으로 스크롤됩니다. */
+.riskRadarPage .market-grid {
+  grid-auto-rows: 438px;
+}
+
+.riskRadarPage .market-grid > .market-box {
+  min-height: 0;
+  height: 438px;
+}
+
+.riskRadarPage .market-insights,
+.riskRadarPage .global-insights-card,
+.riskRadarPage #regulation-panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.riskRadarPage .market-insights .market-insight-section,
+.riskRadarPage .global-insights-card .global-insights-section,
+.riskRadarPage #regulation-panel .event-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-color: rgba(86, 115, 158, .55) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.riskRadarPage .market-insights .update-list,
+.riskRadarPage .global-insights-card .global-insight-list,
+.riskRadarPage #regulation-panel .event-list {
+  min-height: 0;
+}
+
+.riskRadarPage #regulation-panel {
+  height: 438px;
+}
+
+@media (max-width: 1100px) {
+  .riskRadarPage .market-grid {
+    grid-auto-rows: 438px;
+  }
+}
+
+@media (max-width: 900px) {
+  .riskRadarPage .market-grid {
+    grid-auto-rows: auto;
+  }
+
+  .riskRadarPage .market-grid > .market-box {
+    height: auto;
+  }
+
+  .riskRadarPage .market-insights,
+  .riskRadarPage .global-insights-card {
+    height: 438px;
+  }
+
+  .riskRadarPage #regulation-panel {
+    height: 438px;
+  }
+}
+
 /* 스크랩 리포트도 하단 보조 카드 행의 높이를 채우고, 항목 전체를 이동 영역으로 사용 */
 .riskRadarPage .row-grid.tertiary > .panel:nth-child(1) {
   align-self: stretch;

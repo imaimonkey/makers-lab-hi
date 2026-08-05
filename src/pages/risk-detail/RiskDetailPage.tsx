@@ -5,6 +5,7 @@ import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sa
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { GenerativeAiCopyrightDetail } from '../../features/risk-detail/GenerativeAiCopyrightDetail'
+import { StandardRiskDetail } from '../../features/risk-detail/StandardRiskDetail'
 import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
 import { buildDeveloperRiskDetailData, type DeveloperRiskDetailData } from '../../features/risk-catalog/developerStep2Adapter'
 
