@@ -127,6 +127,7 @@ export type RiskRadarKeyword = {
 export type RiskRadarSourceShare = {
   label: string
   share: number
+  count?: number
   role: string
   tone: 'orange' | 'navy' | 'blue' | 'mist'
 }

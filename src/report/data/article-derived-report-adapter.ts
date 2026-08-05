@@ -1,4 +1,5 @@
 import type { ArticleSourceRecord } from '../../features/risk-dashboard/articleSourceData'
+import { calculateProductizationScores } from '../../features/risk-catalog/productizationScore'
 import { createDeveloperReportData } from './developer-report-adapter'
 import type { ReportResult, RiskSourceData } from '../types'
 
@@ -177,11 +178,27 @@ const resultText = (article: ArticleSourceRecord) => {
   }
 }
 
-export function createArticleDerivedReportData(article: ArticleSourceRecord): ArticleDerivedReportEntry {
+export function createArticleDerivedReportData(article: ArticleSourceRecord, relatedArticles: ArticleSourceRecord[] = [article]): ArticleDerivedReportEntry {
   const generatedAt = article.collectedAt ?? new Date().toISOString()
   const result = resultText(article)
   const base = createDeveloperReportData(article, Object.fromEntries(Object.entries(result).map(([key, value]) => [key, { text: JSON.stringify(value), generatedAt }])))
-  const evidenceCount = article.derived.evidenceQuotes.length || 1
+  const relatedEvidence = relatedArticles.slice(1).flatMap((relatedArticle) =>
+    (relatedArticle.derived.evidenceQuotes.length ? relatedArticle.derived.evidenceQuotes : [relatedArticle.derived.summary])
+      .slice(0, 3)
+      .map((quote, index) => ({
+        id: `${relatedArticle.id}-group-evidence-${index + 1}`,
+        type: relatedArticle.derived.isRegulatory ? '법령 원문' : '문서 원문',
+        title: `${relatedArticle.title} 연결 근거 ${index + 1}`,
+        source: relatedArticle.source ?? '문서 원문',
+        referenceDate: relatedArticle.publishedAt ?? relatedArticle.collectedAt ?? null,
+        usedFor: ['위험 후보 분류', '상품화 검토 근거'],
+        reliability: '원문 근거 연결',
+        isMockData: false,
+        originalAvailable: true,
+        quote,
+      })),
+  )
+  const evidenceCount = article.derived.evidenceQuotes.length + relatedEvidence.length || 1
   const report: ReportResult = {
     ...base.report,
     meta: {
@@ -193,10 +210,12 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord): Ar
       dataStatus: '원문 기반 분석',
       isMockData: false,
       evidenceCount,
+      relatedDocumentCount: relatedArticles.length,
+      relatedDocumentTitles: relatedArticles.map((relatedArticle) => relatedArticle.title),
       badges: ['원문 기반 분석', '문서 근거'],
       disclaimer: '문서 본문을 구조화한 분석 결과이며 공식 약관·보험료·가입 가능 여부를 확정하지 않습니다.',
     },
-    evidence: base.report.evidence.map((item) => ({ ...item, reliability: '원문 근거 연결' })),
+    evidence: [...base.report.evidence.map((item) => ({ ...item, reliability: '원문 근거 연결' })), ...relatedEvidence],
   }
   const riskData: RiskSourceData = {
     ...base.riskData,
@@ -211,5 +230,18 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord): Ar
 }
 
 export function createArticleDerivedReportEntries(articles: ArticleSourceRecord[]): ArticleDerivedReportEntry[] {
-  return articles.map(createArticleDerivedReportData)
+  const groups = new Map<string, ArticleSourceRecord[]>()
+  articles.forEach((article) => {
+    const key = article.derived.isRegulatory
+      ? `law:${article.title}`
+      : `topic:${article.contentProfile.topic}`
+    groups.set(key, [...(groups.get(key) ?? []), article])
+  })
+  return [...groups.values()].map((group) => {
+    const orderedGroup = [...group].sort((left, right) => (
+      calculateProductizationScores(right.derived.metricScores).total
+      - calculateProductizationScores(left.derived.metricScores).total
+    ))
+    return createArticleDerivedReportData(orderedGroup[0], orderedGroup)
+  })
 }

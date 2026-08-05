@@ -536,7 +536,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
                 <div className="donut-caption">위험 후보 도출에 활용된<br />자료 유형별 구성비</div>
               </div>
               <div className="source-legend">
-                {riskRadarSourceShares.map((source) => <div className="source-legend-item" key={source.label}><span className="source-swatch" aria-hidden="true" /><div className="source-info"><div className="source-name">{source.label}</div><div className="source-role">{source.role}</div></div><div className="source-share">{source.share}%</div></div>)}
+                {riskRadarSourceShares.map((source) => <div className="source-legend-item" key={source.label}><span className="source-swatch" aria-hidden="true" /><div className="source-info"><div className="source-name">{source.label}</div><div className="source-role">{source.role}</div></div><div className="source-share">{source.share}%{source.count !== undefined ? ` · ${source.count}건` : ''}</div></div>)}
               </div>
             </div>
             <div className="source-note">최근 30일 동안 도출된 위험 후보에 연결된 분석 자료 기준</div>

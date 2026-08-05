@@ -343,7 +343,7 @@ let recordsPromise: Promise<ArticleSourceRecord[]> | null = null
 
 export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]> {
   if (recordsPromise) return recordsPromise
-  recordsPromise = Promise.all(listBundledFiles().map(async (sourceFile) => {
+  recordsPromise = Promise.allSettled(listBundledFiles().map(async (sourceFile) => {
     const response = await fetch(sourceFile.url)
     if (!response.ok) throw new Error(`${sourceFile.fileName}: 원문 파일을 읽지 못했습니다.`)
     const blob = await response.blob()
@@ -376,7 +376,15 @@ export async function loadArticleSourceRecords(): Promise<ArticleSourceRecord[]>
       derived: createDerivedAnalysis(title, contentProfile, collectedAt),
     }
     return article
-  }))
+  })).then((results) => {
+    const records = results.flatMap((result) => {
+      if (result.status === 'fulfilled') return [result.value]
+      console.warn('[article-source] 문서 하나를 건너뛰었습니다.', result.reason)
+      return []
+    })
+    if (!records.length) throw new Error('연결된 문서에서 리포트 자료를 불러오지 못했습니다.')
+    return records
+  })
   return recordsPromise
 }
 
