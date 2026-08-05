@@ -8,7 +8,7 @@
 .aic-fact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.aic-fact{border-radius:12px;padding:15px}.aic-fact small{display:block;margin-bottom:7px;color:#8190a2;font-size:11px}.aic-fact strong{display:block;font-size:17px;line-height:1.4}.aic-fact p{margin:7px 0 0;color:#7a899c;font-size:10px;line-height:1.5}.aic-fact span{display:inline-flex;margin-top:8px;padding:4px 6px;border-radius:5px;background:#ebfbff;color:#0d819d;font-size:9px;font-weight:700}
 .aic-section-nav{position:sticky;top:var(--analyst-topbar-height,68px);z-index:20;display:flex;gap:5px;overflow:auto;margin-bottom:16px;padding:7px;border:1px solid #e4eaf2;border-radius:12px;background:rgba(255,255,255,.94);box-shadow:0 5px 18px rgba(38,62,94,.06);backdrop-filter:blur(10px)}.aic-section-nav a{padding:8px 11px;border-radius:8px;color:#67768a;font-size:11px;font-weight:700;white-space:nowrap}.aic-section-nav a:hover{background:#eef5ff;color:#2563eb}
 .aic-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}.aic-content{display:grid;gap:16px}.aic-panel{overflow:hidden;border-radius:14px;scroll-margin-top:130px}.aic-panel-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:15px 17px;border-bottom:1px solid #e4eaf2}.aic-panel-title>div{display:flex;gap:10px;align-items:flex-start}.aic-panel-title>div>span{display:grid;place-items:center;width:27px;height:27px;flex:0 0 27px;border-radius:8px;background:#eef5ff;color:#2563eb;font-size:10px;font-weight:800}.aic-panel-title h2{margin:0;font-size:16px}.aic-panel-title p{margin:4px 0 0;color:#8a97a7;font-size:10px;line-height:1.5}.aic-panel-title>b{color:#2563eb;font-size:10px;white-space:nowrap}
-.aic-context-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}.aic-context-card{padding:12px;border:1px solid #e4eaf2;border-radius:10px;background:#fbfcfe}.aic-context-card:last-child{grid-column:1/-1}.aic-context-card>div{display:grid;place-items:center;width:27px;height:27px;margin-bottom:9px;border-radius:50%;background:#eaf1f8;color:#35516c;font-size:11px;font-weight:800}.aic-context-card h4{margin:0 0 6px;font-size:12px}.aic-context-card p{margin:0;color:#718197;font-size:10px;line-height:1.55}
+.aic-context-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px}.aic-context-card{padding:12px;border:1px solid #e4eaf2;border-radius:10px;background:#fbfcfe}.aic-context-card:nth-child(-n+4){grid-column:auto}.aic-context-card:nth-child(5){grid-column:1/-1}.aic-context-card>div{display:grid;place-items:center;width:27px;height:27px;margin-bottom:9px;border-radius:50%;background:#eaf1f8;color:#35516c;font-size:11px;font-weight:800}.aic-context-card h4{margin:0 0 6px;font-size:12px}.aic-context-card p{margin:0;color:#718197;font-size:10px;line-height:1.55}
 .aic-paper-layout{display:grid;grid-template-columns:40% 60%;min-height:305px}.aic-paper-list{border-right:1px solid #e4eaf2}.aic-paper-list button{display:block;width:100%;padding:13px 14px;border:0;border-bottom:1px solid #e4eaf2;background:#fff;text-align:left;cursor:pointer}.aic-paper-list button:hover,.aic-paper-list button.active{background:#eef5ff}.aic-paper-list b{display:block;font-size:11px;line-height:1.45}.aic-paper-list small{color:#8b98a8;font-size:9px}.aic-paper-detail{padding:18px}.aic-paper-detail h3{margin:0 0 8px;font-size:15px}.aic-paper-detail>p,.aic-findings{color:#68788e;font-size:11px;line-height:1.65}.aic-findings{margin-top:12px}.aic-findings b,.aic-quote-box b{color:#4f6278;font-size:10px}.aic-quote-box{margin-top:12px;padding:11px 12px;border:1px solid #e4eaf2;border-radius:9px;background:#f7f9fc}.aic-quote-box p{margin:5px 0 0;color:#68788e;font-size:11px;line-height:1.65}.aic-source-btn{display:inline-flex;margin-top:13px;padding:8px 10px;border:1px solid #ccdaeb;border-radius:7px;color:#2563eb;background:#fff;font-size:10px;font-weight:700}
 .aic-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}.aic-mechanism{padding:16px}.aic-flow{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:18px 10px;border:1px solid #e4eaf2;border-radius:9px;background:#f7f9fc}.aic-flow span{position:relative;display:flex;flex:1;flex-direction:column;align-items:center;gap:5px;text-align:center}.aic-flow b{font-size:25px}.aic-flow strong{font-size:10px}.aic-flow i{position:absolute;right:-12px;top:28px;color:#c56a19;font-size:20px;font-style:normal;font-weight:800}.aic-callout{margin-top:12px;padding:11px;border-left:4px solid #c56a19;background:#fff4e8;color:#73553a;font-size:10px;line-height:1.6}.aic-news-list{padding:0 16px}.aic-news-list>a{display:grid;grid-template-columns:1fr 82px;gap:12px;padding:13px 0;border-bottom:1px solid #e4eaf2}.aic-news-list>a:last-child{border:0}.aic-news-list b{display:block;margin-bottom:4px;font-size:11px;line-height:1.45}.aic-news-list small,.aic-news-list time{color:#8795a7;font-size:9px;line-height:1.45}.aic-news-list time{text-align:right}
 .aic-damage-path{padding:14px}.aic-damage-row{display:grid;grid-template-columns:120px minmax(0,1fr) 110px;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #e4eaf2}.aic-damage-row:last-child{border:0}.aic-damage-row>strong{color:#40546b;font-size:10px}.aic-damage-row>p{margin:0;color:#718197;font-size:10px;line-height:1.55}.aic-damage-row>span{color:#8c99a9;font-size:9px;text-align:right}.aic-damage-row>span b{display:block;margin-bottom:2px;color:#4e6278;font-size:10px}.aic-amount-note{margin:0 14px 14px;padding:11px;border:1px solid #f1dcc4;border-radius:9px;background:#fff8ee;color:#795a3c;font-size:10px;line-height:1.6}
@@ -21,3 +21,160 @@
 
 .aic-report-button{display:flex;width:100%;min-height:44px;box-sizing:border-box;align-items:center;justify-content:center;padding:10px;border:1px solid #2563eb;border-radius:14px;color:#fff;background:#2563eb;box-shadow:0 8px 28px rgba(38,62,94,.08);font-size:14px;font-weight:800;text-decoration:none;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease}
 .aic-report-button:hover,.aic-report-button:focus-visible{border-color:#1d4ed8;background:#1d4ed8;box-shadow:0 10px 24px rgba(37,99,235,.2)}
+
+.aic-editorial-reasons{display:grid;gap:10px;padding:14px}.aic-editorial-reason{padding:14px;border:1px solid #e4eaf2;border-radius:11px;background:#fff}.aic-editorial-reason-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}.aic-editorial-reason-head>span{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#162d50;color:#fff;font-size:10px;font-weight:900}.aic-editorial-reason h3{margin:0;font-size:13px;line-height:1.45}.aic-editorial-reason>p{margin:0;color:#718197;font-size:10px;line-height:1.65}.aic-editorial-meaning-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.aic-editorial-meaning-grid>div{padding:10px;border-radius:9px;font-size:10px;line-height:1.55}.aic-editorial-meaning-grid b{display:block;margin-bottom:3px;font-size:10px}.aic-editorial-meaning-grid .insurance{border:1px solid #d2ece2;background:#f1fbf7;color:#4a675e}.aic-editorial-meaning-grid .ai{border:1px solid #d8e5fb;background:#f4f8ff;color:#51647d}
+.aic-editorial-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 14px}.aic-editorial-card{padding:13px;border:1px solid #e4eaf2;border-radius:10px;background:#fbfcfe}.aic-editorial-card.wide{grid-column:1/-1}.aic-editorial-card>small{display:block;margin-bottom:6px;color:#2563eb;font-size:9px;font-weight:800}.aic-editorial-card h3{margin:0 0 8px;font-size:13px;line-height:1.45}.aic-editorial-card>p{margin:0;color:#718197;font-size:10px;line-height:1.65}.aic-editorial-card>a{display:inline-block;margin-top:10px;color:#2563eb;font-size:9px;font-weight:800}.aic-editorial-quote{position:relative;margin:10px 0;padding:11px 12px 10px 15px;border:1px solid #eee2cf;border-radius:9px;background:#faf8f3}.aic-editorial-quote::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:9px 0 0 9px;background:#cfa36b}.aic-editorial-quote blockquote{margin:0;color:#404b59;font-size:10px;font-weight:800;line-height:1.6}.aic-editorial-quote cite{display:block;margin-top:6px;color:#8a7b67;font-size:8px;font-style:normal}.aic-editorial-split{display:grid;grid-template-columns:1fr 1fr;gap:8px}.aic-editorial-split>div{padding:9px;border-radius:8px;font-size:9px;line-height:1.55}.aic-editorial-split b{display:block;margin-bottom:3px;font-size:9px}.aic-editorial-split .context{border:1px solid #d8e5f8;background:#f3f8ff;color:#5d7088}.aic-editorial-split .insurance{border:1px solid #d2ece2;background:#f1fbf7;color:#4a675e}.aic-mechanism-articles{padding-top:0}.aic-mechanism .aic-flow span small{color:#8795a7;font-size:8px;line-height:1.4}.aic-mechanism .aic-callout{margin:12px 0 0}
+@media(max-width:760px){.aic-editorial-grid,.aic-editorial-meaning-grid,.aic-editorial-split{grid-template-columns:1fr}.aic-editorial-card.wide{grid-column:auto}}
+
+.aic-editorial-wrap{padding:16px}.aic-editorial-hero{padding:18px 20px;border:1px solid #d8e4f7;border-radius:13px;background:linear-gradient(135deg,#f7faff,#eef4ff);margin-bottom:16px}.aic-editorial-hero small{font-size:9px;font-weight:900;color:#2563eb;letter-spacing:.04em}.aic-editorial-hero h2{margin:6px 0 8px;font-size:20px;line-height:1.3}.aic-editorial-hero p{margin:0;color:#63758d;font-size:11px;line-height:1.7}.aic-editorial-body{max-width:880px;margin:0 auto}.aic-editorial-intro{margin:0 0 18px;padding:0 2px;color:#35475d;font-size:11px;line-height:1.85}.aic-editorial-section{padding:18px 0;border-top:1px solid #e4eaf2}.aic-editorial-section-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px}.aic-editorial-section-head>span{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:8px;background:#eef5ff;color:#2563eb;font-size:9px;font-weight:900}.aic-editorial-section-head h3{margin:2px 0 0;font-size:14px;line-height:1.4}.aic-editorial-section>p{margin:0 0 9px;color:#53667d;font-size:10px;line-height:1.8}.aic-editorial-meaning{margin-top:10px;padding:11px 12px;border:1px solid #d8e5f8;border-radius:9px;background:#f3f8ff}.aic-editorial-meaning b{display:block;margin-bottom:4px;color:#315d9d;font-size:9px}.aic-editorial-meaning p{margin:0;color:#5d7088;font-size:10px;line-height:1.6}.aic-editorial-decision{margin-top:18px;padding:18px;border-radius:13px;background:linear-gradient(135deg,#102544,#244a82);color:#fff}.aic-editorial-decision small{color:#bfd0e4;font-size:9px;font-weight:900}.aic-editorial-decision h3{margin:6px 0 9px;font-size:16px;line-height:1.4}.aic-editorial-decision>p{margin:0;color:#e8eff8;font-size:10px;line-height:1.75}.aic-editorial-checks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}.aic-editorial-checks>div{padding:10px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(255,255,255,.08)}.aic-editorial-checks b{display:block;margin-bottom:4px;color:#fff;font-size:9px}.aic-editorial-checks span{display:block;color:#d9e5f4;font-size:9px;line-height:1.5}@media(max-width:760px){.aic-editorial-checks{grid-template-columns:1fr}}
+.aic-deep-analysis .aic-editorial-section-head{display:none}.aic-deep-analysis .aic-editorial-meaning b{display:none}.aic-deep-analysis .aic-editorial-section>p:last-of-type{display:inline;margin:0}.aic-deep-analysis .aic-editorial-quote{display:inline;margin-left:8px;padding:0;border:0;background:transparent}.aic-deep-analysis .aic-editorial-quote::before,.aic-deep-analysis .aic-editorial-quote blockquote,.aic-deep-analysis .aic-editorial-quote cite{display:none}.aic-deep-analysis .aic-editorial-quote a{display:inline-flex;vertical-align:baseline;margin:0;padding:5px 8px;border:1px solid #cbdcff;border-radius:999px;background:#eef4ff;color:#2563eb;font-size:9px;font-weight:800;text-decoration:none}
+.aic-deep-analysis .aic-editorial-hero p,.aic-deep-analysis .aic-editorial-intro,.aic-deep-analysis .aic-editorial-section>p,.aic-deep-analysis .aic-editorial-meaning p{color:#183b63}
+.aic-editorial-decision h3{color:#fff}
+.aic-editorial-decision,.aic-editorial-decision *{color:#fff}
+.sh-visual .aic-editorial-decision,.sh-visual .aic-editorial-decision *{color:#fff !important}
+.aic-deep-analysis p strong{font-weight:900;color:inherit}
+
+/* Risk detail reading scale: keep the existing layout while making every information layer easier to read. */
+.detail-page .ai-copyright-detail .aic-chips span { font-size: 12px; }
+.detail-page .ai-copyright-detail .aic-hero h1 { font-size: 34px; }
+.detail-page .ai-copyright-detail .aic-hero-main > p { font-size: 15px; line-height: 1.8; }
+.detail-page .ai-copyright-detail .aic-definition b { font-size: 13px; }
+.detail-page .ai-copyright-detail .aic-definition p { font-size: 13px; line-height: 1.75; }
+.detail-page .ai-copyright-detail .aic-hero-summary small { font-size: 12px; }
+.detail-page .ai-copyright-detail .aic-hero-summary h3 { font-size: 20px; }
+.detail-page .ai-copyright-detail .aic-summary-row span { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-summary-row strong { font-size: 13px; }
+.detail-page .ai-copyright-detail .aic-fact small { font-size: 12px; }
+.detail-page .ai-copyright-detail .aic-fact strong { font-size: 18px; }
+.detail-page .ai-copyright-detail .aic-fact p { font-size: 12px; line-height: 1.6; }
+.detail-page .ai-copyright-detail .aic-fact span { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-section-nav a { font-size: 12px; }
+.detail-page .ai-copyright-detail .aic-panel-title h2 { font-size: 18px; }
+.detail-page .ai-copyright-detail .aic-panel-title p { font-size: 11px; line-height: 1.6; }
+.detail-page .ai-copyright-detail .aic-panel-title > b { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-context-card h4 { font-size: 14px; }
+.detail-page .ai-copyright-detail .aic-context-card p { font-size: 12px; line-height: 1.65; }
+.detail-page .ai-copyright-detail .aic-paper-list b { font-size: 12px; }
+.detail-page .ai-copyright-detail .aic-paper-list small { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-paper-detail h3 { font-size: 17px; }
+.detail-page .ai-copyright-detail .aic-paper-detail > p,
+.detail-page .ai-copyright-detail .aic-findings,
+.detail-page .ai-copyright-detail .aic-quote-box p { font-size: 12px; line-height: 1.75; }
+.detail-page .ai-copyright-detail .aic-findings b,
+.detail-page .ai-copyright-detail .aic-quote-box b { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-source-btn { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-flow strong { font-size: 12px; }
+.detail-page .ai-copyright-detail .aic-flow span small { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-callout { font-size: 12px; line-height: 1.7; }
+.detail-page .ai-copyright-detail .aic-news-list b { font-size: 13px; }
+.detail-page .ai-copyright-detail .aic-news-list small,
+.detail-page .ai-copyright-detail .aic-news-list time { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-damage-row > strong { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-damage-row > p { font-size: 12px; line-height: 1.65; }
+.detail-page .ai-copyright-detail .aic-damage-row > span,
+.detail-page .ai-copyright-detail .aic-damage-row > span b { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-amount-note { font-size: 12px; line-height: 1.7; }
+.detail-page .ai-copyright-detail .aic-stakeholder-grid strong { font-size: 12px; }
+.detail-page .ai-copyright-detail .aic-stakeholder-grid p { font-size: 11px; line-height: 1.65; }
+.detail-page .ai-copyright-detail .aic-coverage-row > strong { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-coverage-row > p { font-size: 11px; line-height: 1.6; }
+.detail-page .ai-copyright-detail .aic-coverage-row > span { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-question-list p { font-size: 12px; line-height: 1.65; }
+.detail-page .ai-copyright-detail .aic-source-ledger > div { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-source-ledger > div > a { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-source-ledger > p { font-size: 10px; line-height: 1.7; }
+.detail-page .ai-copyright-detail .aic-aside-card h3 { font-size: 14px; }
+.detail-page .ai-copyright-detail .aic-aside-card header p { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-aside-item strong { font-size: 12px; }
+.detail-page .ai-copyright-detail .aic-aside-item p { font-size: 10px; line-height: 1.65; }
+.detail-page .ai-copyright-detail .aic-report-button { font-size: 15px; }
+.detail-page .ai-copyright-detail .aic-editorial-reason h3 { font-size: 15px; }
+.detail-page .ai-copyright-detail .aic-editorial-reason > p { font-size: 12px; line-height: 1.75; }
+.detail-page .ai-copyright-detail .aic-editorial-meaning-grid > div { font-size: 11px; line-height: 1.65; }
+.detail-page .ai-copyright-detail .aic-editorial-meaning-grid b { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-editorial-card h3 { font-size: 15px; }
+.detail-page .ai-copyright-detail .aic-editorial-card > p { font-size: 12px; line-height: 1.75; }
+.detail-page .ai-copyright-detail .aic-editorial-card > a { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-editorial-quote blockquote { font-size: 12px; line-height: 1.7; }
+.detail-page .ai-copyright-detail .aic-editorial-quote cite { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-editorial-split > div { font-size: 10px; line-height: 1.65; }
+.detail-page .ai-copyright-detail .aic-editorial-split b { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-editorial-hero h2 { font-size: 23px; }
+.detail-page .ai-copyright-detail .aic-editorial-hero p { font-size: 12px; line-height: 1.8; }
+.detail-page .ai-copyright-detail .aic-editorial-intro { font-size: 13px; line-height: 1.95; }
+.detail-page .ai-copyright-detail .aic-editorial-section > p { font-size: 12px; line-height: 1.9; }
+.detail-page .ai-copyright-detail .aic-editorial-meaning b { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-editorial-meaning p { font-size: 12px; line-height: 1.7; }
+.detail-page .ai-copyright-detail .aic-deep-analysis .aic-editorial-quote a { font-size: 11px; }
+.detail-page .ai-copyright-detail .aic-editorial-decision small { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-editorial-decision h3 { font-size: 19px; }
+.detail-page .ai-copyright-detail .aic-editorial-decision > p { font-size: 12px; line-height: 1.85; }
+.detail-page .ai-copyright-detail .aic-editorial-checks b { font-size: 10px; }
+.detail-page .ai-copyright-detail .aic-editorial-checks span { font-size: 10px; line-height: 1.65; }
+
+@media (max-width: 760px) {
+  .detail-page .ai-copyright-detail .aic-hero h1 { font-size: 28px; }
+  .detail-page .ai-copyright-detail .aic-hero-main > p { font-size: 13px; }
+  .detail-page .ai-copyright-detail .aic-panel-title h2 { font-size: 17px; }
+  .detail-page .ai-copyright-detail .aic-editorial-hero h2 { font-size: 21px; }
+  .detail-page .ai-copyright-detail .aic-editorial-intro { font-size: 12px; }
+  .detail-page .ai-copyright-detail .aic-editorial-section > p { font-size: 11px; }
+  .detail-page .ai-copyright-detail .aic-editorial-decision h3 { font-size: 17px; }
+}
+
+/* Improve contrast across the full risk-detail reading surface. */
+.detail-page .ai-copyright-detail { color: #1d3552; }
+.detail-page .ai-copyright-detail .aic-hero h1,
+.detail-page .ai-copyright-detail .aic-hero h2,
+.detail-page .ai-copyright-detail .aic-hero h3,
+.detail-page .ai-copyright-detail .aic-panel-title h2,
+.detail-page .ai-copyright-detail .aic-context-card h4,
+.detail-page .ai-copyright-detail .aic-editorial-card h3,
+.detail-page .ai-copyright-detail .aic-editorial-reason h3,
+.detail-page .ai-copyright-detail .aic-aside-card h3 { color: #122d4a; }
+.detail-page .ai-copyright-detail .aic-hero-main > p,
+.detail-page .ai-copyright-detail .aic-definition p,
+.detail-page .ai-copyright-detail .aic-fact p,
+.detail-page .ai-copyright-detail .aic-context-card p,
+.detail-page .ai-copyright-detail .aic-editorial-card > p,
+.detail-page .ai-copyright-detail .aic-editorial-reason > p,
+.detail-page .ai-copyright-detail .aic-stakeholder-grid p,
+.detail-page .ai-copyright-detail .aic-coverage-row > p,
+.detail-page .ai-copyright-detail .aic-question-list p,
+.detail-page .ai-copyright-detail .aic-aside-item p { color: #405a73; }
+.detail-page .ai-copyright-detail .aic-definition b,
+.detail-page .ai-copyright-detail .aic-fact small,
+.detail-page .ai-copyright-detail .aic-summary-row span,
+.detail-page .ai-copyright-detail .aic-panel-title p,
+.detail-page .ai-copyright-detail .aic-aside-card header p { color: #526b84; }
+.detail-page .ai-copyright-detail .aic-fact strong,
+.detail-page .ai-copyright-detail .aic-summary-row strong,
+.detail-page .ai-copyright-detail .aic-damage-row > strong,
+.detail-page .ai-copyright-detail .aic-coverage-row > strong,
+.detail-page .ai-copyright-detail .aic-stakeholder-grid strong,
+.detail-page .ai-copyright-detail .aic-aside-item strong { color: #1d3957; }
+.detail-page .ai-copyright-detail .aic-section-nav a { color: #405a73; }
+.detail-page .ai-copyright-detail .aic-section-nav a:hover,
+.detail-page .ai-copyright-detail .aic-section-nav a:focus-visible { color: #145dcc; }
+.detail-page .ai-copyright-detail .aic-news-list b { color: #1d3957; }
+.detail-page .ai-copyright-detail .aic-news-list small,
+.detail-page .ai-copyright-detail .aic-news-list time,
+.detail-page .ai-copyright-detail .aic-source-ledger > p { color: #5c7188; }
+.detail-page .ai-copyright-detail .aic-damage-row > p,
+.detail-page .ai-copyright-detail .aic-amount-note,
+.detail-page .ai-copyright-detail .aic-coverage-row > p { color: #405a73; }
+.detail-page .ai-copyright-detail .aic-editorial-hero p,
+.detail-page .ai-copyright-detail .aic-editorial-intro,
+.detail-page .ai-copyright-detail .aic-editorial-section > p,
+.detail-page .ai-copyright-detail .aic-editorial-meaning p { color: #2f506e; }
+.detail-page .ai-copyright-detail .aic-editorial-split .context,
+.detail-page .ai-copyright-detail .aic-editorial-split .insurance,
+.detail-page .ai-copyright-detail .aic-editorial-meaning-grid .insurance,
+.detail-page .ai-copyright-detail .aic-editorial-meaning-grid .ai { color: #405a73; }
+.detail-page .ai-copyright-detail .aic-editorial-quote cite { color: #6f604e; }
+.detail-page .ai-copyright-detail .aic-editorial-card > a,
+.detail-page .ai-copyright-detail .aic-source-ledger > div > a,
+.detail-page .ai-copyright-detail .aic-deep-analysis .aic-editorial-quote a,
+.detail-page .ai-copyright-detail .aic-aside-item > a { color: #145dcc; }
+.detail-page .ai-copyright-detail .aic-editorial-decision,
+.detail-page .ai-copyright-detail .aic-editorial-decision * { color: #fff !important; }

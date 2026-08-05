@@ -4,7 +4,6 @@ import { resolveSampleRiskId, sampleRiskCandidates, sampleRiskDetails } from '..
 import type { SampleRiskCandidate, SampleRiskDetail } from '../../domain/risk/sampleData'
 import { AppIcon } from '../../shared/components/AppIcon'
 import { PageHeader } from '../../shared/components/PageHeader'
-import { RiskContextFlow } from '../../features/risk-detail/RiskContextFlow'
 import { GenerativeAiCopyrightDetail } from '../../features/risk-detail/GenerativeAiCopyrightDetail'
 import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
 import { buildDeveloperRiskDetailData, type DeveloperRiskDetailData } from '../../features/risk-catalog/developerStep2Adapter'
@@ -48,7 +47,7 @@ export function RiskDetailPage({ data, developerMode = false }: RiskDetailPagePr
 
   return (
     <div className="page detail-page sh-visual">
-      {risk.id === 'generative-ai-copyright' ? <GenerativeAiCopyrightDetail /> : <RiskContextFlow catalogPath={catalogPath} risk={risk} detail={detail} />}
+      {risk.id === 'generative-ai-copyright' ? <GenerativeAiCopyrightDetail /> : <StandardRiskDetail risk={risk} detail={detail} />}
     </div>
   )
 }

@@ -3,6 +3,10 @@
 @media(max-width:820px){.rcf-hero{grid-template-columns:1fr}.rcf-journey-track{grid-template-columns:repeat(3,1fr)}.rcf-journey-step:after,.rcf-step:after{display:none}.rcf-flow{grid-template-columns:repeat(2,1fr)}.rcf-aside{grid-template-columns:repeat(2,1fr)}.rcf-metric-summary{grid-template-columns:1fr 90px}.metric-reason{grid-column:1/-1}.metric-toggle{grid-column:2;grid-row:1}}
 @media(max-width:600px){.risk-context-flow{padding:14px}.rcf-hero h1{font-size:25px}.rcf-hero-note,.rcf-summary-row{grid-template-columns:1fr}.rcf-journey-title{display:block}.rcf-journey-title span{display:block;margin-top:4px}.rcf-journey-track,.rcf-context-grid,.rcf-stake-grid,.rcf-reason-grid,.rcf-metric-detail-grid,.rcf-aside{grid-template-columns:1fr}.rcf-damage-row,.rcf-coverage-row{grid-template-columns:1fr;gap:5px}.rcf-damage-row span,.rcf-coverage-row span{justify-self:start}.rcf-flow,.rcf-evidence-row{grid-template-columns:1fr}.rcf-connector{transform:rotate(90deg);min-height:22px}.rcf-metric-summary{grid-template-columns:1fr}.metric-toggle{grid-column:auto;grid-row:auto;text-align:left}.rcf-section-nav{overflow:auto;flex-wrap:nowrap}.rcf-section-nav a{white-space:nowrap}}
 
+/* The context section uses a 2×2 grid for items 1–4 and a full-width row for item 5. */
+.rcf-context-grid .rcf-context-card:nth-child(-n+4){grid-column:auto}
+.rcf-context-grid .rcf-context-card:nth-child(5){grid-column:1/-1}
+
 /* The detail body follows the same page width and gutter as the surrounding screens. */
 .risk-context-flow{width:100%;max-width:none;margin:0;padding:0 0 72px}
 .risk-context-flow .rcf-journey{display:none}
