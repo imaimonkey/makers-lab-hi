@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { browserReportListPreferences, type ReportListPreferences } from '../../report/services/report-list-preferences'
+import { AppIcon } from '../../shared/components/AppIcon'
 import {
   riskRadarCandidates,
   riskRadarKpis,
@@ -15,7 +16,7 @@ import {
   riskRadarSourceShares,
   riskRadarTopPriority,
 } from '../../features/risk-dashboard/riskRadarContent'
-import type { ExclusiveRight, GlobalInsuranceInsight, MarketUpdate, RecentInsuranceProduct } from '../../features/risk-dashboard/riskRadarContent'
+import type { ExclusiveRight, GlobalInsuranceInsight, MarketUpdate, RecentInsuranceProduct, RiskRadarPriorityRisk } from '../../features/risk-dashboard/riskRadarContent'
 import './riskDashboardPage.css'
 
 function buildDeveloperPath(path: string, developerMode: boolean) {
@@ -63,12 +64,116 @@ function EvidenceButton({ sourceUrl }: { sourceUrl: string | null }) {
   const handleClick = () => {
     if (!sourceUrl) return
     window.open(sourceUrl, '_blank', 'noopener,noreferrer')
-  }
+    }
 
   return (
     <button className="evidence-link" type="button" onClick={handleClick}>
-      근거 보기 →
+      원문 보기 →
     </button>
+  )
+}
+
+function SourceLink({ sourceUrl, label, className = 'evidence-link' }: { sourceUrl: string | null; label: string; className?: string }) {
+  if (!sourceUrl) return null
+
+  return (
+    <a className={className} href={sourceUrl} target="_blank" rel="noopener noreferrer">
+      {label}
+    </a>
+  )
+}
+
+function RadarIcon() {
+  return (
+    <svg className="radar-evidence-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="radar-evidence-beam" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stopColor="#f4bb91" stopOpacity=".24" />
+          <stop offset="1" stopColor="#ea8a4c" stopOpacity=".78" />
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="32" r="29" fill="#fff" stroke="#dfe7f0" />
+      <circle cx="32" cy="32" r="20" fill="none" stroke="#dfe7f0" />
+      <circle cx="32" cy="32" r="11" fill="none" stroke="#dfe7f0" />
+      <path d="M32 32 L54 13 A29 29 0 0 1 59 32 Z" fill="url(#radar-evidence-beam)" />
+      <path d="M32 32 L54 13" stroke="#dc7b3e" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="32" cy="32" r="3" fill="#173b6d" />
+      <circle cx="44" cy="24" r="3.4" fill="#ea8a4c" />
+      <circle cx="22" cy="41" r="2.8" fill="#6e8bae" />
+    </svg>
+  )
+}
+
+function RadarDetectionEvidence({
+  candidates,
+  selectedIndex,
+  onSelect,
+  onPrevious,
+  onNext,
+}: {
+  candidates: RiskRadarPriorityRisk[]
+  selectedIndex: number
+  onSelect: (index: number) => void
+  onPrevious: () => void
+  onNext: () => void
+}) {
+  const candidate = candidates[selectedIndex]
+
+  return (
+    <div className="radar-evidence-wrap">
+      <section className="radar-evidence-panel" aria-label="레이더 포착 근거">
+        <div className="radar-evidence-head">
+          <div className="radar-evidence-heading">
+            <RadarIcon />
+            <div>
+              <h3 className="radar-evidence-title">레이더 포착 근거</h3>
+              <p className="radar-evidence-summary">{candidate.detectionSummary}</p>
+            </div>
+          </div>
+          <div className="radar-evidence-controls" aria-label="레이더 포착 근거 후보 이동">
+            <button className="radar-evidence-arrow" type="button" aria-label="이전 후보 근거" onClick={onPrevious}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7" /></svg>
+            </button>
+            <span className="radar-evidence-index">{selectedIndex + 1} / {candidates.length}</span>
+            <button className="radar-evidence-arrow" type="button" aria-label="다음 후보 근거" onClick={onNext}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 5 7 7-7 7" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <nav className="radar-candidate-tabs" aria-label="상품화 우선 검토 TOP 5 후보 선택">
+          {candidates.map((item, index) => (
+            <button
+              className={`radar-candidate-tab${index === selectedIndex ? ' active' : ''}`}
+              type="button"
+              aria-pressed={index === selectedIndex}
+              key={item.id}
+              onClick={() => onSelect(index)}
+            >
+              <span className="radar-tab-rank">{index + 1}위</span>
+              <span className="radar-tab-name">{item.title}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="radar-evidence-content">
+          <div className="radar-evidence-meta">
+            <span className="radar-evidence-count">확인된 주요 근거 {candidate.evidence.length}건</span>
+            <span className="radar-linked-risk">연결 위험 · {candidate.title}</span>
+          </div>
+          <div className="radar-evidence-grid">
+            {candidate.evidence.map((evidence, index) => (
+              <article className="radar-evidence-card" key={`${candidate.id}-${evidence.type}-${index}`}>
+                <div className="radar-evidence-type"><span className="radar-evidence-dot" aria-hidden="true" />{evidence.type}</div>
+                <div className="radar-evidence-card-title">{evidence.title}</div>
+                <div className="radar-evidence-source">{evidence.source} · {evidence.date}</div>
+                {evidence.sourceUrl ? <div className="radar-evidence-footer"><EvidenceButton sourceUrl={evidence.sourceUrl} /></div> : null}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
   )
 }
 
@@ -80,8 +185,11 @@ function ExclusiveRightCard({ item }: { item: ExclusiveRight }) {
       <div className="trend-title">{item.title}</div>
       <div className="trend-summary">{item.summary}</div>
       <div className="trend-meta">
-        <span>{item.sourceType} · {item.date}</span>
-        <EvidenceButton sourceUrl={item.sourceUrl} />
+        <div className="exclusive-right-meta-copy">
+          <span className="exclusive-right-status-detail">{item.statusDetail}</span>
+          <span>{item.sourceType} · {item.date}</span>
+        </div>
+        <SourceLink sourceUrl={item.sourceUrl} label="출처 보기 →" />
       </div>
     </article>
   )
@@ -95,37 +203,35 @@ function RecentProductListItem({ item }: { item: RecentInsuranceProduct }) {
         <div className="recent-product-summary"><span>{item.company}</span><span> · </span><span>{item.summary}</span></div>
         <div className="recent-product-source">{item.sourceType} · {item.date}</div>
       </div>
-      <EvidenceButton sourceUrl={item.sourceUrl} />
+      <SourceLink sourceUrl={item.sourceUrl} label="출처 보기 →" />
     </article>
   )
-}
-
-function handleSourceOpen(sourceUrl: string | null) {
-  if (!sourceUrl) return
-  window.open(sourceUrl, '_blank', 'noopener,noreferrer')
 }
 
 function MarketUpdateItem({ item }: { item: MarketUpdate }) {
   return (
     <article className="update-item domestic-update-item">
-      <div className="update-source"><span>{item.type} · {item.source}</span><time dateTime={`2026-${item.date.replace('.', '-')}`}>{item.date}</time></div>
+      <div className="update-source"><span>{item.type} · {item.source}</span><time dateTime={item.date}>{item.displayDate}</time></div>
       <div className="update-title">{item.title}</div>
       <div className="update-meaning"><b>검토 포인트</b> {item.insight}</div>
       <div className="update-related"><span>연결 주제</span> {item.relatedTopic}</div>
-      <button className="update-link" type="button" onClick={() => handleSourceOpen(item.sourceUrl)}>원문 보기 →</button>
+      <SourceLink sourceUrl={item.sourceUrl} label="출처 보기 →" className="update-link" />
     </article>
   )
 }
 
-function GlobalInsightItem({ item, developerMode }: { item: GlobalInsuranceInsight; developerMode: boolean }) {
+function GlobalInsightItem({ item }: { item: GlobalInsuranceInsight }) {
   return (
     <article className="global-insight-item">
-      <div className="global-insight-organization">{item.organization}</div>
+      <div className="global-insight-meta">
+        <span className="global-insight-organization">{item.organization}</span>
+        <time dateTime={item.date}>{item.displayDate}</time>
+      </div>
       <div className="global-insight-title">{item.title}</div>
       <div className="global-insight-summary">{item.summary}</div>
       <div className="global-insight-footer">
         <span><b>연결 위험</b> {item.relatedRisk}</span>
-        <Link className="update-link" to={buildCatalogFilterPath(item.keyword, developerMode)}>원문 보기 →</Link>
+        <SourceLink sourceUrl={item.sourceUrl} label="출처 보기 →" className="update-link" />
       </div>
     </article>
   )
@@ -136,6 +242,8 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
   const navigate = useNavigate()
   const [scrapPreferences, setScrapPreferences] = useState<ReportListPreferences>(() => browserReportListPreferences.load())
   const [priorityIndex, setPriorityIndex] = useState(0)
+  const handlePreviousPriority = () => setPriorityIndex((current) => (current - 1 + riskRadarPriorityRisks.length) % riskRadarPriorityRisks.length)
+  const handleNextPriority = () => setPriorityIndex((current) => (current + 1) % riskRadarPriorityRisks.length)
 
   const toggleScrap = (reportId: string) => {
     setScrapPreferences((current) => {
@@ -147,11 +255,10 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
 
   return (
     <div className="page riskRadarPage">
-      <header className="riskRadarIntro" aria-label="위험레이더 기준 정보">
+      <header className="riskRadarIntro" aria-label="오늘의 위험 신호와 분석 기준">
         <div>
-          <div className="eyebrow">최근 위험 신호</div>
-          <h1>위험레이더</h1>
-          <p className="subtitle">신규 위험 후보와 상품화 검토 인사이트를 한눈에 확인합니다.</p>
+          <h1>허웅님, 오늘도 반가워요</h1>
+          <p className="subtitle">오늘의 새로운 위험 신호와 주요 검토 후보를 한눈에 확인해 보세요.</p>
         </div>
         <div className="analysis-meta" aria-label="분석 기준 정보">
           <div className="meta-card">
@@ -193,14 +300,15 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
               <p className="chart-sub">상품화 검토 후보 8건 중 종합점수가 높은 순서입니다.</p>
               <div className="bar-list">
                 {riskRadarPriorityRisks.map((risk, index) => (
-                  <div className="bar-row" key={risk.id}>
+                  <button className={`bar-row${index === priorityIndex ? ' active' : ''}`} type="button" aria-pressed={index === priorityIndex} onClick={() => setPriorityIndex(index)} key={risk.id}>
+                    <span className="bar-rank">{index + 1}</span>
                     <div className="bar-name-wrap">
                       <div className="bar-name">{risk.title}</div>
                       <span className="grade">시장성 {risk.marketGrade}</span>
                     </div>
                     <div className="bar-track"><div className={`bar-fill${index === 0 ? ' is-top' : ''}`} style={{ width: `${(risk.score / 5) * 100}%` }} /></div>
                     <div className="bar-score">{risk.score.toFixed(1)}</div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -233,16 +341,23 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
                 </div>
               </div>
               <div className="top-risk-carousel-controls" aria-label="상품화 우선 검토 후보 이동">
-                <button className="top-risk-carousel-control" type="button" aria-label="이전 우선 검토 후보" onClick={() => setPriorityIndex((current) => (current - 1 + riskRadarPriorityRisks.length) % riskRadarPriorityRisks.length)}>
+                <button className="top-risk-carousel-control" type="button" aria-label="이전 우선 검토 후보" onClick={handlePreviousPriority}>
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7" /></svg>
                 </button>
-                <button className="top-risk-carousel-control" type="button" aria-label="다음 우선 검토 후보" onClick={() => setPriorityIndex((current) => (current + 1) % riskRadarPriorityRisks.length)}>
+                <button className="top-risk-carousel-control" type="button" aria-label="다음 우선 검토 후보" onClick={handleNextPriority}>
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 5 7 7-7 7" /></svg>
                 </button>
               </div>
               <div className="top-risk-carousel-note" aria-label="현재 우선 검토 순위">{priorityIndex + 1} / {riskRadarPriorityRisks.length}</div>
             </aside>
           </div>
+          <RadarDetectionEvidence
+            candidates={riskRadarPriorityRisks}
+            selectedIndex={priorityIndex}
+            onSelect={setPriorityIndex}
+            onPrevious={handlePreviousPriority}
+            onNext={handleNextPriority}
+          />
         </article>
       </section>
 
@@ -254,14 +369,19 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
 
           <div className="candidate-list">
             {riskRadarCandidates.slice(0, 3).map((candidate) => (
-              <div className="candidate" data-keywords={candidate.keywords.join(' ')} key={candidate.id}>
+              <Link
+                className="candidate"
+                data-keywords={candidate.keywords.join(' ')}
+                key={candidate.id}
+                to={buildRiskDetailPath(candidate.detailRiskId, developerMode)}
+                aria-label={`${candidate.title} 위험 상세 열기`}
+              >
                 <div>
                   <div className="candidate-name">{candidate.title}</div>
                   <div className="candidate-copy">{candidate.description}</div>
                   <div className="chips">{candidate.tags.map((tag, index) => <span className={`chip${index === 0 ? ' orange' : ''}`} key={tag}>{tag}</span>)}</div>
                 </div>
-                <Link className="candidate-link" to={buildRiskDetailPath(candidate.detailRiskId, developerMode)}>상세 보기 →</Link>
-              </div>
+              </Link>
             ))}
           </div>
         </article>
@@ -285,47 +405,56 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
       </section>
 
       <section className="panel market-panel">
-        <div className="panel-head">
-          <div><h2 className="panel-title">보험시장 상품개발 동향</h2><div className="panel-desc">업계의 최근 상품개발 사례와 관련 보험 이슈입니다.</div></div>
+        <div className="panel-head market-panel-head">
+          <div className="market-panel-title-wrap">
+            <span className="market-panel-icon"><AppIcon name="trend" size={22} /></span>
+            <div><h2 className="panel-title">보험시장 상품개발 동향</h2><div className="panel-desc">업계의 최근 상품개발 사례와 관련 보험 이슈입니다.</div></div>
+          </div>
         </div>
         <div className="market-grid">
-          <section className="market-box industry-market-box" aria-label="업계 상품개발 동향">
+          <section className="market-box market-card industry-market-box" aria-label="업계 상품개발 동향">
             <div className="market-box-head">
-              <div><h3 className="market-box-title">업계 상품개발 동향</h3><div className="market-box-desc">기업성·배상책임·기술위험 관련 상품개발 사례</div></div>
+              <div className="market-card-heading"><span className="market-card-icon"><AppIcon name="user" size={19} /></span><div><h3 className="market-box-title">업계 상품개발 동향</h3><div className="market-box-desc">기업성·배상책임·기술위험 관련 상품개발 사례</div></div></div>
             </div>
-            <div className="industry-market-content">
-              <section className="exclusive-section" aria-labelledby="exclusive-rights-title">
-                <h4 className="market-subtitle" id="exclusive-rights-title">배타적사용권</h4>
-                <div className="exclusive-rights-grid">
-                  {exclusiveRights.map((item) => <ExclusiveRightCard item={item} key={item.id} />)}
-                </div>
-              </section>
-              <section className="recent-products-section" aria-labelledby="recent-products-title">
-                <h4 className="market-subtitle" id="recent-products-title">최근 신상품</h4>
-                <div className="recent-products-list">
-                  {recentInsuranceProducts.map((item) => <RecentProductListItem item={item} key={item.id} />)}
-                </div>
-              </section>
+            <section className="exclusive-section" aria-labelledby="exclusive-rights-title">
+              <h4 className="market-subtitle" id="exclusive-rights-title">배타적사용권</h4>
+              <div className="exclusive-rights-grid">
+                {exclusiveRights.map((item) => <ExclusiveRightCard item={item} key={item.id} />)}
+              </div>
+            </section>
+          </section>
+
+          <section className="market-box market-card market-insights market-updates-card" aria-label="국내 보험 인사이트">
+            <div className="market-box-head">
+              <div className="market-card-heading"><span className="market-card-icon"><AppIcon name="report" size={19} /></span><div><h3 className="market-box-title">국내 보험 인사이트</h3><div className="market-box-desc">상품개발에 참고할 국내 정책과 해외 보험산업 자료</div></div></div>
+            </div>
+            <section className="market-insight-section market-updates-section" aria-labelledby="market-updates-title">
+              <h4 className="insight-subtitle" id="market-updates-title">최근 보험시장 업데이트</h4>
+              <div className="update-list">
+                {marketUpdates.map((item) => <MarketUpdateItem item={item} key={item.id} />)}
+              </div>
+            </section>
+          </section>
+
+          <section className="market-box market-card recent-products-card" aria-label="최근 신상품">
+            <div className="market-box-head">
+              <div className="market-card-heading"><span className="market-card-icon"><AppIcon name="spark" size={19} /></span><div><h3 className="market-box-title">최근 출시 상품</h3></div></div>
+            </div>
+            <div className="recent-products-section">
+              <div className="recent-products-list">
+                {recentInsuranceProducts.map((item) => <RecentProductListItem item={item} key={item.id} />)}
+              </div>
             </div>
           </section>
 
-          <section className="market-box market-insights" aria-label="시장 및 글로벌 인사이트">
+          <section className="market-box market-card global-insights-card" aria-label="글로벌 보험 인사이트">
             <div className="market-box-head">
-              <div><h3 className="market-box-title">시장·글로벌 인사이트</h3><div className="market-box-desc">상품개발에 참고할 국내 정책과 해외 보험산업 자료</div></div>
+              <div className="market-card-heading"><span className="market-card-icon"><AppIcon name="radar" size={19} /></span><div><h3 className="market-box-title">글로벌 보험 인사이트</h3></div></div>
             </div>
-            <div className="insight-content">
-              <section className="market-insight-section market-updates-section" aria-labelledby="market-updates-title">
-                <h4 className="insight-subtitle" id="market-updates-title">최근 보험시장 업데이트</h4>
-                <div className="update-list">
-                  {marketUpdates.map((item) => <MarketUpdateItem item={item} key={item.id} />)}
-                </div>
-              </section>
-              <section className="market-insight-section global-insights-section" aria-labelledby="global-insights-title">
-                <h4 className="insight-subtitle" id="global-insights-title">글로벌 보험 인사이트</h4>
-                <div className="global-insight-list">
-                  {globalInsuranceInsights.map((item) => <GlobalInsightItem item={item} developerMode={developerMode} key={item.id} />)}
-                </div>
-              </section>
+            <div className="global-insights-section">
+              <div className="global-insight-list">
+                {globalInsuranceInsights.map((item) => <GlobalInsightItem item={item} key={item.id} />)}
+              </div>
             </div>
           </section>
         </div>

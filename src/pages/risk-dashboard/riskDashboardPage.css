@@ -1327,10 +1327,22 @@
 }
 .riskRadarPage .riskRadarIntro {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
+}
+.riskRadarPage .riskRadarIntro h1 {
+  font-size: 29px;
+}
+.riskRadarPage .riskRadarIntro .subtitle {
+  margin-top: 6px;
+}
+@media (max-width: 760px) {
+  .riskRadarPage .riskRadarIntro {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 .riskRadarPage .row-grid.tertiary {
   grid-auto-rows: auto;
@@ -2230,6 +2242,18 @@
   font-size: 10.5px;
 }
 
+.riskRadarPage .exclusive-right-meta-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.riskRadarPage .exclusive-right-status-detail {
+  color: var(--navy-700);
+  font-weight: 800;
+}
+
 .riskRadarPage .recent-products-section {
   margin-top: 17px;
   border-top: 1px solid rgba(219, 227, 237, .78);
@@ -2545,4 +2569,684 @@
     grid-column: auto;
     grid-row: auto;
   }
+}
+
+/* 신규 위험 후보는 행 전체가 위험 상세로 이동하는 클릭 영역 */
+.riskRadarPage a.candidate {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  padding-right: 42px;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.riskRadarPage a.candidate::after {
+  content: '→';
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  color: var(--navy-700);
+  font-size: 17px;
+  font-weight: 800;
+  opacity: .72;
+  transform: translateY(-50%);
+  transition: color .15s ease, opacity .15s ease, transform .15s ease;
+}
+
+.riskRadarPage a.candidate:hover::after {
+  color: var(--orange-800);
+  opacity: 1;
+  transform: translate(3px, -50%);
+}
+
+.riskRadarPage a.candidate:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 3px;
+}
+
+/* 보험시장 상품개발 동향: 참고 시안처럼 상·하단 2행 카드로 정리 */
+.riskRadarPage .market-panel-head {
+  padding: 24px 26px 18px;
+}
+
+.riskRadarPage .market-panel-title-wrap,
+.riskRadarPage .market-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.riskRadarPage .market-panel-icon,
+.riskRadarPage .market-card-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy-700);
+  background: var(--navy-50);
+}
+
+.riskRadarPage .market-panel-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+.riskRadarPage .market-card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+
+.riskRadarPage .market-panel-head .panel-title {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.riskRadarPage .market-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(360px, .95fr);
+  grid-template-rows: auto auto;
+  gap: 18px 20px;
+  padding: 0 24px 24px;
+}
+
+.riskRadarPage .market-grid > .market-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-self: stretch;
+  overflow: hidden;
+  border: 1px solid rgba(219, 227, 237, .82);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(15, 45, 85, .055);
+}
+
+.riskRadarPage .industry-market-box {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.riskRadarPage .market-updates-card {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.riskRadarPage .recent-products-card {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.riskRadarPage .global-insights-card {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.riskRadarPage .market-card .market-box-head {
+  flex: 0 0 auto;
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.riskRadarPage .market-card .market-box-title {
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.riskRadarPage .market-card .market-box-desc {
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.riskRadarPage .market-card .exclusive-section {
+  flex: 1 1 auto;
+  padding: 0 22px 22px;
+  background: #fff;
+}
+
+.riskRadarPage .market-card .market-subtitle,
+.riskRadarPage .market-card .insight-subtitle {
+  padding: 18px 0 14px;
+  font-size: 15px;
+}
+
+.riskRadarPage .market-card .exclusive-rights-grid {
+  gap: 12px;
+}
+
+.riskRadarPage .market-card .exclusive-right-card {
+  min-height: 190px;
+  padding: 16px;
+  border: 1px solid rgba(219, 227, 237, .82);
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(15, 45, 85, .035);
+}
+
+.riskRadarPage .market-card .recent-products-section,
+.riskRadarPage .market-card .global-insights-section,
+.riskRadarPage .market-card .market-insight-section {
+  flex: 1 1 auto;
+  padding: 0 22px 22px;
+  border: 0;
+  background: #fff;
+}
+
+.riskRadarPage .market-card .recent-product-item {
+  padding: 16px 0;
+}
+
+.riskRadarPage .market-card .recent-product-item + .recent-product-item,
+.riskRadarPage .market-card .global-insight-item + .global-insight-item,
+.riskRadarPage .market-card .domestic-update-item + .domestic-update-item {
+  border-top-color: #e7ecf2;
+}
+
+.riskRadarPage .market-card .update-list,
+.riskRadarPage .market-card .global-insight-list {
+  padding: 0;
+}
+
+.riskRadarPage .market-card .domestic-update-item {
+  padding: 10px 0 16px 15px;
+}
+
+.riskRadarPage .market-card .domestic-update-item + .domestic-update-item {
+  padding-top: 16px;
+}
+
+.riskRadarPage .market-card .update-title,
+.riskRadarPage .market-card .global-insight-title {
+  font-size: 13.5px;
+}
+
+.riskRadarPage .market-card .update-meaning,
+.riskRadarPage .market-card .global-insight-summary {
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.riskRadarPage .market-card .global-insight-item {
+  padding: 16px 0;
+}
+
+.riskRadarPage .global-insight-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.riskRadarPage .global-insight-meta time {
+  flex: 0 0 auto;
+  color: var(--soft);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+@media (max-width: 1100px) {
+  .riskRadarPage .market-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    padding: 0 20px 20px;
+  }
+
+  .riskRadarPage .market-grid > .market-card {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .riskRadarPage .market-panel-head {
+    padding: 20px 18px 16px;
+  }
+
+  .riskRadarPage .market-panel-head .panel-title {
+    font-size: 21px;
+  }
+
+  .riskRadarPage .market-grid {
+    gap: 16px;
+    padding: 0 16px 16px;
+  }
+
+  .riskRadarPage .market-card .exclusive-rights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 상품화 우선 검토 TOP 5와 연동되는 레이더 포착 근거 */
+.riskRadarPage .bar-row {
+  display: grid;
+  grid-template-columns: 28px minmax(135px, 170px) minmax(0, 1fr) 35px;
+  width: 100%;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .16s ease, transform .16s ease;
+}
+
+.riskRadarPage .bar-row:hover {
+  background: #fff;
+  transform: translateX(2px);
+}
+
+.riskRadarPage .bar-row.active {
+  background: var(--orange-50);
+}
+
+.riskRadarPage .bar-rank {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--navy-100);
+  color: var(--navy-700);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.riskRadarPage .bar-row.active .bar-rank {
+  background: var(--orange-100);
+  color: var(--orange-700);
+}
+
+.riskRadarPage .bar-row:first-child .bar-fill {
+  background: linear-gradient(90deg, var(--navy-700), #93a7c1);
+}
+
+.riskRadarPage .bar-row.active .bar-fill {
+  background: linear-gradient(90deg, var(--orange-500), #f3b78c);
+}
+
+.riskRadarPage .bar-row:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 2px;
+}
+
+.riskRadarPage .radar-evidence-wrap {
+  padding: 0 18px 18px;
+}
+
+.riskRadarPage .radar-evidence-panel {
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 4% 6%, rgba(235, 139, 78, .1), transparent 14rem),
+    linear-gradient(110deg, #f8fafc, #fff);
+  box-shadow:
+    inset 0 0 0 1px #dfe7f0,
+    0 8px 20px rgba(26, 45, 75, .045);
+}
+
+.riskRadarPage .radar-evidence-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  padding: 17px 18px;
+  border-bottom: 1px solid #e5ebf2;
+}
+
+.riskRadarPage .radar-evidence-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.riskRadarPage .radar-evidence-icon {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 5px 11px rgba(26, 45, 75, .08));
+}
+
+.riskRadarPage .radar-evidence-title {
+  margin: 0;
+  color: var(--navy-950);
+  font-size: 17px;
+  font-weight: 950;
+  line-height: 1.3;
+}
+
+.riskRadarPage .radar-evidence-summary {
+  max-width: 620px;
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.riskRadarPage .radar-evidence-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.riskRadarPage .radar-evidence-arrow {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--navy-200);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--navy-800);
+}
+
+.riskRadarPage .radar-evidence-arrow:hover {
+  border-color: var(--orange-300);
+  color: var(--orange-700);
+}
+
+.riskRadarPage .radar-evidence-arrow:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 2px;
+}
+
+.riskRadarPage .radar-evidence-arrow svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.riskRadarPage .radar-evidence-index {
+  min-width: 48px;
+  color: var(--navy-700);
+  font-size: 10px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.riskRadarPage .radar-candidate-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 18px 0;
+}
+
+.riskRadarPage .radar-candidate-tab {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #e3e9f1;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .83);
+  color: var(--navy-700);
+  text-align: left;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.riskRadarPage .radar-candidate-tab:hover {
+  background: #fff;
+}
+
+.riskRadarPage .radar-candidate-tab.active {
+  border-color: #f1b987;
+  background: var(--orange-50);
+  color: var(--orange-700);
+  box-shadow: 0 5px 14px rgba(212, 111, 51, .07);
+}
+
+.riskRadarPage .radar-candidate-tab:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 2px;
+}
+
+.riskRadarPage .radar-tab-rank {
+  display: block;
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.riskRadarPage .radar-tab-name {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 10.5px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.riskRadarPage .radar-evidence-content {
+  padding: 14px 18px 18px;
+}
+
+.riskRadarPage .radar-evidence-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 11px;
+}
+
+.riskRadarPage .radar-evidence-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--navy-100);
+  color: var(--navy-700);
+  font-size: 9.5px;
+  font-weight: 900;
+}
+
+.riskRadarPage .radar-linked-risk {
+  color: var(--soft);
+  font-size: 9.5px;
+}
+
+.riskRadarPage .radar-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.riskRadarPage .radar-evidence-card {
+  display: flex;
+  min-width: 0;
+  min-height: 140px;
+  flex-direction: column;
+  padding: 13px 14px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 6px 16px rgba(28, 46, 75, .05);
+  animation: radarEvidenceFadeUp .22s ease both;
+}
+
+@keyframes radarEvidenceFadeUp {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.riskRadarPage .radar-evidence-type {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: var(--navy-900);
+  font-size: 10.5px;
+  font-weight: 950;
+}
+
+.riskRadarPage .radar-evidence-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--evidence-color, #e78c51);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--evidence-color, #e78c51) 15%, transparent);
+}
+
+.riskRadarPage .radar-evidence-card:nth-child(2) { --evidence-color: #7190b4; }
+.riskRadarPage .radar-evidence-card:nth-child(3) { --evidence-color: #91a6bf; }
+.riskRadarPage .radar-evidence-card:nth-child(4) { --evidence-color: #4f678d; }
+
+.riskRadarPage .radar-evidence-card-title {
+  color: var(--navy-950);
+  font-size: 11.5px;
+  font-weight: 900;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.riskRadarPage .radar-evidence-source {
+  margin-top: 7px;
+  color: var(--soft);
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.riskRadarPage .radar-evidence-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.riskRadarPage .radar-evidence-footer .evidence-link {
+  font-size: 9.8px;
+}
+
+@media (max-width: 1080px) {
+  .riskRadarPage .radar-evidence-head {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .riskRadarPage .radar-evidence-summary {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-left: 64px;
+  }
+
+  .riskRadarPage .radar-candidate-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .riskRadarPage .bar-row {
+    grid-template-columns: 25px minmax(125px, 155px) minmax(0, 1fr) 34px;
+    gap: 8px;
+  }
+
+  .riskRadarPage .radar-evidence-wrap {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .riskRadarPage .radar-evidence-head {
+    grid-template-columns: 1fr;
+  }
+
+  .riskRadarPage .radar-evidence-summary {
+    grid-column: auto;
+    grid-row: auto;
+    margin-left: 64px;
+  }
+
+  .riskRadarPage .radar-evidence-controls {
+    justify-content: flex-end;
+  }
+
+  .riskRadarPage .radar-candidate-tabs {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .riskRadarPage .radar-evidence-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .riskRadarPage .radar-evidence-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 레이더 포착 근거는 정보는 유지하고 세로 밀도만 낮춘다. */
+.riskRadarPage .radar-evidence-wrap {
+  padding-bottom: 12px;
+}
+
+.riskRadarPage .radar-evidence-head {
+  padding: 11px 16px;
+}
+
+.riskRadarPage .radar-evidence-icon {
+  width: 44px;
+  height: 44px;
+}
+
+.riskRadarPage .radar-evidence-title {
+  font-size: 15px;
+}
+
+.riskRadarPage .radar-evidence-summary {
+  margin-top: 3px;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.riskRadarPage .radar-evidence-arrow {
+  width: 30px;
+  height: 30px;
+}
+
+.riskRadarPage .radar-candidate-tabs {
+  gap: 7px;
+  padding: 9px 16px 0;
+}
+
+.riskRadarPage .radar-candidate-tab {
+  padding: 7px 9px;
+}
+
+.riskRadarPage .radar-evidence-content {
+  padding: 10px 16px 14px;
+}
+
+.riskRadarPage .radar-evidence-meta {
+  margin-bottom: 8px;
+}
+
+.riskRadarPage .radar-evidence-card {
+  min-height: 0;
+  padding: 9px 11px 8px;
+}
+
+.riskRadarPage .radar-evidence-type {
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+
+.riskRadarPage .radar-evidence-card-title {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.riskRadarPage .radar-evidence-source {
+  margin-top: 4px;
+  font-size: 9px;
+}
+
+.riskRadarPage .radar-evidence-grid {
+  gap: 8px;
 }

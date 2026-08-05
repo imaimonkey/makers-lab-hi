@@ -17,6 +17,16 @@ export type RiskRadarPriorityRisk = {
   marketGrade: 'S' | 'A'
   score: number
   summary: string
+  detectionSummary: string
+  evidence: RiskRadarEvidence[]
+}
+
+export type RiskRadarEvidence = {
+  type: string
+  title: string
+  source: string
+  date: string
+  sourceUrl: string | null
 }
 
 export type RiskRadarCandidate = {
@@ -60,6 +70,7 @@ export type RiskRadarMarketUpdate = {
 }
 
 export type ExclusiveRight = Pick<RiskRadarMarketTrend, 'id' | 'company' | 'title' | 'statusKey' | 'statusLabel' | 'summary' | 'date' | 'sourceType'> & {
+  statusDetail: string
   sourceUrl: string | null
 }
 
@@ -78,6 +89,7 @@ export type MarketUpdate = {
   type: string
   source: string
   date: string
+  displayDate: string
   title: string
   insight: string
   relatedTopic: string
@@ -87,10 +99,14 @@ export type MarketUpdate = {
 export type GlobalInsuranceInsight = {
   id: string
   organization: string
+  date: string
+  displayDate: string
   title: string
   summary: string
   relatedRisk: string
-  keyword: string
+  sourceType: string
+  sourceTitle: string
+  sourceUrl: string | null
 }
 
 export type RiskRadarScrap = {
@@ -128,6 +144,12 @@ export const riskRadarPriorityRisks: RiskRadarPriorityRisk[] = [
     marketGrade: 'A',
     score: 4.4,
     summary: '지하주차장 내 배터리 열폭주와 인접 차량·시설의 2차 피해 가능성을 함께 검토하는 위험입니다.',
+    detectionSummary: '사고 피해 확대와 충전시설 관리주체의 책임 변화가 여러 자료에서 함께 확인됐습니다.',
+    evidence: [
+      { type: '사고 사례', title: '지하주차장 화재로 인접 차량과 공동시설까지 피해가 확대된 사례', source: '소방·안전 공식자료', date: '2026.07', sourceUrl: null },
+      { type: '법·규제', title: '충전시설 점검과 관리주체의 안전관리 책임 강화', source: '시설안전 정책자료', date: '2026.06', sourceUrl: null },
+      { type: '보험 연구', title: '배터리 열폭주가 대형손실로 확대될 가능성 검토', source: '보험 전문연구', date: '2026.05', sourceUrl: null },
+    ],
   },
   {
     id: 'priority-medical-liability',
@@ -136,6 +158,13 @@ export const riskRadarPriorityRisks: RiskRadarPriorityRisk[] = [
     marketGrade: 'S',
     score: 4.0,
     summary: '의료기관의 책임보험 가입 의무 변화가 신규 보장 수요로 이어질 가능성을 살펴봅니다.',
+    detectionSummary: '의무가입 제도 변화와 의료분쟁 손해, 해외 의무보험 사례가 함께 연결됐습니다.',
+    evidence: [
+      { type: '법·규제', title: '의료기관 책임보험 가입 의무 도입과 보장 범위 논의', source: '국회·보건 정책자료', date: '2026.07', sourceUrl: null },
+      { type: '분쟁 사례', title: '의료사고 배상과 분쟁조정에서 반복적으로 확인되는 손해 유형', source: '분쟁조정 공식자료', date: '2026.06', sourceUrl: null },
+      { type: '보험 연구', title: '의료배상책임의 보험성 및 잠재 수요 검토', source: '보험 전문연구', date: '2026.05', sourceUrl: null },
+      { type: '해외 보험자료', title: '의료기관 의무보험의 가입 대상과 보장 구조 비교', source: '글로벌 보험 리포트', date: '2026.04', sourceUrl: null },
+    ],
   },
   {
     id: 'priority-ai-transparency',
@@ -144,6 +173,12 @@ export const riskRadarPriorityRisks: RiskRadarPriorityRisk[] = [
     marketGrade: 'A',
     score: 3.9,
     summary: 'AI 콘텐츠 표시·설명 의무 변화에 따라 기업의 관리·배상 책임이 확대될 수 있습니다.',
+    detectionSummary: 'AI 규제 변화와 오정보·저작권 분쟁, 기술 E&O 보장 사례가 함께 포착됐습니다.',
+    evidence: [
+      { type: '법·규제', title: 'AI 생성물 표시와 설명 의무 강화 움직임', source: '디지털 정책자료', date: '2026.07', sourceUrl: null },
+      { type: '분쟁 사례', title: '오정보·저작권·명예훼손과 관련한 기업 책임 가능성', source: '법률·분쟁 자료', date: '2026.06', sourceUrl: null },
+      { type: '해외 보험자료', title: 'AI 책임과 기술 E&O 관련 해외 보장 사례', source: '글로벌 보험 리포트', date: '2026.05', sourceUrl: null },
+    ],
   },
   {
     id: 'priority-mydata-transfer',
@@ -152,6 +187,11 @@ export const riskRadarPriorityRisks: RiskRadarPriorityRisk[] = [
     marketGrade: 'A',
     score: 3.9,
     summary: '개인정보 전송 오류와 오발송으로 인한 분쟁·배상책임 위험을 검토합니다.',
+    detectionSummary: '데이터 전송 확대와 개인정보 안전조치 의무, 실제 전송 오류 사례가 핵심 근거로 확인됐습니다.',
+    evidence: [
+      { type: '법·규제', title: '전송요구권 확대와 데이터 안전조치 의무 강화', source: '개인정보 정책자료', date: '2026.07', sourceUrl: null },
+      { type: '사고 사례', title: '오발송·전송 오류로 발생한 개인정보 유출과 대응비용', source: '공식 사고자료', date: '2026.06', sourceUrl: null },
+    ],
   },
   {
     id: 'priority-commercial-drone',
@@ -160,6 +200,12 @@ export const riskRadarPriorityRisks: RiskRadarPriorityRisk[] = [
     marketGrade: 'A',
     score: 3.7,
     summary: '드론 운항자·플랫폼·시설 사이 책임 분리와 제3자 손해를 확인하는 위험입니다.',
+    detectionSummary: '운항 확대와 제3자 피해 사례, 사업용 드론 보험 구조가 주요 근거로 연결됐습니다.',
+    evidence: [
+      { type: '사고 사례', title: '추락·충돌로 발생한 제3자 신체 및 재물 피해', source: '항공안전 공식자료', date: '2026.07', sourceUrl: null },
+      { type: '법·규제', title: '상업용 드론 운항과 안전관리 기준 변화', source: '항공 정책자료', date: '2026.06', sourceUrl: null },
+      { type: '해외 보험자료', title: '사업용 드론 전용 배상책임보험의 보장 구조 비교', source: '글로벌 보험 리포트', date: '2026.05', sourceUrl: null },
+    ],
   },
 ]
 
@@ -294,89 +340,117 @@ export const riskRadarMarketUpdates: RiskRadarMarketUpdate[] = [
 
 export const industryProductTrends: RiskRadarMarketTrend[] = riskRadarMarketTrends
 
-export const exclusiveRights: ExclusiveRight[] = riskRadarMarketTrends
-  .filter((item) => item.statusKey !== 'launched')
-  .map(({ id, company, title, statusKey, statusLabel, summary, date, sourceType }) => ({
-    id,
-    company,
-    title,
-    statusKey,
-    statusLabel,
-    summary,
-    date,
-    sourceType,
-    sourceUrl: null,
-  }))
-
-export const recentInsuranceProducts: RecentInsuranceProduct[] = [
+export const exclusiveRights: ExclusiveRight[] = [
   {
-    id: 'recent-product-ev-charging',
-    company: '다온손해보험',
-    title: '전기차 충전시설 종합안심보험',
-    summary: '충전시설 재물손해와 이용자 배상책임을 하나의 계약으로 구성했습니다.',
-    date: '2026.07.31',
-    sourceType: '보험사 자료',
-    sourceUrl: null,
+    id: 'hanwha-child-insurance-2026',
+    company: '한화손해보험',
+    title: '성조숙증 등 진단검사지원비 보장',
+    statusKey: 'granted',
+    statusLabel: '배타적사용권 부여',
+    summary: '성조숙증 등의 진단 과정에서 발생하는 검사비를 보장하는 어린이보험 신담보입니다.',
+    statusDetail: '6개월 부여',
+    date: '2026.07.28',
+    sourceType: '보험업계 기사',
+    sourceUrl: 'https://www.etoday.co.kr/news/view/2606253',
   },
   {
-    id: 'recent-product-cyber-recovery',
-    company: '미래손해보험',
-    title: '중소기업 사이버 복구비용 특약',
-    summary: '사이버 사고 이후 데이터 복구비와 영업중단 비용을 보장합니다.',
-    date: '2026.07.29',
-    sourceType: '보험사 자료',
-    sourceUrl: null,
-  },
-  {
-    id: 'recent-product-commercial-drone',
-    company: '새롬손해보험',
-    title: '상업용 드론 운항 배상책임보험',
-    summary: '상업용 드론 사고로 발생한 제3자 신체·재물 손해를 보장합니다.',
-    date: '2026.07.26',
-    sourceType: '보험사 자료',
-    sourceUrl: null,
+    id: 'hyundai-fetal-test-2026',
+    company: '현대해상',
+    title: '태아이상 진단 후 융모막·양수검사 비용 보장 특약',
+    statusKey: 'applied',
+    statusLabel: '배타적사용권 신청',
+    summary: '태아이상 진단 후 시행하는 융모막검사와 양수검사 비용을 보장하는 특약입니다.',
+    statusDetail: '손해보험협회 심사 대기',
+    date: '2026.07.28',
+    sourceType: '보험업계 기사',
+    sourceUrl: 'https://www.etoday.co.kr/news/view/2606253',
   },
 ]
 
-export const marketUpdates: MarketUpdate[] = [
+const parseProductDate = (value: string) => {
+  const [year, month, day] = value.split('.').map(Number)
+  return Date.UTC(year, month - 1, day)
+}
+
+export const recentInsuranceProducts: RecentInsuranceProduct[] = [
   {
-    id: 1,
-    type: '국내 정책',
-    source: '금융당국 정책자료',
-    date: '08.04',
-    title: '금융권 AI 활용 내부통제 기준 마련 추진',
-    insight: '기업의 AI 관리 책임과 전문인배상 보장 수요에 연결될 수 있습니다.',
-    relatedTopic: 'AI 전문인배상·관리책임',
-    sourceUrl: null,
+    id: 'lotte-water-play-2026',
+    company: '롯데손해보험',
+    title: 'CREW 물놀이 갈땐 보험',
+    summary: '물놀이 중 발생할 수 있는 골절·수술·후유장해와 국내여행 중 배상책임 등을 보장하는 생활밀착형 보험입니다.',
+    date: '2026.07.07',
+    sourceType: '롯데손해보험 공식 상품',
+    sourceUrl: 'https://alice.lotteins.co.kr/product/waterPlay/main',
   },
   {
-    id: 2,
-    type: '안전관리',
-    source: '시설안전 정책자료',
-    date: '08.03',
-    title: '지하주차장 전기차 충전시설 안전관리 기준 강화',
-    insight: '충전시설 관리주체의 점검·대응 책임과 화재 관련 보장 수요 검토에 참고할 수 있습니다.',
-    relatedTopic: '전기차 충전시설·시설관리자 책임',
-    sourceUrl: null,
+    id: 'kyobo-modu-jikim-2026',
+    company: '교보생명',
+    title: '교보모두지킴종신보험',
+    summary: '납입보험료 상당액을 생활·노후자금으로 활용한 이후에도 사망보장을 유지할 수 있도록 설계한 종신보험입니다.',
+    date: '2026.06.29',
+    sourceType: '교보생명 공식 뉴스룸',
+    sourceUrl: 'https://news.kyobo.com/%EB%B3%B4%ED%97%98%EB%A3%8C-%EB%8F%8C%EB%A0%A4%EB%B0%9B%EC%95%84%EB%8F%84-%EC%82%AC%EB%A7%9D%EB%B3%B4%EC%9E%A5-%EA%B7%B8%EB%8C%80%EB%A1%9C-%EA%B5%90%EB%B3%B4%EB%AA%A8%EB%91%90%EC%A7%80%ED%82%B4/',
+  },
+  {
+    id: 'kb-healthcare-plus-2026',
+    company: 'KB손해보험',
+    title: 'KB 헬스케어+ 건강보험',
+    summary: '건강관리 플랫폼과 보험 보장을 결합하고 암·뇌·심장질환 등 주요 질병 보장을 강화한 건강관리형 보험입니다.',
+    date: '2026.06.15',
+    sourceType: 'KB손해보험 공식 뉴스룸',
+    sourceUrl: 'https://insight.kbinsure.co.kr/260615-kbhealthcareplus-healthinsurance/',
+  },
+].sort((left, right) => parseProductDate(right.date) - parseProductDate(left.date))
+
+export const marketUpdates: MarketUpdate[] = [
+  {
+    id: 'insurance-commission-reform-2026',
+    type: '국내 정책',
+    source: '금융위원회 보험과',
+    date: '2026.06.30',
+    displayDate: '06.30',
+    title: '보험 판매수수료 제도개선 7월 시행',
+    insight: 'GA 1,200%룰 확대와 대형 GA의 판매수수료 비교·설명 의무 강화로 상품별 수수료와 판매채널 전략을 함께 검토할 필요가 있습니다.',
+    relatedTopic: '판매채널·상품 비교설명',
+    sourceUrl: 'https://www.fsc.go.kr/no010101/87217',
+  },
+  {
+    id: 'actuarial-kics-standards-2026',
+    type: '계리·건전성',
+    source: '금융위원회 보험과',
+    date: '2026.06.29',
+    displayDate: '06.29',
+    title: '신규담보 손해율 가정·K-ICS 기준 강화',
+    insight: '통계가 충분하지 않은 신규담보에 보수적 손해율 가정이 적용돼 신담보의 가격·수익성·출시 전략에 영향을 줄 수 있습니다.',
+    relatedTopic: '신규담보 손해율·상품가격',
+    sourceUrl: 'https://www.fsc.go.kr/po010106/87205',
   },
 ]
 
 export const globalInsuranceInsights: GlobalInsuranceInsight[] = [
   {
-    id: 'global-insight-ai-aggregation',
+    id: 'swiss-re-ai-infrastructure-2026',
     organization: 'SWISS RE',
-    title: 'AI 책임과 사이버 집적위험',
-    summary: 'AI 서비스 확산에 따른 제3자 책임과 다수 기업에 동시에 영향을 미치는 집적위험을 다룹니다.',
-    relatedRisk: '생성형 AI 배상책임',
-    keyword: '생성형 AI',
+    date: '2026.07.08',
+    displayDate: '07.08',
+    title: 'AI 인프라 투자와 복합 기업위험',
+    summary: 'AI 데이터센터와 에너지 인프라 확대에 따라 재물·기술·사이버·배상책임·영업중단 위험이 함께 커질 수 있습니다.',
+    relatedRisk: 'AI 데이터센터·공급망·기업휴지',
+    sourceType: 'Swiss Re Institute 공식자료',
+    sourceTitle: 'World insurance in 2026: Shock absorbers in a fragmenting world',
+    sourceUrl: 'https://www.swissre.com/press-release/USD-750-billion-AI-investment-boom-and-geopolitical-fragmentation-reshape-insurance-landscape-says-Swiss-Re-Institute/a615185d-97e1-4b52-a6df-a614257d8b2b',
   },
   {
-    id: 'global-insight-natural-catastrophe',
+    id: 'munich-re-personal-cyber-2026',
     organization: 'MUNICH RE',
-    title: '자연재해와 시설 운영중단 위험',
-    summary: '자연재해와 설비 손상이 기업의 생산중단 및 장기 복구비용으로 이어지는 위험을 다룹니다.',
-    relatedRisk: '기업휴지·설비 위험',
-    keyword: '기업휴지',
+    date: '2026.07.02',
+    displayDate: '07.02',
+    title: '개인 사이버보험의 보호 격차',
+    summary: '계정 해킹·신원도용·온라인 사기가 늘지만 위험 인식은 낮아 개인 사이버보험의 보장과 서비스 확대가 필요합니다.',
+    relatedRisk: '개인 사이버·디지털 사기',
+    sourceType: 'Munich Re 공식 인사이트',
+    sourceTitle: 'Global Cyber Risk and Insurance Survey 2026: Personal Lines',
+    sourceUrl: 'https://www.munichre.com/en/insights/cyber/global-cyber-risk-and-insurance-survey-2026-personal-lines.html',
   },
 ]
 
