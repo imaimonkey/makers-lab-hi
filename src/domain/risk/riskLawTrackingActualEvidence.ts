@@ -84,6 +84,50 @@ export const verifiedRiskLawTrackingOverrides: Record<string, Partial<RiskLawTra
     relatedLossCases: [medicalLossCase],
     checklist: ['법률 제·개정문과 2027. 5. 27. 시행일 확인', '2016다266606·2013다96165 판결의 과실·인과관계·손해액 판단을 별도 검토', '보험 가입 의무와 실제 보상범위·보험료는 하위법령과 약관 확인'],
     evidenceIds: ['LAW-MEDICAL-LIABILITY-20260526', 'SC-2016다266606', 'SC-2013다96165'],
+    insuranceClauseCandidates: [
+      {
+        title: '가입 대상·가입 형태',
+        status: '법령 연결',
+        detail: '보건의료기관개설자를 피보험자 범위로 두고 책임보험 또는 책임공제 중 어떤 방식으로 가입했는지 증빙하도록 구성합니다.',
+        sourceLabel: '국가법령정보센터 제47조 원문',
+        sourceUrl: 'https://www.law.go.kr/LSW/lsInfoP.do?ancNo=21694&ancYd=20260526&efYd=20270527&lsiSeq=286221',
+      },
+      {
+        title: '보상하는 손해·사고 정의',
+        status: '법령 연결',
+        detail: '의료사고로 발생한 생명·신체·재산 손해와 손해배상금의 범위를 연결하되, 의료행위·피해 결과·책임 인정의 판단 기준은 약관에서 구체화해야 합니다.',
+        sourceLabel: '국가법령정보센터 손해배상액 결정 기준',
+        sourceUrl: 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=286221&efYd=20270527',
+      },
+      {
+        title: '보험금 지급·대불 연계',
+        status: '하위법령 확인',
+        detail: '손해배상금 지급 절차와 대불 제도를 연결하고, 조정·중재비용과 소송비용은 대불 대상에서 제외되는지 별도 구분해 약관에 반영합니다.',
+        sourceLabel: '의료분쟁조정법 시행령 제25조 원문',
+        sourceUrl: 'https://www.law.go.kr/LSW/lsInfoP.do?ancYnChk=0&chrClsCd=010202&efYd=20260102&lsiSeq=281593&urlMode=lsInfoP',
+      },
+      {
+        title: '가입금액·보상한도',
+        status: '하위법령 확인',
+        detail: '연간 배상한도액과 기관별 가입금액은 법률 본문만으로 확정하지 않고 대통령령·하위 기준의 최신 원문을 확인한 뒤 정합니다.',
+        sourceLabel: '개정 법률·시행 준비 조문',
+        sourceUrl: 'https://law.go.kr/LSW/lsRvsDocListP.do?chrClsCd=010202&lsId=011585&lsRvsGubun=all',
+      },
+      {
+        title: '면책·고의·중대한 과실',
+        status: '약관 설계 검토',
+        detail: '고의 행위, 중대한 과실, 설명의무 위반, 기관 외부 의료인의 행위처럼 책임과 보상 범위가 갈리는 항목은 법령 확정값으로 단정하지 않고 약관·판례 검토 항목으로 둡니다.',
+        sourceLabel: '대법원 의료과실·인과관계 판례',
+        sourceUrl: 'https://portal.scourt.go.kr/pgp/main.on?c=900&jisCntntsSrno=3204272&w2xPath=PGP1011M04',
+      },
+      {
+        title: '사고 통지·자료 제출·분쟁 대응',
+        status: '약관 설계 검토',
+        detail: '사고 통지 시점, 진료기록·감정자료 제출, 조정·중재 절차 협조, 합의·소송 전 보험자 동의 여부를 실제 보험금 청구 흐름에 맞춰 정합니다.',
+        sourceLabel: '보건복지부 의료사고 안전망 정책 원문',
+        sourceUrl: 'https://www.mohw.go.kr/menu.es?mid=a10715020400',
+      },
+    ],
   },
   'law-disaster-mandatory-insurance-standard': {
     relatedCaseCount: 1,
@@ -92,6 +136,12 @@ export const verifiedRiskLawTrackingOverrides: Record<string, Partial<RiskLawTra
     relatedLossCases: [fireLossCase],
     checklist: ['재난안전법 제76조의2와 2026. 1. 27. 업무기준의 보상한도·가입자 관리 기준 확인', '2024가합22263 판결에서 인정된 발화·공작물 하자·피해자 과실 구조 확인', '재난안전의무보험별 실제 가입대상·보상한도·중복보상 여부 확인'],
     evidenceIds: ['LAW-DISASTER-MANDATORY-20260127', 'SC-2024가합22263'],
+    insuranceClauseCandidates: [
+      { title: '가입 대상·보험 종목', status: '법령 연결', detail: '재난안전의무보험은 개별 법률이 정한 가입자·시설·영업 유형을 기준으로 피보험자와 보험 종목을 확정해야 하며, 모든 재난 위험을 하나의 상품으로 묶지 않습니다.', sourceLabel: '행정안전부 의무보험 관리·운용 기준', sourceUrl: 'https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000273718' },
+      { title: '보상 범위·보상한도', status: '하위법령 확인', detail: '재난별 대인·대물·재산손해와 법정 보상한도, 자기부담금, 중복보상 조정 여부를 해당 의무보험 근거 법령과 별표에서 확인합니다.', sourceLabel: '행정안전부 의무보험 관리 원문', sourceUrl: 'https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000273718' },
+      { title: '가입 확인·미가입 조치', status: '법령 연결', detail: '가입증명서 제출·갱신·변경 신고와 미가입 시 과태료·영업정지·강제징수 등 제재의 근거와 적용 주체를 약관 운영 절차에 연결합니다.', sourceLabel: '행정안전부 의무보험 관리 원문', sourceUrl: 'https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000273718' },
+      { title: '사고 통지·손해사정', status: '약관 설계 검토', detail: '재난 발생 시 사고 통지, 피해 확인, 잔존물·복구비 증빙, 공적 재난지원금과 보험금의 조정 절차를 약관에 구체화합니다.', sourceLabel: '화재 손해배상 판결 원문', sourceUrl: 'https://www.scourt.go.kr/portal/dcboard/DcNewsViewAction.work?cbub_code=000213&gubun=44&scode_kname=&searchOption=&searchWord=&seqnum=27348' },
+    ],
   },
   'law-ev-fire': {
     sourceType: 'administrative',
@@ -126,6 +176,12 @@ export const verifiedRiskLawTrackingOverrides: Record<string, Partial<RiskLawTra
     relatedLossCases: [evLossCase],
     checklist: ['환경부 정책성 보험 지침의 가입대상·우선 적용 보험·보장범위 확인', '소방청 2020~2024 전기차 화재 223건 통계와 사고별 손해자료 분리', '국내 전기차 화재 판례가 확인되기 전까지 제조물 결함·충전사업자 책임을 단정하지 않음'],
     evidenceIds: ['ME-EV-FIRE-INSURANCE-20260312', 'MOLIT-EV-SAFETY-20260618', 'NFA-EV-FIRE-20250115'],
+    insuranceClauseCandidates: [
+      { title: '보장 대상·사고 장소', status: '법령 연결', detail: '주차·충전 중 전기차 화재로 발생한 제3자 대물손해와 시설·차량 손해를 사고 정의와 보장 대상별로 분리 검토합니다.', sourceLabel: '환경부 전기차 화재안심보험 정책 원문', sourceUrl: 'https://eng.me.go.kr/home/web/board/read.do?boardCategoryId=&boardId=1848920&boardMasterId=939&decorator=&maxIndexPages=10&maxPageItems=10&menuId=10598&orgCd=&pagerOffset=280&searchKey=&searchValue=' },
+      { title: '보상한도·책임 주체', status: '하위법령 확인', detail: '사고당 보장한도와 제조사·수입사·충전사업자·주차장 운영자의 책임 분담을 정책성 보험 지침과 개별 약관에서 확인합니다.', sourceLabel: '환경부 정책성 보험 원문', sourceUrl: 'https://eng.me.go.kr/home/web/board/read.do?boardCategoryId=&boardId=1848920&boardMasterId=939&decorator=&maxIndexPages=10&maxPageItems=10&menuId=10598&orgCd=&pagerOffset=280&searchKey=&searchValue=' },
+      { title: '배터리 이력·안전관리 조건', status: '약관 설계 검토', detail: '배터리 인증·이력관리·무상 안전점검 이행 여부를 가입 조건, 통지의무 또는 보험료 산정 요소로 반영할지 검토합니다.', sourceLabel: '국토교통부 전기차 안전관리 자료', sourceUrl: 'https://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?id=95091997&lcmspage=1' },
+      { title: '화재 원인·손해 증빙', status: '약관 설계 검토', detail: '열폭주 원인, 충전시설 결함, 관리상 과실, 연기·시설폐쇄·영업중단 손해를 손해사정 자료로 구분합니다.', sourceLabel: '소방청 전기차 화재 통계 원문', sourceUrl: 'https://www.nfa.go.kr/nfa/news/pressrelease/press/?cntId=2577&mode=view' },
+    ],
     candidateIds: ['ev-battery-fire'],
   },
   'law-ai-copyright': {
@@ -161,6 +217,21 @@ export const verifiedRiskLawTrackingOverrides: Record<string, Partial<RiskLawTra
     relatedLossCases: [aiLossCase],
     checklist: ['미국 판결·합의의 관할과 사실관계를 국내 저작권법과 분리', '학습데이터 출처·라이선스 로그와 생성 결과물의 재현 여부 확보', '저작권 손해·방어비용·영업손실의 실제 청구자료를 별도 검증'],
     evidenceIds: ['SC-IP-AI-20260227', 'US-NDCA-3-23-CV-03417-VC', 'US-NDCA-3-24-CV-05417-AMO'],
+    insuranceClauseCandidates: [
+      { title: '피보험자·책임 주체', status: '약관 설계 검토', detail: 'AI 개발사·서비스 제공자·도입기업·콘텐츠 제작자 중 누가 피보험자인지, 계약상 indemnity와 제3자 저작권 청구를 어떻게 구분할지 정합니다.', sourceLabel: '대한민국 법원 IP 연구센터 자료', sourceUrl: 'https://patent.scourt.go.kr/dcboard/new/DcNewsViewAction.work?gubun=565&seqnum=99' },
+      { title: '보상하는 청구·방어비용', status: '법령 연결', detail: '저작권 침해 주장에 대한 법률방어비용, 조정·합의 비용, 손해배상금과 결과물 재제작·서비스 중단 비용을 담보별로 분리 검토합니다.', sourceLabel: 'Kadrey v. Meta 판결 원문', sourceUrl: 'https://cand.uscourts.gov/cases-e-filing/cases/323-cv-03417-vc/kadrey-et-al-v-meta-platforms-inc' },
+      { title: '면책·고의 사용 기준', status: '약관 설계 검토', detail: '출처를 알면서 무단 사용한 경우, 라이선스 확인을 하지 않은 경우, 고의·중대한 과실이 있는 경우의 면책 기준과 입증 주체를 정합니다.', sourceLabel: 'AI 학습 저작권 판결 원문', sourceUrl: 'https://cand.uscourts.gov/cases-e-filing/cases/323-cv-03417-vc/kadrey-et-al-v-meta-platforms-inc' },
+      { title: '출처·로그·손해 증빙', status: '약관 설계 검토', detail: '학습데이터 라이선스, 프롬프트·생성 이력, 사람의 검수 기록, 침해 통지와 실제 손해자료를 사고 통지·손해사정 자료로 지정합니다.', sourceLabel: 'Anthropic 집단합의 법원 기록', sourceUrl: 'https://cand.uscourts.gov/cases-e-filing/cases/324-cv-05417-amo/bartz-et-al-v-anthropic-pbc' },
+    ],
     candidateIds: ['generative-ai-copyright'],
+  },
+  'law-virtual-asset-cyber-protection': {
+    insuranceClauseCandidates: [
+      { title: '가입 대상·사업자 범위', status: '법령 연결', detail: '가상자산사업자의 신고·영업 유형과 이용자 자산을 취급하는 범위를 기준으로 피보험자와 보장 대상 사업장을 확정합니다.', sourceLabel: '가상자산 이용자 보호법 제8조 원문', sourceUrl: 'https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1024558691' },
+      { title: '해킹·전산장애 사고 정의', status: '법령 연결', detail: '해킹, 전산장애, 지갑·키 관리 실패와 이용자 손실을 보험사고로 구분하고, 사업자 귀책 여부와 제3자 침입을 손해사정 기준으로 둡니다.', sourceLabel: '가상자산 이용자 보호법 제8조 원문', sourceUrl: 'https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1024558691' },
+      { title: '보험·공제·준비금 대체 기준', status: '하위법령 확인', detail: '보험 가입, 공제 가입, 준비금 적립 중 어떤 조치가 인정되는지와 사업자별 규모·최소 재원 기준을 최신 감독 기준에서 확인합니다.', sourceLabel: '가상자산 이용자 보호법 제8조 원문', sourceUrl: 'https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1024558691' },
+      { title: '보상한도·면책·재발 방지', status: '약관 설계 검토', detail: '이용자별 보상한도, 내부자 부정·관리자 키 분실·보안통제 미이행의 면책 여부와 사고 후 재발 방지 의무를 약관에 반영합니다.', sourceLabel: '가상자산 이용자 보호법 원문', sourceUrl: 'https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1024558691' },
+      { title: '사고 통지·증빙·지급 절차', status: '약관 설계 검토', detail: '침해 로그, 지갑 주소, 거래기록, 이용자별 손실액과 수사·감독기관 신고를 보험금 청구와 연결합니다.', sourceLabel: '가상자산 이용자 보호법 원문', sourceUrl: 'https://www.law.go.kr/LSW/lsLinkCommonInfo.do?lsJoLnkSeq=1024558691' },
+    ],
   },
 }

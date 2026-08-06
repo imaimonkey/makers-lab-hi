@@ -321,7 +321,7 @@ export function buildDeveloperRiskDetailData(article: ArticleSourceRecord, rows:
       confidence: score >= 80 ? '높음' as const : score >= 50 ? '보통' as const : '낮음' as const,
       note: reasons.join(' · ') || judgment,
       formula: key + ' = ' + scores[key].toFixed(1) + ' / 5',
-      inputs: '근거 ' + ([article.id + '-source', ...asTextList(metric.sources)].filter((value, position, values) => values.indexOf(value) === position).join(' · ') || '근거 ID 확인 필요') + ' · ' + asText(metrics.scoreBasis, '점수 산정 근거 확인 필요'),
+      inputs: '근거 ' + ([article.id + '-source', ...asTextList(metric.sources)].filter((value, position, values) => values.indexOf(value) === position).join(' · ') || '공식 원문 확인 필요') + ' · ' + asText(metrics.scoreBasis, '점수 산정 근거 확인 필요'),
       calculation: scores[key].toFixed(1) + ' × 20 = ' + score,
       interpretation: rationale + (asTextList(metric.uncertainty).length ? ' · ' + asTextList(metric.uncertainty).join(' · ') : ''),
       evidenceStatus: (verified ? 'verified' : 'pending') as 'verified' | 'pending',

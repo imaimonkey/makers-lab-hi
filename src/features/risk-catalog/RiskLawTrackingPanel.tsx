@@ -41,7 +41,7 @@ function buildLocalItems(laws: DeveloperLawQueueItem[]): RiskLawTrackingItem[] {
     changeBadge: '법령 원문·적용 기준 연결',
     relatedCases: [],
     relatedLossCases: [],
-    checklist: ['근거 ID: ' + law.id, '관련 위험 후보의 책임 주체·적용 범위와 조문 기준을 연결'],
+    checklist: ['법령 원문·적용 기준 확인', '관련 위험 후보의 책임 주체·적용 범위와 조문 기준을 연결'],
     evidenceIds: [law.id],
   }))
 }
@@ -54,11 +54,10 @@ function TrackingTimeline({ item }: { item: RiskLawTrackingItem }) {
   return <div className="risk-law-timeline" aria-label="법령 기준 흐름"><div className="risk-law-timeline-line" aria-hidden="true" />{item.timeline.map((step, index) => <div className={`risk-law-timeline-step ${step.stage}`} key={`${step.label}-${index}`}><span className="risk-law-timeline-marker">{step.stage === 'complete' ? '✓' : index + 1}</span><strong>{step.label}</strong><small>{step.date}</small></div>)}</div>
 }
 
-function ProductBridge({ item }: { item: RiskLawTrackingItem }) {
-  const scope = item.afterChanges.find((change) => /적용|대상/.test(change.label))?.value ?? '적용 대상과 책임 주체를 법령 원문 기준으로 확인합니다.'
-  const responsibility = item.afterChanges.find((change) => /보험|책임|보상/.test(change.label))?.value ?? '책임 주체와 보상 범위를 기존 상품·신규 담보 관점에서 분리 검토합니다.'
-  const evidence = item.checklist.slice(0, 2).join(' · ') || '시행령·고시·판례 등 추가 근거를 확인합니다.'
-  return <section className="risk-law-product-bridge" aria-labelledby="risk-law-product-bridge-title"><div className="risk-law-section-heading"><div><h4 id="risk-law-product-bridge-title">보험상품 설계 연결 포인트</h4><span>법령 신호를 보장·인수·손해사정 검토로 연결</span></div><em>검토용</em></div><div className="risk-law-product-bridge-grid"><article><strong>보장 대상</strong><p>{scope}</p><small>보장 대상·사고 정의</small></article><article><strong>책임·보상 구조</strong><p>{responsibility}</p><small>책임 주체·한도·면책</small></article><article><strong>추가 검증 자료</strong><p>{evidence}</p><small>원문·하위법령·판례</small></article></div></section>
+function InsuranceClauseCard({ item }: { item: RiskLawTrackingItem }) {
+  if (!item.insuranceClauseCandidates?.length) return null
+  const heading = item.insuranceMandate ? '가입 의무 보험 약관 검토 조항' : '관련 보험 약관 검토 조항'
+  return <section className="risk-law-insurance-clauses" aria-labelledby="risk-law-insurance-clauses-title"><div className="risk-law-section-heading"><div><h4 id="risk-law-insurance-clauses-title">{heading}</h4><span>법령에 확인되는 내용과 약관 설계가 필요한 항목을 구분해 제시합니다.</span></div><em>원문 연결</em></div><div className="risk-law-insurance-clause-list">{item.insuranceClauseCandidates.map((clause) => <article className="risk-law-insurance-clause" key={clause.title}><div><strong>{clause.title}</strong><em className={`is-${clause.status === '법령 연결' ? 'law' : clause.status === '하위법령 확인' ? 'decree' : 'design'}`}>{clause.status}</em></div><p>{clause.detail}</p><a href={clause.sourceUrl} target="_blank" rel="noreferrer">{clause.sourceLabel} 원문 →</a></article>)}</div></section>
 }
 
 export function RiskLawTrackingPanel({ category, localLaws = [] }: { category: ScreeningCategory; localLaws?: DeveloperLawQueueItem[] }) {
@@ -92,7 +91,7 @@ export function RiskLawTrackingPanel({ category, localLaws = [] }: { category: S
       <label className="risk-law-search"><span className="sr-only">법령 검색</span><input type="search" value={query} onChange={(event) => setQuery(event.currentTarget.value)} placeholder="법령명·소관부처·내용 검색" /></label>
       <div className="risk-law-filter-selects"><label><span className="sr-only">소관부처</span><select value={institution} onChange={(event) => setInstitution(event.currentTarget.value)}><option value="all">소관부처·기관 전체</option>{institutions.map((item) => <option key={item} value={item}>{item}</option>)}</select></label><label><span className="sr-only">위험 수준</span><select value={riskLevel} onChange={(event) => setRiskLevel(event.currentTarget.value as LawTrackingRiskLevel | 'all')}><option value="all">리스크 레벨·전체</option><option value="high">높음</option><option value="medium">중간</option><option value="low">낮음</option></select></label></div>
     </div>
-    <div className="risk-law-list" aria-label="법령 목록">{items.map((item) => <button type="button" className={`risk-law-list-item ${item.id === selected?.id ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}><div className="risk-law-list-meta"><b>{item.institution}</b><em className={`is-${item.riskLevel}`}>{item.changeBadge}</em></div><strong>{item.title}</strong><small>{item.summary}</small><span className="risk-law-list-priority">적용 기준일 {item.expectedEffectiveDate}</span></button>)}{!items.length ? <p className="risk-law-empty">조건에 맞는 법령 자료가 없습니다.</p> : null}</div>
+    <div className="risk-law-list" aria-label="법령 목록">{items.map((item) => <button type="button" className={`risk-law-list-item ${item.id === selected?.id ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}><div className="risk-law-list-meta"><b>{item.institution}</b><em className={`is-${item.riskLevel}`}>{item.changeBadge}</em></div><strong>{item.title}</strong><small>{item.summary}</small></button>)}{!items.length ? <p className="risk-law-empty">조건에 맞는 법령 자료가 없습니다.</p> : null}</div>
     </div>
       {selected ? <article className="risk-law-detail">
         <header className="risk-law-detail-heading"><div><h3>{selected.title}</h3><p>{selected.typeLabel} · {selected.status}</p></div>{selected.sourceUrl ? <a href={selected.sourceUrl} target="_blank" rel="noreferrer">원문 확인 ↗</a> : null}</header>
@@ -100,9 +99,7 @@ export function RiskLawTrackingPanel({ category, localLaws = [] }: { category: S
         <div className="risk-law-timeline-card"><div className="risk-law-card-heading"><h4>법령 기준 흐름</h4><span>문서 기준일 연결</span></div><TrackingTimeline item={selected} /></div>
         <div className="risk-law-change-grid"><ChangeCard title="문서 기준" changes={selected.beforeChanges} variant="before" /><ChangeCard title="상품화 연결" changes={selected.afterChanges} variant="after" /></div>
         <section className="risk-law-cases" aria-labelledby="risk-law-cases-title"><div className="risk-law-section-heading"><div><h4 id="risk-law-cases-title">⚖️ 연관 법원 판례 및 실제 손해 사례</h4><span>법령 기준과 연결된 보충 자료</span></div><div className="risk-law-case-tabs" role="tablist" aria-label="연관 사례 유형"><button type="button" role="tab" aria-selected={caseTab === 'precedent'} className={caseTab === 'precedent' ? 'active' : ''} onClick={() => setCaseTab('precedent')}>관련 판례 ({selected.relatedCases.length})</button><button type="button" role="tab" aria-selected={caseTab === 'loss'} className={caseTab === 'loss' ? 'active' : ''} onClick={() => setCaseTab('loss')}>사고·손해 사례 ({selected.relatedLossCases.length})</button></div></div>{(caseTab === 'precedent' ? selected.relatedCases : selected.relatedLossCases).length ? <div className="risk-law-case-list">{(caseTab === 'precedent' ? selected.relatedCases : selected.relatedLossCases).map((item) => <article className="risk-law-case-card" key={item.caseNumber}><div className="risk-law-case-meta"><span>{item.type}</span><b>{item.caseNumber}</b><em>{item.badge}</em></div><h5>{item.title}</h5><div className="risk-law-case-summary"><p><b>쟁점</b>{item.issue}</p><p><b>판단</b>{item.judgment}</p></div><div className="risk-law-case-footer"><span>확인 금액</span><strong>{item.award}</strong></div></article>)}</div> : <p className="risk-law-empty">현재 연결된 사례가 없으며, 법령 원문 기준을 상품화 후보의 보충 근거로 연결하고 있습니다.</p>}</section>
-        <ProductBridge item={selected} />
-        <section className="risk-law-checklist" aria-labelledby="risk-law-checklist-title"><h4 id="risk-law-checklist-title">보험상품 검토 체크리스트</h4><p>법령 기준과 판례를 실제 보장 구조로 연결하기 전에 확인할 항목입니다.</p><ul>{selected.checklist.map((item) => <li key={item}>{item}</li>)}</ul></section>
-        <div className="risk-law-detail-footer"><span>적용 기준일 <strong>{selected.expectedEffectiveDate}</strong></span><span>근거 ID <strong>{selected.evidenceIds[0]}</strong></span>{selected.sourceUrl ? <a href={selected.sourceUrl} target="_blank" rel="noreferrer">원문 확인 ↗</a> : null}</div>
+        <InsuranceClauseCard item={selected} />
       </article> : <div className="risk-law-detail risk-law-empty">법령 자료를 불러오는 중입니다.</div>}
   </section>
 }

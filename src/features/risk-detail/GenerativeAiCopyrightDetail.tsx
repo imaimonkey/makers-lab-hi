@@ -183,8 +183,7 @@ export function GenerativeAiCopyrightDetail() {
         </div>
 
         <aside className="aic-aside">
-          <AsideCard title="이 위험을 읽는 순서" description="원문을 보면서 아래 흐름으로 이해합니다."><AsideItem number="01" title="어디서 권리 문제가 발생하는가" body="학습 데이터·프롬프트·산출물 활용 단계 구분" /><AsideItem number="02" title="어떤 손해로 확산되는가" body="법률비용·배상·재제작·서비스 중단" /><AsideItem number="03" title="누가 책임질 수 있는가" body="개발사·도입기업·사용자·외주사·권리자" /><AsideItem number="04" title="기존 보험은 어디까지 가능한가" body="미디어·전문직·사이버·법률비용 담보의 경계" /></AsideCard>
-          <AsideCard title="연결된 공식 출처" description="현재 화면에서 확인 가능한 자료입니다."><AsideItem label="KCC" title="한국저작권위원회" body="저작권 안내서·분쟁 예방·등록·공정이용 자료" /><AsideItem label="USCO" title="미국 저작권청" body="AI 산출물의 저작권성과 학습 관련 정책 보고서" /><AsideItem label="WIPO" title="세계지식재산기구" body="생성형 AI와 지식재산권의 국제적 쟁점" /></AsideCard>
+          <AsideCard title="이 위험을 읽는 순서" description="원문을 보면서 아래 흐름으로 이해합니다."><AsideItem number="01" title="어디서 권리 문제가 발생하는가" body="학습 데이터·프롬프트·산출물 활용 단계 구분" /><AsideItem number="02" title="어떤 손해로 확산되는가" body="법률비용·배상·재제작·서비스 중단" /><AsideItem number="03" title="누가 책임질 수 있는가" body="개발사·도입기업·사용자·외주사·권리자" /><AsideItem number="04" title="기존 보험은 어디까지 가능한가" body="미디어·전문직·사이버·법률비용 담보의 경계" /><AsideItem number="05" title="무엇을 더 확인해야 하는가" body="국내 판례·청구자료·약관 공백·기업별 통제 수준" /></AsideCard>
           <Link className="aic-report-button" to="/reports">종합리포트 &gt;</Link>
         </aside>
       </div>

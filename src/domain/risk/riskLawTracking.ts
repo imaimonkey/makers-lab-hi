@@ -29,6 +29,14 @@ export type LawTrackingCase = {
   sourceUrl?: string
 }
 
+export type LawInsuranceClauseCandidate = {
+  title: string
+  status: '법령 연결' | '하위법령 확인' | '약관 설계 검토'
+  detail: string
+  sourceLabel: string
+  sourceUrl: string
+}
+
 export type RiskLawTrackingItem = {
   id: string
   sourceType: LawTrackingSourceType
@@ -60,6 +68,8 @@ export type RiskLawTrackingItem = {
   sanctionSeverity?: number
   /** 법률 신호가 우선순위에 영향을 주는 후보 ID */
   candidateIds?: string[]
+  /** 가입 의무 보험에 연결해 검토할 약관 조항과 공식 원문 */
+  insuranceClauseCandidates?: LawInsuranceClauseCandidate[]
 }
 
 export function lawProductizationPriority(item: RiskLawTrackingItem) {
