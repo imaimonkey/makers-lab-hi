@@ -476,6 +476,11 @@ export interface WordingFeasibility extends JsonObject {
 
 export interface WordingPolicyEditor extends JsonObject {
   articleDrafts: JsonObject;
+  addedArticles?: Array<{
+    number: number;
+    title: string;
+    text: string;
+  }>;
   updatedAt?: string | null;
 }
 

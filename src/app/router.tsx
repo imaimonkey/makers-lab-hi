@@ -12,8 +12,14 @@ import { RiskDashboardPage } from '../pages/risk-dashboard/RiskDashboardPage'
 import { RiskDetailPage } from '../pages/risk-detail/RiskDetailPage'
 import { RiskContextPage } from '../pages/risk-context/RiskContextPage'
 import { SalesIntakePage } from '../pages/sales-intake/SalesIntakePage'
+import { PolicyAiEditorPage } from '../report/components/PolicyAiEditorPage'
 
 export const router = createBrowserRouter([
+  {
+    path: '/reports/policy-editor',
+    element: <PolicyAiEditorPage />,
+    errorElement: <NotFoundPage />,
+  },
   {
     path: '/',
     element: <RootLayout />,

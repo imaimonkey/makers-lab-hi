@@ -13,8 +13,8 @@ import type { ReportProxy } from '../api/report-proxy'
 import { cloneReport, parseStoredReportContent } from '../services/report-content'
 import { ensureCommercializationAssessment, COMMERCIALIZATION_GATE_GROUPS, validateCommercializationAssessment } from '../services/commercialization-assessment'
 import { ReportModal } from './ReportModal'
-import { PolicyDraftModal } from './ReportAssistPanels'
 import { WordingPolicyAssistant } from './WordingPolicyAssistant'
+import { PolicyAiEditorPage } from './PolicyAiEditorPage'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { AppIcon, type IconName } from '../../shared/components/AppIcon'
 import { createPortal } from 'react-dom'
@@ -58,7 +58,7 @@ type EvidenceItem = {
 
 const isExcludedEvidenceItem = (item: Pick<EvidenceItem, 'title'>): boolean => /상품요약서/.test(item.title)
 
-type ReportView = {
+export type ReportView = {
   meta: {
     reportId?: string
     sourceRiskId: string
@@ -293,7 +293,7 @@ type ModalState =
   | { type: 'evidence'; evidence: EvidenceItem }
   | null
 
-function asReportView(report: ReportResult): ReportView {
+export function asReportView(report: ReportResult): ReportView {
   return report as unknown as ReportView
 }
 
@@ -2587,7 +2587,7 @@ function wordingPolicyTermItems(article: PolicyArticle | undefined): Array<{ ter
   return (article?.items ?? []).filter((item): item is { term: string; definition: string } => typeof item !== 'string')
 }
 
-function createArticlePolicyDraft(report: ReportView): FullPolicyDraft {
+export function createArticlePolicyDraft(report: ReportView): FullPolicyDraft {
   if (isReferenceBenchmarkReport(report)) return aiFullPolicyDraftMock
   const data = report.wordingFeasibility
   const title = report.meta.riskTitle ?? report.meta.title
@@ -2792,11 +2792,13 @@ function createArticlePolicyDraft(report: ReportView): FullPolicyDraft {
 function applyPolicyEditorOverrides(
   policyDraft: FullPolicyDraft,
   articleDrafts?: JsonObject,
+  addedArticles?: WordingPolicyEditor['addedArticles'],
 ): FullPolicyDraft {
-  if (!articleDrafts) return policyDraft
+  const normalizedAddedArticles = (addedArticles ?? []).filter((article) => article.title !== '비밀유지 및 손해배상')
+  if (!articleDrafts && !normalizedAddedArticles.length) return policyDraft
 
   const applyArticle = (article: PolicyArticle, key: string): PolicyArticle => {
-    const override = articleDrafts[key]
+    const override = articleDrafts?.[key]
     if (typeof override !== 'string' || !override.trim()) return article
     return {
       number: article.number,
@@ -2814,9 +2816,26 @@ function applyPolicyEditorOverrides(
         articles: section.articles.map((article) => applyArticle(article, `common-${section.id}-${article.number}`)),
       })),
     },
-    specialClauses: policyDraft.specialClauses.map((clause) => ({
+    specialClauses: [
+      ...policyDraft.specialClauses.map((clause) => ({
       ...clause,
       articles: clause.articles.map((article) => applyArticle(article, `special-${clause.id}-${article.number}`)),
+      })),
+      ...(normalizedAddedArticles.length && policyDraft.specialClauses[0] ? [{
+        ...policyDraft.specialClauses[0],
+        id: 'ai-added' as const,
+        title: 'AI 추가 조항',
+        shortTitle: 'AI 추가 조항',
+        summary: '현재 리포트의 약관 편집 화면에서 저장한 추가 조항입니다.',
+        proposalReason: '리포트별 보장 대상·사건·손해 범위를 반영한 검토용 조항입니다.',
+        recommendedCoverageCopy: '최종 약관 반영 전 상품·법무·보상 담당자의 확인이 필요합니다.',
+        articles: normalizedAddedArticles.map((article) => ({ number: article.number, title: article.title, paragraphs: [article.text] })),
+      }] : []),
+    ],
+    addedArticles: normalizedAddedArticles.map((article) => ({
+      number: article.number,
+      title: article.title,
+      paragraphs: [article.text],
     })),
   }
 }
@@ -2894,6 +2913,7 @@ function WordingPolicyPrintLayout({
           {policyDraft.commonPolicy.sections.map((section) => <section className="report-page__wording-policy-print-section" key={section.id}><h3>{section.title}</h3>{section.articles.map((article) => policyArticle(article, `common-${section.id}-${article.number}`))}</section>)}
         </section>
         {policyDraft.specialClauses.map((clause) => <section className="report-page__wording-policy-print-group" key={clause.id} aria-labelledby={`wording-print-${clause.id}-heading`}><h2 id={`wording-print-${clause.id}-heading`}>{clause.title}</h2><p className="report-page__wording-policy-print-recommended"><strong>추천 보장 문구</strong> · {clause.recommendedCoverageCopy}</p>{clause.articles.map((article) => policyArticle(article, `special-${clause.id}-${article.number}`))}</section>)}
+        {policyDraft.addedArticles?.length ? <section className="report-page__wording-policy-print-group report-page__wording-policy-print-added" aria-labelledby="wording-print-added-heading"><h2 id="wording-print-added-heading">AI 추가 조항</h2>{policyDraft.addedArticles.map((article) => policyArticle(article, `added-${article.number}-${article.title}`))}</section> : null}
         <section className="report-page__wording-policy-print-group" aria-labelledby="wording-print-attachments-heading"><h2 id="wording-print-attachments-heading">부속 명세</h2><ul className="report-page__wording-print-attachments">{policyDraft.attachments.map((item, index) => <li key={item.title}><strong>{index + 1}. {item.title}</strong><span>{item.description}</span></li>)}</ul></section>
       </main>
       <footer className="report-page__wording-print-footer">AI 전체 약관 초안 · {policyDraft.draftVersion} · 작성 기준일 {displayDate(reportDate)}</footer>
@@ -2922,7 +2942,7 @@ function FullWordingSection({
   printMode?: boolean
 }) {
   const data = report.wordingFeasibility
-  const policyDraft = applyPolicyEditorOverrides(createArticlePolicyDraft(report), data.policyEditor?.articleDrafts)
+  const policyDraft = applyPolicyEditorOverrides(createArticlePolicyDraft(report), data.policyEditor?.articleDrafts, data.policyEditor?.addedArticles)
   const benchmarkReport = isReferenceBenchmarkReport(report)
   const wordingRiskTitle = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.title : (report.meta.riskTitle ?? report.meta.title)
   const wordingRiskDescription = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.description : (data.coverageDraft ?? report.riskGapSummary.definition ?? report.meta.title)
@@ -3162,7 +3182,7 @@ function FullWordingSection({
         <section ref={fullDraftRef} className="report-page__wording-main-zone report-page__wording-full-policy" aria-labelledby="wording-full-policy-title">
           <div className="report-page__wording-zone-heading">
             <div><h3 id="wording-full-policy-title">AI 전체 약관 초안</h3><p>{benchmarkReport ? '보통약관, 세 가지 특별약관과 부속 명세를 한 문서 흐름으로 검토합니다.' : '공통 약관 구조, 위험별 보장안과 부속 확인자료를 한 문서 흐름으로 검토합니다.'}</p></div>
-            <div className="report-page__wording-draft-actions report-page__no-print"><button className="report-page__button report-page__wording-print-action" type="button" onClick={printWordingDocument}><AppIcon name="report" size={15} />약관 검토 PDF 출력</button><button className="report-page__button" type="button" onClick={copyFullPolicy}>전체 약관 복사</button></div>
+            <div className="report-page__wording-draft-actions report-page__no-print"><button className="report-page__button report-page__wording-print-action" type="button" onClick={printWordingDocument}><AppIcon name="report" size={15} />약관 검토 PDF 출력</button><button className="report-page__button" type="button" onClick={copyFullPolicy}>전체 약관 복사</button><button className="report-page__button report-page__button--primary" type="button" onClick={onOpenPolicyDraft}>AI Chat</button></div>
           </div>
           <div className="report-page__wording-policy-layout">
             <nav className="report-page__wording-policy-toc report-page__no-print" aria-label="전체 약관 목차">
@@ -3196,6 +3216,13 @@ function FullWordingSection({
           {copyMessage ? <p className="report-page__copy-message report-page__no-print" role="status">{copyMessage}</p> : null}
         </section>
         )}
+
+        {data.policyEditor?.addedArticles?.length ? (
+          <section className="report-page__wording-main-zone report-page__wording-added-clause" aria-labelledby="wording-added-clause-title">
+            <div className="report-page__wording-zone-heading"><div><p className="report-page__eyebrow">AI POLICY UPDATE</p><h3 id="wording-added-clause-title">저장된 추가 조항</h3><p>이 리포트의 약관 편집 화면에서 저장한 문구입니다. 상품·법무·보상 담당자의 최종 검토가 필요합니다.</p></div><span className="report-page__wording-added-clause-badge">저장됨</span></div>
+            {data.policyEditor.addedArticles.map((article) => <article className="report-page__wording-added-clause-card" key={`${article.number}-${article.title}`}><div><span>제{article.number}조</span><h4>{article.title}</h4></div><p>{article.text}</p><small>근거 리포트 · {report.meta.riskTitle ?? report.meta.title} · 저장 시각 {data.policyEditor?.updatedAt ?? '확인 필요'}</small></article>)}
+          </section>
+        ) : null}
 
         <section className="report-page__wording-main-zone report-page__wording-grounds" aria-labelledby="wording-grounds-title">
           <div className="report-page__wording-zone-heading"><div><h3 id="wording-grounds-title">약관 작성 근거와 핵심 용어</h3><p>전체 약관 초안에 반영한 작성 근거와 선택 보장 항목의 핵심 정의를 확인합니다.</p></div></div>
@@ -4586,14 +4613,7 @@ export function ReportSections({
 
       <ReportPdfDocument report={asReportView(savedReport)} request={pdfRequest} />
 
-      {policyDraftOpen ? (
-        <PolicyDraftModal
-          report={sourceReport}
-          riskData={riskData}
-          reportProxy={reportProxy}
-          onClose={() => setPolicyDraftOpen(false)}
-        />
-      ) : null}
+      {policyDraftOpen ? <div className="report-page__policy-ai-overlay"><PolicyAiEditorPage report={savedReport} riskData={riskData} reportProxy={reportProxy} onClose={() => setPolicyDraftOpen(false)} /></div> : null}
 
       {pdfSelectionOpen ? (
         <PdfSelectionModal

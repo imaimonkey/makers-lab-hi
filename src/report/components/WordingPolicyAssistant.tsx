@@ -216,7 +216,7 @@ export function WordingPolicyAssistant({
           <form className="report-page__wording-policy-chat-form" onSubmit={(event) => { event.preventDefault(); void ask() }}>
             <label htmlFor="wording-assistant-question">실무자 질문 또는 편집 요청</label>
             <div>
-              <textarea id="wording-assistant-question" rows={3} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="예: 제8조의 지급요건을 더 명확한 문장으로 다시 써줘" disabled={loading} />
+              <textarea id="wording-assistant-question" rows={3} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="예: 현재 선택한 조항의 지급요건을 더 명확한 문장으로 다시 써줘" disabled={loading} />
               <button className="report-page__button report-page__button--primary" type="submit" disabled={loading || !question.trim()}>질문 보내기</button>
             </div>
           </form>

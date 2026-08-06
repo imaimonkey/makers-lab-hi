@@ -6,9 +6,9 @@ export type PolicyArticle = { number: number; title: string; paragraphs: string[
 export type PolicySection = { id: string; title: string; articles: PolicyArticle[] }
 export type PrototypeAssumptions = { perAccidentLimit: string; aggregateLimit: string; deductible: string; confidence: string; displayLabel: string }
 export type PolicyDecisionItem = { id: string; question: string; recommendation: string; rationale: string; assumptions: string[]; basis: string; confidence: string }
-export type SpecialClause = { id: 'adjacent-vehicle' | 'facility-damage' | 'emergency-expense'; title: string; shortTitle: string; summary: string; proposalReason: string; keyTerms: string[]; recommendedCoverageCopy: string; prototypeAssumptions: PrototypeAssumptions; decisionItems: PolicyDecisionItem[]; articles: PolicyArticle[] }
+export type SpecialClause = { id: 'adjacent-vehicle' | 'facility-damage' | 'emergency-expense' | 'ai-added'; title: string; shortTitle: string; summary: string; proposalReason: string; keyTerms: string[]; recommendedCoverageCopy: string; prototypeAssumptions: PrototypeAssumptions; decisionItems: PolicyDecisionItem[]; articles: PolicyArticle[] }
 export type PolicyAttachment = { title: string; description: string }
-export type FullPolicyDraft = { productName: string; documentTitle: string; draftVersion: string; policyForm: string; commonPolicy: { id: string; title: string; sections: PolicySection[] }; specialClauses: SpecialClause[]; attachments: PolicyAttachment[] }
+export type FullPolicyDraft = { productName: string; documentTitle: string; draftVersion: string; policyForm: string; commonPolicy: { id: string; title: string; sections: PolicySection[] }; specialClauses: SpecialClause[]; addedArticles?: PolicyArticle[]; attachments: PolicyAttachment[] }
 
 export const aiFullPolicyDraftMock: FullPolicyDraft = {
   "productName": "전기차 화재 제3자 재산손해 보완보험",
