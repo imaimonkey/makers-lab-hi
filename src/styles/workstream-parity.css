@@ -1995,6 +1995,28 @@
   padding: 21px 22px;
 }
 
+.workspace-seoyeon .catalog-page .risk-law-list {
+  max-height: 1120px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #b8c9df transparent;
+}
+
+.workspace-seoyeon .catalog-page .risk-law-list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.workspace-seoyeon .catalog-page .risk-law-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #b8c9df;
+}
+
+.workspace-seoyeon .catalog-page .risk-law-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .workspace-seoyeon .catalog-page .risk-law-list-meta b {
   font-size: 10px;
 }
@@ -2370,6 +2392,19 @@
 .workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > span {
   max-width: 100%;
   overflow: hidden;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > small {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.workspace-seoyeon .catalog-page .risk-screening-table .screening-keyword > span .screening-tag:nth-child(n + 4) {
+  display: none;
 }
 
 /* Dividers belong to the gaps between tabs, never to an active tab. */

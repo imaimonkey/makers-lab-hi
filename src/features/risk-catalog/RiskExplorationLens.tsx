@@ -84,6 +84,8 @@ function metricSubLabel(sub: string) {
   return sub
     .replace(/^상품화 종합평가\s*/, '')
     .replace(/\s*·\s*상품화 종합평가\s*$/, '')
+    .replace(/\bSAMPLE\b/g, '')
+    .replace(/\s{2,}/g, ' ')
     .trim()
 }
 
@@ -148,6 +150,8 @@ function marketTamDisplay(record: RiskExplorationRecord) {
 function removeDetailMetricLabel(text: string) {
   return text
     .replace(/^(?:\uC57D\s*[\d,]+(?:\.\d+)?\s*\uC5B5\s*\uC6D0|(?:\uB9E4\uC6B0\s*)?(?:\uB192\uC74C|\uBCF4\uD1B5|\uB0AE\uC74C))(?:\s*[·.,]?\s*\d+(?:\.\d+)?\s*\/\s*5)?(?:\s*[·.,]\s*)?/u, '')
+    .replace(/\bSAMPLE\b/g, '')
+    .replace(/\s{2,}/g, ' ')
     .trim()
 }
 
