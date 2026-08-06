@@ -271,8 +271,17 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
       <div className="page riskRadarPage">
         <section className="panel article-source-state" role={articleLoadError ? 'alert' : 'status'}>
           <p className="eyebrow">ARTICLE SOURCE</p>
-          <h1>{articleLoadError ? '원문 자료를 불러오지 못했습니다' : '원문 자료를 불러오는 중입니다'}</h1>
-          <p>{articleLoadError || 'src/article에 연결된 원문을 기준으로 위험 신호와 검토 후보를 구성하고 있습니다.'}</p>
+          {articleLoadError ? (
+            <>
+              <h1>원문 자료를 불러오지 못했습니다</h1>
+              <p>{articleLoadError}</p>
+            </>
+          ) : (
+            <div className="article-source-loading" aria-label="원문 자료 로딩중">
+              <span className="article-source-spinner" aria-hidden="true" />
+              <strong>로딩중 ...</strong>
+            </div>
+          )}
         </section>
       </div>
     )

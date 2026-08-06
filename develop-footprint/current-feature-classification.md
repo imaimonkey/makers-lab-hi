@@ -89,3 +89,8 @@
 
 - `ReportSections.tsx`의 화면 조합용 `ReportView.wordingFeasibility`가 공통 도메인 계약의 `policyEditor` 필드를 함께 참조하도록 보정했다. 저장 로직과 라우트는 변경하지 않았다.
 - `npm run build` 통과. 다음 의존성은 운영 리포트 저장 API가 `wordingFeasibility.policyEditor`를 포함한 동일 계약을 유지하는 것이다.
+
+## 2026-08-06 원문 로딩 상태 표시 조정
+
+- `/` 대시보드의 `ARTICLE SOURCE` 초기 상태는 설명 문장 대신 `로딩중 ...` 텍스트와 회전 버퍼링 표시를 사용한다. 원문 오류 상태 문구는 유지한다.
+- `npm run check` 통과 후 새 원격 브랜치 `0806`으로 푸시한다.

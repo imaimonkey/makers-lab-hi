@@ -183,6 +183,34 @@
       border-radius:var(--radius-xl);
       background:var(--surface);
       box-shadow:var(--shadow);
+    }.riskRadarPage .article-source-state {
+      display: grid;
+      min-height: 240px;
+      place-items: center;
+      align-content: center;
+      gap: 14px;
+      padding: 48px 24px;
+      text-align: center;
+    }.riskRadarPage .article-source-state .eyebrow {
+      margin: 0;
+    }.riskRadarPage .article-source-loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--navy-800);
+      font-size: 18px;
+    }.riskRadarPage .article-source-spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--navy-200);
+      border-top-color: var(--orange-500);
+      border-radius: 50%;
+      animation: articleSourceSpin .8s linear infinite;
+    }@keyframes articleSourceSpin {
+      to { transform: rotate(360deg); }
+    }.riskRadarPage .article-source-state h1,
+    .riskRadarPage .article-source-state p:not(.eyebrow) {
+      margin: 0;
     }.riskRadarPage .panel-head{
       display:flex;
       align-items:flex-start;
