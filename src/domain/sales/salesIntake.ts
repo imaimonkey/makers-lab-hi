@@ -76,6 +76,7 @@ export function appendSalesSubmission(draft: SalesIntakeDraft): SalesIntakeAppen
   try {
     const next = [submission, ...readSalesSubmissions()].slice(0, 30)
     window.localStorage.setItem(storageKey, JSON.stringify(next))
+    window.dispatchEvent(new Event('hi-risk-studio:sales-intake'))
     return { submission, persisted: true }
   } catch {
     return { submission, persisted: false }
