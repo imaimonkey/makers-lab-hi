@@ -238,7 +238,7 @@
     /* 1행: KPI */
     .riskRadarPage .kpi-grid{
       display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-columns:repeat(4,minmax(0,1fr));
       gap:16px;
       margin-bottom:20px;
     }.riskRadarPage .kpi{
@@ -260,6 +260,9 @@
     }.riskRadarPage .kpi:nth-child(3){
       --kpi-accent:#8195b3;
       --kpi-tint:#f2f5f9;
+    }.riskRadarPage .kpi:nth-child(4){
+      --kpi-accent:#6d82a5;
+      --kpi-tint:#f3f6fb;
     }.riskRadarPage .kpi:hover{
       transform:translateY(-2px);
       box-shadow:0 15px 34px rgba(31,45,73,.10);
@@ -326,6 +329,37 @@
       border-top:1px solid color-mix(in srgb, var(--kpi-accent) 14%, var(--line));
       color:var(--muted);
       font-size:10.5px;
+    }
+    .riskRadarPage .inbound-kpi-values{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      margin-top:13px;
+    }.riskRadarPage .inbound-kpi-value{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      align-items:end;
+      column-gap:5px;
+      min-width:0;
+      padding:0 14px;
+    }.riskRadarPage .inbound-kpi-value:first-child{
+      padding-left:0;
+      border-right:1px solid color-mix(in srgb, var(--kpi-accent) 16%, var(--line));
+    }.riskRadarPage .inbound-kpi-value:last-child{padding-right:0}.riskRadarPage .inbound-kpi-label{
+      grid-column:1 / -1;
+      margin-bottom:6px;
+      color:var(--navy-800);
+      font-size:12px;
+      font-weight:850;
+    }.riskRadarPage .inbound-kpi-value strong{
+      color:var(--navy-950);
+      font-size:31px;
+      line-height:.92;
+      letter-spacing:-.055em;
+    }.riskRadarPage .inbound-kpi-value > span:last-child{
+      margin-bottom:2px;
+      color:var(--kpi-accent);
+      font-size:11px;
+      font-weight:900;
     }
 
 

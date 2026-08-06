@@ -21,6 +21,8 @@ import { buildLocalArticleRadarView } from '../../features/risk-dashboard/localA
 import { riskExplorationRecords } from '../../domain/risk/riskExplorationDemo'
 import { sampleRiskCandidates } from '../../domain/risk/sampleData'
 import { riskLawTrackingItems } from '../../domain/risk/riskLawTracking'
+import { readCustomerSignals } from '../../domain/risk/customerSignalStorage'
+import { readSalesSubmissions } from '../../domain/sales/salesIntake'
 import './riskDashboardPage.css'
 
 function buildDeveloperPath(path: string, developerMode: boolean) {
@@ -68,6 +70,23 @@ function KpiIcon({ index }: { index: number }) {
       <path d="M15 3v5h4M10 12h6M10 16h4" />
     </svg>
   )
+}
+
+function InboundKpiIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 7.5h14v10H5z" />
+      <path d="M8 7.5V5h8v2.5M8 12h8M8 15h5" />
+    </svg>
+  )
+}
+
+function countRecent<T extends { submittedAt?: string; createdAt?: string }>(items: T[], days = 30) {
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000
+  return items.filter((item) => {
+    const timestamp = item.submittedAt ?? item.createdAt
+    return timestamp ? Date.parse(timestamp) >= cutoff : false
+  }).length
 }
 
 function EvidenceButton({ sourceUrl }: { sourceUrl: string | null }) {
@@ -254,6 +273,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
   const [articleLoadError, setArticleLoadError] = useState('')
   const [scrapPreferences, setScrapPreferences] = useState<ReportListPreferences>(() => browserReportListPreferences.load())
   const [priorityIndex, setPriorityIndex] = useState(0)
+  const [inboundCounts, setInboundCounts] = useState({ internal: 0, customer: 0 })
   useEffect(() => {
     let cancelled = false
     void loadArticleSourceRecords().then((records) => {
@@ -265,6 +285,24 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
       if (!cancelled) setArticleLoadError('src/article 원문을 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.')
     })
     return () => { cancelled = true }
+  }, [])
+  useEffect(() => {
+    const refreshInboundCounts = () => {
+      setInboundCounts({
+        internal: countRecent(readSalesSubmissions()),
+        customer: countRecent(readCustomerSignals()),
+      })
+    }
+
+    refreshInboundCounts()
+    window.addEventListener('storage', refreshInboundCounts)
+    window.addEventListener('hi-risk-studio:sales-intake', refreshInboundCounts)
+    window.addEventListener('hi-risk-studio:customer-signal', refreshInboundCounts)
+    return () => {
+      window.removeEventListener('storage', refreshInboundCounts)
+      window.removeEventListener('hi-risk-studio:sales-intake', refreshInboundCounts)
+      window.removeEventListener('hi-risk-studio:customer-signal', refreshInboundCounts)
+    }
   }, [])
   if (!articleView) {
     return (
@@ -363,6 +401,26 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
             <div className="kpi-note">{kpi.description}</div>
           </article>
         ))}
+        <article className="kpi inbound-kpi" aria-label="최근 30일 유입 신호">
+          <div className="kpi-top">
+            <div className="kpi-title-wrap">
+              <div className="kpi-icon"><InboundKpiIcon /></div>
+              <div className="kpi-label">유입 신호</div>
+            </div>
+            <span className="kpi-period">최근 30일 기준</span>
+          </div>
+          <div className="inbound-kpi-values">
+            <div className="inbound-kpi-value">
+              <span className="inbound-kpi-label">사내유입</span>
+              <strong>{inboundCounts.internal}</strong><span>건</span>
+            </div>
+            <div className="inbound-kpi-value">
+              <span className="inbound-kpi-label">고객요청</span>
+              <strong>{inboundCounts.customer}</strong><span>건</span>
+            </div>
+          </div>
+          <div className="kpi-note">영업부 접수와 고객 신호를 분리 집계한 참고 지표</div>
+        </article>
       </section>
 
       <section className="row-grid" id="priority-panel">
