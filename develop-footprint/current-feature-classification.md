@@ -84,3 +84,8 @@
 
 - `/reports` 종합 리포트의 6개 섹션 탭이 사용 가능한 영역을 같은 비율로 채우도록 정렬하고, 탭 라벨 글자 크기를 14px로 조정했다.
 - 긴 탭 제목은 동일한 높이 안에서 줄바꿈할 수 있게 했으며, 좁은 화면에서는 동일 폭의 가로 스크롤 탭으로 유지한다.
+
+## 2026-08-06 리포트 빌드 계약 보정
+
+- `ReportSections.tsx`의 화면 조합용 `ReportView.wordingFeasibility`가 공통 도메인 계약의 `policyEditor` 필드를 함께 참조하도록 보정했다. 저장 로직과 라우트는 변경하지 않았다.
+- `npm run build` 통과. 다음 의존성은 운영 리포트 저장 API가 `wordingFeasibility.policyEditor`를 포함한 동일 계약을 유지하는 것이다.

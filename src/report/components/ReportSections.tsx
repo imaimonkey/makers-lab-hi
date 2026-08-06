@@ -273,6 +273,7 @@ type ReportView = {
       includedInAiInput?: boolean
       badge?: string
     }>
+    policyEditor?: WordingPolicyEditor
   }
   evidence: EvidenceItem[]
   missingResearch: Array<{

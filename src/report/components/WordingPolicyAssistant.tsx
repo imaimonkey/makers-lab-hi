@@ -78,6 +78,8 @@ export function WordingPolicyAssistant({
   useEffect(() => {
     if (!selectedArticle || selectedArticle.key === draftKey) return
     const stored = editor?.articleDrafts[selectedArticle.key]
+    // Changing the selected article intentionally resets the local editing state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraftKey(selectedArticle.key)
     setDraftText(typeof stored === 'string' && stored.trim() ? stored : selectedArticle.text)
     setDirty(false)
@@ -136,7 +138,7 @@ export function WordingPolicyAssistant({
     }
   }
 
-  const useAnswerForEditing = (text: string) => {
+  const applyAnswerForEditing = (text: string) => {
     setDraftText(text)
     setDirty(true)
     setStatusMessage('답변을 편집창에 넣었습니다. 문안을 확인한 뒤 저장하세요.')
@@ -201,7 +203,7 @@ export function WordingPolicyAssistant({
                     {message.isMock ? <small className="report-page__assist-fallback">SAMPLE 답변입니다. Potens API 연결 실패 시 대체 답변입니다.</small> : <small className="report-page__assist-source">Potens AI 답변 · 약관 문맥 기반</small>}
                     {message.relatedSections?.length ? <small>관련 조항 · {message.relatedSections.join(', ')}</small> : null}
                     {message.evidenceIds?.length ? <small>근거 ID · {message.evidenceIds.join(', ')}</small> : null}
-                    <button className="report-page__text-button" type="button" onClick={() => useAnswerForEditing(message.text)}>답변을 편집창에 넣기</button>
+                    <button className="report-page__text-button" type="button" onClick={() => applyAnswerForEditing(message.text)}>답변을 편집창에 넣기</button>
                   </>
                 ) : null}
               </article>
