@@ -46,6 +46,11 @@
   --muted: #6b8197;
   --line: #e3ebf4;
   --line-strong: #cbdbea;
+  --surface-border-soft: rgba(205, 219, 233, .72);
+  --surface-border-faint: rgba(218, 228, 238, .84);
+  --surface-shadow-soft: 0 10px 24px rgba(23, 58, 91, .055);
+  --surface-shadow-subtle: 0 4px 12px rgba(23, 58, 91, .035);
+  --surface-shadow-card: 0 7px 18px rgba(23, 58, 91, .075);
   --surface: #fff;
   --canvas: #f7faff;
   --success: #0a8f68;

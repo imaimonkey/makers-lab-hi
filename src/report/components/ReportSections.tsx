@@ -18,7 +18,7 @@ import { WordingPolicyAssistant } from './WordingPolicyAssistant'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { AppIcon, type IconName } from '../../shared/components/AppIcon'
 import { createPortal } from 'react-dom'
-import { ArrowUpRight, ChevronDown, CircleChevronDown, CircleChevronUp } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, CircleChevronDown, CircleChevronUp, ClipboardCheck, Search } from 'lucide-react'
 import { createBriefingContent } from '../services/briefing-content'
 import { pushPreservingHistoryState, type ReportNavigation } from '../services/browser-history'
 import { WORDING_ANALYSIS_RISK } from '../data/wording-review-mock'
@@ -1367,9 +1367,8 @@ function FeasibilityDecisionOverview({ report, openCriterionId: controlledOpenCr
 
 function FeasibilitySection({ report, openCriterionId, onOpenCriterion, onNavigateTab, printMode = false, noveltyAccordionRequest, onNoveltyAccordionRequestHandled }: { report: ReportView; openCriterionId?: string | null; onOpenCriterion?: (id: string | null) => void; onNavigateTab?: (id: ReportTabId) => void; printMode?: boolean; noveltyAccordionRequest?: NoveltyAccordionKey | null; onNoveltyAccordionRequestHandled?: () => void }) {
   return (
-    <section className="report-page__section report-page__feasibility-redesign" aria-labelledby="feasibility-title">
+    <section className="report-page__section report-page__feasibility-redesign" aria-label="상품화 검토 종합평가">
       <SectionHeading number="02" eyebrow="" title="상품화 검토 종합평가" />
-      <p className="report-page__section-intro" id="feasibility-title">상품 개발 검토의 계속 여부와 후속 과제를 확인하는 화면입니다. AI 판단 결과와 근거를 기준별로 확인합니다.</p>
       <FeasibilityDecisionOverview
         report={report}
         openCriterionId={openCriterionId}
@@ -1829,7 +1828,7 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
       </section>
 
       <section className="report-page__proposal-metrics" aria-labelledby="proposal-metrics-title">
-        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">FIRST PRICING VIEW</p><h3 id="proposal-metrics-title">{articleReport ? '원문 기반 위험 지표' : '1차 가격·손해지표'}</h3><p>{articleReport ? '문서에서 산출한 시장성·PML·상품화 종합점수와 연결 원문을 표시합니다.' : '상품화 종합평가 PML과 명시된 프로토타입 가정을 연결한 1차 산출값입니다.'}</p></div></div>
+        <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">FIRST PRICING VIEW</p><h3 id="proposal-metrics-title">{articleReport ? '원문 기반 위험 지표' : '1차 가격·손해지표'}</h3></div></div>
         <div className="report-page__proposal-metric-grid">
           {displayPricingCards.map((card) => (
             <article className={'report-page__proposal-metric report-page__proposal-metric--' + card.id} key={card.id}>
@@ -1873,12 +1872,11 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
       <section className="report-page__proposal-flow" aria-labelledby="proposal-flow-title">
         <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">CLAIM FLOW</p><h3 id="proposal-flow-title">보험금 지급 흐름</h3><p>사고 확인부터 지급·구상 검토까지의 기본 절차입니다.</p></div></div>
         <ol>{claimFlow.map((step, index) => <li key={step.id}><div className="report-page__proposal-flow-step-head"><span>{String(index + 1).padStart(2, '0')}</span><h4>{step.label}</h4></div><span className={`report-page__proposal-flow-arrow${index === claimFlow.length - 1 ? ' is-empty' : ''}`} aria-hidden="true">→</span><ul>{step.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul></li>)}</ol>
-        <p className="report-page__proposal-flow-note">기존 보험의 지급액 차감 방식과 책임 확정 전 지급 여부는 약관 초안에서 구체화합니다.</p>
       </section>
 
       <section className="report-page__proposal-coverage" aria-labelledby="proposal-coverage-title">
         <div className="report-page__proposal-section-heading"><div><p className="report-page__eyebrow">COVERAGE STRUCTURE</p><h3 id="proposal-coverage-title">보장 구조 요약</h3><p>기본·선택·제외 범위를 짧게 구분한 1차 보장 구조입니다.</p></div></div>
-        <div className="report-page__proposal-coverage-summary-grid"><article className="is-basic"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">✓</span><small>기본</small></div><h4>기본 담보</h4><ul>{coverageSummary.basic.map((item) => <li key={item.title}><div><strong>{item.title}</strong><p>{item.description}</p></div></li>)}</ul></article><article className="is-optional"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">＋</span><small>선택</small></div><h4>선택 담보</h4><ul><li><div><strong>{coverageSummary.optional.title}</strong><p>{coverageSummary.optional.description}</p></div></li></ul></article><article className="is-excluded"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">−</span><small>제외</small></div><h4>보장 제외</h4><ul>{coverageSummary.excluded.map((item) => <li key={item}><div><strong>{item}</strong></div></li>)}</ul></article></div>
+        <div className="report-page__proposal-coverage-summary-grid"><article className="is-basic"><div className="report-page__proposal-coverage-card-heading"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">✓</span><small>기본</small></div><h4>기본 담보</h4></div><ul>{coverageSummary.basic.map((item) => <li key={item.title}><div><strong>{item.title}</strong><p>{item.description}</p></div></li>)}</ul></article><article className="is-optional"><div className="report-page__proposal-coverage-card-heading"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">＋</span><small>선택</small></div><h4>선택 담보</h4></div><ul><li><div><strong>{coverageSummary.optional.title}</strong><p>{coverageSummary.optional.description}</p></div></li></ul></article><article className="is-excluded"><div className="report-page__proposal-coverage-card-heading"><div className="report-page__proposal-coverage-category"><span aria-hidden="true">−</span><small>제외</small></div><h4>보장 제외</h4></div><ul>{coverageSummary.excluded.map((item) => <li key={item}><div><strong>{item}</strong></div></li>)}</ul></article></div>
       </section>
 
       <section className="report-page__proposal-underwriting" aria-labelledby="proposal-underwriting-title">
@@ -1886,7 +1884,6 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
         <div className="report-page__proposal-underwriting-judgment"><strong>{PROPOSAL_UNDERWRITING_AI_SUMMARY.label}</strong><p>{PROPOSAL_UNDERWRITING_AI_SUMMARY.prefix}<em className="is-risk">{PROPOSAL_UNDERWRITING_AI_SUMMARY.exposure}</em>{PROPOSAL_UNDERWRITING_AI_SUMMARY.middle}<em className="is-positive">{PROPOSAL_UNDERWRITING_AI_SUMMARY.mitigation}</em>{PROPOSAL_UNDERWRITING_AI_SUMMARY.suffix}</p></div>
         <div className="report-page__proposal-underwriting-grid">{underwritingDisplay.map((factor, index) => <article className="report-page__proposal-underwriting-card" key={factor.id}><div className="report-page__proposal-underwriting-card-heading"><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><h4>{factor.title}</h4></div><p className="report-page__proposal-underwriting-assessment">{factor.aiAssessment}</p><div className="report-page__proposal-underwriting-block"><h5>확인 요소</h5><ul>{factor.criteria.map((item) => <li key={item}>{item}</li>)}</ul></div><div className="report-page__proposal-underwriting-block report-page__proposal-underwriting-block--pricing"><h5>가격·한도 반영</h5><ul>{factor.pricingEffects.map((item) => <li key={item}>{renderPricingEffect(item)}</li>)}</ul></div>{'scenarioReference' in factor && factor.scenarioReference ? <div className="report-page__proposal-underwriting-scenario"><h5>현재 시나리오 연결</h5><p>상품화 종합평가 PML · Low {formatKrwCompact(factor.scenarioReference.low)} / Base {formatKrwCompact(factor.scenarioReference.base)} / High {formatKrwCompact(factor.scenarioReference.high)}</p></div> : null}</article>)}</div>
         <div className="report-page__proposal-underwriting-condition-map"><h4>상품 조건 반영 방식</h4><ul>{underwritingDisplay.map((factor) => <li key={factor.id}><strong>{factor.title}</strong><span aria-hidden="true">→</span><em>{factor.conditionImpact}</em></li>)}</ul></div>
-        <p className="report-page__proposal-underwriting-note">{articleReport ? '문서 근거와 손해자료 연결 수준에 따라 상품 조건과 산정 결과가 달라질 수 있습니다.' : '프로토타입 시나리오 기준 · 실제 시설정보 연결 시 자동 보정'}</p>
       </section>
 
       <section className="report-page__proposal-decisions" aria-labelledby="proposal-decisions-title">
@@ -1910,7 +1907,6 @@ function ProductProposalSection({ report, onNavigateTab, printMode = false }: { 
             <ul>{calculationEvidence.variables.map((item) => <li key={item.label}><strong>{item.label}</strong><span className="report-page__proposal-evidence-impact"><span aria-hidden="true">→</span><em>{item.impact}</em></span></li>)}</ul>
           </article>
         </div>
-        <p className="report-page__proposal-evidence-note">{calculationEvidence.explanation}</p>
       </section>
     </section>
   )
@@ -2960,6 +2956,8 @@ function FullWordingSection({
   const policyTerms = Array.from(new Map(
     [...wordingPolicyTermItems(commonTermArticle), ...wordingPolicyTermItems(selectedTermArticle)].map((item) => [item.term, item]),
   ).values())
+  const visiblePolicyTerms = policyTerms.slice(0, 6)
+  const additionalPolicyTerms = policyTerms.slice(6)
   const referenceReasons = [...(data.possibleReasons ?? []), ...(data.improvementReasons ?? [])].filter(Boolean)
 
   void onOpenPolicyDraft
@@ -3096,15 +3094,15 @@ function FullWordingSection({
 
         <section className="report-page__wording-main-zone report-page__wording-zone-b" aria-labelledby="wording-payment-title">
           <div className="report-page__wording-zone-heading">
-            <div><h3 id="wording-payment-title">보험금 지급요건</h3><p>선택한 특별약관의 지급요건과 약관 확정 전 실무 판단사항을 함께 확인합니다.</p></div>
+            <div><p className="report-page__eyebrow">PAYMENT REQUIREMENTS</p><h3 id="wording-payment-title">보험금 지급조건</h3><p>선택한 특별약관의 지급요건과 약관 확정 전 실무 판단사항을 함께 확인합니다.</p></div>
           </div>
           <div className="report-page__wording-payment-decision-grid">
             <article className="report-page__wording-condition-card">
-              <header><h4>보험금 지급요건</h4><p>아래 요건을 모두 충족하는 경우 보험금 지급 대상으로 검토합니다.</p></header>
+              <header><div className="report-page__wording-payment-card-heading"><span aria-hidden="true"><ClipboardCheck size={22} strokeWidth={1.8} /></span><h4>보험금 지급요건</h4></div><p>아래 요건을 모두 충족하는 경우 보험금 지급 대상으로 검토합니다.</p></header>
               <ol>{paymentRequirements.map((condition, index) => <li key={condition}><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span><WordingPaymentRequirementText text={condition} /></span></li>)}</ol>
             </article>
             <article className="report-page__wording-decision-card">
-              <header><h4>약관 확정 전 결정사항</h4><p>AI 권고안과 판단 근거를 확인한 뒤 실무 검토가 필요한 항목입니다.</p></header>
+              <header><div className="report-page__wording-payment-card-heading"><span aria-hidden="true"><Search size={22} strokeWidth={1.8} /></span><h4>약관 확정 전 결정사항</h4></div><p>AI 권고안과 판단 근거를 확인한 뒤 실무 검토가 필요한 항목입니다.</p></header>
               <div className="report-page__wording-decision-list">
                 {selectedCoverage.decisionItems.map((decision, index) => (
                   <details key={decision.id} className="report-page__wording-decision-row" open={printMode || undefined}>
@@ -3201,7 +3199,14 @@ function FullWordingSection({
           <div className="report-page__wording-zone-heading"><div><h3 id="wording-grounds-title">약관 작성 근거와 핵심 용어</h3><p>전체 약관 초안에 반영한 작성 근거와 선택 보장 항목의 핵심 정의를 확인합니다.</p></div></div>
           <div className="report-page__wording-grounds-grid">
             <article><h4>약관 작성 근거</h4><ul>{referenceReasons.slice(0, 6).map((reason) => <li key={reason}>{reason}</li>)}</ul></article>
-            <article><h4>핵심 용어</h4><div className="report-page__wording-term-columns">{policyTerms.map((item) => <p key={item.term}><strong>{item.term}</strong><span>{item.definition}</span></p>)}</div></article>
+            <article>
+              <h4>핵심 용어</h4>
+              <div className="report-page__wording-term-columns">{visiblePolicyTerms.map((item) => <p key={item.term}><strong>{item.term}</strong><span>{item.definition}</span></p>)}</div>
+              {additionalPolicyTerms.length ? <details className="report-page__wording-term-more" open={printMode || undefined}>
+                <summary><span>핵심 용어 더보기</span><small>{additionalPolicyTerms.length}개 용어</small></summary>
+                <div className="report-page__wording-term-columns is-expanded">{additionalPolicyTerms.map((item) => <p key={item.term}><strong>{item.term}</strong><span>{item.definition}</span></p>)}</div>
+              </details> : null}
+            </article>
           </div>
         </section>
       </div>
@@ -3659,11 +3664,7 @@ function ExecutiveBriefingSection({
     <section className="report-page__section report-page__briefing report-page__briefing--decision" aria-label="종합 브리핑">
       <SectionHeading number="01" eyebrow={briefing.eyebrow} title={reportLabel(report, 'briefingTitle', '종합 브리핑')} />
 
-      <section className="report-page__decision-briefing-summary" aria-labelledby="decision-briefing-summary-title">
-        <div className="report-page__decision-briefing-summary-head">
-          <div><p className="report-page__decision-briefing-kicker">SUMMARY</p><h3 id="decision-briefing-summary-title">검토 결론 요약</h3></div>
-        </div>
-
+      <section className="report-page__decision-briefing-summary" aria-labelledby="decision-briefing-conclusion-title">
         <section className="report-page__decision-briefing-conclusion" aria-labelledby="decision-briefing-conclusion-title">
           <div className="report-page__decision-briefing-conclusion-head">
             <div><p className="report-page__decision-briefing-kicker">최종 검토 결론</p><h3 id="decision-briefing-conclusion-title">{briefing.conclusion}</h3></div>
