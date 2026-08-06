@@ -471,6 +471,12 @@ export interface WordingFeasibility extends JsonObject {
   exclusionCandidates: JsonObject[];
   ambiguities: JsonObject[];
   referenceDocuments: JsonObject[];
+  policyEditor?: WordingPolicyEditor;
+}
+
+export interface WordingPolicyEditor extends JsonObject {
+  articleDrafts: JsonObject;
+  updatedAt?: string | null;
 }
 
 export interface ReportMeta extends JsonObject {
@@ -572,6 +578,7 @@ export interface ReportQuestionRequest {
   reportContext: JsonObject;
   question: string;
   recentConversation: JsonObject[];
+  policyContext?: JsonObject;
 }
 
 export interface ReportContentSaveRequest {

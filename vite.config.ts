@@ -1262,7 +1262,7 @@ function reportAssistantProxy(gasUrl: string): Plugin {
             : action === 'generatePolicyDraft'
               ? { action, reportContext: body.reportContext }
               : action === 'askReportQuestion'
-                ? { action, reportContext: body.reportContext, question: body.question, recentConversation: body.recentConversation }
+                ? { action, reportContext: body.reportContext, question: body.question, recentConversation: body.recentConversation, policyContext: body.policyContext }
                 : action === 'getReportContent'
                   ? { action, reportId: body.reportId }
                   : { action, reportId: body.reportId, content: body.content }

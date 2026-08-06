@@ -6,6 +6,7 @@
 
 - [기능 분류표](current-feature-classification.md): 구현·샘플·미연동 범위
 - [데모 플레이북](demo-playbook.md): 실무자·개인고객 전환 발표 순서
+- [프로토타입 사용 설명서](../docs/prototype-usage-manual.html): 실제 화면 목업·CTA 표시와 HTML/PDF/PPTX 발표 산출물
 - [QA 리포트](qa-report.md): 경로·상호작용·반응형 검증 결과와 잔여 위험
 - [신규위험 실무자 역할](roles/emerging-risk-analyst.md): 사용자 목표와 의사결정 기준
 - [고객 역할](roles/customer.md): 고객 흐름과 신뢰 원칙

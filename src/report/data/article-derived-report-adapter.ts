@@ -311,7 +311,22 @@ export function createArticleDerivedReportData(article: ArticleSourceRecord, rel
     schemaVersion: 'article-derived-v1',
     meta: { ...base.riskData.meta, analysisMode: 'article-derived-v1', dataStatus: '원문 기반 분석', isMockData: false, inputEvidenceCount: report.evidence.length, badges: ['원문 기반 분석', '문서 근거'], reportId: `article-report-${article.id}` },
     risk: { ...base.riskData.risk, categories: [article.derived.category] },
-    demoContext: { ...base.riskData.demoContext, mode: 'article-derived', source: article.source ?? '문서 원문', sourceTitle: article.title, sourcePath: article.sourcePath },
+    demoContext: {
+      ...base.riskData.demoContext,
+      mode: 'article-derived',
+      source: article.source ?? '문서 원문',
+      sourceTitle: article.title,
+      sourcePath: article.sourcePath,
+      sourceAnalysis: {
+        disposition: article.derived.disposition,
+        recommendation: article.derived.recommendation,
+        confidenceLevel: article.derived.confidence.level,
+        evidenceQuoteCount: article.derived.evidenceQuotes.length,
+        metricCount: article.derived.metrics.length,
+        scores: article.contentProfile.scores,
+        metricScores: article.derived.metricScores,
+      },
+    },
     selectionPreview: { ...base.riskData.selectionPreview, oneLineReason: article.derived.summary },
     disclaimer: '문서 원문 본문 기반 분석 데이터입니다.',
   }

@@ -144,6 +144,7 @@ export class GasReportProxy implements ReportProxy {
         reportContext: request.reportContext,
         question: request.question,
         recentConversation: request.recentConversation,
+        policyContext: request.policyContext,
       },
       options,
     );

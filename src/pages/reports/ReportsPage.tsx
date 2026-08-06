@@ -1,18 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ReportPage } from '../../report/ReportPage'
-import type { ReportProxy } from '../../report/api/report-proxy'
+import { createWordingReportProxy } from '../../report/api/wording-report-proxy'
 import { createArticleDerivedReportEntries, type ArticleDerivedReportEntry } from '../../report/data/article-derived-report-adapter'
 import { createCuratedReportEntries } from '../../report/data/curated-report-adapter'
 import { getMockReportData } from '../../report/data/mock-data-adapter'
 import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleSourceData'
 import '../../report/report.css'
 
-const localReportProxy: ReportProxy = {
-  generateReport: async () => ({ status: 'local-only' }),
-  generatePolicyDraft: async () => ({ status: 'local-only' }),
-  askReportQuestion: async () => ({ status: 'local-only' }),
-}
+const reportProxy = createWordingReportProxy()
 
 export function ReportsPage() {
   const navigate = useNavigate()
@@ -54,7 +50,7 @@ export function ReportsPage() {
         riskData={first.riskData}
         fallbackReport={first.report}
         reportEntries={entries}
-        reportProxy={localReportProxy}
+        reportProxy={reportProxy}
         navigation={navigate}
       />
     </div>

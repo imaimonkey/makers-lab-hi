@@ -124,14 +124,18 @@ export const askReportQuestion = async ({
   report,
   riskData,
   reportProxy,
+  policyContext,
+  mode: requestedMode,
 }: {
   question: string
   recentConversation: JsonObject[]
   report: ReportResult
   riskData: RiskSourceData
   reportProxy: ReportProxy
+  policyContext?: JsonObject
+  mode?: AiFeatureMode
 }): Promise<AssistOutcome<ReportQuestionAnswer>> => {
-  const mode = getQnaAiMode()
+  const mode = requestedMode ?? getQnaAiMode()
   const mock = (): AssistOutcome<ReportQuestionAnswer> => ({
     mode: 'success',
     source: 'mock',
@@ -145,6 +149,7 @@ export const askReportQuestion = async ({
       reportContext: createContext(riskData, report),
       question,
       recentConversation: recentConversation.slice(-5),
+      policyContext,
     })
     return { mode: 'success', source: 'api', value: normalizeQuestionAnswer(raw) }
   } catch (error) {

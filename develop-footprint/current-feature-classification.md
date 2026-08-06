@@ -9,7 +9,7 @@
 | 2. 위험 후보 목록 | 구현 | 수집 단계·기사 큐·후보 등록 요청·5개 카테고리 필터·공식 공개근거가 연결된 TOP-18 신규 위험 타당성 스크리닝 가로 비교표·법률 보험의무/시행단계/제재강도 기반 우선순위·기사 사건 설명·평가 항목 상세·URL 검색/분류/정렬 | API 어댑터 구현, 후보·법령·통계 서버 미연결; 공개근거 기반 예비 점수는 실제 손해·가입 수요가 아님 | `src/domain/risk/riskExplorationDemo.ts`, `riskLawTracking.ts`, `riskScreeningInsights.ts`, `src/features/risk-catalog/RiskExplorationLens.tsx` |
 | 3. 위험 상세·상품화 평가 | 구현 | 기사형 위험 설명·본문 기반 해석·현재 사실/확인 필요 경계·원문/관련 기사/법령 링크·연결 인용·상품화 검토 항목·TOP-18 상세 ID·역할별 검토·근거 원장 대표 항목 미리보기 및 펼치기·원문/근거/교차검증 게이트·4개 핵심 평가 지표·산출 근거·판단 설명·참조 디자인 섹션 탭·PDF 출력·최신형 실무 화면 언어/시각 계층 | 관측 신호 추이 합성 차트는 제거했고, 근거·법령·평가 API 경계 구현 및 브라우저 SAMPLE 저장을 운영 권한 저장소로 교체 필요; URL이 없거나 검증 전인 자료는 연결 대기로 표시 | `src/domain/risk/sampleData.ts`, `src/features/risk-detail/RiskArticleOverview.tsx`, `RiskDecisionWorkspace.tsx`, `EvidenceVerificationWorkspace.tsx`, `ProductizationEvaluationPanel.tsx`, `src/styles/workstream-parity.css` |
 | 3-1. 위험 심층 해설 원문 연결 | 구현 | TOP-18 표준 상세의 위험 심층 해설을 기존 생성형 AI 저작권 상세와 같은 인용문·출처명·원문 보기·근거 원장 형식으로 이슈별 구성하고, 후보 1차 원문과 보험개발원·보험연구원·Swiss Re·Munich Re·AXA·공공데이터포털·법제처·금융감독원 공개 원문을 연결 | 링크는 공개 원문 탐색·교차검증용 SAMPLE이며, 보험 보장·상품 출시 결론은 아님 | `src/domain/risk/riskDetailContent.ts`, `src/domain/risk/riskDetailSources.ts`, `src/features/risk-detail/StandardRiskDetail.tsx` |
-| 4. 종합 리포트 | 구현 | 목록 검색·필터·정렬·보기 전환, 신규 생성·로딩·fallback, 12개 상품화 기준별 AI/실무자 판단, 구조화 브리핑·섹션 편집·저장·약관 초안·Q&A·PDF | same-origin·로컬 fallback 프록시 구현, `VITE_POTENS_PROXY_URL` 및 운영 인증/저장소 필요 | `src/pages/reports/ReportsPage.tsx`, `src/report/**`, `vite.config.ts` |
+| 4. 종합 리포트 | 구현 | `생성된 리포트` 기본 목록과 `배타적 사용권 신청` 2탭, 목록 검색·필터·정렬·보기 전환, 위험별 신청 사유 4개 심사 기준·근거·확인사항, 신규 생성·로딩·fallback, 12개 상품화 기준별 AI/실무자 판단, 구조화 브리핑·섹션 편집·저장·약관 초안·Q&A·PDF | 신청 기간·개발 인력·비용은 내부 개발 기록 입력 필요; same-origin·로컬 fallback 프록시 구현, `VITE_POTENS_PROXY_URL` 및 운영 인증/저장소 필요 | `src/pages/reports/ReportsPage.tsx`, `src/report/**`, `vite.config.ts` |
 | 5. 고객 상황 입력 | 구현 | 동작 | 고객 인증·채널 미연동 | `src/features/customer-insight/CustomerInsightStudio.tsx` |
 | 영업부서 현장 리포트 모드 | 구현 | 동작·`localStorage` 데모 | 접수 API·SSO·검토 큐 미연동 | `src/app/layouts/SalesLayout.tsx`, `src/pages/sales-intake/SalesIntakePage.tsx`, `src/features/sales-intake/SalesIntakeStudio.tsx` |
 | 상품 후보 산출 | 구현 | 규칙 기반 동작 | 상품 마스터·약관 검색 미연동 | `src/features/customer-insight/recommendationEngine.ts` |
@@ -36,6 +36,7 @@
 - 법률 및 규제 위험 화면은 기존 법령 큐와 원문 법령 큐를 함께 표시한다. 원문 큐가 비어도 큐레이션 법령 자료가 빈 상태로 대체되지 않는다.
 - 대시보드 KPI, 위험 탐색 후보, 위험 상세, 종합 리포트는 동일한 위험 ID와 제목을 사용한다. 전기차 리포트를 첫 기준 사례로 유지하고, 나머지 큐레이션 후보에는 `RPT-RISK-{detailRiskId}`를 부여한다.
 - 큐레이션 후보 리포트는 종합 브리핑·보장 공백·상품화 종합평가·상품 제안·약관 검토·근거자료 및 추가 확인사항을 모두 생성한다. 이 데이터는 실무자 검토용이며 공식 상품 승인·보험료·가입 가능 여부를 확정하지 않는다.
+- 종합 리포트 메인은 `생성된 리포트`를 기본 탭으로 유지하고, 같은 `reportEntries`에서 위험별 `배타적 사용권 신청` 초안을 생성한다. 4개 심사 기준별 소명·연결 근거·신청 전 확인사항을 표시하며 개발 기간·인력·비용은 내부 자료 입력 대상으로 남긴다.
 
 ## 2026-08-01 대시보드 보강
 
@@ -78,3 +79,8 @@
 - 가격·손해지표 5개 카드는 데스크톱에서 동일한 폭을 사용하고, 두 번째 줄의 두 카드는 가운데에 균형 있게 배치되도록 그리드 열 구조를 맞췄다.
 - 종합브리핑 핵심 판단 근거 3개 카드는 번호·라벨·결론·지표를 카드 왼쪽 기준선에 맞췄다.
 - 데이터 계약과 탭 구조는 변경하지 않았고, 운영 연동 시 리포트 프록시·권한·저장소 계약을 연결하는 의존성은 유지한다.
+
+## 2026-08-06 종합 리포트 탭 가독성 조정
+
+- `/reports` 종합 리포트의 6개 섹션 탭이 사용 가능한 영역을 같은 비율로 채우도록 정렬하고, 탭 라벨 글자 크기를 14px로 조정했다.
+- 긴 탭 제목은 동일한 높이 안에서 줄바꿈할 수 있게 했으며, 좁은 화면에서는 동일 폭의 가로 스크롤 탭으로 유지한다.

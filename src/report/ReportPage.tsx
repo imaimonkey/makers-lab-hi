@@ -4,6 +4,7 @@ import type { ReportProxy } from './api/report-proxy'
 import { GeneratedReportList } from './components/GeneratedReportList'
 import { ReportSections } from './components/ReportSections'
 import { createGeneratedReportList, type GeneratedReportListItem } from './services/report-list'
+import { createExclusiveUseRightApplication } from './services/exclusive-use-right'
 import { pushPreservingHistoryState, type ReportNavigation } from './services/browser-history'
 import './report.css'
 
@@ -59,6 +60,13 @@ function ReportPageSession({
       : createGeneratedReportList(riskData, fallbackReport, { includeLayoutMocks }),
     [entries, fallbackReport, includeLayoutMocks, reportEntries, riskData],
   )
+  const exclusiveUseRightApplications = useMemo(
+    () => entries.flatMap((entry) => {
+      const reportItem = createGeneratedReportList(entry.riskData, entry.report, { includeLayoutMocks: false })[0]
+      return reportItem ? [createExclusiveUseRightApplication(entry.riskData, entry.report, reportItem)] : []
+    }),
+    [entries],
+  )
 
   useEffect(() => {
     const syncView = () => {
@@ -112,7 +120,11 @@ function ReportPageSession({
     <div className="report-page">
       {!showDetail ? <>
         {listIntro ? <div className="report-page__list-intro">{listIntro}</div> : null}
-        <GeneratedReportList reports={reports} onOpenReport={openReport} />
+        <GeneratedReportList
+          reports={reports}
+          exclusiveUseRightApplications={exclusiveUseRightApplications}
+          onOpenReport={openReport}
+        />
       </> : (
         <div className="report-page__generated">
           <ReportSections

@@ -4,14 +4,17 @@ import type {
   CommercializationCriterionStatus,
   CommercializationAiDecision,
   CommercializationCriterionDetail,
+  JsonObject,
   ReportResult,
   RiskSourceData,
+  WordingPolicyEditor,
 } from '../types'
 import type { ReportProxy } from '../api/report-proxy'
 import { cloneReport, parseStoredReportContent } from '../services/report-content'
 import { ensureCommercializationAssessment, COMMERCIALIZATION_GATE_GROUPS, validateCommercializationAssessment } from '../services/commercialization-assessment'
 import { ReportModal } from './ReportModal'
 import { PolicyDraftModal } from './ReportAssistPanels'
+import { WordingPolicyAssistant } from './WordingPolicyAssistant'
 import { ReportEditorPanel } from './ReportEditorPanel'
 import { AppIcon, type IconName } from '../../shared/components/AppIcon'
 import { createPortal } from 'react-dom'
@@ -2791,6 +2794,38 @@ function createArticlePolicyDraft(report: ReportView): FullPolicyDraft {
   }
 }
 
+function applyPolicyEditorOverrides(
+  policyDraft: FullPolicyDraft,
+  articleDrafts?: JsonObject,
+): FullPolicyDraft {
+  if (!articleDrafts) return policyDraft
+
+  const applyArticle = (article: PolicyArticle, key: string): PolicyArticle => {
+    const override = articleDrafts[key]
+    if (typeof override !== 'string' || !override.trim()) return article
+    return {
+      number: article.number,
+      title: article.title,
+      paragraphs: override.split(/\n+/u).map((line) => line.trim()).filter(Boolean),
+    }
+  }
+
+  return {
+    ...policyDraft,
+    commonPolicy: {
+      ...policyDraft.commonPolicy,
+      sections: policyDraft.commonPolicy.sections.map((section) => ({
+        ...section,
+        articles: section.articles.map((article) => applyArticle(article, `common-${section.id}-${article.number}`)),
+      })),
+    },
+    specialClauses: policyDraft.specialClauses.map((clause) => ({
+      ...clause,
+      articles: clause.articles.map((article) => applyArticle(article, `special-${clause.id}-${article.number}`)),
+    })),
+  }
+}
+
 function wordingPolicyArticle(
   article: PolicyArticle,
   key: string,
@@ -2874,17 +2909,25 @@ function WordingPolicyPrintLayout({
 
 function FullWordingSection({
   report,
+  reportResult,
+  riskData,
+  reportProxy,
+  onSavePolicyEditor,
   onOpenPolicyDraft,
   onNavigateTab,
   printMode = false,
 }: {
   report: ReportView
+  reportResult?: ReportResult
+  riskData?: RiskSourceData
+  reportProxy?: ReportProxy
+  onSavePolicyEditor?: (editor: WordingPolicyEditor) => Promise<boolean>
   onOpenPolicyDraft: () => void
   onNavigateTab?: (id: ReportTabId) => void
   printMode?: boolean
 }) {
   const data = report.wordingFeasibility
-  const policyDraft = createArticlePolicyDraft(report)
+  const policyDraft = applyPolicyEditorOverrides(createArticlePolicyDraft(report), data.policyEditor?.articleDrafts)
   const benchmarkReport = isReferenceBenchmarkReport(report)
   const wordingRiskTitle = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.title : (report.meta.riskTitle ?? report.meta.title)
   const wordingRiskDescription = benchmarkReport ? WORDING_RISK_SUMMARY_COPY.description : (data.coverageDraft ?? report.riskGapSummary.definition ?? report.meta.title)
@@ -2896,6 +2939,7 @@ function FullWordingSection({
   const [activeArticleKey, setActiveArticleKey] = useState<string | null>('common-section-1-1')
   const [dedicatedPrintRequested, setDedicatedPrintRequested] = useState(false)
   const [dedicatedPrintCreatedAt, setDedicatedPrintCreatedAt] = useState<string | null>(null)
+  const [policyAssistantOpen, setPolicyAssistantOpen] = useState(false)
   const wordingComponentsRef = useRef<HTMLElement | null>(null)
   const fullDraftRef = useRef<HTMLElement | null>(null)
   const policyDocumentRef = useRef<HTMLDivElement | null>(null)
@@ -3101,6 +3145,19 @@ function FullWordingSection({
           </div>
         </section>
 
+        {policyAssistantOpen && reportResult && riskData && reportProxy && onSavePolicyEditor ? (
+          <WordingPolicyAssistant
+            report={reportResult}
+            riskData={riskData}
+            reportProxy={reportProxy}
+            policyDraft={policyDraft}
+            activeArticleKey={activeArticleKey}
+            editor={data.policyEditor}
+            onActiveArticleChange={setActiveArticleKey}
+            onSave={onSavePolicyEditor}
+            onClose={() => setPolicyAssistantOpen(false)}
+          />
+        ) : (
         <section ref={fullDraftRef} className="report-page__wording-main-zone report-page__wording-full-policy" aria-labelledby="wording-full-policy-title">
           <div className="report-page__wording-zone-heading">
             <div><h3 id="wording-full-policy-title">AI 전체 약관 초안</h3><p>{benchmarkReport ? '보통약관, 세 가지 특별약관과 부속 명세를 한 문서 흐름으로 검토합니다.' : '공통 약관 구조, 위험별 보장안과 부속 확인자료를 한 문서 흐름으로 검토합니다.'}</p></div>
@@ -3137,6 +3194,7 @@ function FullWordingSection({
           </div>
           {copyMessage ? <p className="report-page__copy-message report-page__no-print" role="status">{copyMessage}</p> : null}
         </section>
+        )}
 
         <section className="report-page__wording-main-zone report-page__wording-grounds" aria-labelledby="wording-grounds-title">
           <div className="report-page__wording-zone-heading"><div><h3 id="wording-grounds-title">약관 작성 근거와 핵심 용어</h3><p>전체 약관 초안에 반영한 작성 근거와 선택 보장 항목의 핵심 정의를 확인합니다.</p></div></div>
@@ -4405,6 +4463,33 @@ export function ReportSections({
     }
   }
 
+  const savePolicyEditor = async (policyEditor: WordingPolicyEditor): Promise<boolean> => {
+    if (!reportProxy.saveReportContent) return false
+    const contentToSave: ReportResult = {
+      ...savedReport,
+      meta: {
+        ...savedReport.meta,
+        revision: (savedReport.meta.revision ?? 0) + 1,
+        updatedAt: new Date().toISOString(),
+      },
+      wordingFeasibility: {
+        ...savedReport.wordingFeasibility,
+        policyEditor,
+      },
+    }
+    try {
+      await reportProxy.saveReportContent({
+        reportId: sourceReport.meta.sourceRiskId,
+        content: contentToSave,
+      })
+      setSavedReport(cloneReport(contentToSave))
+      setDraftReport(cloneReport(contentToSave))
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const cancelEditorContent = () => {
     setDraftReport(cloneReport(savedReport))
     setEditorMode(false)
@@ -4464,6 +4549,10 @@ export function ReportSections({
           {editorMode && activeTab === 'wording' ? <ReportEditorPanel activeTab="wording" report={draftReport} onChange={handleDraftChange} /> : (
             <FullWordingSection
               report={report}
+              reportResult={editorMode || editorPreview ? draftReport : savedReport}
+              riskData={riskData}
+              reportProxy={reportProxy}
+              onSavePolicyEditor={savePolicyEditor}
               onOpenPolicyDraft={() => setPolicyDraftOpen(true)}
               onNavigateTab={handleTabChange}
             />
