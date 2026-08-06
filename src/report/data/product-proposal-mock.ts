@@ -114,7 +114,7 @@ export const PROPOSAL_RECOMMENDATION_DETAIL_BLOCKS = [
   { id: 'basis', title: '판단 근거', items: ['대상 차량 명부로 보험대상과 노출 규모를 식별할 수 있습니다.', '기존 보험 지급 후 남는 직접 재산손해를 보완하는 구조입니다.'] },
   { id: 'coverage-gap', title: '연결된 보장 공백', items: ['책임 미확정 손해', '대물배상·화재보험 한도 초과손해', '보험 목적에 포함되지 않은 시설손해'] },
   { id: 'assumptions', title: '적용 가정', items: ['시설 단위 단체계약', '기존 보험 지급액 차감 후 잔여손해 보장', 'PML과 시설 위험요인에 따른 한도·자기부담금 조정'] },
-  { id: 'confidence', title: '분석 신뢰도', items: ['보통 이하', '프로토타입 시나리오 기반 1차 추정', '실제 데이터 연결 시 자동 보정'] },
+  { id: 'confidence', title: '분석 신뢰도', items: ['보통 이하'] },
 ] as const
 
 export const PROPOSAL_PRICING_METRICS: ProposalPricingMetric[] = [
@@ -506,5 +506,4 @@ export const PROPOSAL_CALCULATION_EVIDENCE = {
     { label: '보상한도·자기부담금', impact: '보험료와 실제 지급액에 직접 영향' },
   ],
   confidence: '보통 이하',
-  explanation: '공개자료와 프로토타입 산식 기반의 1차 추정 · 실제 데이터 연결 시 자동 보정',
 } as const

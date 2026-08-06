@@ -20998,7 +20998,7 @@
 .report-page__proposal-section .report-page__proposal-recommendation-grid h4 {
   min-width: 0;
   margin: 9px 0 12px;
-  color: #c45400;
+  color: var(--proposal-navy);
   font-size: 17px;
   font-weight: 750;
   line-height: 1.4;
@@ -32209,16 +32209,16 @@
   }
 }
 
-/* Keep the risk context after the four review-result cards, not above the summary board. */
+/* Keep the risk context before the four review-result cards for a natural briefing flow. */
 :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__decision-briefing-summary {
   order: 1;
 }
 
-:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__decision-briefing-core-results {
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__decision-briefing-risk-context {
   order: 2;
 }
 
-:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__decision-briefing-risk-context {
+:is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision > .report-page__decision-briefing-core-results {
   order: 3;
 }
 
@@ -34028,7 +34028,6 @@
 
   :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-value { margin-top: 9px; color: #123b66; font-size: 29px; line-height: 1.2; }
   :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--pml .report-page__proposal-metric-value,
-  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--premium .report-page__proposal-metric-value,
   :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-scenario-values div.is-base strong { color: #e86616; }
   :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-subvalue { margin-top: 4px; color: #47617c; font-size: 13px; line-height: 1.5; }
 
@@ -34300,13 +34299,13 @@
 /* Pricing cards share a row height even when one card has an extra source line. */
 @media screen {
   :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-grid {
-    align-items: stretch;
-    grid-auto-rows: 1fr;
+    align-items: start;
+    grid-auto-rows: max-content;
   }
 
   :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric {
-    height: 100%;
-    align-self: stretch;
+    height: auto;
+    align-self: start;
     align-content: start;
     grid-auto-rows: max-content;
   }
@@ -34475,5 +34474,1602 @@
 @media screen and (max-width: 900px) {
   :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--limits {
     grid-column: auto;
+  }
+}
+
+/* Coverage structure summary: use a quiet white-card layout with clear type hierarchy. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > article,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-basic,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-optional,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-excluded {
+    min-height: 0;
+    padding: 20px;
+    border: 1px solid #d6dfe8;
+    border-radius: 12px;
+    background: #ffffff !important;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-category {
+    display: block;
+    margin: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-category > span {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-category > small {
+    display: inline-flex;
+    padding: 5px 9px;
+    border: 1px solid #d8e0e8;
+    border-radius: 6px;
+    color: #526b7e;
+    background: #f7f9fb;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.25;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid h4 {
+    margin: 18px 0 0;
+    padding-bottom: 13px;
+    border-bottom: 1px solid #d8e1e9;
+    color: #17324d;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid ul {
+    display: grid;
+    gap: 12px;
+    margin: 16px 0 0;
+    padding: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid li {
+    position: relative;
+    padding: 0 0 0 14px;
+    color: #1d3047;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid li::before {
+    position: absolute;
+    top: .72em;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #94a2b0;
+    content: '';
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid strong {
+    color: #1d3047;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid p {
+    margin: 3px 0 0;
+    color: #697b8b;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+}
+
+@media screen and (max-width: 860px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 620px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > article,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-basic,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-optional,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > .is-excluded {
+    min-height: 0;
+  }
+}
+
+/* Center the headline content inside each pricing card while keeping the section heading left-aligned. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-copy {
+    align-items: center;
+    text-align: center;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-copy h4,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-copy .report-page__proposal-metric-value,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-copy .report-page__proposal-metric-subvalue {
+    text-align: center;
+  }
+}
+
+/* Keep the recommendation rationale visually secondary to its inner cards. */
+.report-page__proposal-section .report-page__proposal-reasons {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media print {
+  .report-page__proposal-section .report-page__proposal-reasons {
+    padding: 0;
+    border: 0;
+    background: transparent !important;
+    box-shadow: none;
+  }
+}
+
+/* Keep pricing cards equal when closed; an open evidence panel may grow only its own card. */
+@media screen and (min-width: 561px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-grid {
+    align-items: start;
+    grid-auto-rows: max-content;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric {
+    height: 270px;
+    min-height: 270px;
+    align-self: start;
+    box-sizing: border-box;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric:has(.report-page__proposal-metric-details[open]) {
+    height: auto;
+  }
+}
+
+@media screen and (max-width: 560px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-grid {
+    grid-auto-rows: max-content;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric {
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* Center the decision summary cards and let evidence open in normal document flow. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card {
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-topline {
+    width: 100%;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-label,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-decision-title,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-metric-value {
+    width: 100%;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-evidence {
+    width: 100%;
+    align-self: stretch;
+    margin-top: 14px !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-evidence summary {
+    position: relative;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-evidence summary svg {
+    position: absolute;
+    right: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card {
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div {
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > span,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > strong,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > small,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__decision-briefing-finance-card > div > em {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Keep the wording coverage scope cards simple and proportional to the page. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-grid {
+    align-items: stretch;
+    grid-auto-rows: max-content;
+    gap: 16px;
+    margin: 14px 20px 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card:last-child {
+    align-self: stretch;
+    height: 100%;
+    min-height: 0;
+    padding: 18px 20px 20px;
+    border: 1px solid #d6e1ea !important;
+    border-radius: 10px;
+    background: #ffffff !important;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card > small {
+    margin: 0;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.4;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card h4 {
+    margin: 6px 0 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #dce5ec;
+    color: #17324d;
+    font-size: 18px;
+    font-weight: 750;
+    line-height: 1.35;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card > ul {
+    display: grid;
+    gap: 12px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card > ul > li {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    min-width: 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-icon {
+    color: #0f8a83;
+    font-size: 15px;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card--excluded .report-page__wording-loss-icon {
+    color: #9a8063;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-copy {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-term {
+    color: #17324d;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-grid {
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-c .report-page__wording-loss-card:last-child {
+    padding: 17px 18px 18px;
+  }
+}
+
+/* The metric copy is centered in the full card rather than the area beside the icon. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-copy {
+    transform: translateX(-16px);
+  }
+}
+
+@media screen and (max-width: 560px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric-head .report-page__proposal-metric-copy {
+    transform: translateX(-10px);
+  }
+}
+
+/* Payment-condition review: a compact banner, two quiet cards, and flow-safe details. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b > .report-page__wording-zone-heading {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    margin: 0 0 18px;
+    padding: 18px 20px;
+    border: 1px solid #e0e9f2;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(23, 50, 77, .045);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading-icon {
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #174f91;
+    background: #eef4fd;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading > div {
+    min-width: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading h3 {
+    margin: 0 0 5px;
+    color: #173b63;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-payment-decision-grid {
+    grid-template-columns: minmax(0, .46fr) minmax(0, .54fr);
+    align-items: stretch;
+    grid-auto-rows: max-content;
+    gap: 18px;
+    margin-top: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-card {
+    min-height: 0;
+    padding: 18px 20px 20px;
+    border: 1px solid #dce6ef !important;
+    border-radius: 12px;
+    background: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(23, 50, 77, .045);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card header,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-card header {
+    margin: 0 0 15px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-payment-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 6px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-payment-card-heading > span {
+    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    color: #174f91;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card h4,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-card h4 {
+    margin: 0;
+    color: #173b63;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card header p,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-card header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card ol {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid #dce6ef;
+    list-style: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card li {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    min-width: 0;
+    padding: 14px 0;
+    border-bottom: 1px solid #dce6ef;
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card li > span:first-child,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-number {
+    display: inline-flex;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: #174f91;
+    background: #eef4fd;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card li strong {
+    color: #174f91;
+    font-weight: 750;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    border: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-row {
+    min-height: 0;
+    border: 1px solid #dce6ef !important;
+    border-radius: 11px;
+    background: #ffffff;
+    overflow: visible;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-row > summary {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) 12px;
+    align-items: start;
+    gap: 12px;
+    min-height: 0;
+    padding: 13px 15px;
+    color: #173b63;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-question {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-question strong {
+    color: #173b63;
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.5;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-question small {
+    display: block;
+    overflow: visible;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.55;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-row > summary::after {
+    width: 8px;
+    height: 8px;
+    margin: 5px 2px 0 0;
+    border-right: 1.5px solid #174f91;
+    border-bottom: 1.5px solid #174f91;
+    content: '' !important;
+    transform: rotate(45deg);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-row[open] > summary::after {
+    margin-top: 9px;
+    transform: rotate(225deg);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-detail {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 14px 16px 16px 66px;
+    border-top: 1px solid #e1e8ef;
+    border-radius: 0 0 10px 10px;
+    background: #f7f9fc;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-detail h5 {
+    margin: 0 0 5px;
+    color: #173b63;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-detail p,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-detail li {
+    color: #475569;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-detail small {
+    color: #64748b;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-prototype-assumption {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #dce6ef;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-prototype-assumption > span {
+    display: block;
+    margin-bottom: 9px;
+    color: #173b63;
+    font-size: 13px;
+    font-weight: 750;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-prototype-assumption dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid #e0e9f2;
+    border-radius: 10px;
+    background: #f4f8fd;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-prototype-assumption dt {
+    color: #64748b;
+    font-size: 11px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-prototype-assumption dd {
+    margin: 3px 0 0;
+    color: #174f91;
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.4;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-payment-decision-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b > .report-page__wording-zone-heading {
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading h3 {
+    font-size: 19px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-condition-card,
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-card {
+    padding: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-decision-detail {
+    grid-template-columns: 1fr;
+    padding: 14px 16px 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-prototype-assumption dl {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Give the two second-row pricing cards room for their calculation toggle. */
+@media screen and (min-width: 901px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--loss-ratio,
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric--limits {
+    min-height: 294px;
+  }
+}
+
+/* Keep only the judgment card's number and category label on a left reading edge. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-topline {
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-label {
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+}
+
+/* Feasibility hero visual: use the decorative growth motif from the reference. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual {
+    position: relative;
+    height: 154px;
+    overflow: hidden;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual > svg {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual::before {
+    position: absolute;
+    right: -18px;
+    bottom: 28px;
+    width: 68%;
+    height: 84px;
+    border: 2px solid rgba(132, 180, 255, .22);
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 50%;
+    content: '';
+    transform: rotate(-16deg);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-visual::after {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    color: #cfe0ff;
+    content: '✦';
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart {
+    z-index: 1;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__product-decision-chart::before {
+    position: absolute;
+    top: 18px;
+    left: 58%;
+    color: #d6e5ff;
+    content: '✦';
+    font-size: 13px;
+    line-height: 1;
+  }
+}
+
+/* Keep the executive briefing's hierarchy without stacking heavy outlines. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
+    border-color: var(--surface-border-soft);
+    box-shadow: var(--surface-shadow-soft);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion {
+    border-color: var(--surface-border-faint);
+    box-shadow: 0 7px 18px rgba(23, 58, 91, .045);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group {
+    border-color: var(--surface-border-faint);
+    box-shadow: 0 3px 10px rgba(23, 58, 91, .025);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-judgment-cards {
+    border-top-color: var(--surface-border-soft);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-core-card + .report-page__ai-summary-core-card {
+    border-color: var(--surface-border-faint);
+    box-shadow: var(--surface-shadow-subtle);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--confirmed,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--attention {
+    border-color: var(--surface-border-faint);
+    box-shadow: 0 3px 9px rgba(23, 58, 91, .025);
+  }
+}
+
+/* Keep the expanded proposal rationale blocks equal in the desktop comparison grid. */
+@media screen and (min-width: 681px) {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-detail-block-grid {
+    align-items: stretch;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-detail-block-grid > article {
+    align-self: stretch;
+    height: auto;
+  }
+}
+
+/* Replace the two briefing card outlines with clear, restrained elevation. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-conclusion-group {
+    border: 0 !important;
+    background: #ffffff;
+    box-shadow: var(--surface-shadow-card);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--confirmed,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--attention {
+    border: 0 !important;
+    background: #ffffff;
+    box-shadow: var(--surface-shadow-card);
+  }
+}
+
+/* Calculation evidence: a wide board with readable vertical evidence stacks. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence {
+    margin-top: 36px;
+    padding: 28px 28px 30px;
+    border: 1px solid var(--report-border);
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 10px 28px rgba(23, 58, 91, .055);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence > .report-page__proposal-section-heading {
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence > .report-page__proposal-section-heading h3 {
+    font-size: clamp(25px, 2.25vw, 34px);
+    line-height: 1.3;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence > .report-page__proposal-section-heading p:not(.report-page__eyebrow) {
+    max-width: 70ch;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-confidence {
+    margin: 0;
+    padding: 10px 16px;
+    border: 1px solid var(--report-border);
+    border-radius: 10px;
+    color: var(--proposal-navy);
+    background: var(--report-surface-soft);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+    align-items: stretch;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article {
+    display: flex;
+    align-self: stretch;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+    padding: 22px 20px 20px;
+    border: 1px solid #dbe5ef;
+    border-radius: 12px;
+    background: #fbfdff;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article h4 {
+    margin: 0 0 18px;
+    color: var(--proposal-navy);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1.35;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article ul {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article li {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+    padding: 15px 16px;
+    border: 1px solid #e1e9f1;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article li > strong {
+    display: block;
+    color: var(--proposal-navy);
+    font-size: 15px;
+    font-weight: 750;
+    line-height: 1.45;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article li > span:not(.report-page__proposal-evidence-impact) {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article:nth-child(3) li {
+    grid-template-columns: minmax(0, 1fr) minmax(108px, .9fr);
+    align-items: center;
+    gap: 14px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-impact {
+    align-items: flex-start;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-impact > em {
+    color: #d65a1a;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+}
+
+@media screen and (max-width: 980px) {
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence {
+    padding: 24px 22px 26px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+@media screen and (max-width: 680px) {
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence {
+    padding: 22px 16px 24px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence > .report-page__proposal-section-heading {
+    gap: 10px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-confidence {
+    width: fit-content;
+    font-size: 13px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article:nth-child(3) li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* 약관 작성 근거와 핵심 용어는 같은 높이의 두 카드로 정리하고,
+   긴 용어 목록은 대표 항목과 더보기 토글로 나눕니다. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds {
+    padding: 22px 24px 24px;
+    border: 1px solid #dbe6ef;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 10px 26px rgba(23, 58, 91, .055);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds > .report-page__wording-zone-heading {
+    margin-bottom: 18px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid {
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid > article {
+    display: flex;
+    min-width: 0;
+    align-self: stretch;
+    flex-direction: column;
+    padding: 20px;
+    border: 1px solid #dfe8f0;
+    border-radius: 12px;
+    background: #fbfdff;
+    box-shadow: 0 6px 18px rgba(23, 58, 91, .045);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid > article:last-child {
+    padding-left: 20px;
+    border: 1px solid #dfe8f0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid > article > h4 {
+    margin: 0;
+    color: var(--report-deep-navy);
+    font-size: 17px;
+    line-height: 1.4;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid > article > ul {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid > article > ul li {
+    position: relative;
+    padding-left: 16px;
+    color: #52677b;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid > article > ul li::before {
+    position: absolute;
+    top: .7em;
+    left: 1px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #6b8498;
+    content: '';
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid .report-page__wording-term-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 22px;
+    margin-top: 14px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid .report-page__wording-term-columns p {
+    grid-template-columns: minmax(84px, .38fr) minmax(0, .62fr);
+    gap: 10px;
+    margin: 0;
+    padding: 10px 0;
+    border-bottom: 1px solid #e8eef3;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid .report-page__wording-term-columns p strong {
+    color: var(--report-deep-navy);
+    font-size: 13px;
+    line-height: 1.45;
+    word-break: keep-all;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid .report-page__wording-term-columns p span {
+    color: #60758a;
+    font-size: 12px;
+    line-height: 1.55;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more {
+    margin-top: 14px;
+    border-top: 1px solid #dfe8f0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more > summary {
+    display: flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0 2px;
+    color: var(--report-deep-navy);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more > summary::after {
+    flex: 0 0 auto;
+    color: #6b8498;
+    content: '＋';
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more[open] > summary::after {
+    content: '−';
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more > summary span {
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more > summary small {
+    margin-left: auto;
+    color: #7890a3;
+    font-size: 11px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more .report-page__wording-term-columns {
+    margin-top: 2px;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid {
+    grid-template-columns: 1fr;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid > article:last-child {
+    padding-top: 20px;
+  }
+}
+
+@media screen and (max-width: 560px) {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds {
+    padding: 18px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid .report-page__wording-term-columns {
+    grid-template-columns: 1fr;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-grounds-grid .report-page__wording-term-columns p {
+    grid-template-columns: minmax(90px, .36fr) minmax(0, .64fr);
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more > summary {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-term-more > .report-page__wording-term-columns {
+    display: grid;
+  }
+}
+
+/* Pricing evidence must remain in normal document flow when opened. The
+   previous fixed second-row height plus auto top margin made the panel
+   recalculate inside the card, which looked like it was opening upward. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric:has(.report-page__proposal-metric-details[open]) {
+    height: auto !important;
+    overflow: visible;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-metric:has(.report-page__proposal-metric-details[open]) .report-page__proposal-metric-details {
+    margin-top: 14px !important;
+  }
+}
+
+/* 추천 이유 카드는 번호와 제목을 같은 헤더 행에 두고, 내용 높이만큼만 쌓습니다. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li {
+    min-height: 0;
+    height: auto;
+    padding: 16px 16px 14px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li > div {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 10px;
+    row-gap: 0;
+    align-content: start;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li > div > small {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    line-height: 1.2;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li > div > h4 {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin: 0;
+    line-height: 1.35;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-recommendation-grid > ol > li > div > ul {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 12px;
+  }
+}
+
+/* 산출 근거와 신뢰도는 안쪽 박스를 줄이고, 얇은 행 구분만 남긴 정보판으로 압축합니다. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence {
+    margin-top: 26px;
+    padding: 20px 22px 22px;
+    border-color: #dfe7ee;
+    border-radius: 14px;
+    box-shadow: 0 7px 18px rgba(23, 58, 91, .04);
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence > .report-page__proposal-section-heading {
+    margin-bottom: 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence > .report-page__proposal-section-heading h3 {
+    font-size: clamp(24px, 2vw, 29px);
+    line-height: 1.3;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence > .report-page__proposal-section-heading p:not(.report-page__eyebrow) {
+    max-width: 70ch;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-confidence {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: #60758a;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid {
+    gap: 20px;
+    align-items: start;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article {
+    display: block;
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article + article {
+    padding-left: 20px;
+    border-left: 1px solid #e5ecf2;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article h4 {
+    margin: 0 0 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dfe7ee;
+    color: #173b63;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article ul {
+    gap: 0;
+    margin: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article li,
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article:nth-child(3) li {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3px;
+    padding: 9px 0;
+    border: 0;
+    border-bottom: 1px solid #e8eef3;
+    border-radius: 0;
+    background: transparent;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article li:last-child {
+    border-bottom: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article li > strong {
+    color: #173b63;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article li > span:not(.report-page__proposal-evidence-impact) {
+    color: #64788a;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-impact {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    color: #64788a;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-impact > span {
+    flex: 0 0 auto;
+    color: #8ca0af;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-impact > em {
+    color: #64788a;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+}
+
+@media screen and (max-width: 980px) {
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence-grid > article + article {
+    padding-top: 16px;
+    padding-left: 0;
+    border-top: 1px solid #e5ecf2;
+    border-left: 0;
+  }
+}
+
+@media screen and (max-width: 680px) {
+  :is(#report-root, .reports-page) #report-panel-proposal > .report-page__proposal-section[aria-label="상품 개발 제안"] .report-page__proposal-evidence {
+    padding: 18px 16px 20px;
+  }
+}
+
+/* Keep the briefing financial cards softly elevated while restoring a visible boundary. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--confirmed,
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-finance-card--attention {
+    border: 1px solid #d8e4ee !important;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(23, 58, 91, 0.035);
+  }
+}
+
+/* Align the coverage badge and title on one compact card heading row. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid > article {
+    padding: 14px 16px 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #d8e1e9;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-card-heading .report-page__proposal-coverage-category {
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-card-heading .report-page__proposal-coverage-category > span {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-card-heading .report-page__proposal-coverage-category > small {
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid h4 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid ul {
+    gap: 10px;
+    margin-top: 12px;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+    margin: 0;
+    padding-bottom: 2mm;
+    border-bottom: 1px solid #cbd5e1;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-proposal .report-page__proposal-coverage-summary-grid h4 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+}
+
+/* Center the judgment card number and category as one combined header group. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-topline {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__ai-summary-core-grid--three .report-page__ai-summary-card-label {
+    width: auto !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+
+/* Bring the risk overview heading and its context text in line with the review-results scale. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-risk-context .report-page__decision-briefing-kicker {
+    margin: 0 0 7px;
+    color: #71869a;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    line-height: 1.2;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-risk-context .report-page__decision-briefing-section-head h3 {
+    color: var(--report-navy);
+    font-size: 23px;
+    font-weight: 750;
+    letter-spacing: -.035em;
+    line-height: 1.3;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-risk-context-list {
+    margin-top: 10px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-risk-context-list dt {
+    font-size: 11px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-risk-context-list dd {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-risk-context .report-page__decision-briefing-kicker {
+    font-size: 9pt;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-risk-context .report-page__decision-briefing-section-head h3 {
+    font-size: 14pt;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-risk-context-list dd {
+    font-size: 8.5pt;
+  }
+}
+
+/* Present the payment requirements heading like the other text-led report sections. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b > .report-page__wording-zone-heading {
+    display: block;
+    margin: 0 0 16px;
+    padding: 0 0 12px;
+    border: 0;
+    border-bottom: 1px solid #e4ebf1;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading-icon {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading .report-page__eyebrow {
+    margin: 0 0 5px;
+    color: #647b91;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    line-height: 1.2;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading h3 {
+    margin: 0;
+    color: #173b63;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading p:not(.report-page__eyebrow) {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b > .report-page__wording-zone-heading {
+    margin-bottom: 3mm;
+    padding-bottom: 2mm;
+    border-bottom: 1px solid #cbd5e1;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-wording .report-page__wording-zone-b .report-page__wording-zone-heading-icon {
+    display: none;
+  }
+}
+
+/* The feasibility page starts directly with its decision overview after removing the intro copy. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign > .report-page__section-heading {
+    margin-bottom: 8px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign-content {
+    margin-top: 0;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign > .report-page__section-heading {
+    margin-bottom: 3mm;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-feasibility .report-page__feasibility-redesign-content {
+    margin-top: 0;
+  }
+}
+
+/* Remove the redundant summary heading and tighten the opening briefing stack. */
+@media screen {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
+    margin-top: 12px;
+    padding: 14px 18px 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary-head {
+    display: none;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+    margin-top: 0 !important;
+    padding: 14px 16px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    margin: 10px 0 0 !important;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary .report-page__ai-summary-block-heading {
+    margin-bottom: 9px;
+    padding-top: 9px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-finance .report-page__decision-briefing-finance-summary {
+    margin-top: 8px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
+    padding: 12px 12px 14px;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+    padding: 12px;
+  }
+}
+
+@media print {
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary {
+    margin-top: 3mm;
+    padding: 3mm;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__decision-briefing-conclusion {
+    padding: 3mm;
+  }
+
+  :is(#report-root, .reports-page) #report-panel-ai-judgment .report-page__briefing--decision .report-page__decision-briefing-summary > .report-page__ai-summary-section--integrated {
+    margin-top: 2mm !important;
   }
 }
