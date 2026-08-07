@@ -14,7 +14,8 @@ import { createWordingReportProxy } from '../api/wording-report-proxy'
 import '../report.css'
 
 type Clause = { key?: string; number: number; title: string; text: string; chapter?: string }
-type Message = { id: string; role: 'user' | 'assistant'; text: string; action?: 'draft' | 'apply'; isLoading?: boolean }
+type Message = { id: string; role: 'user' | 'assistant'; text: string; action?: 'draft' | 'apply' }
+type Reply = { text: string; action?: Message['action']; clause?: Clause }
 
 const BASE_CLAUSES: Clause[] = [
   { number: 1, title: '목적', text: '이 약관은 서비스 이용과 관련하여 회사와 이용자의 권리·의무 및 책임사항을 정함을 목적으로 합니다.' },
@@ -79,11 +80,13 @@ export function PolicyAiEditorPage({
   report: embeddedReport,
   riskData: embeddedRiskData,
   reportProxy: embeddedReportProxy,
+  onSavePolicyEditor,
   onClose,
 }: {
   report?: ReportResult
   riskData?: RiskSourceData
   reportProxy?: ReportProxy
+  onSavePolicyEditor?: (editor: WordingPolicyEditor) => Promise<boolean>
   onClose?: () => void
 }) {
   const navigate = useNavigate()
@@ -99,6 +102,8 @@ export function PolicyAiEditorPage({
   const [errorMessage, setErrorMessage] = useState('')
   const [toast, setToast] = useState('')
   const [leaveOpen, setLeaveOpen] = useState(false)
+  const [isReading, setIsReading] = useState(false)
+  const [activeClauseKey, setActiveClauseKey] = useState('')
   const localReportProxy = useMemo(() => createWordingReportProxy(), [])
   const reportProxy = embeddedReportProxy ?? localReportProxy
   const responseTimerRef = useRef<number | null>(null)
@@ -169,7 +174,11 @@ export function PolicyAiEditorPage({
   const clauses = [...reportClauses, ...addedClauses]
   const policyTitle = entry ? createArticlePolicyDraft(asReportView(entry.report)).documentTitle : '서비스 이용 약관'
   const reportTitle = entry?.report.meta.title ?? 'AI 약관 편집'
-  const nextArticleNumber = clauses.reduce((highest, clause) => Math.max(highest, clause.number), 0) + 1
+  const specialClauseNumbers = clauses
+    .filter((clause) => clause.chapter?.includes('특별약관'))
+    .map((clause) => clause.number)
+  const nextArticleNumber = (specialClauseNumbers.length ? specialClauseNumbers : clauses.map((clause) => clause.number))
+    .reduce((highest, number) => Math.max(highest, number), 0) + 1
   const focus = entry?.report.wordingFeasibility.improvementReasons?.[0]
     ?? entry?.report.productProposal.unresolvedItems?.[0]
     ?? entry?.report.productProposal.coveredLoss
@@ -180,12 +189,8 @@ export function PolicyAiEditorPage({
     title: `${reportTitle} 보장 기준 정리`,
     text: `이 조항은 ${reportTitle}에서 우선 검토할 항목인 '${focus}'를 약관에 반영하기 위한 기준을 정합니다. 보장 대상은 ${entry?.report.productProposal.coveredObject ?? '리포트에 기재된 위험 대상'}로 하고, 보장 사건은 ${entry?.report.productProposal.coveredEvent ?? '리포트에서 확인된 사건 기준'}으로 구분합니다. ${entry?.report.productProposal.coveredLoss ?? '해당 사건으로 발생한 손해'}가 보장 범위에 해당하려면 발생 사실·인과관계·손해 규모를 확인할 수 있는 자료가 필요하며, ${entry?.report.productProposal.existingInsuranceRelationship ?? '기존 보험 및 다른 보상수단과의 관계'}도 함께 검토합니다. 적용 한도, 면책, 자기부담금과 최종 책임 범위는 이 리포트의 미해결 항목을 확인한 뒤 상품·법무·보상 담당자가 확정합니다.`,
   }
-  const focusClause = clauses.find((clause) => clause.chapter && clause.text) ?? clauses[0]
-  const scenarioScripts = [
-    { label: '기존 조항 검색', prompt: '환불 관련 규정 알려줘', answer: `${reportTitle}의 ${focusClause ? `제${focusClause.number}조(${focusClause.title})` : '관련 조항'}과 원문 근거를 기준으로 안내합니다.` },
-    { label: '신규 조항 작성', prompt: `${focus} 관련 조항을 만들어줘`, answer: `${generatedClause.title}을 ${reportTitle}의 보장 대상·사건·손해 범위에 맞춰 작성하고, 확인자료·면책·한도·최종 검토 항목까지 문서에 반영합니다.` },
-    { label: '기존 문구 다듬기', prompt: '보상한도 문구를 명확하게 해줘', answer: `${reportTitle}의 관련 조항을 기준으로 적용 대상·산정 기준·자기부담금을 나눠 제안합니다.` },
-  ]
+  const clauseDomId = (clause: Clause, index: number) => `policy-clause-${clause.key ?? `${clause.number}-${index}`}`
+  const clauseIdentity = (clause: Clause, index: number) => clause.key ?? `${clause.number}-${index}`
 
   const nextMessageId = (prefix: string) => `${prefix}-${messageSequenceRef.current += 1}`
 
@@ -219,28 +224,51 @@ export function PolicyAiEditorPage({
     else navigate(`/reports?reportId=${encodeURIComponent(entry?.report.meta.sourceRiskId ?? params.get('reportId') ?? '')}`)
   }
 
-  const respond = (text: string, action?: Message['action']) => {
-    setMessages((current) => [...current, { id: `assistant-${Date.now()}`, role: 'assistant', text, action }])
+  const scrollToClause = (clause?: Clause) => {
+    if (!clause) return
+    const index = clauses.findIndex((item) => item === clause || isSameClause(item, clause))
+    if (index < 0) return
+    const id = clauseDomId(clauses[index], index)
+    setActiveClauseKey(clauseIdentity(clauses[index], index))
+    window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 80)
   }
 
-  const ask = (preset?: string) => {
-    const value = (preset ?? question).trim()
-    if (!value || loading) return
-    if (responseTimerRef.current !== null) return
+  const respond = (text: string, action?: Message['action'], clause?: Clause) => {
+    setMessages((current) => [...current, { id: `assistant-${Date.now()}`, role: 'assistant', text, action }])
+    scrollToClause(clause)
+  }
+
+  const buildReply = (value: string): Reply => {
     setQuestion('')
-    const userMessageId = nextMessageId('user')
-    const assistantMessageId = nextMessageId('assistant')
-    const reply = createAssistantReply(value)
-    setMessages((current) => [...current, { id: userMessageId, role: 'user', text: value }, { id: assistantMessageId, role: 'assistant', text: 'AI가 약관 문맥을 읽는 중입니다…', isLoading: true }])
-    setLoading(true)
-    setErrorMessage('')
-    setStatusMessage('AI가 대화를 이해하는 중입니다. 잠시만 기다려 주세요.')
-    responseTimerRef.current = window.setTimeout(() => {
-      setMessages((current) => current.map((message) => (message.id === assistantMessageId ? { id: assistantMessageId, role: 'assistant', text: reply.text, action: reply.action } : message)))
-      setLoading(false)
-      setStatusMessage('')
-      responseTimerRef.current = null
-    }, CHAT_THINKING_MS)
+    if (value.includes('환불')) {
+      const matched = clauses.find((clause) => /환불|취소|반환|refund/i.test(`${clause.title} ${clause.text}`))
+      return { text: `${reportTitle} 기준 ${matched ? `제${matched.number}조(${matched.title})` : '관련 약관 조항'}을 확인했습니다. ${matched?.text ?? '환불·취소 기준은 해당 리포트의 약관 원문과 공식 기준을 함께 확인해야 합니다.'}`, clause: matched }
+    }
+    if (value.includes('조항') || value.includes('추가') || value.includes('작성') || value.includes('만들어')) {
+      const matched = clauses.find((clause) => /보장|손해|사건|대상|지급/i.test(`${clause.title} ${clause.text}`)) ?? clauses[0]
+      return { text: `${reportTitle}의 기존 약관과 보장 공백을 확인했습니다. '${focus}'를 기준으로 새 조항을 작성하고, 기존 조항과의 충돌·근거자료·최종 확인 항목까지 함께 정리할 수 있습니다.`, action: 'draft', clause: matched }
+    }
+    if (value.includes('보상한도') || value.includes('명확')) {
+      const matched = clauses.find((clause) => /한도|지급|보상|손해|자기부담/i.test(`${clause.title} ${clause.text}`)) ?? clauses[0]
+      return { text: `${reportTitle}의 약관에서 보상한도는 적용 대상, 산정 기준, 자기부담금과 함께 명시하면 검토가 수월합니다. 현재 문서의 관련 조항을 기준으로 문구를 정리해 드릴까요?`, action: 'draft', clause: matched }
+    }
+    const matched = clauses.find((clause) => value.split(/\s+/).some((word) => word.length > 1 && `${clause.title} ${clause.text}`.includes(word))) ?? clauses[3] ?? clauses[0]
+    return { text: `질문하신 내용은 ${matched ? `제${matched.number}조(${matched.title})` : '현재 약관'}를 중심으로 확인해야 합니다. 관련 조항과 확인이 필요한 근거를 정리해 드릴게요.`, clause: matched }
+  }
+
+  const ask = () => {
+    const value = question.trim()
+    if (!value || isReading) return
+    setQuestion('')
+    setMessages((current) => [...current, { id: `user-${Date.now()}`, role: 'user', text: value }])
+    setIsReading(true)
+    window.setTimeout(() => {
+      const reply = buildReply(value)
+      setIsReading(false)
+      respond(reply.text, reply.action, reply.clause)
+    }, 4000)
   }
 
   const handleAction = (action: Message['action']) => {
@@ -274,20 +302,32 @@ export function PolicyAiEditorPage({
       addedArticles: dedupeClauses(addedClauses),
       updatedAt: new Date().toISOString(),
     }
+    const nextReport: ReportResult = {
+      ...entry.report,
+      meta: {
+        ...entry.report.meta,
+        revision: (entry.report.meta.revision ?? 0) + 1,
+        updatedAt: new Date().toISOString(),
+      },
+      wordingFeasibility: { ...entry.report.wordingFeasibility, policyEditor: nextEditor },
+    }
     try {
-      await reportProxy.saveReportContent({
-        reportId: entry.report.meta.sourceRiskId,
-        content: {
-          ...entry.report,
-          wordingFeasibility: { ...entry.report.wordingFeasibility, policyEditor: nextEditor },
-        },
-      })
-      const stored = await reportProxy.getReportContent?.(entry.report.meta.sourceRiskId)
-      const storedRecord = stored && typeof stored === 'object' ? stored as Record<string, unknown> : null
-      const storedContent = storedRecord?.content && typeof storedRecord.content === 'object' ? storedRecord.content as Record<string, unknown> : storedRecord
-      const storedWording = storedContent?.wordingFeasibility
-      const storedPolicyEditor = storedWording && typeof storedWording === 'object' ? (storedWording as Record<string, unknown>).policyEditor : undefined
-      if (stored !== null && stored !== undefined && !storedPolicyEditor) throw new Error('save-verification-failed')
+      if (onSavePolicyEditor) {
+        const saved = await onSavePolicyEditor(nextEditor)
+        if (!saved) throw new Error('save-failed')
+      } else {
+        await reportProxy.saveReportContent({
+          reportId: entry.report.meta.sourceRiskId,
+          content: nextReport,
+        })
+        const stored = await reportProxy.getReportContent?.(entry.report.meta.sourceRiskId)
+        const storedRecord = stored && typeof stored === 'object' ? stored as Record<string, unknown> : null
+        const storedContent = storedRecord?.content && typeof storedRecord.content === 'object' ? storedRecord.content as Record<string, unknown> : storedRecord
+        const storedWording = storedContent?.wordingFeasibility
+        const storedPolicyEditor = storedWording && typeof storedWording === 'object' ? (storedWording as Record<string, unknown>).policyEditor : undefined
+        if (stored !== null && stored !== undefined && !storedPolicyEditor) throw new Error('save-verification-failed')
+      }
+      setEntry((current) => current ? { ...current, report: nextReport } : current)
       setSavedEditor(nextEditor)
       setStatus('saved')
       setToast('성공적으로 저장되었습니다')
@@ -317,16 +357,17 @@ export function PolicyAiEditorPage({
             <nav className="policy-editor__toc" aria-label="약관 목차"><strong>약관 목차</strong>{clauses.map((clause, index) => <a key={clause.key ?? `${clause.number}-${index}`} href={`#policy-clause-${clause.key ?? `${clause.number}-${index}`}`}>제{clause.number}조 {clause.title}</a>)}</nav>
             <article className="policy-editor__paper">
               <header className="policy-editor__cover"><span>FULL POLICY DRAFT</span><h2 id="policy-editor-document-title">{policyTitle}</h2><p>현재 리포트에서 생성된 검토용 약관 · 실무자 확인 필요</p></header>
-              <div className="policy-editor__body">{clauses.map((clause, index) => <section id={`policy-clause-${clause.key ?? `${clause.number}-${index}`}`} className={`policy-editor__clause${clause.key?.startsWith('added-') ? ' is-new' : ''}`} key={clause.key ?? `${clause.number}-${index}`}><p className="policy-editor__clause-chapter">{clause.chapter ?? '신규 제안 조항'}</p><div><span>제{clause.number}조</span><h3>{clause.title}</h3></div><p>{clause.text}</p>{clause.key?.startsWith('added-') ? <small>AI 반영 · 저장 전 검토 필요</small> : null}</section>)}</div>
+              <div className="policy-editor__body">{clauses.map((clause, index) => {
+                const identity = clauseIdentity(clause, index)
+                return <section id={clauseDomId(clause, index)} className={`policy-editor__clause${clause.key?.startsWith('added-') ? ' is-new' : ''}${activeClauseKey === identity ? ' is-active' : ''}`} key={identity}><p className="policy-editor__clause-chapter">{clause.chapter ?? '신규 제안 조항'}</p><div><span>제{clause.number}조</span><h3>{clause.title}</h3></div><p>{clause.text}</p>{clause.key?.startsWith('added-') ? <small>AI 반영 · 저장 전 검토 필요</small> : null}</section>
+              })}</div>
             </article>
           </div>
         </section>
         <section className="policy-editor__chat-pane" aria-labelledby="policy-chat-title">
           <div className="policy-editor__chat-heading"><span className="policy-editor__ai-mark">AI</span><div><h2 id="policy-chat-title">약관 AI Chat</h2><p>조항을 검색하고, 검토용 문구를 함께 다듬어 보세요.</p></div></div>
-          <div className="policy-editor__messages" role="log" aria-live="polite">{messages.map((message) => <article className={`policy-editor__message is-${message.role}${message.isLoading ? ' is-loading' : ''}`} key={message.id}><span>{message.role === 'user' ? '실무자' : 'AI 약관 편집'}</span><p>{message.text}</p>{message.action ? <button type="button" className="policy-editor__message-action" onClick={() => handleAction(message.action)}>{message.action === 'draft' ? '관련 약관 만들어 보기' : '약관 수정해드릴까요?'}</button> : null}</article>)}</div>
-          {statusMessage ? <p className="policy-editor__chat-status" role="status">{statusMessage}</p> : null}
-          {errorMessage ? <p className="policy-editor__chat-error" role="alert">{errorMessage}</p> : null}
-          <form className="policy-editor__composer" onSubmit={(event) => { event.preventDefault(); ask() }}><label htmlFor="policy-chat-input">약관에 대해 질문하기</label><div><input id="policy-chat-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="예: 환불 관련 규정 알려줘" disabled={loading} /><button type="submit" disabled={loading || !question.trim()}>전송</button></div></form>
+          <div className="policy-editor__messages" role="log" aria-live="polite">{messages.map((message) => <article className={`policy-editor__message is-${message.role}`} key={message.id}><span>{message.role === 'user' ? '실무자' : 'AI 약관 편집'}</span><p>{message.text}</p>{message.action ? <button type="button" className="policy-editor__message-action" onClick={() => handleAction(message.action)}>{message.action === 'draft' ? '관련 약관 만들어 보기' : '약관 수정해드릴까요?'}</button> : null}</article>)}{isReading ? <article className="policy-editor__message is-assistant is-reading"><span>AI 약관 편집</span><p><i aria-hidden="true" />약관을 읽는 중입니다</p></article> : null}</div>
+          <form className="policy-editor__composer" onSubmit={(event) => { event.preventDefault(); ask() }}><label htmlFor="policy-chat-input">약관에 대해 질문하기</label><div><input id="policy-chat-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="예: 환불 관련 규정 알려줘" disabled={isReading} /><button type="submit" disabled={isReading}>{isReading ? '읽는 중' : '전송'}</button></div></form>
         </section>
       </div>
       {toast ? <div className="policy-editor__toast" role="status">{toast}</div> : null}

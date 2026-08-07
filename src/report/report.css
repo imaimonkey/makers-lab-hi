@@ -36541,6 +36541,7 @@
 .policy-editor__clause p { margin: 12px 0 0; color: #526176; font-size: 13px; line-height: 1.85; }
 .policy-editor__clause small { display: inline-block; margin-top: 12px; padding: 4px 8px; color: #895400; background: #fff2ac; border-radius: 4px; font-size: 10px; font-weight: 800; }
 .policy-editor__clause.is-new { margin: 0 -10px; padding: 20px 10px; background: linear-gradient(90deg, #fff8c9, #fffdf1 75%, transparent); border-left: 3px solid #f0c441; }
+.policy-editor__clause.is-active { margin-inline: -12px; padding-inline: 12px; border-left: 4px solid #f28b18; border-radius: 8px; background: #fff8ec; box-shadow: 0 10px 26px rgba(242, 139, 24, .12); transition: background .2s ease, box-shadow .2s ease; }
 .policy-editor__chat-heading { display: flex; gap: 14px; align-items: center; padding-bottom: 26px; }
 .policy-editor__ai-mark { display: grid; place-items: center; width: 42px; height: 42px; color: #fff; background: #00205b; border-radius: 13px; font-size: 12px; font-weight: 900; }
 .policy-editor__chat-heading h2 { margin: 0 0 3px; font-size: 20px; }
@@ -36573,8 +36574,8 @@
 .policy-editor__message > span { display: block; margin-bottom: 6px; color: #8a96a8; font-size: 10px; font-weight: 800; }
 .policy-editor__message p { white-space: pre-line; margin: 0; padding: 13px 15px; color: #35445b; background: #fff; border: 1px solid #e3e8f0; border-radius: 15px 15px 15px 4px; font-size: 13px; line-height: 1.65; text-align: left; box-shadow: 0 5px 18px rgba(26, 45, 80, .04); }
 .policy-editor__message.is-user p { color: #fff; background: #00205b; border-color: #00205b; border-radius: 15px 15px 4px 15px; }
-.policy-editor__message.is-loading p { color: #6b7280; background: linear-gradient(180deg, #fff, #f6f8fb); border-style: dashed; }
-.policy-editor__message.is-loading p::after { content: ' · · ·'; color: #f28b18; font-weight: 900; letter-spacing: .14em; }
+.policy-editor__message.is-reading p { display: inline-flex; align-items: center; gap: 9px; color: #627086; background: #f3f6fb; }
+.policy-editor__message.is-reading i { width: 8px; height: 8px; border-radius: 999px; background: #f28b18; box-shadow: 14px 0 0 rgba(242, 139, 24, .45), 28px 0 0 rgba(242, 139, 24, .22); animation: policy-editor-reading 1s infinite ease-in-out; }
 .policy-editor__message-action { margin-top: 8px; color: #00205b; border-color: #c9d5e7; font-weight: 800; }
 .policy-editor__composer { position: sticky; bottom: 0; padding-top: 14px; background: #fbfcfe; }
 .policy-editor__composer label { display: block; margin-bottom: 7px; color: #69778d; font-size: 11px; font-weight: 800; }
@@ -36582,6 +36583,7 @@
 .policy-editor__composer input { min-width: 0; flex: 1; border: 1px solid #d8e0eb; border-radius: 12px; padding: 13px 14px; outline: none; }
 .policy-editor__composer input:focus { border-color: #f28b18; box-shadow: 0 0 0 3px rgba(242, 139, 24, .14); }
 .policy-editor__composer button { color: #fff; background: #f28b18; }
+.policy-editor__composer input:disabled, .policy-editor__composer button:disabled { opacity: .65; cursor: wait; }
 .policy-editor__toast { position: fixed; right: 28px; bottom: 28px; z-index: 5; padding: 12px 16px; color: #fff; background: #24344d; border-radius: 10px; box-shadow: 0 10px 24px rgba(20, 35, 60, .2); font-size: 12px; }
 .policy-editor__modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px; background: rgba(9, 21, 42, .42); }
 .policy-editor__modal { width: min(420px, 100%); padding: 26px; background: #fff; border-radius: 16px; box-shadow: 0 22px 70px rgba(12, 27, 52, .28); }
@@ -36589,6 +36591,10 @@
 .policy-editor__modal div { display: flex; justify-content: flex-end; gap: 8px; }
 .policy-editor__modal button { border: 1px solid #d8e0eb; border-radius: 9px; padding: 10px 13px; background: #fff; cursor: pointer; font-weight: 800; }
 .policy-editor__modal button.is-danger { color: #fff; background: #c95147; border-color: #c95147; }
+@keyframes policy-editor-reading {
+  0%, 100% { opacity: .35; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
 @media (max-width: 900px) {
   .policy-editor__header { padding: 16px 18px; }
   .policy-editor__split { grid-template-columns: 1fr; }

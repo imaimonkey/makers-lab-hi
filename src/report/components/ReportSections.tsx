@@ -2816,24 +2816,23 @@ function applyPolicyEditorOverrides(
         articles: section.articles.map((article) => applyArticle(article, `common-${section.id}-${article.number}`)),
       })),
     },
-    specialClauses: [
-      ...policyDraft.specialClauses.map((clause) => ({
-      ...clause,
-      articles: clause.articles.map((article) => applyArticle(article, `special-${clause.id}-${article.number}`)),
-      })),
-      ...(normalizedAddedArticles.length && policyDraft.specialClauses[0] ? [{
-        ...policyDraft.specialClauses[0],
-        id: 'ai-added' as const,
-        title: 'AI 추가 조항',
-        shortTitle: 'AI 추가 조항',
-        summary: '현재 리포트의 약관 편집 화면에서 저장한 추가 조항입니다.',
-        proposalReason: '리포트별 보장 대상·사건·손해 범위를 반영한 검토용 조항입니다.',
-        recommendedCoverageCopy: '최종 약관 반영 전 상품·법무·보상 담당자의 확인이 필요합니다.',
-        articles: normalizedAddedArticles.map((article) => ({ number: article.number, title: article.title, paragraphs: [article.text] })),
-      }] : []),
-    ],
-    addedArticles: normalizedAddedArticles.map((article) => ({
-      number: article.number,
+    specialClauses: policyDraft.specialClauses.map((clause, index) => {
+      const articles = clause.articles.map((article) => applyArticle(article, `special-${clause.id}-${article.number}`))
+      const nextArticleNumber = articles.reduce((highest, article) => Math.max(highest, article.number), 0) + 1
+      return {
+        ...clause,
+        articles: [
+          ...articles,
+          ...(index === 0 ? normalizedAddedArticles.map((article, addedIndex) => ({
+            number: nextArticleNumber + addedIndex,
+            title: article.title,
+            paragraphs: [article.text],
+          })) : []),
+        ],
+      }
+    }),
+    addedArticles: normalizedAddedArticles.map((article, index) => ({
+      number: (policyDraft.specialClauses[0]?.articles.reduce((highest, item) => Math.max(highest, item.number), 0) ?? 0) + 1 + index,
       title: article.title,
       paragraphs: [article.text],
     })),
@@ -2930,6 +2929,7 @@ function FullWordingSection({
   onSavePolicyEditor,
   onOpenPolicyDraft,
   onNavigateTab,
+  addedArticleFocusRequest,
   printMode = false,
 }: {
   report: ReportView
@@ -2939,6 +2939,7 @@ function FullWordingSection({
   onSavePolicyEditor?: (editor: WordingPolicyEditor) => Promise<boolean>
   onOpenPolicyDraft: () => void
   onNavigateTab?: (id: ReportTabId) => void
+  addedArticleFocusRequest?: number
   printMode?: boolean
 }) {
   const data = report.wordingFeasibility
@@ -2960,6 +2961,7 @@ function FullWordingSection({
   const policyDocumentRef = useRef<HTMLDivElement | null>(null)
   const previousPrintTitle = useRef<string | null>(null)
   const dedicatedPrintStarted = useRef(false)
+  const handledAddedArticleFocusRequest = useRef(0)
   const selectedCoverage = policyDraft.specialClauses.find((clause) => clause.id === selectedCoverageId) ?? policyDraft.specialClauses[0]
 
   const findSpecialArticle = (title: string) => selectedCoverage.articles.find((article) => article.title === title)
@@ -3007,6 +3009,19 @@ function FullWordingSection({
       policyDocument.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' })
     })
   }
+
+  useEffect(() => {
+    if (!addedArticleFocusRequest || !data.policyEditor?.addedArticles?.length) return
+    if (handledAddedArticleFocusRequest.current === addedArticleFocusRequest) return
+    handledAddedArticleFocusRequest.current = addedArticleFocusRequest
+    const firstClause = policyDraft.specialClauses[0]
+    const firstAddedArticle = policyDraft.addedArticles?.[0]
+    if (!firstClause || !firstAddedArticle) return
+    window.setTimeout(() => {
+      setSelectedCoverageId(firstClause.id)
+      scrollToArticle(`special-${firstClause.id}-${firstAddedArticle.number}`)
+    }, 120)
+  }, [addedArticleFocusRequest, data.policyEditor?.addedArticles?.length, policyDraft.addedArticles, policyDraft.specialClauses])
 
   const commonTocEntries = policyDraft.commonPolicy.sections.flatMap((section) => section.articles.map((article) => ({
     key: 'common-' + section.id + '-' + article.number,
@@ -3216,13 +3231,6 @@ function FullWordingSection({
           {copyMessage ? <p className="report-page__copy-message report-page__no-print" role="status">{copyMessage}</p> : null}
         </section>
         )}
-
-        {data.policyEditor?.addedArticles?.length ? (
-          <section className="report-page__wording-main-zone report-page__wording-added-clause" aria-labelledby="wording-added-clause-title">
-            <div className="report-page__wording-zone-heading"><div><p className="report-page__eyebrow">AI POLICY UPDATE</p><h3 id="wording-added-clause-title">저장된 추가 조항</h3><p>이 리포트의 약관 편집 화면에서 저장한 문구입니다. 상품·법무·보상 담당자의 최종 검토가 필요합니다.</p></div><span className="report-page__wording-added-clause-badge">저장됨</span></div>
-            {data.policyEditor.addedArticles.map((article) => <article className="report-page__wording-added-clause-card" key={`${article.number}-${article.title}`}><div><span>제{article.number}조</span><h4>{article.title}</h4></div><p>{article.text}</p><small>근거 리포트 · {report.meta.riskTitle ?? report.meta.title} · 저장 시각 {data.policyEditor?.updatedAt ?? '확인 필요'}</small></article>)}
-          </section>
-        ) : null}
 
         <section className="report-page__wording-main-zone report-page__wording-grounds" aria-labelledby="wording-grounds-title">
           <div className="report-page__wording-zone-heading"><div><h3 id="wording-grounds-title">약관 작성 근거와 핵심 용어</h3><p>전체 약관 초안에 반영한 작성 근거와 선택 보장 항목의 핵심 정의를 확인합니다.</p></div></div>
@@ -4286,6 +4294,7 @@ export function ReportSections({
   const report = useMemo(() => asReportView(editorMode || editorPreview ? draftReport : savedReport), [draftReport, editorMode, editorPreview, savedReport])
   const [modal, setModal] = useState<ModalState>(null)
   const [policyDraftOpen, setPolicyDraftOpen] = useState(false)
+  const [addedArticleFocusRequest, setAddedArticleFocusRequest] = useState(0)
   const [activeTab, setActiveTab] = useState<ReportTabId>(getTabFromHash)
   const [pdfMenuOpen, setPdfMenuOpen] = useState(false)
   const [pdfSelectionOpen, setPdfSelectionOpen] = useState(false)
@@ -4523,6 +4532,7 @@ export function ReportSections({
       })
       setSavedReport(cloneReport(contentToSave))
       setDraftReport(cloneReport(contentToSave))
+      setAddedArticleFocusRequest(Date.now())
       return true
     } catch {
       return false
@@ -4594,6 +4604,7 @@ export function ReportSections({
               onSavePolicyEditor={savePolicyEditor}
               onOpenPolicyDraft={() => setPolicyDraftOpen(true)}
               onNavigateTab={handleTabChange}
+              addedArticleFocusRequest={addedArticleFocusRequest}
             />
           )}
         </ReportTabPanel>
@@ -4613,7 +4624,11 @@ export function ReportSections({
 
       <ReportPdfDocument report={asReportView(savedReport)} request={pdfRequest} />
 
-      {policyDraftOpen ? <div className="report-page__policy-ai-overlay"><PolicyAiEditorPage report={savedReport} riskData={riskData} reportProxy={reportProxy} onClose={() => setPolicyDraftOpen(false)} /></div> : null}
+      {policyDraftOpen ? <div className="report-page__policy-ai-overlay"><PolicyAiEditorPage report={savedReport} riskData={riskData} reportProxy={reportProxy} onSavePolicyEditor={async (editor) => {
+        const saved = await savePolicyEditor(editor)
+        if (saved) setPolicyDraftOpen(false)
+        return saved
+      }} onClose={() => setPolicyDraftOpen(false)} /></div> : null}
 
       {pdfSelectionOpen ? (
         <PdfSelectionModal
