@@ -36573,6 +36573,8 @@
 .policy-editor__message > span { display: block; margin-bottom: 6px; color: #8a96a8; font-size: 10px; font-weight: 800; }
 .policy-editor__message p { white-space: pre-line; margin: 0; padding: 13px 15px; color: #35445b; background: #fff; border: 1px solid #e3e8f0; border-radius: 15px 15px 15px 4px; font-size: 13px; line-height: 1.65; text-align: left; box-shadow: 0 5px 18px rgba(26, 45, 80, .04); }
 .policy-editor__message.is-user p { color: #fff; background: #00205b; border-color: #00205b; border-radius: 15px 15px 4px 15px; }
+.policy-editor__message.is-loading p { color: #6b7280; background: linear-gradient(180deg, #fff, #f6f8fb); border-style: dashed; }
+.policy-editor__message.is-loading p::after { content: ' · · ·'; color: #f28b18; font-weight: 900; letter-spacing: .14em; }
 .policy-editor__message-action { margin-top: 8px; color: #00205b; border-color: #c9d5e7; font-weight: 800; }
 .policy-editor__composer { position: sticky; bottom: 0; padding-top: 14px; background: #fbfcfe; }
 .policy-editor__composer label { display: block; margin-bottom: 7px; color: #69778d; font-size: 11px; font-weight: 800; }

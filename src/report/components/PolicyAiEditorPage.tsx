@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { WordingPolicyEditor } from '../types'
 import type { ReportResult, RiskSourceData } from '../types'
@@ -14,7 +14,7 @@ import { createWordingReportProxy } from '../api/wording-report-proxy'
 import '../report.css'
 
 type Clause = { key?: string; number: number; title: string; text: string; chapter?: string }
-type Message = { id: string; role: 'user' | 'assistant'; text: string; action?: 'draft' | 'apply' }
+type Message = { id: string; role: 'user' | 'assistant'; text: string; action?: 'draft' | 'apply'; isLoading?: boolean }
 
 const BASE_CLAUSES: Clause[] = [
   { number: 1, title: '목적', text: '이 약관은 서비스 이용과 관련하여 회사와 이용자의 권리·의무 및 책임사항을 정함을 목적으로 합니다.' },
@@ -51,9 +51,28 @@ function createReportClauses(report: ArticleDerivedReportEntry['report']): Claus
 }
 
 const welcome: Message = { id: 'welcome', role: 'assistant', text: '약관 문서와 관련 근거를 확인했습니다. 조항 검색, 설명, 작성 또는 수정을 요청해 주세요.' }
+const CHAT_THINKING_MS = 15_000
 
 function pickEntry(entries: ArticleDerivedReportEntry[], id: string | null) {
   return entries.find((entry) => entry.report.meta.sourceRiskId === id || entry.report.meta.reportId === id) ?? entries[0]
+}
+
+function normalizeForCompare(value: string) {
+  return value.replace(/\s+/g, ' ').trim().toLowerCase()
+}
+
+function isSameClause(a: Clause, b: Clause) {
+  return normalizeForCompare(a.title) === normalizeForCompare(b.title)
+    && normalizeForCompare(a.text) === normalizeForCompare(b.text)
+}
+
+function dedupeClauses(items: Clause[]) {
+  const seen = new Map<string, Clause>()
+  for (const it of items) {
+    const key = `${normalizeForCompare(it.title)}|${normalizeForCompare(it.text)}`
+    if (!seen.has(key)) seen.set(key, it)
+  }
+  return Array.from(seen.values())
 }
 
 export function PolicyAiEditorPage({
@@ -75,10 +94,19 @@ export function PolicyAiEditorPage({
   const [addedClauses, setAddedClauses] = useState<Clause[]>([])
   const [savedEditor, setSavedEditor] = useState<WordingPolicyEditor | undefined>()
   const [status, setStatus] = useState<'saved' | 'editing'>('saved')
+  const [loading, setLoading] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
   const [toast, setToast] = useState('')
   const [leaveOpen, setLeaveOpen] = useState(false)
   const localReportProxy = useMemo(() => createWordingReportProxy(), [])
   const reportProxy = embeddedReportProxy ?? localReportProxy
+  const responseTimerRef = useRef<number | null>(null)
+  const messageSequenceRef = useRef(0)
+
+  useEffect(() => () => {
+    if (responseTimerRef.current !== null) window.clearTimeout(responseTimerRef.current)
+  }, [])
 
   useEffect(() => {
     const loadSelectedEntry = async () => {
@@ -139,23 +167,6 @@ export function PolicyAiEditorPage({
 
   const reportClauses = entry ? createReportClauses(entry.report) : BASE_CLAUSES
   const clauses = [...reportClauses, ...addedClauses]
-  function normalizeForCompare(value: string) {
-    return value.replace(/\s+/g, ' ').trim().toLowerCase()
-  }
-
-  function isSameClause(a: Clause, b: Clause) {
-    return normalizeForCompare(a.title) === normalizeForCompare(b.title)
-      && normalizeForCompare(a.text) === normalizeForCompare(b.text)
-  }
-
-  function dedupeClauses(items: Clause[]) {
-    const seen = new Map<string, Clause>()
-    for (const it of items) {
-      const key = `${normalizeForCompare(it.title)}|${normalizeForCompare(it.text)}`
-      if (!seen.has(key)) seen.set(key, it)
-    }
-    return Array.from(seen.values())
-  }
   const policyTitle = entry ? createArticlePolicyDraft(asReportView(entry.report)).documentTitle : '서비스 이용 약관'
   const reportTitle = entry?.report.meta.title ?? 'AI 약관 편집'
   const nextArticleNumber = clauses.reduce((highest, clause) => Math.max(highest, clause.number), 0) + 1
@@ -176,6 +187,28 @@ export function PolicyAiEditorPage({
     { label: '기존 문구 다듬기', prompt: '보상한도 문구를 명확하게 해줘', answer: `${reportTitle}의 관련 조항을 기준으로 적용 대상·산정 기준·자기부담금을 나눠 제안합니다.` },
   ]
 
+  const nextMessageId = (prefix: string) => `${prefix}-${messageSequenceRef.current += 1}`
+
+  const createAssistantReply = (value: string): { text: string; action?: Message['action'] } => {
+    const script = scenarioScripts.find((item) => item.prompt === value)
+    if (script) return { text: script.answer }
+
+    if (value.includes('환불')) {
+      const matched = clauses.find((clause) => /환불|취소|반환|refund/i.test(`${clause.title} ${clause.text}`))
+      return { text: `${reportTitle} 기준 ${matched ? `제${matched.number}조(${matched.title})` : '관련 약관 조항'}을 확인했습니다. ${matched?.text ?? '환불·취소 기준은 해당 리포트의 약관 원문과 공식 기준을 함께 확인해야 합니다.'}` }
+    }
+
+    if (value.includes('조항') || value.includes('추가') || value.includes('작성') || value.includes('만들어')) {
+      return { text: `${reportTitle}의 기존 약관과 보장 공백을 확인했습니다. '${focus}'를 기준으로 새 조항을 작성하고, 기존 조항과의 충돌·근거자료·최종 확인 항목까지 함께 정리할 수 있습니다.`, action: 'draft' }
+    }
+
+    if (value.includes('보상한도') || value.includes('명확')) {
+      return { text: `${reportTitle}의 약관에서 보상한도는 적용 대상, 산정 기준, 자기부담금과 함께 명시하면 검토가 수월합니다. 현재 문서의 관련 조항을 기준으로 문구를 정리해 드릴까요?`, action: 'draft' }
+    }
+
+    return { text: '질문하신 내용은 현재 약관의 제4조부터 제7조를 함께 확인해야 합니다. 관련 조항과 확인이 필요한 근거를 정리해 드릴게요.' }
+  }
+
   const goBack = () => {
     if (onClose) {
       if (status === 'editing') setLeaveOpen(true)
@@ -192,19 +225,22 @@ export function PolicyAiEditorPage({
 
   const ask = (preset?: string) => {
     const value = (preset ?? question).trim()
-    if (!value) return
+    if (!value || loading) return
+    if (responseTimerRef.current !== null) return
     setQuestion('')
-    setMessages((current) => [...current, { id: `user-${Date.now()}`, role: 'user', text: value }])
-    if (value.includes('환불')) {
-      const matched = clauses.find((clause) => /환불|취소|반환|refund/i.test(`${clause.title} ${clause.text}`))
-      respond(`${reportTitle} 기준 ${matched ? `제${matched.number}조(${matched.title})` : '관련 약관 조항'}을 확인했습니다. ${matched?.text ?? '환불·취소 기준은 해당 리포트의 약관 원문과 공식 기준을 함께 확인해야 합니다.'}`)
-    } else if (value.includes('조항') || value.includes('추가') || value.includes('작성') || value.includes('만들어')) {
-      respond(`${reportTitle}의 기존 약관과 보장 공백을 확인했습니다. '${focus}'를 기준으로 새 조항을 작성하고, 기존 조항과의 충돌·근거자료·최종 확인 항목까지 함께 정리할 수 있습니다.`, 'draft')
-    } else if (value.includes('보상한도') || value.includes('명확')) {
-      respond(`${reportTitle}의 약관에서 보상한도는 적용 대상, 산정 기준, 자기부담금과 함께 명시하면 검토가 수월합니다. 현재 문서의 관련 조항을 기준으로 문구를 정리해 드릴까요?`, 'draft')
-    } else {
-      respond('질문하신 내용은 현재 약관의 제4조부터 제7조를 함께 확인해야 합니다. 관련 조항과 확인이 필요한 근거를 정리해 드릴게요.')
-    }
+    const userMessageId = nextMessageId('user')
+    const assistantMessageId = nextMessageId('assistant')
+    const reply = createAssistantReply(value)
+    setMessages((current) => [...current, { id: userMessageId, role: 'user', text: value }, { id: assistantMessageId, role: 'assistant', text: 'AI가 약관 문맥을 읽는 중입니다…', isLoading: true }])
+    setLoading(true)
+    setErrorMessage('')
+    setStatusMessage('AI가 대화를 이해하는 중입니다. 잠시만 기다려 주세요.')
+    responseTimerRef.current = window.setTimeout(() => {
+      setMessages((current) => current.map((message) => (message.id === assistantMessageId ? { id: assistantMessageId, role: 'assistant', text: reply.text, action: reply.action } : message)))
+      setLoading(false)
+      setStatusMessage('')
+      responseTimerRef.current = null
+    }, CHAT_THINKING_MS)
   }
 
   const handleAction = (action: Message['action']) => {
@@ -287,10 +323,10 @@ export function PolicyAiEditorPage({
         </section>
         <section className="policy-editor__chat-pane" aria-labelledby="policy-chat-title">
           <div className="policy-editor__chat-heading"><span className="policy-editor__ai-mark">AI</span><div><h2 id="policy-chat-title">약관 AI Chat</h2><p>조항을 검색하고, 검토용 문구를 함께 다듬어 보세요.</p></div></div>
-          <div className="policy-editor__examples"><span>{reportTitle} 기준 AI 대화 대본</span>{scenarioScripts.map((script) => <button key={script.label} type="button" onClick={() => ask(script.prompt)}>{script.label} · {script.prompt}</button>)}</div>
-          <div className="policy-editor__script-list" aria-label="현재 리포트 대화 대본">{scenarioScripts.map((script, index) => <article key={script.label}><strong>0{index + 1} · {script.label}</strong><p><b>실무자</b> “{script.prompt}”</p><p><b>AI</b> {script.answer}</p></article>)}</div>
-          <div className="policy-editor__messages" role="log" aria-live="polite">{messages.map((message) => <article className={`policy-editor__message is-${message.role}`} key={message.id}><span>{message.role === 'user' ? '실무자' : 'AI 약관 편집'}</span><p>{message.text}</p>{message.action ? <button type="button" className="policy-editor__message-action" onClick={() => handleAction(message.action)}>{message.action === 'draft' ? '관련 약관 만들어 보기' : '약관 수정해드릴까요?'}</button> : null}</article>)}</div>
-          <form className="policy-editor__composer" onSubmit={(event) => { event.preventDefault(); ask() }}><label htmlFor="policy-chat-input">약관에 대해 질문하기</label><div><input id="policy-chat-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="예: 환불 관련 규정 알려줘" /><button type="submit">전송</button></div></form>
+          <div className="policy-editor__messages" role="log" aria-live="polite">{messages.map((message) => <article className={`policy-editor__message is-${message.role}${message.isLoading ? ' is-loading' : ''}`} key={message.id}><span>{message.role === 'user' ? '실무자' : 'AI 약관 편집'}</span><p>{message.text}</p>{message.action ? <button type="button" className="policy-editor__message-action" onClick={() => handleAction(message.action)}>{message.action === 'draft' ? '관련 약관 만들어 보기' : '약관 수정해드릴까요?'}</button> : null}</article>)}</div>
+          {statusMessage ? <p className="policy-editor__chat-status" role="status">{statusMessage}</p> : null}
+          {errorMessage ? <p className="policy-editor__chat-error" role="alert">{errorMessage}</p> : null}
+          <form className="policy-editor__composer" onSubmit={(event) => { event.preventDefault(); ask() }}><label htmlFor="policy-chat-input">약관에 대해 질문하기</label><div><input id="policy-chat-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="예: 환불 관련 규정 알려줘" disabled={loading} /><button type="submit" disabled={loading || !question.trim()}>전송</button></div></form>
         </section>
       </div>
       {toast ? <div className="policy-editor__toast" role="status">{toast}</div> : null}
