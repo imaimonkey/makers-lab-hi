@@ -181,6 +181,7 @@
 .standard-risk-detail > .aic-definition { margin: 0 0 18px; }
 .standard-risk-detail .aic-ev-hero-main { display: flex; flex-direction: column; }
 .standard-risk-detail .aic-ev-hero-main .aic-ev-purpose { margin-top: clamp(10px, 1.5vw, 18px); }
+.aic-deep-analysis .aic-editorial-section > p { white-space: pre-line; }
 
 .standard-risk-detail > .aic-fact-grid {
   display: none !important;

@@ -466,6 +466,14 @@ function buildAssessments(record: RiskExplorationRecord): SampleRiskAssessment[]
 }
 
 function buildDecision(record: RiskExplorationRecord) {
+  if (record.detailRiskId === 'ev-battery-fire') {
+    return {
+      decisionStatus: '검토 가치 있음',
+      decisionBadge: 'REVIEW · 제한적 특약 우선',
+      decisionTitle: '검토 가치가 있으나,\n전기차 화재 전체의 독립상품보다 시설·책임 단위의 제한적 특약·시범상품이 우선',
+      decisionTone: 'advance' as const,
+    }
+  }
   const status = getCandidateStatus(record)
   if (status === '검토 중') {
     return {
