@@ -500,6 +500,19 @@ export function parseStep2Json(text: string): Record<string, unknown> {
 const textValue = (value: unknown, fallback = '확인 필요') => typeof value === 'string' && value.trim() ? value : fallback
 const numberValue = (value: unknown, fallback = 0) => typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(5, value)) : fallback
 
+function articleAudienceTag(article: ArticleSourceRecord): '개인' | '기업' {
+  const text = `${article.title} ${article.contentProfile.topic} ${article.contentProfile.affectedTargets.join(' ')} ${article.contentProfile.industries.join(' ')}`
+  // 개인정보·개인정보보호처럼 기업 위험을 설명하는 단어는 개인 수요로
+  // 오인하지 않도록 제외하고, 소비자·가계·주거 중심 위험만 개인으로 분류합니다.
+  if (/플로리다 주택보험|주택 소유자|가계|소비자|고령자|취약계층|개인 운전자|환자/.test(text)) return '개인'
+  return '기업'
+}
+
+function withAudienceTag(tags: string[], article?: ArticleSourceRecord) {
+  const audience = article ? articleAudienceTag(article) : '기업'
+  return [...new Set([audience, ...tags.filter((tag) => tag !== '개인' && tag !== '기업')])].slice(0, 4)
+}
+
 export function getStep2Root(row?: SavedStep2AnalysisRow): Record<string, unknown> {
   if (!row) return {}
   const data = parseStep2Json(row.resultJson)
@@ -544,15 +557,15 @@ function buildContentDerivedRecord(article: ArticleSourceRecord, index: number):
     dataVal: `${Math.round(scores.dataConfidence * 20)}%`, dataConfidencePercent: Math.round(scores.dataConfidence * 20),
     riskLabel: displayScore('legalExposure'), riskSub: profile.topic, legalRiskSub: profile.reviewActions[0] ?? '검토 필요',
   }
-  const personalExposure = /고령|취약|개인|소비자|근로자|주민|가계|환자|이용자/.test(`${profile.topic} ${profile.affectedTargets.join(' ')} ${profile.damageTypes.join(' ')}`)
-  const categories: RiskExplorationRecord['categories'] = personalExposure ? ['individual', 'corporate'] : ['corporate']
+  const personalExposure = articleAudienceTag(article) === '개인'
+  const categories: RiskExplorationRecord['categories'] = personalExposure ? ['individual'] : ['corporate']
   return {
     id: `developer-${article.id}`,
     detailRiskId: `developer-${article.id}`,
     title: article.title,
     summary: profile.summary,
-    tags: profile.keywords.slice(0, 4),
-    secondaryTags: profile.keywords.slice(0, 4),
+    tags: withAudienceTag(profile.keywords, article),
+    secondaryTags: withAudienceTag(profile.keywords, article),
     primaryCategory: personalExposure ? 'personal' : 'corporate',
     categories: [...categories],
     demand: display.demandVal,
@@ -641,7 +654,7 @@ export function buildDeveloperStep2Records(rows: SavedStep2AnalysisRow[], articl
       ...Object.values(metricEvidence).flatMap((item) => item?.sourceIds ?? []),
     ])]
     const title = textValue(candidate.title, article?.title ?? `실제 아티클 위험 후보 ${index + 1}`)
-    const tags = Array.isArray(candidate.tags) ? candidate.tags.map(String) : ['실제 아티클']
+    const tags = withAudienceTag(Array.isArray(candidate.tags) ? candidate.tags.map(String) : ['실제 아티클'], article)
     const displayScore = (key: RiskExplorationMetricKey) => score(key) > 0 ? `${score(key).toFixed(1)}/5` : actualCheckRequired
     const displayPercent = score('dataConfidence') > 0 ? `${Math.round(score('dataConfidence') * 20)}%` : actualCheckRequired
     const display = {

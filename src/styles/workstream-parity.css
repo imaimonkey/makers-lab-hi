@@ -1809,9 +1809,9 @@
 .workspace-seoyeon .catalog-page .risk-category-button.active,
 .workspace-seoyeon .catalog-page .risk-category-button.active:hover,
 .workspace-seoyeon .catalog-page .risk-category-button.active:focus-visible {
-  border-bottom-color: #ff6b35;
-  color: #0f172a;
-  background: #fffaf6;
+  border-bottom-color: #f47a20;
+  color: #9a3412;
+  background: #ffe5d6;
   box-shadow: none;
 }
 
@@ -1968,9 +1968,23 @@
 }
 
 .workspace-seoyeon .catalog-page .risk-law-tracking {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   grid-template-columns: minmax(330px, 32%) minmax(0, 68%);
+  grid-template-areas: 'sidebar detail';
   min-height: 900px;
   margin-top: 0;
+}
+
+.workspace-seoyeon .catalog-page .risk-law-tracking-sidebar {
+  grid-area: sidebar;
+  min-height: 0;
+}
+
+.workspace-seoyeon .catalog-page .risk-law-detail {
+  grid-area: detail;
+  min-width: 0;
 }
 
 .workspace-seoyeon .catalog-page .risk-law-filter-panel {
@@ -2123,6 +2137,7 @@
 }
 
 .workspace-seoyeon .catalog-page .risk-law-change-grid {
+  margin-top: 20px;
   gap: 16px;
 }
 
@@ -3094,9 +3109,9 @@
 .workspace-seoyeon .catalog-page .risk-category-button.active,
 .workspace-seoyeon .catalog-page .risk-category-button.active:hover,
 .workspace-seoyeon .catalog-page .risk-category-button.active:focus-visible {
-  border-bottom-color: #ff6b35;
-  color: #0f172a;
-  background: #fffaf6;
+  border-bottom-color: #f47a20;
+  color: #9a3412;
+  background: #ffe5d6;
   box-shadow: none;
 }
 

@@ -28,9 +28,33 @@ const categoryFilters: Array<{ key: ScreeningCategory; label: string }> = [
 ]
 
 function tagClass(tag: string) {
-  if (tag === '개인') return 'tag-blue'
+  if (tag === '개인' || tag === '가계') return 'tag-blue'
   if (tag === '기업') return 'tag-purple'
   return 'tag-default'
+}
+
+function fallbackRiskTag(record: RiskExplorationRecord) {
+  const text = `${record.title} ${record.summary} ${record.secondaryTags.join(' ')}`
+  if (/전기차|배터리|ESS|UPS/.test(text)) return '배터리'
+  if (/폭우|침수/.test(text)) return '침수'
+  if (/폭염/.test(text)) return '폭염'
+  if (/자율주행/.test(text)) return '자율주행'
+  if (/드론/.test(text)) return '드론'
+  if (/사이버/.test(text)) return '사이버'
+  if (/AI|인공지능/.test(text)) return 'AI'
+  return '위험관리'
+}
+
+function visibleAudienceTags(record: RiskExplorationRecord) {
+  const existingAudience = record.secondaryTags.find((tag) => tag === '개인' || tag === '가계' || tag === '기업')
+  const audience = existingAudience ?? (() => {
+    const text = `${record.title} ${record.summary} ${record.secondaryTags.join(' ')} ${record.tags.join(' ')}`
+    return /플로리다|주택보험|주택 소유자|가계|소비자|고령|취약계층|개인 운전자|주민|환자|근로자/.test(text) && !/개인정보/.test(text) ? '가계' : '기업'
+  })()
+  const tags = [...new Set([audience === '개인' ? '가계' : audience, ...record.secondaryTags.filter((tag) => tag !== '개인' && tag !== '가계' && tag !== '기업')])]
+  const extraTag = [fallbackRiskTag(record), '보험위험', '관리대상'].find((tag) => !tags.includes(tag))
+  if (tags.length < 3 && extraTag) tags.push(extraTag)
+  return [...new Set(tags)].slice(0, 4)
 }
 
 type ScreeningSort = 'score' | 'title' | RiskCandidateQuantificationKey
@@ -234,6 +258,7 @@ function useRiskCategoryTabsVisibility() {
 function RiskCandidateComparisonRow({ record, index, developerMode, selected, onSelect }: { record: RiskExplorationRecord; index: number; developerMode: boolean; selected: boolean; onSelect: () => void }) {
   const quantification = getRiskCandidateQuantification(record)
   const score = screeningScoreFor(record, developerMode)
+  const displayTags = visibleAudienceTags(record)
 
   return (
     <>
@@ -242,7 +267,7 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
         <td className="screening-keyword">
           <strong>{record.title}</strong>
           <small>{renderCandidateSummary(record)}</small>
-          <span>{record.secondaryTags.map((tag) => <i className={`screening-tag ${tagClass(tag)}`} key={tag}>{tag}</i>)}</span>
+          <span>{displayTags.map((tag) => <i className={`screening-tag ${tagClass(tag)}`} key={tag}>{tag}</i>)}</span>
         </td>
         {screeningColumns.map((key) => {
           const metric = quantification[key]
@@ -274,6 +299,7 @@ function RiskCandidateComparisonRow({ record, index, developerMode, selected, on
 function RiskCandidateDetail({ record, developerMode }: { record: RiskExplorationRecord; developerMode: boolean }) {
   const candidate = getCandidateViewModelById(record.id)
   const quantification = getRiskCandidateQuantification(record)
+  const displayTags = visibleAudienceTags(record)
   const detailPath = `${developerMode ? '/developer-test' : ''}/risks/${candidate?.detailRiskId ?? record.detailRiskId}`
   const isOtaCandidate = record.id === 'ota-delivery-consumer-disputes'
   const evidenceSnapshot = riskCandidateEvidenceSnapshots[record.id]
@@ -367,7 +393,7 @@ function RiskCandidateDetail({ record, developerMode }: { record: RiskExploratio
   return (
     <aside className="risk-screening-detail-panel" aria-label={`${record.title} 상세 평가`}>
       <div className="risk-screening-detail-topline">
-        <span>{record.secondaryTags[0] ?? '위험 후보'}</span>
+        <span>{displayTags[0] ?? '위험 후보'}</span>
         <Link className="risk-screening-detail-link" to={detailPath}>위험 상세 &gt;</Link>
       </div>
       <h4>{record.title}</h4>
@@ -467,13 +493,18 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
       // `primaryCategory` here hid mixed-scope risks from the legal,
       // individual, and corporate tabs even though the record explicitly
       // belonged to those categories.
+      const displayAudience = visibleAudienceTags(record)[0]
       const matchesCategory = category === 'all'
         ? true
-        : category === 'department'
-          ? record.categories.includes('department') || record.signalOrigin === 'department-intake'
-          : category === 'customer'
-            ? record.categories.includes('customer') || record.signalOrigin === 'customer-intake'
-            : record.categories.includes(category)
+        : category === 'individual'
+          ? displayAudience === '가계'
+          : category === 'corporate'
+            ? displayAudience === '기업'
+            : category === 'department'
+              ? record.categories.includes('department') || record.signalOrigin === 'department-intake'
+              : category === 'customer'
+                ? record.categories.includes('customer') || record.signalOrigin === 'customer-intake'
+                : record.categories.includes(category)
       const matchesSource = sourceFilter === 'all' || record.sourceName === sourceFilter
       const collectedAt = record.collectedAt ? new Date(record.collectedAt).getTime() : Number.NaN
       const matchesPeriod = period === 'all' || (Number.isFinite(collectedAt) && collectedAt >= now - Number(period) * 24 * 60 * 60 * 1000)
