@@ -376,7 +376,7 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
     <div className="page riskRadarPage">
       <header className="riskRadarIntro" aria-label="오늘의 위험 신호와 분석 기준">
         <div>
-          <h1>허웅님, 오늘도 반가워요</h1>
+          <h1>김실무님, 오늘도 반가워요</h1>
           <p className="subtitle">오늘의 새로운 위험 신호와 주요 검토 후보를 한눈에 확인해 보세요.</p>
         </div>
         <div className="analysis-meta" aria-label="분석 기준 정보">

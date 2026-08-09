@@ -470,7 +470,7 @@ function buildDecision(record: RiskExplorationRecord) {
     return {
       decisionStatus: '검토 가치 있음',
       decisionBadge: 'REVIEW · 제한적 특약 우선',
-      decisionTitle: '검토 가치가 있으나,\n전기차 화재 전체의 독립상품보다 시설·책임 단위의 제한적 특약·시범상품이 우선',
+      decisionTitle: '검토 가치가 있으나,\n전면 보장보다 제한적 특약·시범상품이 우선',
       decisionTone: 'advance' as const,
     }
   }
