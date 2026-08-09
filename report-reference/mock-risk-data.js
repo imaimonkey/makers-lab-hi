@@ -18,7 +18,7 @@ const mockRiskData = {
   meta: {
     riskId: "RSK-EVFIRE-001",
     analysisMode: "retrospective-benchmark",
-    analysisBaseDate: "2026-02-28",
+    analysisBaseDate: "2026-07-18",
     preparedAt: "2026-07-18T14:30:00+09:00",
     language: "ko-KR",
     dataStatus: "prototype-mock",

@@ -6,7 +6,7 @@ import { riskExplorationRecords } from '../../domain/risk/riskExplorationDemo'
 import { riskCandidateEvidenceSnapshots } from '../../domain/risk/riskCandidateEvidence'
 import { getRiskDetailNarrative } from '../../domain/risk/riskDetailContent'
 import { getRiskDetailResearchSources } from '../../domain/risk/riskDetailSources'
-import { evBatteryDeepAnalysisIntro, evBatteryDeepAnalysisSections, type EvBatteryDeepAnalysisSection } from '../../domain/risk/evBatteryDeepAnalysis'
+import { evBatteryAiExplanations, evBatteryDeepAnalysisIntro, evBatteryDeepAnalysisSections, type EvBatteryDeepAnalysisSection } from '../../domain/risk/evBatteryDeepAnalysis'
 
 type StandardRiskDetailProps = { risk: SampleRiskCandidate; detail: SampleRiskDetail }
 
@@ -67,6 +67,42 @@ const evBatteryBoldPhrases = new Set([
   '면책 또는 인수 제한 대상',
   '열폭주와 높은 손해 심도, 지하주차장에서의 손해 확대, 복수의 책임주체와 기존 보험의 보장 경계',
   '지하주차장·충전시설처럼 위험 범위를 특정한 제한적 특약이나 시범담보부터 적용하고 손해자료를 축적하는 접근',
+  '배터리 셀·팩의 제조 → 차량 운행 중 충격 → 충전 → 주차 → 화재 발생 → 인접 차량 및 건물로의 손해 확산',
+  '배터리의 화학적 특성 때문에 일반적인 소화 방식으로 제어하기 어렵습니다.',
+  '발생 원인과 증거 보유 주체를 함께 확인해야 합니다.',
+  '이 위험은 차량 한 대의 화재가 아니라, 배터리 이상 → 열폭주 → 인접 차량·충전설비 → 주차장·건물 손해로 이어지는 전체 손해 경로를 기준으로 평가해야 하는 복합 재산위험입니다.',
+  '열폭주가 주변 재산으로 번지는 경로',
+  '차량 손해, 시설 손해, 제3자 배상책임 사이의 중복과 보장 공백',
+  '충전 중이거나 지붕이 있는 주차장, 차량 제조·운송 과정에서 제3자 재산손해와 신체손해의 불확실성',
+  '사고가 자주 발생하는지와 한 번 발생했을 때 크게 번지는지는 서로 다른 지표입니다.',
+  '손해 심도와 진압 난이도',
+  '관찰 가능한 조건이 손해 규모를 바꿀 수 있으므로, 일률적인 담보보다 시설·차량별 위험 조건을 반영하는 구조가 적합합니다.',
+  '자동 화재감지와 경보 발생 시 충전시설 전원을 차단하는 기능',
+  '지붕 아래 충전시설의 스프링클러 시스템',
+  '한 건의 사고가 여러 보험계약에 동시에 영향을 줄 수 있습니다.',
+  '개별 차량의 평균 손해만 보면 동일 공간에 집중된 누적손해를 놓칠 수 있습니다.',
+  '42대가 전소, 45대가 부분소, 793대가 그을음 피해를 입어 총 880대의 차량이 피해',
+  '단일 사례를 국내 전체의 사고 빈도나 보험금 수준으로 일반화해서는 안 됩니다.',
+  '전기차 화재의 건당 재산피해액은 내연기관차보다 높게 나타났습니다.',
+  '건당 손해액과 대형 집적사고의 최대손해는 서로 다른 위험입니다.',
+  '전기차 화재라는 결과만으로 책임을 자동 배분할 수 없습니다.',
+  'BMS 상태정보, 충전 이력, 차량 사고·정비 기록, 충전시설 점검기록, 화재조사 결과',
+  'BMS와 충전·정비·시설 점검 로그는 사고 후 책임을 설명하는 자료이면서 사전 위험관리 수준을 보여주는 자료입니다.',
+  '손상·과충전·과방전·과열과 비인가 수리',
+  '위험을 시설별로 차등화할 여지가 있습니다.',
+  '비인가 수리나 중대한 점검 누락은 인수 제한 또는 면책 검토가 필요한 통제 실패 신호',
+  '자동차보험뿐 아니라 전기차 충전사업자 배상책임보험과 화재보험의 연계',
+  '충전사업자 배상책임과 건물 재산보험의 사고 정의가 어떻게 맞물리는지',
+  '하나의 사고가 여러 보험영역의 경계에 동시에 걸릴 수 있다는 점',
+  '‘전기차 화재보험’을 새로 만들 것인가가 아니라, 기존 보험이 차량·건물·충전시설·제조결함을 각각 어디까지 보장하며 어느 지점에서 실제 보장 공백이 발생하는가',
+  '시설 단위 특약, 충전사업자 배상책임 확장 또는 별도 배터리 관련 담보 중 어떤 방식이 적절한지',
+  '자동차·재산·배상책임·제조물책임 약관을 사고 원인과 손해 항목별로 나눠 대조해야 합니다.',
+  '약관의 접점',
+  'EV 위험 전체를 한 번에 보장하기보다 배터리 성능·보증, 충전시설 운영책임처럼 사고 정의와 자료를 확보할 수 있는 단위부터 시범 검토하는 편이 검증 가능성이 높습니다.',
+  '전기차 배터리 화재 전체를 넓게 보장하는 독립상품보다 기존 재산·배상책임보험에 제한적 특약을 추가하거나, 지하주차장·충전시설처럼 위험 범위를 특정한 시범담보를 운영하는 방식이 현실적입니다.',
+  '인접 차량·건물의 재산손해, 사고 원인조사·대응비용, 충전시설 운영자의 제한적 배상책임',
+  '불법 개조, 비인가 배터리 수리, 중대한 안전점검 의무 위반, 이미 확인된 결함의 방치',
+  '현 단계의 합리적인 출발점은 지하주차장·충전시설 등 노출 범위를 특정한 제한적 특약입니다. 실제 청구·손해자료가 쌓인 뒤 담보 범위와 한도를 단계적으로 넓혀야 합니다.',
 ])
 
 function escapeRegExp(value: string) {
@@ -220,7 +256,7 @@ export function StandardRiskDetail({ risk, detail }: StandardRiskDetailProps) {
                <div className="aic-editorial-hero"><small>원문 기반 위험 분석</small><h2>{risk.title}{risk.id === 'ev-battery-fire' ? '는' : '은'} 신규 보험상품이 될 수 있는가</h2><p>{deepAnalysisHeroDescription}</p></div>
                <div className="aic-editorial-body">
                  <p className="aic-editorial-intro">{risk.id === 'ev-battery-fire' ? renderDeepText(evBatteryDeepAnalysisIntro) : narrative?.analysisIntro || `${risk.title}을 보험의 관점에서 바라볼 때 가장 먼저 구분해야 할 것은, 이 위험이 단순히 하나의 사고나 분쟁으로 끝나는 문제가 아니라는 점입니다. 위험은 ${sourceFacts.join(' ')}의 전 과정에서 발생합니다.`}{risk.id === 'ev-battery-fire' ? '' : ' 따라서 상품화 가능성을 판단하려면 위험의 원인과 사고 정의, 손해 전환 과정, 책임 주체, 기업별 통제 수준을 함께 살펴봐야 합니다.'}</p>
-                 {deepAnalysisSections.map((section, index) => { const item = section.source ?? (risk.id === 'ev-battery-fire' ? undefined : researchSources[index % researchSources.length]); const evidence = section.source ? undefined : index === 0 ? firstEvidence : undefined; return <article className="aic-editorial-section" key={section.title}><div className="aic-editorial-section-head"><span>{String(index + 1).padStart(2, '0')}</span><h3>{section.title}</h3></div><p>{renderDeepText(section.body)}</p>{evidence ? <div className="aic-editorial-quote"><blockquote>{evidence.excerpt || evidence.title}</blockquote><cite>{evidence.sourceName}</cite><a href={evidence.sourceUrl || '#'} target="_blank" rel="noreferrer noopener">{sourceBadgeName(evidence.sourceName, item?.institution || '공식 원문')} 원문 →</a></div> : item ? <div className="aic-editorial-quote">{risk.id === 'ev-battery-fire' ? <a href={item.url} target="_blank" rel="noreferrer noopener">{item.title} →</a> : <><blockquote>{item.role}</blockquote><cite>{item.institution} · {item.title}</cite><a href={item.url} target="_blank" rel="noreferrer noopener">{item.institution} 원문 →</a></>}</div> : null}{risk.id !== 'ev-battery-fire' ? <div className="aic-editorial-meaning"><b>보험적 의미</b><p>{section.insuranceMeaning || (index === 0 ? narrative?.priorityCover || '사고 정의와 손해 항목을 분리해 담보 구조를 설계해야 합니다.' : index === 1 ? narrative?.underwriting || '방어비용·복구비용·제3자 배상책임을 구분해야 합니다.' : narrative?.evidenceNeeded || '실제 자료가 확보된 범위부터 제한적 특약을 검토할 수 있습니다.')}</p></div> : null}</article> })}
+                 {deepAnalysisSections.map((section, index) => { const item = section.source ?? (risk.id === 'ev-battery-fire' ? undefined : researchSources[index % researchSources.length]); const evidence = section.source ? undefined : index === 0 ? firstEvidence : undefined; return <article className="aic-editorial-section" key={section.title}><div className="aic-editorial-section-head"><span>{String(index + 1).padStart(2, '0')}</span><h3>{section.title}</h3></div>{risk.id === 'ev-battery-fire' ? <><p>{emphasizeImportantText(section.body, evBatteryBoldPhrases)}</p>{item ? <div className="aic-editorial-quote aic-ev-source" aria-label={`${item.institution} · ${item.title}`}><a className="aic-source-badge" href={item.url} target="_blank" rel="noreferrer noopener" title={item.title}>{item.linkLabel ?? `${item.institution} 원문 보기 ↗`}</a></div> : null}<div className="aic-editorial-meaning aic-ai-explanation"><b>AI 해설</b><p>{emphasizeImportantText(evBatteryAiExplanations[section.title] || '원문에 확인되는 위험 요인과 책임 구조를 기준으로 추가 검증이 필요한 지점을 정리합니다.', evBatteryBoldPhrases)}</p></div></> : <><p>{renderDeepText(section.body)}</p>{evidence ? <div className="aic-editorial-quote"><blockquote>{evidence.excerpt || evidence.title}</blockquote><cite>{evidence.sourceName}</cite><a href={evidence.sourceUrl || '#'} target="_blank" rel="noreferrer noopener">{sourceBadgeName(evidence.sourceName, item?.institution || '공식 원문')} 원문 →</a></div> : item ? <div className="aic-editorial-quote"><><blockquote>{item.role}</blockquote><cite>{item.institution} · {item.title}</cite><a href={item.url} target="_blank" rel="noreferrer noopener">{item.institution} 원문 →</a></></div> : null}<div className="aic-editorial-meaning"><b>보험적 의미</b><p>{section.insuranceMeaning || (index === 0 ? narrative?.priorityCover || '사고 정의와 손해 항목을 분리해 담보 구조를 설계해야 합니다.' : index === 1 ? narrative?.underwriting || '방어비용·복구비용·제3자 배상책임을 구분해야 합니다.' : narrative?.evidenceNeeded || '실제 자료가 확보된 범위부터 제한적 특약을 검토할 수 있습니다.')}</p></div></>}</article> })}
                  <div className="aic-editorial-decision"><small>잠정 상품화 판단</small><h3>{decisionTitle}</h3><p>{renderDeepText(decisionDescription)}</p><div className="aic-editorial-checks"><div><b>우선 검토 담보</b><span>{decisionChecks.priorityCover}</span></div><div><b>핵심 인수조건</b><span>{decisionChecks.underwriting}</span></div><div><b>추가 필요 자료</b><span>{decisionChecks.evidenceNeeded}</span></div></div></div>
                </div>
              </div>

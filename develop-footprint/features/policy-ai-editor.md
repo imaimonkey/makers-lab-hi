@@ -5,7 +5,11 @@
 - 레이아웃: 약관 문서와 AI 채팅은 동일한 화면 높이를 사용하며, 긴 대화는 오른쪽 채팅 메시지 영역 안에서만 세로 스크롤된다. 입력창은 채팅 패널 하단에 고정한다.
 - 시나리오 응답: `배터리 열폭주 면책 확인` → 관련 제4조 설명, `구성해 줘` → 제4조 제4항 초안 반영, 저장 전 실무자 확인 안내 순서로 동작한다.
 - Full-screen route: `/reports/policy-editor?reportId=...`
+- Return behavior: the `리포트로 돌아가기` action returns to `/reports?reportId=...#report-tab=wording`, so the `AI 전체 약관 초안` section is selected immediately.
 - Layout: 문서 영역과 AI 대화 영역을 50:50으로 배치하고 실무자용 사이드바를 숨긴다.
+- Header actions: `저장` 버튼은 `리포트로 돌아가기` 왼쪽에 두고, 문서 영역의 `AI 전체 약관 초안`·저장 상태 표시는 노출하지 않는다.
+- Composer spacing: 오른쪽 AI Chat 입력 영역의 끝을 왼쪽 `약관 목차` 카드 하단선과 맞추고, 입력창 아래에도 동일한 여백을 둔다.
+- Clause navigation: 약관 본문을 스크롤하면 현재 조항을 활성화하고, 약관 목차도 해당 항목이 보이도록 자동 스크롤한다.
 - Save state: `수정 중` → `저장됨`; 저장하지 않은 상태로 이탈하면 확인 모달을 표시한다.
 - Persistence: `wordingFeasibility.policyEditor.addedArticles`에 신규 조항을 저장하고 종합리포트 약관 문서에 다시 반영한다. 저장소에 저장된 wrapper의 `content`도 다시 읽어 편집 화면을 복원한다.
 - Document source: 편집 화면은 선택된 `reportId`의 `createArticlePolicyDraft` 결과를 사용하며 고정 약관을 사용하지 않는다.

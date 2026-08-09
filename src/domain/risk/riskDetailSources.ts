@@ -3,6 +3,7 @@ export type RiskDetailResearchSource = {
   title: string
   url: string
   role: string
+  linkLabel?: string
 }
 
 const sources = {

@@ -866,3 +866,6 @@ isMockData
 - [전기차 PML 프로토타입](../../src/report/data/product-feasibility-mock.ts)
 - [보험료·손해율 시나리오](../../src/report/data/product-proposal-mock.ts)
 
+# TAM 대략 추정 표시 원칙
+
+국내 노출량·보험료 원장이 아직 연결되지 않은 기사 기반 후보는 기존 시장성 점수에 단조롭게 연동한 대략 추정 TAM 범위를 표시한다. 이 값은 후보 순위를 재산정하지 않으며, 실제 보험료·노출량 확정값으로 해석하지 않는다.

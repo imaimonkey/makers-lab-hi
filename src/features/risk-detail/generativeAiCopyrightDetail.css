@@ -34,6 +34,16 @@
 .sh-visual .aic-editorial-decision,.sh-visual .aic-editorial-decision *{color:#fff !important}
 .aic-deep-analysis p strong{font-weight:900;color:inherit}
 
+/* EV deep analysis: show source context, source link badge, then AI reading. */
+.aic-deep-analysis .aic-editorial-quote.aic-ev-source{display:inline;margin:0 0 0 8px;padding:0;border:0;background:transparent}
+.aic-deep-analysis .aic-editorial-quote.aic-ev-source::before{display:none}
+.aic-source-badge{display:inline-flex;align-items:center;min-height:25px;padding:4px 9px;border:1px solid #cbdcff;border-radius:999px;background:#eef4ff;color:#2563eb;font-size:10px;font-weight:800;text-decoration:none}
+.aic-source-badge:hover,.aic-source-badge:focus-visible{border-color:#2563eb;background:#e3edff;outline:2px solid rgba(37,99,235,.18);outline-offset:2px}
+.aic-source-badge:not(a){border-color:#e0e6ee;background:#f3f5f8;color:#6b7b8f}
+.aic-deep-analysis .aic-editorial-quote.aic-ev-source-pending{margin-left:8px}
+.aic-ai-explanation{margin-top:10px}
+.aic-ai-explanation b{color:#315d9d}
+
 /* Risk detail reading scale: keep the existing layout while making every information layer easier to read. */
 .detail-page .ai-copyright-detail .aic-chips span { font-size: 12px; }
 .detail-page .ai-copyright-detail .aic-hero h1 { font-size: 34px; }

@@ -6,6 +6,7 @@ import type {
   CommercializationCriterionDetail,
   JsonObject,
   ReportResult,
+  EvidenceItem as DomainEvidenceItem,
   RiskSourceData,
   WordingPolicyEditor,
 } from '../types'
@@ -30,6 +31,8 @@ import { COVERAGE_GAP_ANALYSIS_PREMISE, COVERAGE_GAP_ASSUMPTIONS, COVERAGE_GAP_C
 import { PRODUCT_REVIEW_SUMMARY_COPY } from '../data/product-review-summary-mock'
 import type { NoveltyAnalysis } from '../../domain/product/similarProduct'
 import { normalizeNoveltyAnalysis, noveltyAnalysisStatusLabels, noveltyAnalysisTypeLabels, noveltySourceTypeLabels, similarProductTypeLabels, similarityTypeLabels, NOVELTY_OFFICIAL_SOURCES } from '../services/similar-product-research'
+import { evBatteryDeepAnalysisSections } from '../../domain/risk/evBatteryDeepAnalysis'
+import { getRiskDetailResearchSources, type RiskDetailResearchSource } from '../../domain/risk/riskDetailSources'
 
 type SummaryCard = {
   id: string
@@ -54,6 +57,10 @@ type EvidenceItem = {
   originalAvailable?: boolean
   /** Optional explicit section references from a future report repository. */
   usedInSections?: string[]
+  sourceUrl?: string
+  sourceTitle?: string
+  sourceSummary?: string
+  sourceExcerpt?: string
 }
 
 const isExcludedEvidenceItem = (item: Pick<EvidenceItem, 'title'>): boolean => /상품요약서/.test(item.title)
@@ -310,6 +317,86 @@ function displayReportTitle(title: string) {
 const isArticleDerivedReport = (report: Pick<ReportView, 'meta'>) => ['article-derived-v1', 'curated-risk-v1'].includes(report.meta.analysisMode ?? '')
 const isReferenceBenchmarkReport = (report: Pick<ReportView, 'meta'>) => report.meta.sourceRiskId === 'RSK-EVFIRE-001' || report.meta.reportId?.startsWith('RPT-EVFIRE') === true
 const displayRiskId = (report: Pick<ReportView, 'meta'>) => (report.meta.sourceRiskId ?? '').replace(/^developer-/u, '')
+
+type ReferenceRiskEvidence = {
+  source: RiskDetailResearchSource
+  sectionTitle?: string
+  sourceExcerpt?: string
+}
+
+const officialProductDisclosureUrl = 'https://www.hi.co.kr/serviceAction.do?menuId=100932'
+
+function connectOfficialBusinessMethodDocument(item: DomainEvidenceItem): DomainEvidenceItem {
+  if (item.id === 'EVD-007') {
+    return {
+      ...item,
+      source: '현대해상 상품공시실',
+      sourceUrl: officialProductDisclosureUrl,
+      sourceTitle: '현대해상다이렉트H사업장화재보험(Hi2601) 사업방법서 별지',
+      sourceSummary: '현대해상 상품공시실에서 사업장화재보험을 검색한 뒤 최신 사업방법서 별지를 확인할 수 있습니다.',
+      originalAvailable: true,
+    }
+  }
+  if (item.id === 'EVD-009') {
+    return {
+      ...item,
+      source: '현대해상 상품공시실',
+      sourceUrl: officialProductDisclosureUrl,
+      sourceTitle: '현대해상다이렉트H주택화재상해보험(Hi2601) 사업방법서 별지',
+      sourceSummary: '현대해상 상품공시실에서 주택화재상해보험을 검색한 뒤 최신 사업방법서 별지를 확인할 수 있습니다.',
+      originalAvailable: true,
+    }
+  }
+  return item
+}
+
+function withRiskDetailEvidence(sourceReport: ReportResult): ReportResult {
+  if (!isReferenceBenchmarkReport(asReportView(sourceReport))) return sourceReport
+
+  const references = new Map<string, ReferenceRiskEvidence>()
+  getRiskDetailResearchSources('ev-battery-fire').forEach((source) => {
+    references.set(source.url, { source })
+  })
+  evBatteryDeepAnalysisSections.forEach((section) => {
+    if (!section.source) return
+    references.set(section.source.url, {
+      source: section.source,
+      sectionTitle: section.title,
+      sourceExcerpt: section.body,
+    })
+  })
+
+  const linkedEvidence = [...references.values()].map(({ source, sectionTitle, sourceExcerpt }, index): DomainEvidenceItem => ({
+    id: `RISK-EVD-${String(index + 1).padStart(3, '0')}`,
+    type: source.url.includes('data.go.kr') ? '공공자료' : '위험 원문',
+    title: sectionTitle ?? source.title,
+    source: source.institution,
+    referenceDate: null,
+    usedFor: [sectionTitle ?? source.role],
+    reliability: '위험 상세 원문 연결',
+    isMockData: false,
+    originalAvailable: true,
+    sourceUrl: source.url,
+    sourceTitle: source.title,
+    sourceSummary: source.role,
+    sourceExcerpt,
+  }))
+
+  const preservedEvidence = sourceReport.evidence
+    .filter((item) => !item.isMockData && !item.id.startsWith('RISK-EVD-'))
+    .map(connectOfficialBusinessMethodDocument)
+  const evidence: DomainEvidenceItem[] = [...linkedEvidence, ...preservedEvidence]
+  return {
+    ...sourceReport,
+    evidence,
+    meta: {
+      ...sourceReport.meta,
+      evidenceCount: evidence.length,
+      relatedDocumentCount: evidence.length,
+      relatedDocumentTitles: evidence.map((item) => item.title),
+    },
+  }
+}
 
 function displayDate(value?: string | null, includeTime = false) {
   if (!value) return '확인 필요'
@@ -2816,23 +2903,15 @@ function applyPolicyEditorOverrides(
         articles: section.articles.map((article) => applyArticle(article, `common-${section.id}-${article.number}`)),
       })),
     },
-    specialClauses: policyDraft.specialClauses.map((clause, index) => {
+    specialClauses: policyDraft.specialClauses.map((clause) => {
       const articles = clause.articles.map((article) => applyArticle(article, `special-${clause.id}-${article.number}`))
-      const nextArticleNumber = articles.reduce((highest, article) => Math.max(highest, article.number), 0) + 1
       return {
         ...clause,
-        articles: [
-          ...articles,
-          ...(index === 0 ? normalizedAddedArticles.map((article, addedIndex) => ({
-            number: nextArticleNumber + addedIndex,
-            title: article.title,
-            paragraphs: [article.text],
-          })) : []),
-        ],
+        articles,
       }
     }),
-    addedArticles: normalizedAddedArticles.map((article, index) => ({
-      number: (policyDraft.specialClauses[0]?.articles.reduce((highest, item) => Math.max(highest, item.number), 0) ?? 0) + 1 + index,
+    addedArticles: normalizedAddedArticles.map((article) => ({
+      number: article.number,
       title: article.title,
       paragraphs: [article.text],
     })),
@@ -2844,6 +2923,7 @@ function wordingPolicyArticle(
   key: string,
   activeArticleKey: string | null,
   onVisible: (key: string) => void,
+  options?: { hideHeading?: boolean },
 ) {
   return (
     <article
@@ -2853,8 +2933,7 @@ function wordingPolicyArticle(
       data-policy-article-key={key}
       onFocus={() => onVisible(key)}
     >
-      <span className="report-page__wording-policy-article-number">제{article.number}조</span>
-      <h5>{article.title}</h5>
+      {options?.hideHeading ? null : <><span className="report-page__wording-policy-article-number">제{article.number}조</span><h5>{article.title}</h5></>}
       {article.paragraphs.map((paragraph, index) => <p key={key + '-paragraph-' + index}>{paragraph}</p>)}
       {article.items?.length ? (
         <ol className="report-page__wording-policy-items">
@@ -3001,7 +3080,8 @@ function FullWordingSection({
     setActiveArticleKey(key)
     window.requestAnimationFrame(() => {
       const policyDocument = policyDocumentRef.current
-      const target = document.getElementById(key)
+      const articleTarget = document.getElementById(key)
+      const target = articleTarget?.closest('.report-page__wording-policy-added') ?? articleTarget
       if (!policyDocument || !target) return
       const documentRect = policyDocument.getBoundingClientRect()
       const targetRect = target.getBoundingClientRect()
@@ -3014,12 +3094,10 @@ function FullWordingSection({
     if (!addedArticleFocusRequest || !data.policyEditor?.addedArticles?.length) return
     if (handledAddedArticleFocusRequest.current === addedArticleFocusRequest) return
     handledAddedArticleFocusRequest.current = addedArticleFocusRequest
-    const firstClause = policyDraft.specialClauses[0]
     const firstAddedArticle = policyDraft.addedArticles?.[0]
-    if (!firstClause || !firstAddedArticle) return
+    if (!firstAddedArticle) return
     window.setTimeout(() => {
-      setSelectedCoverageId(firstClause.id)
-      scrollToArticle(`special-${firstClause.id}-${firstAddedArticle.number}`)
+      scrollToArticle(`added-${firstAddedArticle.number}-${firstAddedArticle.title}`)
     }, 120)
   }, [addedArticleFocusRequest, data.policyEditor?.addedArticles?.length, policyDraft.addedArticles, policyDraft.specialClauses])
 
@@ -3031,6 +3109,12 @@ function FullWordingSection({
     key: 'special-' + clause.id,
     label: clause.shortTitle,
   }))
+  const addedTocEntries = (policyDraft.addedArticles ?? []).map((article) => ({
+    key: `added-${article.number}-${article.title}`,
+    label: `제${article.number}조 ${article.title}`,
+  }))
+  const policyTocEntries = [...commonTocEntries, ...addedTocEntries]
+  const firstAddedArticle = policyDraft.addedArticles?.[0]
 
   useEffect(() => {
     if (typeof window === 'undefined' || !fullDraftRef.current || !policyDocumentRef.current || printMode) return
@@ -3202,9 +3286,10 @@ function FullWordingSection({
           <div className="report-page__wording-policy-layout">
             <nav className="report-page__wording-policy-toc report-page__no-print" aria-label="전체 약관 목차">
               <strong>약관 목차</strong>
-              <select className="report-page__wording-policy-toc-select" aria-label="보통약관 조문 선택" value={commonTocEntries.some((entry) => entry.key === activeArticleKey) ? (activeArticleKey ?? '') : ''} onChange={(event) => { if (event.target.value) scrollToArticle(event.target.value) }}><option value="">조문 선택</option>{commonTocEntries.map((entry) => <option key={entry.key} value={entry.key}>{entry.label}</option>)}</select>
+              <select className="report-page__wording-policy-toc-select" aria-label="약관 조문 선택" value={policyTocEntries.some((entry) => entry.key === activeArticleKey) ? (activeArticleKey ?? '') : ''} onChange={(event) => { if (event.target.value) scrollToArticle(event.target.value) }}><option value="">조문 선택</option>{policyTocEntries.map((entry) => <option key={entry.key} value={entry.key}>{entry.label}</option>)}</select>
               <div className="report-page__wording-policy-toc-scroll">
                 <div className="report-page__wording-policy-toc-group"><span>보통약관</span>{commonTocEntries.map((entry) => <button key={entry.key} className={activeArticleKey === entry.key ? 'is-active' : ''} type="button" onClick={() => scrollToArticle(entry.key)}>{entry.label}</button>)}</div>
+                {addedTocEntries.length ? <div className="report-page__wording-policy-toc-group"><span>AI 추가 조항</span>{addedTocEntries.map((entry) => <button key={entry.key} className={activeArticleKey === entry.key ? 'is-active' : ''} type="button" onClick={() => scrollToArticle(entry.key)}>{entry.label}</button>)}</div> : null}
                 <div className="report-page__wording-policy-toc-group"><span>특별약관</span>{specialTocEntries.map((entry) => <button key={entry.key} className={activeArticleKey === entry.key || activeArticleKey?.startsWith(entry.key + '-') ? 'is-active' : ''} type="button" onClick={() => scrollToArticle(entry.key)}>{entry.label}</button>)}</div>
               </div>
             </nav>
@@ -3214,6 +3299,10 @@ function FullWordingSection({
                 <h4 id="wording-common-policy-title">{policyDraft.commonPolicy.title}</h4>
                 {policyDraft.commonPolicy.sections.map((section) => <section className="report-page__wording-policy-section" key={section.id}><h5>{section.title}</h5>{section.articles.map((article) => wordingPolicyArticle(article, 'common-' + section.id + '-' + article.number, activeArticleKey, setActiveArticleKey))}</section>)}
               </section>
+              {firstAddedArticle ? <section className="report-page__wording-policy-clause report-page__wording-policy-added" aria-labelledby="wording-added-policy-title">
+                <div className="report-page__wording-policy-clause-heading"><span>AI 추가 조항</span><h4 id="wording-added-policy-title">제{firstAddedArticle.number}조 {firstAddedArticle.title}</h4><em>저장된 검토안</em></div>
+                {policyDraft.addedArticles!.map((article) => wordingPolicyArticle(article, `added-${article.number}-${article.title}`, activeArticleKey, setActiveArticleKey, { hideHeading: true }))}
+              </section> : null}
               {policyDraft.specialClauses.map((clause) => {
                 const clauseKey = 'special-' + clause.id
                 const isSelected = selectedCoverage.id === clause.id
@@ -3373,7 +3462,7 @@ function EvidenceResearchSection({
         if (typeFilter !== 'all' && evidenceDocumentType(item) !== typeFilter) return false
         if (sectionFilter !== 'all' && !evidenceSectionKeysOf(item).includes(sectionFilter as EvidenceSectionKey)) return false
         if (!query) return true
-        return `${displayEvidenceTitle(item)} ${item.id} ${evidencePurpose(item)}`.toLowerCase().includes(query)
+        return `${displayEvidenceTitle(item)} ${item.id} ${item.sourceSummary ?? ''} ${item.sourceExcerpt ?? ''} ${evidencePurpose(item)}`.toLowerCase().includes(query)
       })
       .sort((a, b) => {
         const aTime = a.referenceDate ? Date.parse(a.referenceDate) : Number.NaN
@@ -3427,9 +3516,9 @@ function EvidenceResearchSection({
                 <article key={item.id} className={`report-page__evidence-card report-page__evidence-card--${tone}`} role="listitem">
                    <div className="report-page__evidence-card-head"><span className={`report-page__evidence-type report-page__evidence-type--${tone}`}><span className="report-page__evidence-type-icon"><AppIcon name={evidenceTypeIcon(type)} size={14} strokeWidth={2} /></span>{type}</span><span className="report-page__evidence-card-meta"><code title={item.id}>{displayEvidenceReference(item.id)}</code><span className="report-page__evidence-meta-divider" aria-hidden="true">·</span><time className={!item.referenceDate ? 'report-page__evidence-date--missing' : undefined} dateTime={item.referenceDate ?? undefined}>{formatEvidenceDate(item.referenceDate)}</time></span></div>
                   <h4>{displayEvidenceTitle(item)}</h4>
-                  <p className="report-page__evidence-card-purpose">{evidencePurpose(item)}</p>
+                  <p className="report-page__evidence-card-purpose">{item.sourceSummary ?? evidencePurpose(item)}</p>
                   <div className="report-page__evidence-card-sections"><span>활용 섹션</span>{sections.slice(0, 2).map((key) => <span className="report-page__evidence-section-chip" key={key}>{REPORT_SECTION_LABELS[key]}</span>)}{sections.length > 2 ? <span className="report-page__evidence-section-more">+{sections.length - 2}</span> : null}</div>
-                  <div className="report-page__evidence-card-footer"><span className="report-page__evidence-source-hint">{sourceStatus}</span><button className="report-page__text-button report-page__no-print" type="button" onClick={() => onOpenEvidence(item)}>자료 정보 보기 <span aria-hidden="true">→</span></button></div>
+                  <div className="report-page__evidence-card-footer"><span className="report-page__evidence-source-hint">{sourceStatus}</span><span className="report-page__evidence-card-actions">{item.sourceUrl ? <a className="report-page__text-button report-page__no-print" href={item.sourceUrl} target="_blank" rel="noreferrer">원문 보기 <span aria-hidden="true">↗</span></a> : null}<button className="report-page__text-button report-page__no-print" type="button" onClick={() => onOpenEvidence(item)}>자료 정보 보기 <span aria-hidden="true">→</span></button></span></div>
                 </article>
               )
             })}
@@ -4283,7 +4372,7 @@ export function ReportSections({
   navigation?: ReportNavigation
   onBackToList: () => void
 }) {
-  const normalizedSourceReport = useMemo(() => ensureCommercializationAssessment(sourceReport), [sourceReport])
+  const normalizedSourceReport = useMemo(() => withRiskDetailEvidence(ensureCommercializationAssessment(sourceReport)), [sourceReport])
   const [savedReport, setSavedReport] = useState<ReportResult>(() => cloneReport(normalizedSourceReport))
   const [draftReport, setDraftReport] = useState<ReportResult>(() => cloneReport(normalizedSourceReport))
   const [editorMode, setEditorMode] = useState(false)
@@ -4314,7 +4403,7 @@ export function ReportSections({
         const response = await reportProxy.getReportContent(sourceReport.meta.sourceRiskId)
         const stored = parseStoredReportContent(response, sourceReport.meta.sourceRiskId)
         if (!cancelled && stored) {
-          const normalizedStored = ensureCommercializationAssessment(stored)
+          const normalizedStored = withRiskDetailEvidence(ensureCommercializationAssessment(stored))
           const sourceNoveltyAnalysis = normalizedSourceReport.productProposal.noveltyAnalysis
           const storedNoveltyAnalysis = normalizedStored.productProposal.noveltyAnalysis
           const noveltyAnalysis = sourceNoveltyAnalysis?.analysisStatus === 'completed'
@@ -4323,6 +4412,13 @@ export function ReportSections({
             : storedNoveltyAnalysis ?? sourceNoveltyAnalysis
           const mergedStoredReport = {
             ...normalizedStored,
+            meta: isReferenceBenchmarkReport(normalizedSourceReport)
+              ? {
+                  ...normalizedStored.meta,
+                  analysisBaseDate: normalizedSourceReport.meta.analysisBaseDate,
+                  generatedAt: normalizedSourceReport.meta.generatedAt,
+                }
+              : normalizedStored.meta,
             productProposal: {
               ...normalizedStored.productProposal,
               noveltyAnalysis,
@@ -4654,10 +4750,12 @@ export function ReportSections({
           <dl className="report-page__modal-data">
             <div><dt>근거 ID</dt><dd>{modal.evidence.id}</dd></div>
         <div><dt>출처</dt><dd>{displayEvidenceSource(modal.evidence)}</dd></div>
+            {modal.evidence.sourceUrl ? <div><dt>원문 링크</dt><dd><a href={modal.evidence.sourceUrl} target="_blank" rel="noreferrer">{modal.evidence.sourceTitle ?? '원문 보기'} ↗</a></dd></div> : null}
             <div><dt>기준일</dt><dd>{displayDate(modal.evidence.referenceDate)}</dd></div>
             <div><dt>신뢰도</dt><dd>{modal.evidence.reliability ?? '추가 확인 필요'}</dd></div>
             <div><dt>활용 판단</dt><dd>{modal.evidence.usedFor?.join(', ') || '추가 확인 필요'}</dd></div>
           </dl>
+          {modal.evidence.sourceExcerpt ? <div className="report-page__modal-source-excerpt"><h4>위험 상세에서 정리한 내용</h4><p>{modal.evidence.sourceExcerpt}</p></div> : null}
           <p className="report-page__notice">
             {modal.evidence.isMockData
               ? '현재 연결된 원문 파일이 없어 자료 정보만 표시합니다.'

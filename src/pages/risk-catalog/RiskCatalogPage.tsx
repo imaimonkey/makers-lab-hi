@@ -9,11 +9,21 @@ function isExcludedSwissHeatRecord(record: RiskExplorationRecord) {
   return searchable.includes('스위스 폭염') || searchable.includes('warming switzerland') || searchable.includes('swiss re institute')
 }
 
+function isExcludedFloridaHousingRecord(article: { title?: string; fileName?: string; contentProfile?: { topic?: string } }) {
+  const searchable = `${article.title ?? ''} ${article.fileName ?? ''} ${article.contentProfile?.topic ?? ''}`.toLocaleLowerCase('ko-KR')
+  return searchable.includes('\ud50c\ub85c\ub9ac\ub2e4 \uc8fc\ud0dd\ubcf4\ud5d8') || searchable.includes('\ubcf4\ud5d8_\uc5f0\uad6c\uc6d0_\uc7ac\uc0b0\ubcf4\ud5d8')
+}
+
+function isExcludedFloridaHousingRiskRecord(record: RiskExplorationRecord) {
+  const searchable = `${record.id} ${record.title} ${record.summary} ${record.sourceName ?? ''}`.toLocaleLowerCase('ko-KR')
+  return searchable.includes('\ud50c\ub85c\ub9ac\ub2e4 \uc8fc\ud0dd\ubcf4\ud5d8') || searchable.includes('\uc8fc\ud0dd\ubcf4\ud5d8 \uc2dc\uc7a5')
+}
+
 function mergePractitionerRiskRecords(articleRecords: RiskExplorationRecord[]) {
   const merged = new Map<string, RiskExplorationRecord>()
   riskExplorationRecords.forEach((record) => merged.set(record.id, record))
-  articleRecords.filter((record) => !isExcludedSwissHeatRecord(record)).forEach((record) => merged.set(record.id, record))
-  return [...merged.values()].filter((record) => !isExcludedSwissHeatRecord(record))
+  articleRecords.filter((record) => !isExcludedSwissHeatRecord(record) && !isExcludedFloridaHousingRiskRecord(record)).forEach((record) => merged.set(record.id, record))
+  return [...merged.values()].filter((record) => !isExcludedSwissHeatRecord(record) && !isExcludedFloridaHousingRiskRecord(record))
 }
 
 export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'developer' }) {
@@ -24,9 +34,10 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
   useEffect(() => {
     let cancelled = false
     void loadArticleSourceRecords().then((articles) => {
-      const viewData = buildDeveloperRiskCatalogViewData(articles, [])
-      const candidateArticles = groupArticleSourceRecords(articles.filter(isMeaningfulRiskCandidate)).map(selectArticleGroupRepresentative)
-      const records = buildDeveloperStep2Records([], candidateArticles).filter((record) => !isExcludedSwissHeatRecord(record))
+      const visibleArticles = articles.filter((article) => !isExcludedFloridaHousingRecord(article))
+      const viewData = buildDeveloperRiskCatalogViewData(visibleArticles, [])
+      const candidateArticles = groupArticleSourceRecords(visibleArticles.filter(isMeaningfulRiskCandidate)).map(selectArticleGroupRepresentative)
+      const records = buildDeveloperStep2Records([], candidateArticles).filter((record) => !isExcludedSwissHeatRecord(record) && !isExcludedFloridaHousingRiskRecord(record))
       if (cancelled) return
       setDeveloperViewData(viewData)
       setDeveloperRecords(records)

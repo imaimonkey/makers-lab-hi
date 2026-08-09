@@ -56,6 +56,10 @@ export interface EvidenceItem extends JsonObject {
   reliability: string;
   isMockData: boolean;
   originalAvailable?: boolean;
+  sourceUrl?: string;
+  sourceTitle?: string;
+  sourceSummary?: string;
+  sourceExcerpt?: string;
 }
 
 export interface MissingResearchItem extends JsonObject {

@@ -144,6 +144,17 @@ function tamFromAssumption({ facilityCount, premiumRange }: TamAssumption) {
   return premiumRange.map((premium) => Math.round(facilityCount * premium / 100_000_000))
 }
 
+// Article-backed candidates do not yet have a complete domestic exposure or premium ledger.
+// Keep the estimate monotonic with the existing market score so filling TAM never reorders candidates.
+function approximateArticleTamAssumption(record: RiskExplorationRecord): TamAssumption {
+  const marketScore = calculateProductizationScores(record.metricScores).market * 20
+  const scoreFactor = Math.max(0.5, Math.min(1.25, marketScore / 100))
+  return {
+    facilityCount: Math.round(4_000 + scoreFactor * 16_000),
+    premiumRange: [250_000, 500_000, 900_000],
+  }
+}
+
 function marketTamDisplay(record: RiskExplorationRecord) {
   if (record.id === 'ev-battery-fire') {
     const { min, max } = PRODUCT_FINANCIAL_ESTIMATE.tamRange
@@ -154,9 +165,11 @@ function marketTamDisplay(record: RiskExplorationRecord) {
   }
 
   if (record.articleId || record.id.startsWith('developer-')) {
+    const assumption = approximateArticleTamAssumption(record)
+    const [min, , max] = tamFromAssumption(assumption)
     return {
-      label: '총도달가능시장(TAM)',
-      value: '국내 노출량·보험료 자료 확인 필요',
+      label: '총도달가능시장(TAM) · 대략 추정',
+      value: `약 ${min}억~${max}억원`,
     }
   }
 

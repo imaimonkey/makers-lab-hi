@@ -15,7 +15,21 @@ import '../report.css'
 
 type Clause = { key?: string; number: number; title: string; text: string; chapter?: string; sectionId?: string | null; insertAfter?: number | null }
 type Message = { id: string; role: 'user' | 'assistant'; text: string; action?: 'draft' | 'apply'; isTyping?: boolean }
-type Reply = { text: string; action?: Message['action']; clause?: Clause; applyClause?: Clause; draftKey?: string; draftText?: string }
+type Reply = { text: string; action?: Message['action']; clause?: Clause; applyClause?: Clause; isProposal?: boolean; draftKey?: string; draftText?: string }
+
+const clauseDomId = (clause: Clause, index: number) => `policy-clause-${clause.key ?? `${clause.number}-${index}`}`
+const clauseIdentity = (clause: Clause, index: number) => clause.key ?? `${clause.number}-${index}`
+
+function activeClauseIdentity(paper: HTMLElement | null, clauses: Clause[]) {
+  if (!paper || !clauses.length) return null
+  const activeLine = paper.getBoundingClientRect().top + Math.min(180, paper.clientHeight * .28)
+  let activeIndex = 0
+  clauses.forEach((clause, index) => {
+    const section = document.getElementById(clauseDomId(clause, index))
+    if (section && section.getBoundingClientRect().top <= activeLine) activeIndex = index
+  })
+  return clauseIdentity(clauses[activeIndex], activeIndex)
+}
 
 const BASE_CLAUSES: Clause[] = [
   { number: 1, title: '목적', text: '이 약관은 서비스 이용과 관련하여 회사와 이용자의 권리·의무 및 책임사항을 정함을 목적으로 합니다.' },
@@ -103,6 +117,7 @@ export function PolicyAiEditorPage({
   const [messages, setMessages] = useState<Message[]>([welcome])
   const [question, setQuestion] = useState('')
   const [addedClauses, setAddedClauses] = useState<Clause[]>([])
+  const [pendingProposalClause, setPendingProposalClause] = useState<Clause | null>(null)
   const [articleDrafts, setArticleDrafts] = useState<JsonObject>({})
   const [status, setStatus] = useState<'saved' | 'editing'>('saved')
   const [toast, setToast] = useState('')
@@ -120,6 +135,14 @@ export function PolicyAiEditorPage({
   const chatEndRef = useRef<HTMLDivElement | null>(null)
   const pendingAssistantMessageIdRef = useRef<string | null>(null)
   const messageCounterRef = useRef(0)
+  const activeClauseKeyRef = useRef('')
+  const policyPaperRef = useRef<HTMLElement | null>(null)
+  const policyTocRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    document.documentElement.classList.add('policy-editor-active')
+    return () => document.documentElement.classList.remove('policy-editor-active')
+  }, [])
 
   useEffect(() => () => {
     if (responseTimerRef.current !== null) window.clearTimeout(responseTimerRef.current)
@@ -192,8 +215,11 @@ export function PolicyAiEditorPage({
     const draft = articleDrafts[clause.key]
     return typeof draft === 'string' && draft.trim() ? { ...clause, text: draft } : clause
   }) : BASE_CLAUSES
+  const visibleAddedClauses = pendingProposalClause && !addedClauses.some((added) => isSameClause(added, pendingProposalClause))
+    ? [...addedClauses, pendingProposalClause]
+    : addedClauses
   const orderedClauses = [...reportClauses]
-  addedClauses.forEach((added) => {
+  visibleAddedClauses.forEach((added) => {
     const sameSection = added.sectionId ? orderedClauses.map((item, index) => ({ item, index })).filter(({ item }) => item.sectionId === added.sectionId).map(({ index }) => index) : []
     const sectionEnd = sameSection.length ? sameSection[sameSection.length - 1] + 1 : -1
     // Article numbers in the full policy are the final placement authority.
@@ -229,8 +255,24 @@ export function PolicyAiEditorPage({
     title: `${reportTitle} 보장 기준 정리`,
     text: `이 조항은 ${reportTitle}에서 우선 검토할 항목인 '${focus}'를 약관에 반영하기 위한 기준을 정합니다. 보장 대상은 ${entry?.report.productProposal.coveredObject ?? '리포트에 기재된 위험 대상'}로 하고, 보장 사건은 ${entry?.report.productProposal.coveredEvent ?? '리포트에서 확인된 사건 기준'}으로 구분합니다. ${entry?.report.productProposal.coveredLoss ?? '해당 사건으로 발생한 손해'}가 보장 범위에 해당하려면 발생 사실·인과관계·손해 규모를 확인할 수 있는 자료가 필요하며, ${entry?.report.productProposal.existingInsuranceRelationship ?? '기존 보험 및 다른 보상수단과의 관계'}도 함께 검토합니다. 적용 한도, 면책, 자기부담금과 최종 책임 범위는 이 리포트의 미해결 항목을 확인한 뒤 상품·법무·보상 담당자가 확정합니다.`,
   }
-  const clauseDomId = (clause: Clause, index: number) => `policy-clause-${clause.key ?? `${clause.number}-${index}`}`
-  const clauseIdentity = (clause: Clause, index: number) => clause.key ?? `${clause.number}-${index}`
+  const syncClauseNavigation = () => {
+    const activeIdentity = activeClauseIdentity(policyPaperRef.current, clauses)
+    if (!activeIdentity) return
+    if (activeClauseKeyRef.current === activeIdentity) return
+    activeClauseKeyRef.current = activeIdentity
+    setActiveClauseKey(activeIdentity)
+    document.getElementById(`policy-toc-${activeIdentity}`)?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+  }
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const identity = activeClauseIdentity(policyPaperRef.current, clauses)
+      if (!identity) return
+      activeClauseKeyRef.current = identity
+      setActiveClauseKey(identity)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [clauses])
   const scenarioScripts: Array<{ prompt: string; answer: string; clause?: Clause; applyClause?: Clause; draftKey?: string; draftText?: string }> = [
     {
       prompt: '전기차 화재 제3자 재산손해 보완보험 보통약관 리포트 내용 있어?',
@@ -312,6 +354,7 @@ export function PolicyAiEditorPage({
     }
     if (/^(아니요|아니오|안함|아니요-안함|안할게|넣지마|취소|노)\.?$/.test(compactValue) && pendingProposalRef.current) {
       pendingProposalRef.current = null
+      setPendingProposalClause(null)
       return { text: '제안한 신규 조항은 반영하지 않았습니다. 현재 약관 문서는 변경되지 않았습니다.' }
     }
     if (/^(저장|저장해줘|저장해주세요)$/.test(compactValue)) {
@@ -330,7 +373,7 @@ export function PolicyAiEditorPage({
 
     if (/약관|조항/.test(value) && /있어|없어|찾아|어디/.test(value) && /발화|원인|책임|충전|배터리|재발화|긴급복구/.test(value)) {
       const proposalClause: Clause = { key: `added-${nextArticleNumber}`, number: nextArticleNumber, title: '전기차 화재 사고 인정 및 확인자료', chapter: '전기차 화재 보완 검토 조항', sectionId: 'special-adjacent-vehicle', insertAfter: nextArticleNumber - 1, text: '전기차 배터리 화재 또는 충전 중 화재의 사고 인정 여부는 화재 감식 결과, 배터리 진단·충전 로그, 차량 및 충전시설 점검기록, 리콜·정비 이력과 손해 발생의 시간·장소 자료를 종합하여 판단합니다. 원인과 책임 주체가 확인되지 않은 경우에는 특정 주체의 책임이나 면책을 확정하지 않으며, 긴급복구비의 임시 지급 여부와 최종 구상은 조사 결과에 따릅니다.' }
-      const proposal: Reply = { text: `현재 약관에는 질문하신 내용을 직접 정한 조항이 없습니다. 다만 다음 관점의 보완이 필요합니다.\n\n- 보험 관점: 발화 차량·보장 사건·제3자 손해의 인정 기준\n- 법무 관점: 제조사·충전사업자·주차장 운영자 책임을 확정하기 위한 증빙\n- 보상 관점: 원인 미상 상태의 긴급복구비 임시 지급과 최종 구상\n- 손해사정 관점: 감식 결과·BMS·충전 로그·점검기록·리콜자료 확보\n\n이 내용을 신규 제안 조항으로 구성했습니다. 약관에 넣을까요?`, clause: proposalClause }
+      const proposal: Reply = { text: `현재 약관에는 질문하신 내용을 직접 정한 조항이 없습니다. 다만 다음 관점의 보완이 필요합니다.\n\n- 보험 관점: 발화 차량·보장 사건·제3자 손해의 인정 기준\n- 법무 관점: 제조사·충전사업자·주차장 운영자 책임을 확정하기 위한 증빙\n- 보상 관점: 원인 미상 상태의 긴급복구비 임시 지급과 최종 구상\n- 손해사정 관점: 감식 결과·BMS·충전 로그·점검기록·리콜자료 확보\n\n이 내용을 신규 제안 조항으로 구성했습니다. 약관에 넣을까요?`, clause: proposalClause, isProposal: true }
       pendingProposalRef.current = proposal
       return proposal
     }
@@ -390,7 +433,7 @@ export function PolicyAiEditorPage({
         return draftReply
       }
       const extraClause: Clause = { key: `added-${nextArticleNumber}`, number: nextArticleNumber, title: '전기차 배터리 화재 원인 및 책임 확인', chapter: '전기차 화재 보완 검토 조항', sectionId: requestedClause?.sectionId ?? 'special-adjacent-vehicle', insertAfter: nextArticleNumber - 1, text: `이 조항은 전기차 배터리 열폭주 또는 충전 중 화재로 차량·인접 차량·건물·주차장 시설에 손해가 발생한 경우 적용합니다. 회사는 배터리 제조·수입 결함, 충전시설 설치·관리, 주차장 운영, 피보험자의 개조·관리상 과실을 구분하여 화재 원인과 손해 범위를 확인합니다. 원인 감정서·점검기록·충전 로그·리콜 자료가 확보되기 전에는 특정 책임 주체나 면책을 확정하지 않으며, 긴급복구비를 임시 지급한 경우에도 최종 책임 및 구상권 판단은 조사 결과에 따릅니다. 관련 법령이나 공식 기준이 확인되지 않은 부분은 법무 검토 전 확정 문구로 사용하지 않습니다.` }
-      const draftReply: Reply = { text: `현재 약관에 요청 내용을 직접 담은 조항이 없어 마지막 조항 다음인 제${nextArticleNumber}조로 신규 검토 조항을 구성했습니다. 제4조·제7조·제8조·제9조와 충돌하지 않도록 면책, 한도, 선보상·구상, 중복보상은 각 기존 조항을 우선 적용하도록 연결했습니다. 법령 근거가 확인되지 않은 책임·보상 문구는 법무 확인 필요 상태로 남겼습니다. 문서에 넣으려면 “넣어줘”라고 입력하세요.`, clause: extraClause }
+      const draftReply: Reply = { text: `현재 약관에 요청 내용을 직접 담은 조항이 없어 마지막 조항 다음인 제${nextArticleNumber}조로 신규 검토 조항을 구성했습니다. 제4조·제7조·제8조·제9조와 충돌하지 않도록 면책, 한도, 선보상·구상, 중복보상은 각 기존 조항을 우선 적용하도록 연결했습니다. 법령 근거가 확인되지 않은 책임·보상 문구는 법무 확인 필요 상태로 남겼습니다. 문서에 넣으려면 “넣어줘”라고 입력하세요.`, clause: extraClause, isProposal: true }
       pendingDraftRef.current = draftReply
       return draftReply
     }
@@ -413,6 +456,11 @@ export function PolicyAiEditorPage({
     return { text: '질문하신 내용은 현재 약관의 제4조부터 제7조를 함께 확인해야 합니다. 관련 조항과 확인이 필요한 근거를 정리해 드릴게요.' }
   }
 
+  const returnToPolicyDraft = () => {
+    const reportId = entry?.report.meta.sourceRiskId ?? params.get('reportId') ?? ''
+    navigate(`/reports?reportId=${encodeURIComponent(reportId)}#report-tab=wording`)
+  }
+
   const goBack = () => {
     if (onClose) {
       if (status === 'editing') setLeaveOpen(true)
@@ -420,7 +468,7 @@ export function PolicyAiEditorPage({
       return
     }
     if (status === 'editing') setLeaveOpen(true)
-    else navigate(`/reports?reportId=${encodeURIComponent(entry?.report.meta.sourceRiskId ?? params.get('reportId') ?? '')}`)
+    else returnToPolicyDraft()
   }
 
   const scrollToClause = (clause?: Clause) => {
@@ -428,7 +476,9 @@ export function PolicyAiEditorPage({
     const index = clauses.findIndex((item) => item === clause || isSameClause(item, clause))
     if (index < 0) return
     const id = clauseDomId(clauses[index], index)
-    setActiveClauseKey(clauseIdentity(clauses[index], index))
+    const identity = clauseIdentity(clauses[index], index)
+    activeClauseKeyRef.current = identity
+    setActiveClauseKey(identity)
     window.setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }, 80)
@@ -441,6 +491,7 @@ export function PolicyAiEditorPage({
   }
 
   const applyClauseToDraft = (clause: Clause, message?: string) => {
+    setPendingProposalClause(null)
     const existsInReport = reportClauses.some((item) => isSameClause(item, clause))
     if (!existsInReport) {
       setAddedClauses((current) => {
@@ -468,6 +519,12 @@ export function PolicyAiEditorPage({
   }
 
   const startTyping = (reply: Reply) => {
+    if (reply.isProposal && reply.clause) {
+      setPendingProposalClause(reply.clause)
+      window.setTimeout(() => {
+        document.getElementById(clauseDomId(reply.clause!, 0))?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 180)
+    }
     if (typingTimerRef.current !== null) window.clearInterval(typingTimerRef.current)
     if (pendingAssistantMessageIdRef.current) {
       setMessages((current) => current.filter((message) => message.id !== pendingAssistantMessageIdRef.current))
@@ -592,7 +649,7 @@ export function PolicyAiEditorPage({
 
   const discardAndLeave = () => {
     if (onClose) onClose()
-    else navigate(`/reports?reportId=${encodeURIComponent(entry?.report.meta.sourceRiskId ?? '')}`)
+    else returnToPolicyDraft()
   }
 
   if (!entry) return <main className="policy-editor-loading" aria-live="polite">약관 문서를 준비하고 있습니다…</main>
@@ -601,19 +658,19 @@ export function PolicyAiEditorPage({
     <main className="policy-editor" aria-label="AI 약관 편집 화면">
       <header className="policy-editor__header">
         <div><h1>AI 약관 편집</h1></div>
-        <button className="policy-editor__back" type="button" onClick={goBack}>리포트로 돌아가기</button>
+        <div className="policy-editor__header-actions"><button className="policy-editor__save" type="button" onClick={() => void save()} disabled={status === 'saved'}>저장</button><button className="policy-editor__back" type="button" onClick={goBack}>리포트로 돌아가기</button></div>
       </header>
       <div className="policy-editor__split">
         <section className="policy-editor__document-pane" aria-labelledby="policy-editor-document-title">
-          <div className="policy-editor__document-toolbar"><div><strong>AI 전체 약관 초안</strong><span className={status === 'editing' ? 'is-editing' : ''}>{status === 'editing' ? '수정 중' : '저장됨'}</span></div><button className="policy-editor__save" type="button" onClick={() => void save()} disabled={status === 'saved'}>저장</button></div>
           <div className="policy-editor__document-layout">
-            <nav className="policy-editor__toc" aria-label="약관 목차"><strong>약관 목차</strong>{clauses.map((clause, index) => <a key={clause.key ?? `${clause.number}-${index}`} href={`#policy-clause-${clause.key ?? `${clause.number}-${index}`}`}>제{clause.number}조 {clause.title}</a>)}</nav>
-            <article className="policy-editor__paper">
+            <nav ref={policyTocRef} className="policy-editor__toc" aria-label="약관 목차"><strong>약관 목차</strong>{clauses.map((clause, index) => { const identity = clauseIdentity(clause, index); return <a id={`policy-toc-${identity}`} className={activeClauseKey === identity ? 'is-active' : undefined} aria-current={activeClauseKey === identity ? 'location' : undefined} key={identity} href={`#${clauseDomId(clause, index)}`}>제{clause.number}조 {clause.title}</a> })}</nav>
+            <article ref={policyPaperRef} className="policy-editor__paper" onScroll={syncClauseNavigation}>
               <header className="policy-editor__cover"><span>FULL POLICY DRAFT</span><h2 id="policy-editor-document-title">{policyTitle}</h2><p>현재 리포트에서 생성된 검토용 약관 · 실무자 확인 필요</p></header>
               <div className="policy-editor__body">{clauses.map((clause, index) => {
                 const identity = clauseIdentity(clause, index)
+                const isNewClause = clause.key?.startsWith('added-') || addedClauses.some((added) => added === clause)
                 const isEdited = Boolean(clause.key && articleDrafts[clause.key])
-                return <section id={clauseDomId(clause, index)} className={`policy-editor__clause${clause.key?.startsWith('added-') ? ' is-new' : ''}${isEdited ? ' is-edited' : ''}${activeClauseKey === identity ? ' is-active' : ''}`} key={identity}><p className="policy-editor__clause-chapter">{clause.chapter ?? '신규 제안 조항'}</p><div><span>제{clause.number}조</span><h3>{clause.title}</h3></div><p>{clause.text}</p>{isEdited ? <small>AI 수정 반영 · 저장 전 검토 필요</small> : clause.key?.startsWith('added-') ? <small>AI 반영 · 저장 전 검토 필요</small> : null}</section>
+                return <section id={clauseDomId(clause, index)} className={`policy-editor__clause${isNewClause ? ' is-new' : ''}${isEdited ? ' is-edited' : ''}${activeClauseKey === identity ? ' is-active' : ''}`} key={identity}><p className="policy-editor__clause-chapter">{clause.chapter ?? '신규 제안 조항'}</p><div><span>제{clause.number}조</span><h3>{clause.title}</h3></div><p>{clause.text}</p>{isEdited ? <small>AI 수정 반영 · 저장 전 검토 필요</small> : isNewClause ? <small>AI 반영 · 저장 전 검토 필요</small> : null}</section>
               })}</div>
             </article>
           </div>
