@@ -116,15 +116,6 @@ export function GenerativeAiCopyrightDetail() {
         </aside>
       </section>
 
-      <section className="aic-fact-grid">
-        {[
-          ['국내 기준 자료', '생성형 AI 저작권 안내서', 'AI 사업자·권리자·이용자 관점의 저작권 쟁점을 정리합니다.', '한국저작권위원회'],
-          ['분쟁 예방 자료', 'AI 결과물 저작권 분쟁 예방', '산출물 이용 전 점검해야 할 침해 가능성과 대응 원칙을 다룹니다.', '한국저작권위원회'],
-          ['학습 단계 쟁점', '저작물 학습과 공정이용', '학습 데이터 이용의 침해 가능성과 공정이용 판단 구조를 설명합니다.', '2026 공식 안내서'],
-          ['해외 기준 자료', 'AI 산출물의 저작권성', '인간 저작자의 창작적 기여가 보호 가능성 판단의 핵심입니다.', 'U.S. Copyright Office'],
-        ].map(([label, title, body, source]) => <article className="aic-fact" key={title}><small>{label}</small><strong>{title}</strong><p>{body}</p><span>{source}</span></article>)}
-      </section>
-
       <nav className="aic-section-nav" aria-label="위험 상세 섹션 이동">
         {['이슈 맥락', '보험 관점', '위험 구조', '손해 경로', '책임 주체', '기존 보험 연결', '정책·공식 자료', '상품화 질문', '위험 심층 해설', '근거 원장'].map((label, index) => <a href={`#aic-${['context', 'why-insurance', 'mechanism', 'damage', 'stakeholders', 'coverage', 'policy', 'questions', 'deep-analysis', 'ledger'][index]}`} key={label}>{label}</a>)}
       </nav>

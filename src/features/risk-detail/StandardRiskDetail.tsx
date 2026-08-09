@@ -44,8 +44,6 @@ export function StandardRiskDetail({ risk, detail }: StandardRiskDetailProps) {
   const firstEvidence = sourceFor(detail, 0)
   const sourceFacts = snapshot?.facts ?? [detail.riskStatement, record?.summary ?? detail.riskStatement, detail.primaryLoss]
   const sourceChecks = snapshot?.nextChecks ?? detail.decisionChecks
-  const primarySource = snapshot?.sourceUrl || firstEvidence?.sourceUrl || record?.sourceUrl
-  const primarySourceName = snapshot?.sourceName || firstEvidence?.sourceName || record?.sourceName || '연결된 공개 원문'
   const reportPath = risk.articleId
     ? `/reports?reportId=article-report-${encodeURIComponent(risk.articleId)}`
     : risk.id === 'ev-battery-fire'
@@ -78,33 +76,35 @@ export function StandardRiskDetail({ risk, detail }: StandardRiskDetailProps) {
   const questions = narrative?.questions ?? []
   const analysisSections = narrative?.analysisSections ?? []
   const decisionTitle = detail.decisionTitle.replace(/\n/g, ' ')
+  const purposeNotice = <div className={`aic-definition ${risk.id === 'ev-battery-fire' ? 'aic-ev-purpose' : ''}`}><b>위험 상세의 목적</b><p>이 화면은 예상 보험금이나 보험료를 산출하지 않습니다. 원문 안내서·공식 보고서·정책자료를 연결해 위험이 어디에서 발생하고, 어떤 주체가 어떤 책임에 노출되는지를 이해하는 데 초점을 둡니다.</p></div>
+  const heroDescription = risk.id === 'ev-battery-fire'
+    ? '전기차 보급과 고밀도 지하주차장 이용이 함께 늘면서 배터리 열폭주·재발화, 차량·주차장 시설 손해와 제3자 책임이 복합적으로 발생하는 위험입니다.'
+    : `${risk.trend}. ${narrative?.overview || detail.riskStatement} ${narrative?.background || snapshot?.scope || ''}`
+  const summaryRows = risk.id === 'ev-battery-fire'
+    ? [
+      ['핵심 발생 구간', '배터리 열폭주·충전 중 화재'],
+      ['주요 손해 형태', '차량·주차장 시설 손해'],
+      ['주요 책임 주체', '제조사·충전사업자·운영자'],
+      ['핵심 불확실성', '화재 원인·재발화·책임 분담'],
+    ]
+    : [
+      ['핵심 발생 구간', narrative?.mechanism || risk.themeLabel],
+      ['주요 손해 형태', narrative?.damage || detail.primaryLoss],
+      ['주요 책임 주체', narrative?.responsibility || detail.exposedParty],
+    ]
 
   return (
     <main className="ai-copyright-detail standard-risk-detail">
       <section className="aic-hero">
-        <div className="aic-hero-main">
+        <div className={`aic-hero-main ${risk.id === 'ev-battery-fire' ? 'aic-ev-hero-main' : ''}`}>
           <div className="aic-chips"><span>{risk.themeLabel}</span><span className="green">원문 중심 분석</span><span className="gray">위험 구조·보험 연결</span></div>
           <h1>{risk.title}</h1>
-          <p>{risk.trend}. {narrative?.overview || detail.riskStatement} {narrative?.background || snapshot?.scope || ''}</p>
-          <div className="aic-definition"><b>위험 상세의 목적</b><p>예상 보험금이나 보험료를 단정하지 않고, 위험이 발생하는 맥락과 손해 구조·책임 주체·기존 보험 연결 가능성을 원문과 함께 확인합니다.</p></div>
+          <p>{heroDescription}</p>
+          {purposeNotice}
         </div>
-        <aside className="aic-hero-summary"><small>위험 요약</small><h3>{risk.title}</h3>
-          {[
-            ['핵심 발생 구간', narrative?.mechanism || risk.themeLabel],
-            ['주요 손해 형태', narrative?.damage || detail.primaryLoss],
-            ['주요 책임 주체', narrative?.responsibility || detail.exposedParty],
-            ['현재 판단 상태', detail.decisionStatus],
-          ].map(([label, value]) => <div className="aic-summary-row" key={label}><span>{label}</span><strong>{value}</strong></div>)}
+        <aside className="aic-hero-summary"><small>위험 요약</small><h3>{risk.id === 'ev-battery-fire' ? '배터리 화재·배상책임' : risk.title}</h3>
+          {summaryRows.map(([label, value]) => <div className="aic-summary-row" key={label}><span>{label}</span><strong>{value}</strong></div>)}
         </aside>
-      </section>
-
-      <section className="aic-fact-grid">
-        {[
-          ['공개 원문 사실', sourceFacts[0], snapshot?.sourceDate || '발행일 확인 필요'],
-          ['손해 측정 과제', narrative?.damage || detail.primaryLoss, narrative?.evidenceNeeded || sourceChecks[0] || '국내 손해자료 추가 확인'],
-          ['기존 보장 연결', narrative?.insuranceBoundary || detail.decisionChecks[3] || '기존 상품·약관 확인 필요', '약관·사고 정의 검토'],
-          ['권장 다음 단계', decisionTitle, narrative?.productIssue || sourceChecks[1] || record?.nextAction || '공식 원문과 손해자료 추가 확인'],
-        ].map(([label, title, body], index) => <article className="aic-fact" key={label}><small>{label}</small><strong>{title}</strong><p>{body}</p>{index === 0 && primarySource ? <a href={primarySource} target="_blank" rel="noreferrer noopener">{primarySourceName} ↗</a> : <span>원문 확인 필요</span>}</article>)}
       </section>
 
        <nav className="aic-section-nav" aria-label="위험 상세 섹션 이동">

@@ -4,11 +4,16 @@ import { buildDeveloperRiskCatalogViewData, buildDeveloperStep2Records, type Dev
 import { riskExplorationRecords, type RiskExplorationRecord } from '../../domain/risk/riskExplorationDemo'
 import { groupArticleSourceRecords, isMeaningfulRiskCandidate, loadArticleSourceRecords, selectArticleGroupRepresentative } from '../../features/risk-dashboard/articleSourceData'
 
+function isExcludedSwissHeatRecord(record: RiskExplorationRecord) {
+  const searchable = `${record.id} ${record.title} ${record.summary} ${record.sourceName ?? ''}`.toLocaleLowerCase('ko-KR')
+  return searchable.includes('스위스 폭염') || searchable.includes('warming switzerland') || searchable.includes('swiss re institute')
+}
+
 function mergePractitionerRiskRecords(articleRecords: RiskExplorationRecord[]) {
   const merged = new Map<string, RiskExplorationRecord>()
   riskExplorationRecords.forEach((record) => merged.set(record.id, record))
-  articleRecords.forEach((record) => merged.set(record.id, record))
-  return [...merged.values()]
+  articleRecords.filter((record) => !isExcludedSwissHeatRecord(record)).forEach((record) => merged.set(record.id, record))
+  return [...merged.values()].filter((record) => !isExcludedSwissHeatRecord(record))
 }
 
 export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'developer' }) {
@@ -21,7 +26,7 @@ export function RiskCatalogPage({ mode = 'analyst' }: { mode?: 'analyst' | 'deve
     void loadArticleSourceRecords().then((articles) => {
       const viewData = buildDeveloperRiskCatalogViewData(articles, [])
       const candidateArticles = groupArticleSourceRecords(articles.filter(isMeaningfulRiskCandidate)).map(selectArticleGroupRepresentative)
-      const records = buildDeveloperStep2Records([], candidateArticles)
+      const records = buildDeveloperStep2Records([], candidateArticles).filter((record) => !isExcludedSwissHeatRecord(record))
       if (cancelled) return
       setDeveloperViewData(viewData)
       setDeveloperRecords(records)

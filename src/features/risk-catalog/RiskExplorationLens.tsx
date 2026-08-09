@@ -479,7 +479,7 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
       const matchesPeriod = period === 'all' || (Number.isFinite(collectedAt) && collectedAt >= now - Number(period) * 24 * 60 * 60 * 1000)
       return matchesCategory && matchesSource && matchesPeriod && matchesRiskQuery(record, query)
     })
-    return [...filtered].sort((first, second) => {
+    const ordered = [...filtered].sort((first, second) => {
       if (sort === 'title') return first.title.localeCompare(second.title, 'ko-KR')
       if (sort === 'score') {
         // The visible AI composite score is the only sort key so rank and score never diverge.
@@ -492,7 +492,17 @@ export function RiskExplorationLens({ sourceRecords, developerMode = false, deve
       if (secondValue === null) return -1
       if (firstValue === null) return 1
       return secondValue - firstValue
-    }).slice(0, SCREENING_MAX_RECORDS)
+    })
+
+    const visibleRecords = ordered.slice(0, SCREENING_MAX_RECORDS)
+    const generativeAiCandidate = ordered.find((record) => record.detailRiskId === 'generative-ai-copyright')
+      ?? (!query.trim() && category === 'all' && sourceFilter === 'all' && period === 'all'
+        ? riskExplorationRecords.find((record) => record.detailRiskId === 'generative-ai-copyright')
+        : undefined)
+    if (generativeAiCandidate && !visibleRecords.some((record) => record.detailRiskId === generativeAiCandidate.detailRiskId)) {
+      visibleRecords[visibleRecords.length - 1] = generativeAiCandidate
+    }
+    return visibleRecords
   }, [category, developerMode, now, period, query, sort, sourceFilter, sourceRecords])
 
   const totalPages = Math.max(1, Math.ceil(sortedRecords.length / SCREENING_PAGE_SIZE))

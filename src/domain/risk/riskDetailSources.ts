@@ -74,6 +74,33 @@ const sources = {
   },
 } satisfies Record<string, RiskDetailResearchSource>
 
+const evBatterySources: RiskDetailResearchSource[] = [
+  {
+    institution: '보험연구원',
+    title: '전기차·모빌리티 위험 연구보고서 PDF 원문',
+    url: 'https://www.kiri.or.kr/pdf/%EC%97%B0%EA%B5%AC%EC%9E%90%EB%A3%8C/%EC%97%B0%EA%B5%AC%EB%B3%B4%EA%B3%A0%EC%84%9C/nre2024-04_1.pdf?utm_source=chatgpt.com',
+    role: '전기차·모빌리티 위험과 보험 검토에 참고할 수 있는 보험연구원 연구보고서 원문',
+  },
+  {
+    institution: '보험연구원',
+    title: '전기자동차·열폭주 위험 · 보험연구원 PDF 원문',
+    url: 'https://www.kiri.or.kr/report/downloadFile.do?docId=564739',
+    role: '전기자동차와 BESS에 활용되는 리튬이온 배터리의 열폭주·화재 위험을 확인하는 연구 원문',
+  },
+  {
+    institution: '공공데이터포털',
+    title: '전기차 화재 관련 파일데이터 원문',
+    url: 'https://www.data.go.kr/data/15138615/fileData.do',
+    role: '전기차 화재 관련 원천 데이터를 확인하는 공공데이터포털 파일데이터 원문',
+  },
+  {
+    institution: '공공데이터포털',
+    title: '전기차 안전·사고 관련 파일데이터 원문',
+    url: 'https://www.data.go.kr/data/15155635/fileData.do',
+    role: '전기차 안전·사고 관련 원천 데이터를 확인하는 공공데이터포털 파일데이터 원문',
+  },
+]
+
 const sourceKeysByRisk: Record<string, Array<keyof typeof sources>> = {
   'ev-battery-fire': ['kidi', 'kiri', 'dataPortal', 'law'],
   'commercial-drone': ['kiriMobility', 'kidi', 'law', 'dataPortal'],
@@ -95,5 +122,6 @@ const sourceKeysByRisk: Record<string, Array<keyof typeof sources>> = {
 }
 
 export function getRiskDetailResearchSources(riskId: string): RiskDetailResearchSource[] {
+  if (riskId === 'ev-battery-fire') return evBatterySources
   return (sourceKeysByRisk[riskId] ?? ['kiri', 'swissReClimate', 'law', 'dataPortal']).map((key) => sources[key])
 }
