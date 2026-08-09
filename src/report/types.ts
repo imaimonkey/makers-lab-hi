@@ -480,6 +480,8 @@ export interface WordingPolicyEditor extends JsonObject {
     number: number;
     title: string;
     text: string;
+    sectionId?: string | null;
+    insertAfter?: number | null;
   }>;
   updatedAt?: string | null;
 }

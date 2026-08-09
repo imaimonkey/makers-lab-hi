@@ -178,3 +178,6 @@
 .detail-page .ai-copyright-detail .aic-aside-item > a { color: #145dcc; }
 .detail-page .ai-copyright-detail .aic-editorial-decision,
 .detail-page .ai-copyright-detail .aic-editorial-decision * { color: #fff !important; }
+.standard-risk-detail > .aic-fact-grid {
+  display: none !important;
+}

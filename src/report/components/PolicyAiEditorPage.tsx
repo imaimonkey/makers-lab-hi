@@ -13,7 +13,7 @@ import { loadArticleSourceRecords } from '../../features/risk-dashboard/articleS
 import { createWordingReportProxy } from '../api/wording-report-proxy'
 import '../report.css'
 
-type Clause = { key?: string; number: number; title: string; text: string; chapter?: string }
+type Clause = { key?: string; number: number; title: string; text: string; chapter?: string; sectionId?: string | null; insertAfter?: number | null }
 type Message = { id: string; role: 'user' | 'assistant'; text: string; action?: 'draft' | 'apply'; isTyping?: boolean }
 type Reply = { text: string; action?: Message['action']; clause?: Clause; applyClause?: Clause; draftKey?: string; draftText?: string }
 
@@ -40,6 +40,7 @@ function createReportClauses(report: ArticleDerivedReportEntry['report']): Claus
     title: article.title,
     text: articleText(article),
     chapter: section.title,
+    sectionId: `common-${section.id}`,
   })))
   const special = policy.specialClauses.flatMap((clause) => clause.articles.map((article) => ({
     key: `special-${clause.id}-${article.number}`,
@@ -47,6 +48,7 @@ function createReportClauses(report: ArticleDerivedReportEntry['report']): Claus
     title: article.title,
     text: articleText(article),
     chapter: clause.title,
+    sectionId: `special-${clause.id}`,
   })))
   return [...common, ...special]
 }
@@ -112,6 +114,10 @@ export function PolicyAiEditorPage({
   const responseTimerRef = useRef<number | null>(null)
   const typingTimerRef = useRef<number | null>(null)
   const pendingReplyRef = useRef<Reply | null>(null)
+  const pendingDraftRef = useRef<Reply | null>(null)
+  const pendingProposalRef = useRef<Reply | null>(null)
+  const lastQuestionRef = useRef('')
+  const chatEndRef = useRef<HTMLDivElement | null>(null)
   const pendingAssistantMessageIdRef = useRef<string | null>(null)
   const messageCounterRef = useRef(0)
 
@@ -119,6 +125,10 @@ export function PolicyAiEditorPage({
     if (responseTimerRef.current !== null) window.clearTimeout(responseTimerRef.current)
     if (typingTimerRef.current !== null) window.clearInterval(typingTimerRef.current)
   }, [])
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [messages, isReading])
 
   useEffect(() => {
     const loadSelectedEntry = async () => {
@@ -182,14 +192,33 @@ export function PolicyAiEditorPage({
     const draft = articleDrafts[clause.key]
     return typeof draft === 'string' && draft.trim() ? { ...clause, text: draft } : clause
   }) : BASE_CLAUSES
-  const clauses = [...reportClauses, ...addedClauses]
+  const orderedClauses = [...reportClauses]
+  addedClauses.forEach((added) => {
+    const sameSection = added.sectionId ? orderedClauses.map((item, index) => ({ item, index })).filter(({ item }) => item.sectionId === added.sectionId).map(({ index }) => index) : []
+    const sectionEnd = sameSection.length ? sameSection[sameSection.length - 1] + 1 : -1
+    // Article numbers in the full policy are the final placement authority.
+    // A persisted section id can differ between older drafts, so do not let it
+    // block a unique anchor such as article 42 when inserting article 43.
+    const exactAnchor = added.insertAfter == null ? -1 : orderedClauses.findIndex((item) => item.number === added.insertAfter)
+    const insertAt = exactAnchor >= 0
+      ? exactAnchor + 1
+      : sectionEnd >= 0
+        ? sectionEnd
+        : added.insertAfter == null
+          ? orderedClauses.findIndex((item) => item.number > added.number)
+          : orderedClauses.findIndex((item) => item.number > added.insertAfter!)
+    orderedClauses.splice(insertAt < 0 ? orderedClauses.length : insertAt, 0, added)
+  })
+  const clauses = orderedClauses
   const policyTitle = entry ? createArticlePolicyDraft(asReportView(entry.report)).documentTitle : '서비스 이용 약관'
   const reportTitle = entry?.report.meta.title ?? 'AI 약관 편집'
   const specialClauseNumbers = clauses
     .filter((clause) => clause.chapter?.includes('특별약관'))
     .map((clause) => clause.number)
-  const nextArticleNumber = (specialClauseNumbers.length ? specialClauseNumbers : clauses.map((clause) => clause.number))
-    .reduce((highest, number) => Math.max(highest, number), 0) + 1
+  // Include common, special, and previously added AI articles so a new draft
+  // can never reuse an existing article number.
+  const nextArticleNumber = clauses.reduce((highest, clause) => Math.max(highest, clause.number), 0) + 1
+  void specialClauseNumbers
   const focus = entry?.report.wordingFeasibility.improvementReasons?.[0]
     ?? entry?.report.productProposal.unresolvedItems?.[0]
     ?? entry?.report.productProposal.coveredLoss
@@ -220,11 +249,151 @@ export function PolicyAiEditorPage({
       draftKey: THERMAL_RUNAWAY_DRAFT_KEY,
       draftText: THERMAL_RUNAWAY_DRAFT_TEXT,
     },
+    {
+      prompt: '전기차 배터리 화재에서 제조사 결함이면 누가 보상해?',
+      answer: '현재 리포트는 제조사 결함을 확정하지 않습니다. 제4조 보상하지 않는 손해와 제8조 선보상 및 구상에서 배터리 결함, 차량 관리, 충전시설 과실을 분리해 확인합니다. 화재 원인 감정서·리콜 이력·충전 로그가 확인되면 선지급 후 구상하는 구조를 검토할 수 있지만, 책임과 보상 비율은 법무·보상 확인 전 확정하지 않습니다.',
+      clause: clauses.find((clause) => clause.number === 4) ?? clauses[0],
+    },
+    {
+      prompt: '지하주차장 연쇄피해에서 충전사업자 책임을 약관에 넣을 수 있어?',
+      answer: '제4조에는 충전시설 설치·점검·관리상 과실이 사고의 직접 원인으로 확인된 경우를 검토용 문구로 둘 수 있습니다. 제8조에는 회사의 선지급 후 충전사업자·관리주체·제조사에 대한 구상 가능성을 남깁니다. 충전기 점검기록, 고장코드, CCTV, 시설관리 계약과 원인 감정서가 없으면 책임 주체나 면책을 확정하지 않습니다.',
+      clause: clauses.find((clause) => clause.number === 4) ?? clauses[0],
+    },
+    {
+      prompt: '원인 미확정인데 긴급복구비를 먼저 지급해도 돼?',
+      answer: '제8조 선보상 및 구상에 원인 미확정 긴급복구비의 임시 지급 조건을 검토할 수 있습니다. 임시 지급은 최종 책임 인정이나 구상권 포기를 의미하지 않아야 하며, 대피·소화·추가 확산 방지 같은 긴급 비용으로 한정하고 조사 후 정산하는 구조가 적절합니다.',
+      clause: clauses.find((clause) => clause.number === 8) ?? clauses[0],
+    },
+    {
+      prompt: '제4조에서 배터리 열폭주를 전부 면책해도 돼?',
+      answer: '배터리 열폭주 전체를 일괄 면책하면 보장 공백이 커질 수 있어 그대로 확정하면 안 됩니다. 제4조에서 배터리 자체 결함, 임의 개조·관리 소홀, 충전시설 결함, 원인 미확정 상태를 분리하고 직접 원인과 인과관계가 확인된 경우에만 적용하도록 검토합니다.',
+      clause: clauses.find((clause) => clause.number === 4) ?? clauses[0],
+    },
+    {
+      prompt: '보상한도와 제3자 피해 범위를 어디에서 확인해?',
+      answer: '제7조 보험금 지급절차와 제10조 보험금 등의 지급한도에서 확인하는 흐름입니다. 발화 차량, 인접 차량·건물·주차장 시설, 소화수·대피·긴급복구 비용을 항목별로 나누고 사고당 한도와 연간 총한도를 구분해야 합니다. 실제 금액은 손해자료와 집적 PML 확인 후 정합니다.',
+      clause: clauses.find((clause) => clause.number === 10) ?? clauses.find((clause) => clause.number === 7) ?? clauses[0],
+    },
+    {
+      prompt: '같은 화재에서 자동차보험과 이 상품이 중복 지급되면 어떻게 해?',
+      answer: '제9조 중복보상의 조정에서 확인합니다. 자동차보험의 차량 손해, 이 상품의 제3자 재산손해·긴급복구비, 시설배상책임보험 손해를 분리하고 동일 손해의 이중 지급을 조정합니다. 실제 회수액과 한도 적용 순서는 계약·지급자료 확인 후 확정합니다.',
+      clause: clauses.find((clause) => clause.number === 9) ?? clauses[0],
+    },
+    {
+      prompt: '보상한도 문구를 제7조 기준으로 더 명확하게 해줘',
+      answer: '제7조 기준으로 사고당 한도, 피해자별 한도, 연간 총한도를 분리해 쓰는 검토안을 제시합니다. 지하주차장 연쇄피해는 차량·시설·소화수 손해와 영업중단 손해를 구분하고, 다수 피해를 하나의 사고로 볼지 정의해야 합니다. 금액은 실제 손해·재보험·집적 PML 확인 전 확정하지 않습니다.',
+      clause: clauses.find((clause) => clause.number === 7) ?? clauses[0],
+    },
   ]
 
   const createAssistantReply = (value: string): Reply => {
     const scripted = scenarioScripts.find((item) => item.prompt === value)
-    if (scripted) return { text: scripted.answer, clause: scripted.clause, applyClause: scripted.applyClause, draftKey: scripted.draftKey, draftText: scripted.draftText }
+    if (scripted) {
+      const reply: Reply = { text: scripted.answer, clause: scripted.clause, applyClause: scripted.applyClause, draftKey: scripted.draftKey, draftText: scripted.draftText }
+      if (/중복보상/.test(value) && /구성|작성|수정/.test(value) && scripted.clause?.key) {
+        const duplicateDraft = '피보험자가 동일한 사고와 손해에 대하여 기존 보험, 보증서비스, 국가·지방자치단체의 지원금 또는 책임주체로부터 이미 회수한 금액이 있는 경우 회사는 그 금액을 공제한 후 보험금을 지급합니다. 회사가 선보상한 후 피보험자가 다른 보험 또는 책임주체로부터 금액을 회수한 경우 피보험자는 회수 사실을 회사에 알리고 최종 보험금 정산에 협력하여야 합니다. 여러 보험계약에서 산출한 보험금 합계가 실제 손해액을 초과하는 경우 회사는 각 계약의 책임액 비율에 따라 이 계약의 지급보험금을 계산합니다. 동일 사고의 차량 손해, 제3자 재산손해, 시설배상책임보험 손해와 긴급복구비는 손해 항목별로 구분하여 정산합니다.'
+        const duplicateIntro = scripted.answer.replace(/문서에 넣으려면[\s\S]*?입력하세요\.?/g, '').trim()
+        const duplicateReply: Reply = { text: `${duplicateIntro}\n\n제${scripted.clause.number}조 ${scripted.clause.title}\n\n${duplicateDraft}`, clause: scripted.clause, draftKey: scripted.clause.key, draftText: duplicateDraft }
+        pendingDraftRef.current = duplicateReply
+        return duplicateReply
+      }
+      if (/구성|만들|작성/.test(value) && (reply.draftKey || reply.applyClause)) {
+        pendingDraftRef.current = reply
+        return { ...reply, applyClause: undefined }
+      }
+      return reply
+    }
+
+    const compactValue = value.replace(/\s+/g, '')
+    if (/^(네|예|넵|넹|넵네)?(넣어|넣어줘|넣어죠|넣어주세요|넣어주세|넣어주셈|넣어줴|반영|반영해줘|반영해주세요|반영해주세|적용해줘|적용해주세요|문서에넣어줘)?$/.test(compactValue) && /네|예|넵|넹|넣어|반영|적용/.test(compactValue) && pendingProposalRef.current?.clause) {
+      const proposal = pendingProposalRef.current
+      pendingProposalRef.current = null
+      return { text: `제${proposal.clause!.number}조 ${proposal.clause!.title}을 약관 문서에 반영합니다. 반영 후 저장 버튼을 눌러 리포트 약관에 적용하세요.`, clause: proposal.clause, applyClause: proposal.clause }
+    }
+    if (/^(아니요|아니오|안함|아니요-안함|안할게|넣지마|취소|노)\.?$/.test(compactValue) && pendingProposalRef.current) {
+      pendingProposalRef.current = null
+      return { text: '제안한 신규 조항은 반영하지 않았습니다. 현재 약관 문서는 변경되지 않았습니다.' }
+    }
+    if (/^(저장|저장해줘|저장해주세요)$/.test(compactValue)) {
+      return { text: '약관 문서에 반영된 내용을 저장하려면 상단의 저장 버튼을 눌러 주세요. 저장이 완료되면 종합 리포트 약관에도 반영됩니다.' }
+    }
+    if (/^\s*(넣어줘|반영해줘|문서에 넣어줘)\s*$/.test(value)) {
+      const pending = pendingDraftRef.current
+      if (!pending?.clause) return { text: '먼저 반영할 조항 초안을 구성해 주세요. 예: “충전시설 책임 조항 구성해줘”' }
+      pendingDraftRef.current = null
+      const duplicate = clauses.find((item) => isSameClause(item, pending.clause!))
+      if (duplicate) {
+        return { text: `같은 내용의 조항이 이미 있어 새로 추가하지 않았습니다. 기존 제${duplicate.number}조 ${duplicate.title}을 확인해 주세요. 해당 조항으로 이동했습니다.`, clause: duplicate }
+      }
+      return { text: `방금 구성한 제${pending.clause.number}조 ${pending.clause.title} 초안을 약관 문서에 반영합니다. 반영된 부분은 강조 표시되며 저장 전 실무자 확인이 필요합니다.`, clause: pending.clause, applyClause: pending.clause, draftKey: pending.draftKey, draftText: pending.draftText }
+    }
+
+    if (/약관|조항/.test(value) && /있어|없어|찾아|어디/.test(value) && /발화|원인|책임|충전|배터리|재발화|긴급복구/.test(value)) {
+      const proposalClause: Clause = { key: `added-${nextArticleNumber}`, number: nextArticleNumber, title: '전기차 화재 사고 인정 및 확인자료', chapter: '전기차 화재 보완 검토 조항', sectionId: 'special-adjacent-vehicle', insertAfter: nextArticleNumber - 1, text: '전기차 배터리 화재 또는 충전 중 화재의 사고 인정 여부는 화재 감식 결과, 배터리 진단·충전 로그, 차량 및 충전시설 점검기록, 리콜·정비 이력과 손해 발생의 시간·장소 자료를 종합하여 판단합니다. 원인과 책임 주체가 확인되지 않은 경우에는 특정 주체의 책임이나 면책을 확정하지 않으며, 긴급복구비의 임시 지급 여부와 최종 구상은 조사 결과에 따릅니다.' }
+      const proposal: Reply = { text: `현재 약관에는 질문하신 내용을 직접 정한 조항이 없습니다. 다만 다음 관점의 보완이 필요합니다.\n\n- 보험 관점: 발화 차량·보장 사건·제3자 손해의 인정 기준\n- 법무 관점: 제조사·충전사업자·주차장 운영자 책임을 확정하기 위한 증빙\n- 보상 관점: 원인 미상 상태의 긴급복구비 임시 지급과 최종 구상\n- 손해사정 관점: 감식 결과·BMS·충전 로그·점검기록·리콜자료 확보\n\n이 내용을 신규 제안 조항으로 구성했습니다. 약관에 넣을까요?`, clause: proposalClause }
+      pendingProposalRef.current = proposal
+      return proposal
+    }
+
+    const existingPolicyQuestion = /중복보상|중복 보상|보상한도|보상 한도|환불|취소|해지|지급한도|지급 한도|보험금 계산|보험금 지급/.test(compactValue)
+    if (existingPolicyQuestion && /알려|설명|어디|확인|있어|찾아|알려죠|설명해죠/.test(compactValue)) {
+      const existing = /중복보상|중복 보상/.test(compactValue)
+        ? clauses.find((clause) => clause.number === 9)
+        : /보상한도|보상 한도|지급한도|지급 한도/.test(compactValue)
+          ? clauses.find((clause) => clause.number === 7) ?? clauses.find((clause) => clause.number === 10)
+          : clauses.find((clause) => /환불|취소|해지|보험금 지급|보험금 계산/i.test(`${clause.title} ${clause.text}`))
+      if (existing) {
+        return { text: `현재 약관에 관련 내용이 있습니다. 제${existing.number}조 ${existing.title}로 이동합니다.\n\n${existing.text}\n\n이 조항은 전기차 배터리 화재 사고의 손해 항목과 기존 보험의 지급 관계를 확인한 뒤 실무 검토에 사용합니다. 신규 조항을 추가하지 않습니다.`, clause: existing }
+      }
+    }
+
+    if (/발화 차량|원인 미상|객관적 기준|화재 인정 기준/.test(value)) {
+      const matched = clauses.find((clause) => /발화 차량|원인 미상|객관적 기준|원인 및 책임 확인/.test(`${clause.title} ${clause.text}`)) ?? clauses.find((clause) => clause.number === 4) ?? clauses[0]
+      return {
+        text: `현재 리포트에서 확인할 위치는 ${matched ? `제${matched.number}조 ${matched.title}` : '관련 검토 조항'}입니다. 발화 차량과 원인 미상 화재를 인정하려면 소방·감식 결과, 배터리 진단·충전 로그, 차량·충전시설 점검기록, 인접 손해의 시간·장소 일치 자료를 분리해 확인해야 합니다. 단순히 차량이 화재 현장에 있었다는 사실만으로 발화 차량이나 제조사·충전사업자 책임을 확정할 수 없습니다. 이 기준을 조항으로 구성하려면 “그 내용 구성해줘”라고 입력하세요.`,
+        clause: matched,
+      }
+    }
+
+    const contextValue = `${lastQuestionRef.current} ${value}`
+    const explicitArticleNumber = contextValue.match(/제\s*(\d+)조/)?.[1]
+    const requestedClause = explicitArticleNumber
+      ? clauses.find((clause) => clause.number === Number(explicitArticleNumber))
+      : /긴급복구|선보상|구상/.test(contextValue)
+        ? clauses.find((clause) => clause.number === 8)
+        : /중복보상|자동차보험/.test(contextValue)
+          ? clauses.find((clause) => clause.number === 9)
+          : /보상한도|지급한도|한도/.test(contextValue)
+            ? clauses.find((clause) => clause.number === 7 || clause.number === 10)
+            : /제\s*4조|면책|보상하지 않는|열폭주/.test(contextValue)
+      ? clauses.find((clause) => clause.number === 4)
+      : /제\s*7조|한도|지급절차/.test(value)
+        ? clauses.find((clause) => clause.number === 7)
+        : /제\s*8조|선보상|구상|책임/.test(value)
+          ? clauses.find((clause) => clause.number === 8)
+          : /제\s*9조|중복보상/.test(value)
+            ? clauses.find((clause) => clause.number === 9)
+            : undefined
+    const isFollowUpBuild = /그 내용|그 조항|방금|직전|관련 내용/.test(value) && /구성|수정|추가|반영|만들어|정리해/.test(value)
+    const isEVBuild = /전기차|배터리|화재|충전|열폭주|면책|보상한도|중복보상|구상|법/.test(contextValue) && /구성|수정|추가|반영|만들어|정리해/.test(value)
+    if (isFollowUpBuild || isEVBuild || (lastQuestionRef.current && /구성|수정|추가|반영|만들어|정리해/.test(value))) {
+      if (requestedClause?.key) {
+        const revisedText = /중복보상|자동차보험/.test(contextValue)
+          ? '피보험자가 동일한 사고와 손해에 대하여 기존 보험, 보증서비스, 국가·지방자치단체의 지원금 또는 책임주체로부터 이미 회수한 금액이 있는 경우 회사는 그 금액을 공제한 후 보험금을 지급합니다. 회사가 선보상한 후 피보험자가 다른 보험 또는 책임주체로부터 금액을 회수한 경우 피보험자는 회수 사실을 회사에 알리고 최종 보험금 정산에 협력하여야 합니다. 여러 보험계약에서 산출한 보험금 합계가 실제 손해액을 초과하는 경우 회사는 각 계약의 책임액 비율에 따라 이 계약의 지급보험금을 계산합니다. 동일 사고의 차량 손해, 제3자 재산손해, 시설배상책임보험 손해와 긴급복구비는 손해 항목별로 구분하여 정산합니다.'
+          : /긴급복구|선보상|구상/.test(contextValue)
+            ? `${requestedClause.text}\n\n 화재 원인과 책임 주체가 확정되기 전에는 대피·소화·추가 확산 방지 등 긴급복구에 필요한 비용만 임시 지급할 수 있습니다. 임시 지급은 최종 책임 인정이나 구상권 포기를 의미하지 않으며, 원인 감정서·점검기록·충전 로그 확인 후 최종 정산합니다.`
+            : /보상한도|지급한도|한도/.test(contextValue)
+              ? `${requestedClause.text}\n\n 사고당 한도, 피해자별 한도, 연간 총한도를 구분하고 발화 차량·인접 차량·건물·주차장 시설·긴급복구·영업중단 손해를 항목별로 산정합니다. 실제 금액과 누적한도는 손해자료·집적 PML·재보험 검토 후 확정합니다.`
+              : `${requestedClause.text}\n\n 전기차 배터리 화재의 원인과 책임 주체를 확정하지 않은 상태에서 면책 또는 보상 제외를 단정하지 않습니다. 배터리 결함, 충전시설 관리, 주차장 운영, 피보험자의 관리상 과실을 구분하고 화재 원인 감정서·점검기록·충전 로그·리콜 자료를 확인한 뒤 보상 및 구상 여부를 결정합니다.`
+        const draftReply: Reply = { text: `현재 리포트의 제${requestedClause.number}조 ${requestedClause.title}에서 처리할 수 있는 내용입니다. 기존 조항을 유지하면서 전기차 배터리 화재의 책임·증빙 기준을 보완하는 수정안을 구성했습니다. 문서에 넣으려면 “넣어줘”라고 입력하세요.`, clause: requestedClause, draftKey: requestedClause.key, draftText: revisedText }
+        pendingDraftRef.current = draftReply
+        return draftReply
+      }
+      const extraClause: Clause = { key: `added-${nextArticleNumber}`, number: nextArticleNumber, title: '전기차 배터리 화재 원인 및 책임 확인', chapter: '전기차 화재 보완 검토 조항', sectionId: requestedClause?.sectionId ?? 'special-adjacent-vehicle', insertAfter: nextArticleNumber - 1, text: `이 조항은 전기차 배터리 열폭주 또는 충전 중 화재로 차량·인접 차량·건물·주차장 시설에 손해가 발생한 경우 적용합니다. 회사는 배터리 제조·수입 결함, 충전시설 설치·관리, 주차장 운영, 피보험자의 개조·관리상 과실을 구분하여 화재 원인과 손해 범위를 확인합니다. 원인 감정서·점검기록·충전 로그·리콜 자료가 확보되기 전에는 특정 책임 주체나 면책을 확정하지 않으며, 긴급복구비를 임시 지급한 경우에도 최종 책임 및 구상권 판단은 조사 결과에 따릅니다. 관련 법령이나 공식 기준이 확인되지 않은 부분은 법무 검토 전 확정 문구로 사용하지 않습니다.` }
+      const draftReply: Reply = { text: `현재 약관에 요청 내용을 직접 담은 조항이 없어 마지막 조항 다음인 제${nextArticleNumber}조로 신규 검토 조항을 구성했습니다. 제4조·제7조·제8조·제9조와 충돌하지 않도록 면책, 한도, 선보상·구상, 중복보상은 각 기존 조항을 우선 적용하도록 연결했습니다. 법령 근거가 확인되지 않은 책임·보상 문구는 법무 확인 필요 상태로 남겼습니다. 문서에 넣으려면 “넣어줘”라고 입력하세요.`, clause: extraClause }
+      pendingDraftRef.current = draftReply
+      return draftReply
+    }
 
     if (value.includes('환불')) {
       const matched = clauses.find((clause) => /환불|취소|반환|refund/i.test(`${clause.title} ${clause.text}`))
@@ -273,16 +442,18 @@ export function PolicyAiEditorPage({
 
   const applyClauseToDraft = (clause: Clause, message?: string) => {
     const existsInReport = reportClauses.some((item) => isSameClause(item, clause))
-    const existsInAdded = addedClauses.some((item) => isSameClause(item, clause))
-    if (!existsInReport && !existsInAdded) {
-      setAddedClauses((current) => dedupeClauses([...current, clause]))
-      setStatus('editing')
+    if (!existsInReport) {
+      setAddedClauses((current) => {
+        const withoutSameNumber = current.filter((item) => item.number !== clause.number)
+        return dedupeClauses([...withoutSameNumber, clause])
+      })
     }
+    setStatus('editing')
     const targetKey = clause.key ?? `added-${clause.number}`
     setActiveClauseKey(targetKey)
-    window.setTimeout(() => {
-      document.getElementById(`policy-clause-${targetKey}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }, 180)
+    const focusAddedClause = () => document.getElementById(`policy-clause-${targetKey}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    window.setTimeout(focusAddedClause, 180)
+    window.setTimeout(focusAddedClause, 520)
     if (message) setToast(message)
   }
 
@@ -347,6 +518,8 @@ export function PolicyAiEditorPage({
     messageCounterRef.current += 1
     setMessages((current) => [...current, { id: `user-${messageCounterRef.current}`, role: 'user', text: value }])
     setIsReading(true)
+    const isFollowUp = /^\s*(그 내용|그 조항|방금|직전|관련 내용|넣어줘|반영해줘|문서에 넣어줘)/.test(value)
+    if (!isFollowUp) lastQuestionRef.current = value
     pendingReplyRef.current = buildReply(value)
     responseTimerRef.current = window.setTimeout(() => {
       setIsReading(false)
@@ -373,7 +546,13 @@ export function PolicyAiEditorPage({
     }
     const nextEditor: WordingPolicyEditor = {
       articleDrafts,
-      addedArticles: dedupeClauses(addedClauses),
+      addedArticles: dedupeClauses(addedClauses).map((clause) => ({
+        number: clause.number,
+        title: clause.title,
+        text: clause.text,
+        sectionId: clause.sectionId ?? null,
+        insertAfter: clause.insertAfter ?? clause.number - 1,
+      })),
       updatedAt: new Date().toISOString(),
     }
     const nextReport: ReportResult = {
@@ -421,7 +600,7 @@ export function PolicyAiEditorPage({
   return (
     <main className="policy-editor" aria-label="AI 약관 편집 화면">
       <header className="policy-editor__header">
-        <div><span className="policy-editor__kicker">INSURANCE WORDING STUDIO</span><h1>AI 약관 편집</h1><p>{reportTitle} · 저장된 문서를 기반으로 편집합니다.</p></div>
+        <div><h1>AI 약관 편집</h1></div>
         <button className="policy-editor__back" type="button" onClick={goBack}>리포트로 돌아가기</button>
       </header>
       <div className="policy-editor__split">
@@ -450,6 +629,7 @@ export function PolicyAiEditorPage({
               </article>
             ))}
             {isReading ? <article className="policy-editor__message is-assistant is-reading"><span>AI 약관 편집</span><p><i aria-hidden="true" />생각하는 중입니다</p></article> : null}
+            <div ref={chatEndRef} aria-hidden="true" />
           </div>
           <form className="policy-editor__composer" onSubmit={(event) => { event.preventDefault(); ask() }}><label htmlFor="policy-chat-input">약관에 대해 질문하기</label><div><input id="policy-chat-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="예: 환불 관련 규정 알려줘" disabled={isReading} /><button type="submit" disabled={isReading}>{isReading ? '읽는 중' : '전송'}</button></div></form>
         </section>
