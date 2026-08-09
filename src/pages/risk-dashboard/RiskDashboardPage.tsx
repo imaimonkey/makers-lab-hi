@@ -435,8 +435,6 @@ export function RiskDashboardPage({ mode = 'analyst' }: { mode?: 'analyst' | 'de
 
           <div className="priority-body">
             <div className="ranking-chart">
-              <h3 className="chart-label">상품화 종합점수 상위 5건</h3>
-              <p className="chart-sub">상품화 검토 후보 {riskRadarKpis[1].value}건 중 종합점수가 높은 순서입니다.</p>
               <div className="bar-list">
                 {riskRadarPriorityRisks.map((risk, index) => (
                   <button className={`bar-row${index === priorityIndex ? ' active' : ''}`} type="button" aria-pressed={index === priorityIndex} onClick={() => setPriorityIndex(index)} key={risk.id}>
