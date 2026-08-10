@@ -46,6 +46,7 @@ const sampleInput: CustomerInsightInput = {
   concernLevel: 'needs-review',
   insightConsent: true,
 }
+void sampleInput
 
 export function CustomerInsightStudio() {
   const [input, setInput] = useState<CustomerInsightInput>(emptyInput)
@@ -84,13 +85,6 @@ export function CustomerInsightStudio() {
     setQueuedFindingIds((current) => [...current, finding.id])
   }
 
-  const loadSample = () => {
-    setInput(sampleInput)
-    setResult(null)
-    setQueuedFindingIds([])
-    setError('')
-  }
-
   return (
     <div className="customer-studio">
       <div className={result ? 'customer-studio-grid has-result' : 'customer-studio-grid is-empty'}>
@@ -103,7 +97,6 @@ export function CustomerInsightStudio() {
                 <small>알고 있는 만큼만 편하게 알려주세요.</small>
               </span>
             </div>
-            <button type="button" className="text-button" onClick={loadSample}>예시 불러오기</button>
           </div>
 
           <label className="field-label" htmlFor="life-stage">현재 생활 단계</label>
@@ -181,7 +174,7 @@ export function CustomerInsightStudio() {
         <section className="insight-results" id="official-products" aria-live="polite">
           {!result ? (
             <div className="customer-input-guide surface-card">
-              <div className="guide-icon"><AppIcon name="spark" size={22} /></div>
+              <button type="button" className="guide-icon" aria-label="고객 요청 입력 예시 채우기" onClick={() => { setInput(sampleInput); setResult(null); setError('') }}><AppIcon name="spark" size={22} /></button>
               <p className="eyebrow">WRITING GUIDE</p>
               <h3>이 세 가지만 함께 적으면<br />더 정확하게 찾을 수 있어요.</h3>
               <ol>
@@ -190,7 +183,6 @@ export function CustomerInsightStudio() {
                 <li><span>03</span><div><strong>확인하고 싶은 것</strong><p>기존 보험의 보장 가능성과 빈틈</p></div></li>
               </ol>
               <div className="guide-example">
-                <span>예시</span>
                 <p>“가정용 ESS를 쓰는데 화재로 이웃집까지 피해가 생기면 기존 보험에서 무엇을 확인해야 하나요?”</p>
               </div>
               <div className="guide-privacy"><AppIcon name="lock" size={16} /> 이름·연락처·상세 주소는 적지 않아도 됩니다.</div>
@@ -218,13 +210,13 @@ export function CustomerInsightStudio() {
               </div>
 
               <div className="recommendation-list">
-                {result.recommendations.map(({ product, reason, relevance }, index) => (
+                {result.recommendations.slice(0, 2).map(({ product, reason, relevance }, index) => (
                   <article className="product-card surface-card" key={product.id}>
                     <div className="product-rank">0{index + 1}</div>
                     <div className="product-copy">
                       <div className="product-meta">
                         <span>{product.category}</span>
-                        <em data-level={relevance}>{relevance} 관련도</em>
+                        <span className="product-meta-actions"><em data-level={relevance}>{relevance} 관련도</em><a href={product.productUrl} target="_blank" rel="noreferrer" className="product-link">공식 상품에서 확인 <AppIcon name="external" size={15} /></a></span>
                       </div>
                       <h4>{product.name}</h4>
                       <p>{product.summary}</p>
@@ -233,9 +225,6 @@ export function CustomerInsightStudio() {
                         <strong>약관 확인 포인트</strong>
                         <span>{product.confirmationPoint}</span>
                       </div>
-                      <a href={product.productUrl} target="_blank" rel="noreferrer" className="product-link">
-                        공식 상품에서 확인 <AppIcon name="external" size={15} />
-                      </a>
                     </div>
                   </article>
                 ))}
@@ -280,10 +269,6 @@ export function CustomerInsightStudio() {
                 </div>
               )}
 
-              <div className="recommendation-disclaimer">
-                이 결과는 공식 보험 가입설계나 보장 확정이 아닌 정보 탐색용 프로토타입입니다.
-                가입 가능 여부·보험료·보장 범위는 상품설명서, 약관, 특약과 인수 심사에 따라 달라집니다.
-              </div>
             </>
           )}
         </section>

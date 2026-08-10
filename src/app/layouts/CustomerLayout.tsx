@@ -24,7 +24,6 @@ export function CustomerLayout() {
           </nav>
 
           <div className="customer-header-actions">
-            <span className="demo-label"><i /> DEMO</span>
             <ModeSwitch mode="customer" />
           </div>
         </div>

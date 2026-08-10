@@ -23,7 +23,6 @@ export function CustomerInsightPage() {
                 document.getElementById('situation-search')?.scrollIntoView({ behavior: 'smooth' })
               }}
             >
-              데모 예시 준비하기
             </button>
           </div>
           <ul className="customer-trust-list">

@@ -42,6 +42,7 @@ const sampleDraft: SalesIntakeDraft = {
   proposal: '설비 자체 손해와 제3자 배상, 작업 중단 손해를 단계별로 나누어 확인할 수 있는 상품화 검토 프레임을 제안합니다.',
   followUp: 'candidate-review',
 }
+void sampleDraft
 
 function typeLabel(type: SalesIntakeType) {
   return type === 'field-report' ? '현장 리포트' : '상품 개발 제안'
@@ -97,12 +98,6 @@ export function SalesIntakeStudio() {
     setError('')
   }
 
-  const loadSample = () => {
-    setInput(sampleDraft)
-    setSubmitted(null)
-    setError('')
-  }
-
   return (
     <div className="sales-intake-studio">
       <div className="sales-intake-grid">
@@ -115,7 +110,6 @@ export function SalesIntakeStudio() {
                 <small>개인 식별정보 없이 상품개발에 필요한 맥락만 남겨주세요.</small>
               </span>
             </div>
-            <button type="button" className="text-button" onClick={loadSample}>샘플 입력</button>
           </div>
 
           <div className="sales-form-row">
@@ -192,7 +186,7 @@ export function SalesIntakeStudio() {
 
           <div className="sales-privacy-note">
             <AppIcon name="lock" size={17} />
-            고객 이름·연락처·계약번호·상세 주소·상담 원문은 입력하지 마세요. 이 화면은 운영 접수 API 연결 전 데모입니다.
+            고객 이름·연락처·계약번호·상세 주소·상담 원문은 입력하지 마세요.
           </div>
 
           {error && <p className="form-error" role="alert">{error}</p>}
@@ -217,7 +211,7 @@ export function SalesIntakeStudio() {
 
         <aside className="sales-intake-aside">
           <article className="sales-guidance-card surface-card">
-            <div className="sales-guidance-icon"><AppIcon name="trend" size={22} /></div>
+            <button type="button" className="sales-guidance-icon" aria-label="영업부서 요청 입력 예시 채우기" onClick={() => { setInput(sampleDraft); setSubmitted(null); setError('') }}><AppIcon name="trend" size={22} /></button>
             <p className="eyebrow">HOW IT FLOWS</p>
             <h3>현장의 언어를<br /><em>검토 가능한 신호</em>로</h3>
             <ol>
@@ -225,10 +219,6 @@ export function SalesIntakeStudio() {
               <li><span>02</span><div><strong>사람이 검토해요</strong><p>자동으로 상품 후보가 확정되지 않고 실무자 큐에서 확인합니다.</p></div></li>
               <li><span>03</span><div><strong>후속 경로를 정해요</strong><p>근거 수집, 위험 후보, 상품개발 논의로 이어질 수 있습니다.</p></div></li>
             </ol>
-            <div className="sales-guidance-callout">
-              <strong>SAMPLE FRAME</strong>
-              <p>운영 연동 전에는 이 기기에만 접수 목록이 저장됩니다.</p>
-            </div>
           </article>
 
           <section className="sales-recent-card surface-card" aria-live="polite">
@@ -252,7 +242,7 @@ export function SalesIntakeStudio() {
             ) : (
               <div className="sales-recent-empty">
                 <AppIcon name="inbox" size={22} />
-                <p><strong>아직 접수된 제안이 없습니다.</strong>샘플을 입력하거나 첫 현장 제안을 남겨보세요.</p>
+                <p><strong>아직 접수된 제안이 없습니다.</strong>첫 현장 제안을 남겨보세요.</p>
               </div>
             )}
           </section>
