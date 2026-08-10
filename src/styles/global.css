@@ -2101,6 +2101,41 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .sales-privacy-note { font-size: 10px; line-height: 1.6; }
 .sales-primary-action { font-size: 12px; }
 .sales-submit-success strong, .sales-submit-warning strong { font-size: 11px; }
+
+/* Sales intake readability pass: keep the field hierarchy comfortable at normal zoom. */
+.sales-card-heading h3, .sales-recent-heading h3 { font-size: 20px; }
+.sales-card-heading small { font-size: 12px; line-height: 1.5; }
+.sales-field-label { font-size: 14px; }
+.sales-field-label small { font-size: 12px; line-height: 1.6; }
+.sales-field-label input, .sales-field-label select { font-size: 14px; }
+.sales-field-label textarea { font-size: 14px; }
+.sales-privacy-note { font-size: 12px; }
+.sales-primary-action { font-size: 14px; }
+.sales-submit-success strong, .sales-submit-warning strong { font-size: 13px; }
+.sales-submit-success span, .sales-submit-warning span { font-size: 12px; }
+.sales-guidance-card li strong { font-size: 13px; }
+.sales-guidance-card li p, .sales-guidance-callout p { font-size: 12px; }
+.sales-guidance-callout strong { font-size: 11px; }
+.sales-recent-heading > span, .sales-recent-list li > div span { font-size: 12px; }
+.sales-recent-list time { font-size: 11px; }
+.sales-recent-list strong { font-size: 13px; }
+.sales-recent-list small { font-size: 11px; }
+.sales-recent-empty p { font-size: 12px; }
+.sales-recent-empty strong { font-size: 13px; }
+.sales-workspace-page .page-header h1 { font-size: clamp(36px, 3.2vw, 50px); }
+.sales-workspace-page .page-header > div:first-child > p:last-child { font-size: 16px; line-height: 1.8; }
+.sales-workspace-context > div { font-size: 14px; }
+.sales-workspace-context p { font-size: 12px; line-height: 1.7; }
+.sales-card-heading h3, .sales-recent-heading h3 { font-size: 22px; }
+.sales-card-heading small { font-size: 14px; }
+.sales-field-label { font-size: 16px; }
+.sales-field-label small { font-size: 14px; }
+.sales-intake-form { padding: 28px; }
+.sales-field-label { margin-top: 14px; }
+.sales-field-label input, .sales-field-label select { height: 46px; font-size: 16px; }
+.sales-field-label textarea { min-height: 82px; font-size: 16px; line-height: 1.6; }
+.sales-privacy-note { font-size: 14px; }
+.sales-primary-action { min-height: 54px; font-size: 16px; }
 .sales-submit-success span, .sales-submit-warning span { font-size: 10px; }
 .sales-guidance-card h3 { font-size: 22px; }
 .sales-guidance-card li strong { font-size: 12px; }
