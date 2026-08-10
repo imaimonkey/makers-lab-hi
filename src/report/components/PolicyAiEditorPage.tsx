@@ -68,8 +68,8 @@ function createReportClauses(report: ArticleDerivedReportEntry['report']): Claus
 }
 
 const welcome: Message = { id: 'welcome', role: 'assistant', text: '약관 문서와 관련 근거를 확인했습니다. 조항 검색, 설명, 작성 또는 수정을 요청해 주세요.' }
-const CHAT_THINKING_MS = 1_400
-const CHAT_TYPE_INTERVAL_MS = 24
+const CHAT_THINKING_MS = 467
+const CHAT_TYPE_INTERVAL_MS = 8
 const THERMAL_RUNAWAY_DRAFT_KEY = 'common-article-section-2-4'
 const THERMAL_RUNAWAY_DRAFT_TEXT = [
   '보장 사건과의 인과관계가 부족하거나 다른 제도·보험에서 이미 보상된 손해는 보상 범위와 구분하여 명시합니다.',
