@@ -77,6 +77,7 @@ export function CustomerInsightStudio() {
     setError('')
     setQueuedFindingIds([])
     setResult(analyzeCustomerSituation(input))
+    window.setTimeout(() => document.getElementById('analysis-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0)
   }
 
   const queueFinding = (finding: EmergingRiskFinding) => {
@@ -172,7 +173,7 @@ export function CustomerInsightStudio() {
         </form>
 
         <section className="insight-results" id="official-products" aria-live="polite">
-          {!result ? (
+          <>
             <div className="customer-input-guide surface-card">
               <button type="button" className="guide-icon" aria-label="고객 요청 입력 예시 채우기" onClick={() => { setInput(sampleInput); setResult(null); setError('') }}><AppIcon name="spark" size={22} /></button>
               <p className="eyebrow">WRITING GUIDE</p>
@@ -187,8 +188,9 @@ export function CustomerInsightStudio() {
               </div>
               <div className="guide-privacy"><AppIcon name="lock" size={16} /> 이름·연락처·상세 주소는 적지 않아도 됩니다.</div>
             </div>
-          ) : (
+          {result ? (
             <>
+            <div className="analysis-results" id="analysis-results">
               <article className="result-summary surface-card">
                 <div>
                   <p className="eyebrow">ANALYSIS SUMMARY</p>
@@ -269,8 +271,10 @@ export function CustomerInsightStudio() {
                 </div>
               )}
 
+            </div>
             </>
-          )}
+          ) : null}
+          </>
         </section>
       </div>
     </div>
